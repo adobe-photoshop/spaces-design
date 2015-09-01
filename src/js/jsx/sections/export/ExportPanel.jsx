@@ -135,23 +135,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Export all the assets associated with this panel
-         *
-         * @private
-         */
-        _exportAssetsClickHandler: function () {
-            var document = this.props.document,
-                selectedLayers = document.layers.selected;
-
-            if (selectedLayers.size > 0) {
-                var layerIDs = collection.pluck(selectedLayers, "id");
-                this.getFlux().actions.export.exportLayerAssets(document, layerIDs);
-            } else {
-                this.getFlux().actions.export.exportDocumentAssets(document);
-            }
-        },
-
-        /**
          * Stop event propagation to prevent double-clicks from collapsing the panel.
          *
          * @private
@@ -163,7 +146,9 @@ define(function (require, exports, module) {
 
         render: function () {
             var document = this.props.document,
+                documentExports = this.state.documentExports,
                 disabled = this.props.disabled,
+                exportDisabled = false,
                 containerContents,
                 addAssetClickHandler,
                 addIOSAssetClickHandler,
@@ -176,12 +161,14 @@ define(function (require, exports, module) {
                 // don't support exports of the background
                 containerContents = null;
                 disabled = true;
-            } else if (document.layers.selected.size === 0 && document.layers.hasArtboard) {
-                // don't support document exports when artboards
-                containerContents = null;
-                disabled = true;
             } else {
                 var selectedLayers = this.props.document.layers.selected;
+
+                if (selectedLayers.size > 0) {
+                    exportDisabled = documentExports.getUniformAssetsOnly(selectedLayers).size === 0;
+                } else {
+                    exportDisabled = documentExports.rootExports.size === 0;
+                }
 
                 addAssetClickHandler = this._addAssetClickHandler;
                 addIOSAssetClickHandler = this._addAssetClickHandler.bind(this, "IOS");
@@ -221,6 +208,7 @@ define(function (require, exports, module) {
                         <div className="layer-exports__workflow-buttons">
                             <Button
                                 className="button-plus"
+                                disabled={exportDisabled}
                                 title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
                                 onClick={exportAssetsClickHandler || _.noop}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>

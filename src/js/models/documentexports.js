@@ -150,47 +150,68 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Derive a list of ExportAssets that is uniform 
-     * across all given layers, if possible.  null otherwise.
+     * Given a set of layers, produce a "zipped" list of of lists of ExportAssets for those layers,
+     * grouped by index within the layers
      *
-     * TODO this may become more permissive if we try harder to find common subsets
-     *
-     * @param {Immutable.Iterable.<Immutable.Iterable.<ExportAsset>>} assetGroups
-     * @return {boolean}
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Immutable.IndexedSeq.<Immutable.Iterable.<?ExportAsset>>}
      */
-    DocumentExports.prototype.hasSomeUniform = function (assetGroups) {
-        return assetGroups.size > 0 && assetGroups.some(function (group) {
-            return !!collection.uniformValue(group, ExportAsset.functionalComparator);
-        });
-    };
+    Object.defineProperty(DocumentExports.prototype, "getAssetGroups",
+        objUtil.cachedLookupSpec(function (layers) {
+            var exportLists = layers.map(function (layer) {
+                return this.getLayerExports(layer.id);
+            }, this);
 
-    DocumentExports.prototype.getAssetGroups = function (layers) {
-        var exportLists = layers.map(function (layer) {
-            return this.getLayerExports(layer.id);
-        }, this);
+            return collection.zip(exportLists);
+        }));
 
-        return collection.zip(exportLists);
-    };
+    /**
+     * Given a set of layers, get a list of common ExportAssets, or null if none
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Immutable.List.<?ExportAsset>}
+     */
+    Object.defineProperty(DocumentExports.prototype, "getUniformAssets",
+        objUtil.cachedLookupSpec(function (layers) {
+            var assetGroups = this.getAssetGroups(layers);
 
-    DocumentExports.prototype.getUniformAssets = function (layers) {
-        var assetGroups = this.getAssetGroups(layers);
+            return assetGroups
+                .map(function (group) {
+                    return collection.uniformValue(group, ExportAsset.similar);
+                })
+                .toList(); // assetGroups is an IndexedSeq
+        }));
 
-        return assetGroups.map(function (group) {
-            return collection.uniformValue(group, ExportAsset.functionalComparator);
-        });
-    };
+    /**
+     * Given a set of layers, get a list of common ExportAssets, but trimmed
+     * to include only those with valid values.
+     * Caveat: this changes the relative position of the assets in their original list,
+     * so don't rely on the key for updating these assets later!
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Immutable.Iterable.<ExportAsset>}
+     */
+    Object.defineProperty(DocumentExports.prototype, "getUniformAssetsOnly",
+        objUtil.cachedLookupSpec(function (layers) {
+            return this.getUniformAssets(layers).filter(function (val) {
+                return !!val;
+            });
+        }));
 
-    DocumentExports.prototype.getUniformAssetOnly = function (layers) {
-        return this.getUniformAssets(layers).filter(function (val) {
-            return !!val;
-        });
-    };
-
-    DocumentExports.prototype.getLastUniformAssetIndex = function (layers) {
-        return this.getUniformAssets(layers).findLastIndex(function (val) {
-            return !!val;
-        });
-    };
+    /**
+     * Given a set of layers, find the index of the last asset that is common to them all.
+     * Per Immutable's findLastIndex, if not found then -1 is returned.
+     * This is useful because this is used to add indexes at (this + 1)
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {number}
+     */
+    Object.defineProperty(DocumentExports.prototype, "getLastUniformAssetIndex",
+        objUtil.cachedLookupSpec(function (layers) {
+            return this.getUniformAssets(layers).findLastIndex(function (val) {
+                return !!val;
+            });
+        }));
 
     /**
      * Merge an array of asset-like objects into a List of ExportAssets
@@ -248,7 +269,8 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Splice 
+     * Splice an array of new assets into the given layers at the given index.
+     * New ExportAssets are generated from the provided property objects
      *
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {Array.<object>} assetProps Array of asset property objects
@@ -274,7 +296,8 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Splice 
+     * Splice an array of new assets into the document root list, at the given index.
+     * New ExportAssets are generated from the provided property objects
      *
      * @param {Array.<object>} assetProps Array of asset property objects
      * @param {number} index index at which to insert the new elements

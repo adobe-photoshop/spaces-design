@@ -116,10 +116,13 @@ define(function (require, exports) {
 
     /**
      * Transpose the iterable of iterables.
+     *
+     * Since this returns a Seq, note that size may not be available after of further filtering
+     * so you may may need to explicitly use `toList()` or similar
      * 
-     * @param {Immutable.Iterable<Immutable.Iterable>} iterable
+     * @param {Immutable.Iterable.<Immutable.Iterable>} iterable
      * @param {*} notSetValue
-     * @return {Immutable.Iterable<Immutable.Iterable>}
+     * @return {Immutable.IndexedSeq.<Immutable.Iterable>}
      */
     var zip = function (iterable, notSetValue) {
         if (iterable.isEmpty()) {

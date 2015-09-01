@@ -132,7 +132,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var exportAssets = this.props.exportAssets,
-                exportAsset = collection.uniformValue(exportAssets, ExportAsset.functionalComparator);
+                exportAsset = collection.uniformValue(exportAssets, ExportAsset.similar);
 
             if (!exportAsset) {
                 // We only display an asset if it is functionally uniform across all layers
@@ -207,7 +207,6 @@ define(function (require, exports, module) {
                     });
                     
                     assetGroups = collection.zip(allExports);
-
                 } else {
                     assetGroups = collection.zip(Immutable.List.of(documentExports.rootExports));
                 }

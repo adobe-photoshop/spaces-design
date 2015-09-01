@@ -67,53 +67,54 @@ define(function (require, exports) {
      * Note that the underlying adapter API to setExtensionData requires the full data structure to be supplied
      * which is why we are always fetching directly from both stores prior to calling setExtensionData
      *
-     * TODO maybe this should handle a set of layers, for efficiency when called by layer actions?
-     *
      * @private
      * @param {number} documentID
-     * @param {number=} layerID Optional. If not supplied, sync doc-level metadata
+     * @param {Immutable.Iterable.<number>=} layerIDs Optional. If not supplied, sync doc-level metadata
      * @return {Promise}
      */
-    var _syncExportMetadata = function (documentID, layerID) {
+    var _syncExportMetadata = function (documentID, layerIDs) {
         var documentExports = this.flux.stores.export.getDocumentExports(documentID),
-            exportsMetadata,
-            playObject;
+            document = this.flux.stores.document.getDocument(documentID),
+            playObjects;
 
-        if (layerID || layerID === 0) {
-            var layerExports = documentExports && documentExports.getLayerExports(layerID),
+        if (!documentExports || !document) {
+            throw new Error("Can not find Document or DocumentExports with ID " + documentID);
+        }
+
+        // helper to build play object for  individual layers
+        var _buildPlayObject = function (layerID) {
+            var layerExports = documentExports.getLayerExports(layerID),
                 layerExportsArray = layerExports && layerExports.toJS() || [],
-                document = this.flux.stores.document.getDocument(documentID),
-                layer = document && document.layers.byID(layerID),
-                exportEnabled;
+                layer = document.layers.byID(layerID);
 
             if (!document || !layer) {
-                throw new Error("Could not sync export metadata for doc:" + documentID + ", layer:" + layerID);
+                throw new Error("Could not find Layer for doc:" + documentID + ", layer:" + layerID);
             }
 
-            exportEnabled = layer.exportEnabled;
-
-            exportsMetadata = {
+            var exportsMetadata = {
                 exportAssets: layerExportsArray,
-                exportEnabled: !!exportEnabled
+                exportEnabled: !!layer.exportEnabled
             };
 
             // set layer extension data
-            playObject = layerLib.setExtensionData(documentID,
+            return layerLib.setExtensionData(documentID,
                 layerID, global.EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata);
-        } else {
-            var rootExports = documentExports && documentExports.rootExports,
-            rootExportsArray = rootExports && rootExports.toJS() || [];
+        };
 
-            exportsMetadata = {
-                exportAssets: rootExportsArray
+        // prepare play objects for document or layer level, based on existence of layerIDs
+        if (layerIDs) {
+            playObjects = layerIDs.map(_buildPlayObject).toArray();
+        } else {
+            var exportsMetadata = {
+                exportAssets: documentExports.rootExports.toJS()
             };
 
             // set document extension data
-            playObject = documentLib.setExtensionData(documentID,
-                global.EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata);
+            playObjects = [documentLib.setExtensionData(documentID,
+                global.EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata)];
         }
 
-        return descriptor.playObject(playObject);
+        return descriptor.batchPlayObjects(playObjects);
     };
 
     /**
@@ -173,17 +174,18 @@ define(function (require, exports) {
      * Insert an asset (or assets) into a document or set of layers, by inserting into the existing list
      * at the given index.
      * Sync to PS metadata afterwards
+     *
      * 
      * @private
      * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>=} layers
+     * @param {Immutable.Iterable.<Layer>=} layers if not supplied, then doc-level assets
      * @param {number} assetIndex index of this asset within the layer's list to append props 
      * @param {object|Array.<object>} props ExportAsset-like properties to be merged, or an array thereof
      * @return {Promise}
      */
     var _insertAssetsAtIndex = function (document, layers, assetIndex, props) {
         var documentID = document.id,
-            layerIDs = layers && collection.pluck(layers, "id"),
+            layerIDs = layers && collection.pluck(layers, "id") || undefined,
             assetPropsArray = Array.isArray(props) ? props : [props],
             payload;
 
@@ -197,14 +199,7 @@ define(function (require, exports) {
         return this.dispatchAsync(events.export.ASSET_ADDED, payload)
             .bind(this)
             .then(function () {
-                if (layers) {
-                    // TODO this should be handled as a batch
-                    return Promise.all(layers.map(function (layer) {
-                        return _syncExportMetadata.call(this, documentID, layer.id);
-                    }, this).toArray());
-                } else {
-                    return _syncExportMetadata.call(this, documentID, null);
-                }
+                return _syncExportMetadata.call(this, documentID, layerIDs);
             });
     };
 
@@ -294,19 +289,19 @@ define(function (require, exports) {
 
     /**
      * Merge the given set of asset properties into the Export Asset model and persist in the the Ps metadata
-     * If layer is not supplied, or is empty, treat this as document root level asset
+     * If layers is empty, or not supplied, treat this as document root level asset
      *
      * If an array of props are supplied then they are added to the list beginning at the supplied index.
      *
      * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>=} layers
+     * @param {Immutable.Iterable.<Layer>=} layers set of selected layers
      * @param {number} assetIndex index of this asset within the layer's list to append props 
      * @param {object|Array.<object>} props ExportAsset-like properties to be merged, or an array thereof
      * @return {Promise}
      */
     var updateExportAsset = function (document, layers, assetIndex, props) {
         var documentID = document.id,
-            layerIDs = layers && layers.size > 0 && collection.pluck(layers, "id"),
+            layerIDs = layers && layers.size > 0 && collection.pluck(layers, "id") || undefined,
             assetPropsArray = Array.isArray(props) ? props : [props],
             shiftedPropsArray = new Array(assetIndex + 1),
             payload;
@@ -323,14 +318,7 @@ define(function (require, exports) {
         return this.dispatchAsync(events.export.ASSET_CHANGED, payload)
             .bind(this)
             .then(function () {
-                if (layerIDs) {
-                    // TODO this should be handled as a batch
-                    return Promise.all(layers.map(function (layer) {
-                        return _syncExportMetadata.call(this, documentID, layer.id);
-                    }, this).toArray());
-                } else {
-                    return _syncExportMetadata.call(this, documentID, null);
-                }
+                return _syncExportMetadata.call(this, documentID, layerIDs);
             });
     };
     updateExportAsset.reads = [locks.JS_DOC];
@@ -403,7 +391,7 @@ define(function (require, exports) {
 
         if (documentExports) {
             if (layers && layers.size > 0) {
-                exportsList = documentExports.getUniformAssetOnly(layers);
+                exportsList = documentExports.getUniformAssetsOnly(layers);
                 assetIndex = documentExports.getLastUniformAssetIndex(layers) + 1;
                 _layers = layers;
             } else {
@@ -449,6 +437,8 @@ define(function (require, exports) {
     /**
      * Delete the Export Asset configuration specified by the given index
      *
+     * If layers is empty, or not supplied, delete a document-level asset
+     *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>=} layers
      * @param {number} assetIndex index of this asset within the layer's list
@@ -456,7 +446,7 @@ define(function (require, exports) {
      */
     var deleteExportAsset = function (document, layers, assetIndex) {
         var documentID = document.id,
-            layerIDs = layers ? collection.pluck(layers, "id") : null,
+            layerIDs = layers && layers.size > 0 && collection.pluck(layers, "id") || undefined,
             payload = {
                 documentID: documentID,
                 layerIDs: layerIDs,
@@ -466,14 +456,7 @@ define(function (require, exports) {
         return this.dispatchAsync(events.export.DELETE_ASSET, payload)
             .bind(this)
             .then(function () {
-                if (layers) {
-                    // TODO this should be handled as a batch
-                    return Promise.all(layers.map(function (layer) {
-                        return _syncExportMetadata.call(this, documentID, layer.id);
-                    }, this).toArray());
-                } else {
-                    return _syncExportMetadata.call(this, documentID, null);
-                }
+                return _syncExportMetadata.call(this, documentID, layerIDs);
             });
     };
     deleteExportAsset.reads = [locks.JS_DOC];
@@ -489,8 +472,8 @@ define(function (require, exports) {
      */
     var setLayerExportEnabled = function (document, layers, exportEnabled) {
         var layerIDs = Immutable.List.isList(layers) ?
-                collection.pluck(layers, "id").toArray() :
-                [layers.id];
+                collection.pluck(layers, "id") :
+                Immutable.List.of(layers.id);
 
         var payload = {
                 documentID: document.id,
@@ -501,9 +484,7 @@ define(function (require, exports) {
         return this.dispatchAsync(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload)
             .bind(this)
             .then(function () {
-                return Promise.all(layerIDs.map(function (layerID) {
-                    return _syncExportMetadata.call(this, document.id, layerID);
-                }, this));
+                return _syncExportMetadata.call(this, document.id, layerIDs);
             });
     };
     setLayerExportEnabled.reads = [];

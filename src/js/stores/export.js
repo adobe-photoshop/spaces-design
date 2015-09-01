@@ -171,7 +171,7 @@ define(function (require, exports, module) {
                 assetIndex = payload.assetIndex;
 
             if (!documentID) {
-                throw new Error ("Can not update an asset without a valid documentID (%s)", documentID);
+                throw new Error("Can not update an asset without a valid documentID (%s)", documentID);
             }
 
             var curDocumentExports = this.getDocumentExports(documentID) || new DocumentExports(),

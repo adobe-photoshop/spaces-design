@@ -102,18 +102,6 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Returns true if the provided ExportAsset has all the same core properties as this
-     *
-     * @param {ExportAsset} otherAsset
-     * @return {boolean}
-     */
-    ExportAsset.prototype.equalish = function (otherAsset) {
-        return this.scale === otherAsset.scale &&
-            this.suffix === otherAsset.suffix &&
-            this.format === otherAsset.format;
-    };
-
-    /**
      * Set the status to the "requested" status
      * @return {ExportAsset}
      */
@@ -159,6 +147,31 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Returns true if the provided ExportAsset has all the same core properties as this
+     * This simply requires equality of scale, suffix, and format
+     * 
+     * @param {ExportAsset} otherAsset
+     * @return {boolean}
+     */
+    ExportAsset.prototype.similarTo = function (otherAsset) {
+        return this.scale === otherAsset.scale &&
+            this.suffix === otherAsset.suffix &&
+            this.format === otherAsset.format;
+    };
+
+    /**
+     * Compare two Export Assets for similarity.
+     * This simply requires equality of scale, suffix, and format
+     *
+     * @param {ExportAsset} a
+     * @param {ExportAsset} b
+     * @return {boolean}
+     */
+    ExportAsset.similar = function (a, b) {
+        return a && b && a.similarTo(b);
+    };
+
+    /**
      * Attach some enums to the export
      */
     ExportAsset.STATUS = STATUS;
@@ -188,9 +201,5 @@ define(function (require, exports, module) {
         ]
     };
 
-    ExportAsset.functionalComparator = function (a, b) {
-        return a && b && a.equalish(b);
-    };
-    
     module.exports = ExportAsset;
 });
