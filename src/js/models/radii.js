@@ -85,7 +85,7 @@ define(function (require, exports, module) {
      * Construct a Radii object from the given Photoshop layer descriptor.
      *
      * @param {object} descriptor
-     * @return {Radii}
+     * @return {?Radii}
      */
     Radii.fromLayerDescriptor = function (descriptor) {
         if (!descriptor.keyOriginType || descriptor.keyOriginType.length === 0) {

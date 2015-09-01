@@ -67,7 +67,7 @@ define(function (require, exports) {
     * Convert a pixel dimension to a number.
     *
     * @param {string} pixelDimension
-    * @return {number}
+    * @return {?number}
     */
     var pixelDimensionToNumber = function (pixelDimension) {
         if (pixelDimension.substr(-2) === "px") {

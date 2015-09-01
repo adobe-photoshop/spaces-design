@@ -95,6 +95,7 @@ define(function (require, exports, module) {
             this._isSyncing = false;
         },
 
+        /** @ignore */
         _handleLibrariesUnloaded: function () {
             this._handleReset();
 
@@ -308,10 +309,12 @@ define(function (require, exports, module) {
             return this._libraries.get(this._selectedLibraryID);
         },
 
+        /** @ignore */
         getConnectionStatus: function () {
             return this._serviceConnected;
         },
         
+        /** @ignore */
         isSyncing: function () {
             return this._isSyncing;
         }

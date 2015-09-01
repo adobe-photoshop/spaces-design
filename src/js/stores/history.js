@@ -96,7 +96,7 @@ define(function (require, exports, module) {
          * ensures that a document object with an ID exists in state
          *
          * @param {number} documentID
-         * @return {number}
+         * @return {?number}
          */
         lastSavedStateIndex: function (documentID) {
             var savedHistoryIndex = this._saved.get(documentID);
@@ -341,14 +341,14 @@ define(function (require, exports, module) {
             return this._handleHistoryFromPhotoshop(historyPayload);
         },
 
-        /*
-        * Helper function to mine the documentID from the unstructured payload
-        * hope to structure this better in the future
-        *
-        * @private
-        * @param {object}
-        * @return {number}
-        */
+        /**
+         * Helper function to mine the documentID from the unstructured payload
+         * hope to structure this better in the future
+         *
+         * @private
+         * @param {object} payload
+         * @return {number}
+         */
         _getDocumentID: function (payload) {
             if (payload.hasOwnProperty("documentID")) {
                 return payload.documentID;
@@ -427,7 +427,7 @@ define(function (require, exports, module) {
                 newState = new HistoryState({ document: lastSavedDocument });
 
             if (!lastSavedDocument) {
-                throw new Error ("Could not revert using cached history because document model not found");
+                throw new Error("Could not revert using cached history because document model not found");
             }
 
             // push a new history on top of current

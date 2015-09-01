@@ -131,7 +131,7 @@ define(function (require, exports, module) {
                 layerIDs = Array.isArray(payload.layerIDs) ? payload.layerIDs : [payload.layerIDs];
 
             if (!documentID) {
-                throw new Error ("Can not update an asset without a valid documentID (%s)", documentID);
+                throw new Error("Can not update an asset without a valid documentID (%s)", documentID);
             }
 
             var curDocumentExports = this.getDocumentExports(documentID) || new DocumentExports(),

@@ -857,7 +857,7 @@ define(function (require, exports, module) {
                 } else if (layerIndex < nextIndex.size) {
                     nextIndex = nextIndex.delete(replaceIndex).splice(layerIndex, 0, layerID);
                 } else {
-                    throw new Error ("Replacing a layer but the new layer's index seems out of bounds");
+                    throw new Error("Replacing a layer but the new layer's index seems out of bounds");
                 }
             } else {
                 nextIndex = nextIndex.splice(layerIndex, 0, layerID);

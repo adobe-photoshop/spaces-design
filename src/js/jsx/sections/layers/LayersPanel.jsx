@@ -309,7 +309,7 @@ define(function (require, exports, module) {
          * @param {{DOMElement: node, target: Layer}} dropInfo
          * @param {Immutable.List.<Layer>} draggedLayers Currently dragged layers
          * @param {{x: number, y: number}} point Point where drop event would occur
-         * @return {boolean} Whether the aforementioned drop may occur
+         * @return {{compatible: boolean, valid: compatiable}} Whether the aforementioned drop may occur
          */
         _validDropTarget: function (dropInfo, draggedLayers, point) {
             var dropNode = dropInfo.node,

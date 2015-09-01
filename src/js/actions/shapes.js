@@ -80,7 +80,7 @@ define(function (require, exports) {
      * @param {object} strokeProperties a pseudo stroke object containing only new props
      * @param {string} eventName name of the event to emit afterwards
      * @param {boolean=} coalesce optionally include this in the payload to drive history coalescing
-     * @return Promise
+     * @return {Promise}
      */
     var _strokeChangeDispatch = function (document, layers, strokeProperties, eventName, coalesce) {
         var payload = {
@@ -102,7 +102,7 @@ define(function (require, exports) {
      * @param {object} fillProperties a pseudo fill object containing only new props
      * @param {string} eventName name of the event to emit afterwards
      * @param {boolean=} coalesce optionally include this in the payload to drive history coalescing
-     * @return Promise
+     * @return {Promise}
      */
     var _fillChangeDispatch = function (document, layers, fillProperties, eventName, coalesce) {
         // TODO layers param needs to be made fa real
@@ -165,6 +165,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {Stroke} stroke Stroke properties to apply
+     * @param {object} options
      * @param {boolean=} options.enabled Default true
      * @return {Promise}
      */
@@ -225,6 +226,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {Color} color color of the strokes, since photoshop does not provide a way to simply enable a stroke
+     * @param {object} options
      * @param {boolean=} options.enabled
      * @return {Promise}
      */
@@ -246,7 +248,8 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {Color} color
-     * @param {boolean=} option.enabled optional enabled flag, default=true.
+     * @param {object} options
+     * @param {boolean=} options.enabled optional enabled flag, default=true.
      *                                  If supplied, causes a resetBounds afterwards
      * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
      * @param {boolean=} options.ignoreAlpha Whether to ignore the alpha value of the
@@ -359,6 +362,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {number} opacity opacity as a percentage [0,100]
+     * @param {object} options
      * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
@@ -443,6 +447,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {Color} color
+     * @param {object} options
      * @param {boolean=} options.enabled
      * @return {Promise}
      */
@@ -463,6 +468,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
      * @param {Color} color
+     * @param {object} options
      * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
      * @param {boolean=} options.enabled optional enabled flag, default=true
      * @param {boolean=} options.ignoreAlpha Whether to ignore the alpha value of the
@@ -512,6 +518,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers
      * @param {number} opacity Opacity percentage [0,100]
+     * @param {object} options
      * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */

@@ -243,6 +243,7 @@ define(function (require, exports) {
             };
         },
 
+        /** @ignore */
         _stringHelper: function (dropString, innerString) {
             if (this.props.type === "dropShadow") {
                 return dropString;

@@ -169,7 +169,6 @@ define(function (require, exports, module) {
         
         /**
          * Sync all libraries.
-         * @return {Promise}
          */
         _handleSyncLibraries: function () {
             this.getFlux().actions.libraries.syncLibraries();

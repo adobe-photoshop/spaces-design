@@ -25,7 +25,8 @@
 
 module.exports = function (grunt) {
     "use strict";
-
+    
+    /** @ignore */
     var getRequireOptions = function (locale) {
         return {
             options: {
@@ -65,9 +66,26 @@ module.exports = function (grunt) {
             ]
         },
         jscs: {
-            src: "<%= jshint.all %>",
-            options: {
-                config: ".jscsrc"
+            main: {
+                src: [
+                    "*.js",
+                    "*.json",
+                    "src/**/*.js",
+                    "src/**/*.jsx"
+                ],
+                options: {
+                    config: ".jscsrc"
+                }
+            },
+            secondary: {
+                src: [
+                    "test/**/*.js",
+                    "test/**/*.jsx"
+                ],
+                options: {
+                    config: ".jscsrc",
+                    jsDoc: false
+                }
             }
         },
         jsdoc: {

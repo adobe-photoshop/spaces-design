@@ -45,7 +45,8 @@ define(function (require, exports, module) {
     var EllipseTool = function () {
         var resetPromise = descriptor.playObject(toolLib.resetShapeTool()),
             firstLaunch = true;
-
+            
+        /** @ignore */
         var selectHandler = function () {
             var defaultPromise;
 

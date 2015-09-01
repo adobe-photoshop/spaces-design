@@ -36,7 +36,8 @@ define(function (require, exports, module) {
     /**
      * Maximum number of recent files to display
      *
-     * @const {Number}
+     * @const
+     * @type {number}
      */
     var MAX_RECENT_FILES = 10;
 

@@ -319,7 +319,7 @@ define(function (require, exports, module) {
      * Static method to generate the appropriate LayerEffect based on a provided type
      *
      * @param {string} layerEffectType
-     * @return {LayerEffect}  instance of a layer effect such as a Shadow
+     * @return {Shadow}  instance of a layer effect such as a Shadow
      */
     Layer.newLayerEffectByType = function (layerEffectType) {
         if (layerEffectType === "dropShadow" || layerEffectType === "innerShadow") {

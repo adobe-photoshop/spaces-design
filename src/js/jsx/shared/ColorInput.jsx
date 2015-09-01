@@ -47,7 +47,8 @@ define(function (require, exports, module) {
     /**
      * Keys on which to dismiss the color picker dialog 
      * 
-     * @const {Array.<key: {string}, modifiers: {object}>} 
+     * @const
+     * @type {Array.<key: {string}, modifiers: {object}>} 
      */
     var DISSMISS_ON_KEYS = [
         { key: os.eventKeyCode.ESCAPE, modifiers: null },
@@ -105,6 +106,7 @@ define(function (require, exports, module) {
             }
         },
 
+        /** @ignore */
         _getID: function () {
             return "colorpicker-" + this.props.id;
         },
@@ -325,7 +327,7 @@ define(function (require, exports, module) {
             }
         },
 
-        /*
+        /**
          * Force the color picker to update on history state changes.
          *
          * @private

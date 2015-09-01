@@ -260,7 +260,11 @@ define(function (require, exports, module) {
             );
         },
         
-        // Stringifies CanvasToWindow transformation for all SVG coordinates
+        /** 
+         * Stringifies CanvasToWindow transformation for all SVG coordinates
+         * 
+         * @ignore
+         */
         _getTransformString: function (transformMatrix) {
             if (!transformMatrix) {
                 return "";

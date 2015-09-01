@@ -41,6 +41,7 @@ define(function (require, exports, module) {
     var _currentMouseX,
         _currentMouseY;
 
+    /** @ignore */
     var _mouseMoveHandler = function (event) {
         _currentMouseX = event.location[0];
         _currentMouseY = event.location[1];
@@ -86,6 +87,7 @@ define(function (require, exports, module) {
     };
     util.inherits(SamplerTool, Tool);
 
+    /** @ignore */
     SamplerTool.prototype.onClick = function (event) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),

@@ -168,7 +168,8 @@ define(function (require, exports, module) {
             this._headerHeight = 0;
             this._toolbarWidth = 0;
         },
-
+        
+        /** @ignore */
         getState: function () {
             return {
                 transformMatrix: this._transformMatrix,
@@ -180,11 +181,13 @@ define(function (require, exports, module) {
                 marqueeStart: this._marqueeStart
             };
         },
-
+        
+        /** @ignore */
         zoomWindowToCanvas: function (x) {
             return x * this._zoom;
         },
 
+        /** @ignore */
         zoomCanvasToWindow: function (x) {
             return x / this._zoom;
         },
@@ -259,7 +262,7 @@ define(function (require, exports, module) {
          * Get the current cloaking rectangle, which omits the static UI.
          *
          * @private
-         * @return {{top: number, right: number, left: number, bottom: number}}
+         * @return {?{top: number, right: number, left: number, bottom: number}}
          */
         getCloakRect: function () {
             var centerOffsets = this._centerOffsets,

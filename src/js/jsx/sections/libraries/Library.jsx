@@ -176,6 +176,7 @@ define(function (require, exports, module) {
             });
         },
 
+        /** @ignore */
         _getLibraryItems: function () {
             if (!this.props.library) {
                 return null;

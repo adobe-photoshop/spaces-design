@@ -41,7 +41,8 @@ define(function (require, exports) {
 
     /**
      * Photoshop command ID for "undo"
-     * @const {number}
+     * @type {number}
+     * @const 
      */
     var UNDO_NATIVE_MENU_COMMMAND_ID = 101;
 
@@ -305,7 +306,8 @@ define(function (require, exports) {
     };
     beforeStartup.reads = [];
     beforeStartup.writes = [];
-
+    
+    /** @ignore */
     var onReset = function () {
         descriptor.removeListener("historyState", _historyStateHandler);
 

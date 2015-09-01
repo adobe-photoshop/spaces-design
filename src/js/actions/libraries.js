@@ -186,8 +186,8 @@ define(function (require, exports) {
      *  - Tells Photoshop the location of the content
      *  - Updates the document
      *
-     * @todo Eventually, we'll need this to accept layer(s), library, and be more flexible
-     * @todo Also, we definitely need to get rid of the update document call, but this is 0.1
+     * TODO Eventually, we'll need this to accept layer(s), library, and be more flexible
+     * TODO Also, we definitely need to get rid of the update document call, but this is 0.1
      *
      * @return {Promise}
      */
@@ -297,7 +297,7 @@ define(function (require, exports) {
      *  - Using fontStore.getTypeObjectFromLayer, creates a Design Library acceptable font object
      *  - Updates the rendition representation with the exported thumbnail
      *
-     * @todo Make sure the typeObject is correctly created for everything we're supplying
+     * TODO Make sure the typeObject is correctly created for everything we're supplying
      *
      * @return {Promise}
      */

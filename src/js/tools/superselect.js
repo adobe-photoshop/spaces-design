@@ -199,6 +199,7 @@ define(function (require, exports, module) {
         _spaceKeyDown = false;
     };
 
+    /** @ignore */
     SuperSelectTool.prototype.onClick = function (event) {
         // Prevents clicks from reaching the window and dismissing onWindowClick dialogs
         event.stopPropagation();
@@ -224,7 +225,7 @@ define(function (require, exports, module) {
     /**
      * Handler for keydown events, installed when the tool is active.
      *
-     * @todo  Fix this after keyboard policies are more in place
+     * TODO Fix this after keyboard policies are more in place
      * @param {CustomEvent} event
      */
     SuperSelectTool.prototype.onKeyDown = function (event) {

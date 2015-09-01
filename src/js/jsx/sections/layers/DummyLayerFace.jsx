@@ -61,9 +61,11 @@ define(function (require, exports, module) {
 
     // Create a Droppable from a Draggable from a DummyLayerFace.
     var draggedVersion = Draggable.createWithComponent(DummyLayerFace, "y"),
+        /** @ignore */
         isEqual = function (layerA, layerB) {
             return layerA.key === layerB.key;
         },
+        /** @ignore */
         droppableSettings = function (props) {
             return {
                 zone: props.zone,

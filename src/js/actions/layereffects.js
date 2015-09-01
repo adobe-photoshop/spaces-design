@@ -181,7 +181,6 @@ define(function (require, exports) {
      * @param {boolean} enabled enabled flag
      * @return {Promise}
      */
-
     var setShadowEnabled = function (document, layers, shadowIndex, enabled, type) {
         return _upsertShadowProperties.call(
             this, document, layers, shadowIndex, { enabled: enabled }, 0, type);
@@ -198,7 +197,6 @@ define(function (require, exports) {
      * @param {string} type of Shadow
      * @return {Promise}
      */
-
     var deleteShadow = function (document, layers, shadowIndex, type) {
         var payload = {
             documentID: document.id,

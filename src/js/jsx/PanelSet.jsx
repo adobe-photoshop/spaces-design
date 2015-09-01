@@ -136,6 +136,7 @@ define(function (require, exports, module) {
                 !Immutable.is(this.state.activeDocument, nextState.activeDocument);
         },
 
+        /** @ignore */
         _handleColumnVisibilityToggle: function (columnName) {
             var nextState = {};
             nextState[columnName] = !this.state[columnName];
@@ -144,6 +145,7 @@ define(function (require, exports, module) {
             this.setState(nextState);
         },
         
+        /** @ignore */
         _handlePanelVisibilityToggle: function (panelName) {
             // NOTE: We may want remove this if we come up with a better unsupported state for panels
             if (this.state.document && this.state.document.unsupported) {

@@ -34,7 +34,7 @@ define(function (require, exports) {
      * 
      * @private
      * @return {Immutable.List.<object>}
-    */
+     */
     var _currDocSearchOptions = function () {
         var appStore = this.flux.store("application"),
             docStore = this.flux.store("document"),
@@ -56,7 +56,7 @@ define(function (require, exports) {
      * 
      * @private
      * @return {Immutable.List.<object>}
-    */
+     */
     var _recentDocSearchOptions = function () {
         var appStore = this.flux.store("application"),
             recentFiles = appStore.getRecentFiles(),
@@ -78,7 +78,7 @@ define(function (require, exports) {
      *
      * @private
      * @param {number} idInt ID of document to switch to
-    */
+     */
     var _confirmCurrDocSearch = function (idInt) {
         var selectedDoc = this.flux.store("document").getDocument(idInt);
         if (selectedDoc) {
@@ -91,25 +91,25 @@ define(function (require, exports) {
      *
      * @private
      * @param {number} idInt ID of recent document to switch to
-    */
+     */
     var _confirmRecentDocSearch = function (idInt) {
         var recentFiles = this.flux.store("application").getRecentFiles(),
             fileName = recentFiles.get(idInt);
         this.flux.actions.documents.open(fileName);
     };
 
-    /*
+    /**
      * Find SVG class for documents
      * If this needs to vary based on the item, use category list as parameter 
      * (see getSVGCallback type in search store)
      * 
      * @return {string}
-    */
+     */
     var _getSVGClass = function () {
         return "document";
     };
 
-    /*
+    /**
      * Register current document info for search
      */
     var registerCurrentDocumentSearch = function () {
@@ -126,7 +126,7 @@ define(function (require, exports) {
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, currentDocPayload);
     };
     
-    /*
+    /**
      * Register recent document info for search
      */
     var registerRecentDocumentSearch = function () {

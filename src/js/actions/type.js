@@ -215,6 +215,7 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
      * @param {boolean} modal is the app in a modal state, which effects history
+     * @param {object} options
      * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
      * @param {boolean=} options.ignoreAlpha
      * @return {Promise}
@@ -252,6 +253,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
+     * @param {object} options
      * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
      * @param {boolean=} options.ignoreAlpha Whether to ignore the alpha value of the
      *  given color and only update the opaque color value.

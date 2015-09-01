@@ -80,19 +80,17 @@ define(function (require, exports, module) {
             return true;
         },
 
-        _handleRefresh: function () {
-            this.getFlux().actions.libraries.beforeStartup();
-            this.getFlux().actions.libraries.afterStartup();
-        },
-
+        /** @ignore */
         _handleLibraryChange: function (libraryID) {
             this.getFlux().actions.libraries.selectLibrary(libraryID);
         },
 
+        /** @ignore */
         _handleLibraryAdd: function () {
             this.getFlux().actions.libraries.createLibrary("New Library");
         },
 
+        /** @ignore */
         _handleLibraryRemove: function () {
             this.getFlux().actions.libraries.removeCurrentLibrary();
         },

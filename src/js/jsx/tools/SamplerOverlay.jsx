@@ -260,8 +260,6 @@ define(function (require, exports, module) {
 
         /**
          * Draws sampler HUD if there is one available from the store
-         *
-         * @return {[type]} [description]
          */
         drawSamplerHUD: function () {
             if (!this.state.sampleTypes || !this.state.samplePoint) {

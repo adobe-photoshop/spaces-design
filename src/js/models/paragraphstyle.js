@@ -56,8 +56,8 @@ define(function (require, exports, module) {
      * @param {object} paragraphStyleDescriptor
      * @return {ParagraphStyle}
      */
-    ParagraphStyle.fromParagraphStyleDescriptor =
-        function (documentDescriptor, layerDescriptor, paragraphStyleDescriptor) {
+    ParagraphStyle.fromParagraphStyleDescriptor = function (documentDescriptor,
+        layerDescriptor, paragraphStyleDescriptor) {
         var model = {},
             paragraphStyle = paragraphStyleDescriptor.paragraphStyle;
 

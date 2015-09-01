@@ -131,10 +131,39 @@
         "self"
     ],
     "validateIndentation": 4,
-    "validateJSDoc": {
+    "jsDoc": {
+        "checkAnnotations": {
+            "preset": "closurecompiler", 
+            "extra": {
+                "callback": true
+            }
+        },
         "checkParamNames": true,
         "requireParamTypes": true,
-        "checkRedundantParams": true
+        "checkRedundantParams": true,
+        "checkReturnTypes": true,
+        "checkRedundantReturns": true,
+        "requireReturnTypes": true,
+        "enforceExistence": "exceptExports",
+        "enforceExistenceExcept": [
+            "get",
+            "setup",
+            "value",
+            "beforeStartup",
+            "initialize",
+            "render",
+            "getState",
+            "getInitialState",
+            "getDefaultProps",
+            "getStateFromFlux",
+            "componentWillReceiveProps",
+            "componentWillMount",
+            "componentWillUnmount",
+            "componentDidMount",
+            "shouldComponentUpdate",
+            "componentWillUpdate",
+            "componentDidUpdate"
+        ]
     },
     "validateLineBreaks": "LF",
     "validateParameterSeparator": ", ",

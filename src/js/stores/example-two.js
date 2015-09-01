@@ -39,6 +39,8 @@ define(function (require, exports, module) {
             };
         },
         counter: null,
+        
+        /** @ignore */
         setCounter: function () {
             this.waitFor(["example-one"], function (exampleOneStore) {
                 var counter = exampleOneStore.counter;

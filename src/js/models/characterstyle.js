@@ -86,8 +86,8 @@ define(function (require, exports, module) {
      * @param {object} baseParentStyle
      * @return {CharacterStyle}
      */
-    CharacterStyle.fromCharacterStyleDescriptor =
-        function (documentDescriptor, layerDescriptor, characterStyleDescriptor, baseParentStyle) {
+    CharacterStyle.fromCharacterStyleDescriptor = function (documentDescriptor,
+        layerDescriptor, characterStyleDescriptor, baseParentStyle) {
         var model = {},
             resolution = typeof documentDescriptor === "number" ?
                 documentDescriptor :
