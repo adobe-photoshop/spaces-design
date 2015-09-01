@@ -172,10 +172,6 @@ define(function (require, exports, module) {
 
             if (!document || !this.props.visible || disabled) {
                 containerContents = null;
-            } else if (document.layers.selected.size > 1) {
-                // FOR NOW - we don't allow multiple selected layers
-                containerContents = (<div>{strings.EXPORT.SELECT_SINGLE_LAYER}</div>);
-                disabled = true;
             } else if (document.layers.backgroundSelected) {
                 // don't support exports of the background
                 containerContents = null;

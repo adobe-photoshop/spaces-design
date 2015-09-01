@@ -145,7 +145,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _exportAsset = function (document, layer, assetIndex, asset, baseDir) {
-        var fileName = (layer ? layer.name : strings.EXPORT.EXPORT_DOCUMENT_FILENAME) + asset.suffix;
+        var fileName = (layer ? layer.name : strings.EXPORT.EXPORT_DOCUMENT_FILENAME) + asset.suffix,
+            _layers = layer ? Immutable.List.of(layer) : null;
+
         return _exportService.exportAsset(document, layer, asset, fileName, baseDir)
             .bind(this)
             .then(function (pathArray) {
@@ -154,7 +156,7 @@ define(function (require, exports) {
                     filePath: pathArray[0],
                     status: ExportAsset.STATUS.STABLE
                 };
-                return this.transfer(updateExportAsset, document, layer, assetIndex, assetProps);
+                return this.transfer(updateExportAsset, document, _layers, assetIndex, assetProps);
             })
             .catch(function (e) {
                 log.error("Export Failed for asset %d of layerID %d, documentID %d, with error",
@@ -163,8 +165,47 @@ define(function (require, exports) {
                     filePath: "",
                     status: ExportAsset.STATUS.ERROR
                 };
-                return this.transfer(updateExportAsset, document, layer, assetIndex, assetProps);
+                return this.transfer(updateExportAsset, document, _layers, assetIndex, assetProps);
             }) ;
+    };
+
+    /**
+     * Insert an asset (or assets) into a document or set of layers, by inserting into the existing list
+     * at the given index.
+     * Sync to PS metadata afterwards
+     * 
+     * @private
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>=} layers
+     * @param {number} assetIndex index of this asset within the layer's list to append props 
+     * @param {object|Array.<object>} props ExportAsset-like properties to be merged, or an array thereof
+     * @return {Promise}
+     */
+    var _insertAssetsAtIndex = function (document, layers, assetIndex, props) {
+        var documentID = document.id,
+            layerIDs = layers && collection.pluck(layers, "id"),
+            assetPropsArray = Array.isArray(props) ? props : [props],
+            payload;
+
+        payload = {
+            documentID: documentID,
+            layerIDs: layerIDs,
+            assetPropsArray: assetPropsArray,
+            assetIndex: assetIndex
+        };
+
+        return this.dispatchAsync(events.export.ASSET_ADDED, payload)
+            .bind(this)
+            .then(function () {
+                if (layers) {
+                    // TODO this should be handled as a batch
+                    return Promise.all(layers.map(function (layer) {
+                        return _syncExportMetadata.call(this, documentID, layer.id);
+                    }, this).toArray());
+                } else {
+                    return _syncExportMetadata.call(this, documentID, null);
+                }
+            });
     };
 
     /**
@@ -253,19 +294,19 @@ define(function (require, exports) {
 
     /**
      * Merge the given set of asset properties into the Export Asset model and persist in the the Ps metadata
-     * If layer is not supplied, treat this as document root level asset
+     * If layer is not supplied, or is empty, treat this as document root level asset
      *
      * If an array of props are supplied then they are added to the list beginning at the supplied index.
      *
      * @param {Document} document
-     * @param {Layer=} layer
+     * @param {Immutable.Iterable.<Layer>=} layers
      * @param {number} assetIndex index of this asset within the layer's list to append props 
      * @param {object|Array.<object>} props ExportAsset-like properties to be merged, or an array thereof
      * @return {Promise}
      */
-    var updateExportAsset = function (document, layer, assetIndex, props) {
+    var updateExportAsset = function (document, layers, assetIndex, props) {
         var documentID = document.id,
-            layerID = layer && layer.id,
+            layerIDs = layers && layers.size > 0 && collection.pluck(layers, "id"),
             assetPropsArray = Array.isArray(props) ? props : [props],
             shiftedPropsArray = new Array(assetIndex + 1),
             payload;
@@ -275,14 +316,21 @@ define(function (require, exports) {
 
         payload = {
             documentID: documentID,
-            layerIDs: layerID,
+            layerIDs: layerIDs,
             assetPropsArray: shiftedPropsArray
         };
 
         return this.dispatchAsync(events.export.ASSET_CHANGED, payload)
             .bind(this)
             .then(function () {
-                return _syncExportMetadata.call(this, documentID, layerID);
+                if (layerIDs) {
+                    // TODO this should be handled as a batch
+                    return Promise.all(layers.map(function (layer) {
+                        return _syncExportMetadata.call(this, documentID, layer.id);
+                    }, this).toArray());
+                } else {
+                    return _syncExportMetadata.call(this, documentID, null);
+                }
             });
     };
     updateExportAsset.reads = [locks.JS_DOC];
@@ -292,13 +340,13 @@ define(function (require, exports) {
      * Set the numerical scale of the asset specified by the given index
      *
      * @param {Document} document
-     * @param {Layer} layer
+     * @param {Immutable.List.<Layer>=} layers
      * @param {number} assetIndex index of this asset within the layer's list
      * @param {number} scale
      * @return {Promise}
      */
-    var updateLayerAssetScale = function (document, layer, assetIndex, scale) {
-        return this.transfer(updateExportAsset, document, layer, assetIndex, { scale: scale || 1 });
+    var updateLayerAssetScale = function (document, layers, assetIndex, scale) {
+        return this.transfer(updateExportAsset, document, layers, assetIndex, { scale: scale || 1 });
     };
     updateLayerAssetScale.reads = [];
     updateLayerAssetScale.writes = [];
@@ -308,13 +356,13 @@ define(function (require, exports) {
      * Set the filename suffix of the asset specified by the given index
      *
      * @param {Document} document
-     * @param {Layer} layer
+     * @param {Immutable.List.<Layer>=} layers
      * @param {number} assetIndex index of this asset within the layer's list
      * @param {string} suffix
      * @return {Promise}
      */
-    var updateLayerAssetSuffix = function (document, layer, assetIndex, suffix) {
-        return this.transfer(updateExportAsset, document, layer, assetIndex, { suffix: suffix });
+    var updateLayerAssetSuffix = function (document, layers, assetIndex, suffix) {
+        return this.transfer(updateExportAsset, document, layers, assetIndex, { suffix: suffix });
     };
     updateLayerAssetSuffix.reads = [];
     updateLayerAssetSuffix.writes = [];
@@ -324,13 +372,13 @@ define(function (require, exports) {
      * Set the format of the asset specified by the given index
      *
      * @param {Document} document
-     * @param {Layer} layer
+     * @param {Immutable.List.<Layer>=} layers
      * @param {number} assetIndex index of this asset within the layer's list
      * @param {string} format (example: jpg)
      * @return {Promise}
      */
-    var updateLayerAssetFormat = function (document, layer, assetIndex, format) {
-        return this.transfer(updateExportAsset, document, layer, assetIndex, { format: format });
+    var updateLayerAssetFormat = function (document, layers, assetIndex, format) {
+        return this.transfer(updateExportAsset, document, layers, assetIndex, { format: format });
     };
     updateLayerAssetFormat.reads = [];
     updateLayerAssetFormat.writes = [];
@@ -349,19 +397,23 @@ define(function (require, exports) {
     var addAsset = function (document, documentExports, layers, props) {
         var updatePromise,
             exportsList,
-            layer,
             assetIndex,
-            _props;
+            _props,
+            _layers;
 
-        if (layers && layers.size > 0) {
-            // temp until we find a better way to handle more layers...
-            layer = layers.first();
-            exportsList = layer && documentExports && documentExports.layerExportsMap.get(layer.id);
-        } else {
-            exportsList = documentExports && documentExports.rootExports;
+        if (documentExports) {
+            if (layers && layers.size > 0) {
+                exportsList = documentExports.getUniformAssetOnly(layers);
+                assetIndex = documentExports.getLastUniformAssetIndex(layers) + 1;
+                _layers = layers;
+            } else {
+                exportsList = documentExports.rootExports;
+                assetIndex = exportsList.size;
+            }
         }
 
         if (!props) {
+            // find the next scale in the list that doesn't already exist
             var existingScales = (exportsList && collection.pluck(exportsList, "scale")) || Immutable.List(),
                 remainingScales = collection.difference(ExportAsset.SCALES, existingScales),
                 nextScale = remainingScales.size > 0 ? remainingScales.first() : ExportAsset.SCALES.first();
@@ -371,13 +423,11 @@ define(function (require, exports) {
             _props = props;
         }
 
-        assetIndex = exportsList && exportsList.size || 0;
-
-        // If this is the first layer-level asset, ensure that the layer is exportEnabled
-        if (assetIndex === 0 && layer && !layer.exportEnabled) {
+        // For layer-level exports, force exportEnabled=true before adding assets?
+        if (_layers) {
             var payload = {
                 documentID: document.id,
-                layerIDs: [layer.id],
+                layerIDs: collection.pluck(_layers, "id"),
                 exportEnabled: true
             };
             updatePromise = this.dispatchAsync(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload);
@@ -389,34 +439,41 @@ define(function (require, exports) {
         return updatePromise
             .bind(this)
             .then(function () {
-                return this.transfer(updateExportAsset, document, layer, assetIndex, _props);
+                return _insertAssetsAtIndex.call(this, document, _layers, assetIndex, _props);
             });
     };
-    addAsset.reads = [];
-    addAsset.writes = [];
-    addAsset.transfers = [updateExportAsset];
+    addAsset.reads = [locks.JS_DOC];
+    addAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
+    addAsset.transfers = [];
 
     /**
      * Delete the Export Asset configuration specified by the given index
      *
      * @param {Document} document
-     * @param {Layer} layer
+     * @param {Immutable.Iterable.<Layer>=} layers
      * @param {number} assetIndex index of this asset within the layer's list
      * @return {Promise}
      */
-    var deleteExportAsset = function (document, layer, assetIndex) {
+    var deleteExportAsset = function (document, layers, assetIndex) {
         var documentID = document.id,
-            layerID = layer ? layer.id : null,
+            layerIDs = layers ? collection.pluck(layers, "id") : null,
             payload = {
                 documentID: documentID,
-                layerID: layerID,
+                layerIDs: layerIDs,
                 assetIndex: assetIndex
             };
 
         return this.dispatchAsync(events.export.DELETE_ASSET, payload)
             .bind(this)
             .then(function () {
-                return _syncExportMetadata.call(this, documentID, layerID);
+                if (layers) {
+                    // TODO this should be handled as a batch
+                    return Promise.all(layers.map(function (layer) {
+                        return _syncExportMetadata.call(this, documentID, layer.id);
+                    }, this).toArray());
+                } else {
+                    return _syncExportMetadata.call(this, documentID, null);
+                }
             });
     };
     deleteExportAsset.reads = [locks.JS_DOC];

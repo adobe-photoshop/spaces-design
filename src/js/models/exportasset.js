@@ -102,6 +102,18 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Returns true if the provided ExportAsset has all the same core properties as this
+     *
+     * @param {ExportAsset} otherAsset
+     * @return {boolean}
+     */
+    ExportAsset.prototype.equalish = function (otherAsset) {
+        return this.scale === otherAsset.scale &&
+            this.suffix === otherAsset.suffix &&
+            this.format === otherAsset.format;
+    };
+
+    /**
      * Set the status to the "requested" status
      * @return {ExportAsset}
      */
@@ -173,6 +185,10 @@ define(function (require, exports, module) {
             { scale: 3, suffix: "xxhdpi" },
             { scale: 4, suffix: "xxxhdpi" }
         ]
+    };
+
+    ExportAsset.functionalComparator = function (a, b) {
+        return a && b && a.equalish(b);
     };
     
     module.exports = ExportAsset;

@@ -54,6 +54,7 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.RESET, this._deleteExports,
                 events.export.ASSET_CHANGED, this._assetUpdated,
+                events.export.ASSET_ADDED, this._assetAdded,
                 events.export.DELETE_ASSET, this._deleteAsset,
                 events.export.SET_AS_REQUESTED, this._setAssetsRequested,
                 events.export.SERVICE_STATUS_CHANGED, this._serviceStatusChanged,
@@ -124,7 +125,10 @@ define(function (require, exports, module) {
          * Missing props will be ignored
          * 
          * @private
-         * @param {{documentID: !number, layerIDs: number|Array.<number>, assetPropArray: Array.<object>}} payload 
+         * @param {object} payload
+         * @param {!number} payload.documentID
+         * @param {Immutable.Iterable.<number>=} payload.layerIDs
+         * @param {Array.<object>} payload.assetPropArray
          */
         _assetUpdated: function (payload) {
             var documentID = payload.documentID,
@@ -137,9 +141,8 @@ define(function (require, exports, module) {
             var curDocumentExports = this.getDocumentExports(documentID) || new DocumentExports(),
                 nextDocumentExports;
 
-            if (layerIDs || layerIDs === 0) {
-                var _layerIDs = Array.isArray(layerIDs) ? layerIDs : [layerIDs];
-                nextDocumentExports = curDocumentExports.mergeLayerAssets(_layerIDs, payload.assetPropsArray);
+            if (layerIDs) {
+                nextDocumentExports = curDocumentExports.mergeLayerAssets(layerIDs, payload.assetPropsArray);
             } else {
                 nextDocumentExports = curDocumentExports.mergeRootAssets(payload.assetPropsArray);
             }
@@ -151,16 +154,52 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Event handler: Insert export assets for the given document
+         * Given an array of props, splice them in to the existing layer or document asset list
+         * 
+         * @private
+         * @param {object} payload
+         * @param {!number} payload.documentID
+         * @param {Immutable.Iterable.<number>=} payload.layerIDs
+         * @param {Array.<object>} payload.assetPropArray
+         * @param {number} payload.assetIndex
+         */
+        _assetAdded: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                props = payload.assetPropsArray,
+                assetIndex = payload.assetIndex;
+
+            if (!documentID) {
+                throw new Error ("Can not update an asset without a valid documentID (%s)", documentID);
+            }
+
+            var curDocumentExports = this.getDocumentExports(documentID) || new DocumentExports(),
+                nextDocumentExports;
+
+            if (layerIDs) {
+                nextDocumentExports = curDocumentExports.spliceLayerAssets(layerIDs, props, assetIndex);
+            } else {
+                nextDocumentExports = curDocumentExports.spliceRootAssets(props, assetIndex);
+            }
+            
+            if (!curDocumentExports.equals(nextDocumentExports)) {
+                this._documentExportsMap = this._documentExportsMap.set(documentID, nextDocumentExports);
+                this.emit("change");
+            }
+        },
+
+        /**
          * Event handler: Delete an asset at the given index
-         * If layerID is provided, delete a layer's asset
+         * If layerIDs is provided, delete assets in layers with these IDs
          * Otherwise delete a root asset
          *
          * @private
-         * @param {{documentID: number, layerID: number=, assetIndex: number}} payload
+         * @param {{documentID: number, layerIDs: Immutable.Iterable.<number>=, assetIndex: number}} payload
          */
         _deleteAsset: function (payload) {
             var documentID = payload.documentID,
-                layerID = payload.layerID,
+                layerIDs = payload.layerIDs,
                 assetIndex = payload.assetIndex;
 
             if (!documentID || !Number.isFinite(assetIndex)) {
@@ -171,8 +210,8 @@ define(function (require, exports, module) {
             var curDocumentExports = this.getDocumentExports(documentID) || new DocumentExports(),
                 nextDocumentExports;
 
-            if (layerID || layerID === 0) {
-                nextDocumentExports = curDocumentExports.removeLayerAsset(layerID, assetIndex);
+            if (layerIDs) {
+                nextDocumentExports = curDocumentExports.removeLayerAsset(layerIDs, assetIndex);
             } else {
                 nextDocumentExports = curDocumentExports.removeRootAsset(assetIndex);
             }
