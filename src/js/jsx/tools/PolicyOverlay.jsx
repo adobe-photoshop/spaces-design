@@ -34,15 +34,18 @@ define(function (require, exports, module) {
     var UI = require("adapter/ps/ui");
 
     var PolicyOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("policy")],
+        mixins: [FluxMixin, StoreWatchMixin("policy", "ui")],
 
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 policyStore = flux.store("policy"),
-                pointerPolicies = policyStore.getMasterPointerPolicyList();
+                uiStore = flux.store("ui"),
+                pointerPolicies = policyStore.getMasterPointerPolicyList(),
+                canvasBounds = uiStore.getCloakRect();
 
             return {
-                policies: pointerPolicies
+                policies: pointerPolicies,
+                canvasBounds: canvasBounds
             };
         },
 
@@ -89,6 +92,7 @@ define(function (require, exports, module) {
                 .attr("transform", this.props.transformString);
 
             this.drawPolicies(this.state.policies);
+            this.drawCanvasBounds(this.state.canvasBounds);
         },
 
         /**
@@ -118,6 +122,28 @@ define(function (require, exports, module) {
                     }
                 }
             }, this);
+        },
+
+        /**
+         * Draws the canvas bounds as defined by the UI edges.
+         * 
+         * @param {?object} canvasBounds
+         */
+        drawCanvasBounds: function (canvasBounds) {
+            if (!canvasBounds) {
+                return;
+            }
+
+            this._scrimGroup
+                .append("rect")
+                .attr("x", canvasBounds.left)
+                .attr("y", canvasBounds.top)
+                .attr("width", canvasBounds.right - canvasBounds.left)
+                .attr("height", canvasBounds.bottom - canvasBounds.top)
+                .style("fill-opacity", "0.0")
+                .style("stroke", "hotpink")
+                .style("stroke-width", "4px")
+                .style("stroke-opacity", "1.0");
         },
 
         render: function () {
