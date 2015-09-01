@@ -24,6 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var os = require("adapter/os");
+
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
@@ -104,6 +106,8 @@ define(function (require, exports, module) {
 
         /**
          * When the controller is locked, mark the component as inactive.
+         *
+         * @private
          */
         _handleControllerLock: function () {
             this.setState({
@@ -113,11 +117,30 @@ define(function (require, exports, module) {
 
         /**
          * When the controller is unlocked, mark the component as active.
+         *
+         * @private
          */
         _handleControllerUnlock: function () {
             this.setState({
                 active: true
             });
+        },
+
+        /**
+         * Update the sizes of all the panels, including the toolbar.
+         *
+         * @private
+         */
+        _updatePanelSizes: function () {
+            if (this.state.active) {
+                var payload = {
+                    panelWidth: React.findDOMNode(this.refs.panelSet).clientWidth,
+                    headerHeight: React.findDOMNode(this.refs.docHeader).clientHeight,
+                    toolbarWidth: this.refs.toolbar.getToolbarWidth()
+                };
+
+                this.getFlux().actions.ui.updatePanelSizes(payload);
+            }
         },
 
         componentWillMount: function () {
@@ -129,22 +152,21 @@ define(function (require, exports, module) {
             this.props.controller.on("unlock", this._handleControllerUnlock);
         },
 
+        componentDidMount: function () {
+            os.addListener("displayConfigurationChanged", this._updatePanelSizes);
+        },
+
         componentWillUnmount: function () {
             window.document.body.removeEventListener("keydown", this._suppressBodyKeydown);
+            os.removeListener("displayConfigurationChanged", this._updatePanelSizes);
+
             this.props.controller.off("ready", this._handleControllerReady);
             this.props.controller.off("lock", this._handleControllerLock);
             this.props.controller.off("unlock", this._handleControllerUnlock);
         },
 
         componentDidUpdate: function () {
-            if (this.state.active) {
-                var payload = {
-                    panelWidth: React.findDOMNode(this.refs.panelSet).clientWidth,
-                    headerHeight: React.findDOMNode(this.refs.docHeader).clientHeight
-                };
-
-                this.getFlux().actions.ui.updatePanelSizes(payload);
-            }
+            this._updatePanelSizes();
         },
 
         render: function () {
@@ -164,6 +186,7 @@ define(function (require, exports, module) {
                     <Scrim
                         active={this.state.active} />
                     <Toolbar
+                        ref="toolbar"
                         active={this.state.active} />
                     <DocumentHeader
                         ref="docHeader"

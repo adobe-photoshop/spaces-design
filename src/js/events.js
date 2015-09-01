@@ -122,7 +122,6 @@ define(function (require, exports, module) {
         ui: {
             TRANSFORM_UPDATED: "transformUpdated",
             PANELS_RESIZED: "panelsResized",
-            TOOLBAR_PINNED: "toolbarPinned",
             TOGGLE_OVERLAYS: "toggleOverlays",
             SUPERSELECT_MARQUEE: "superselectMarquee"
         },

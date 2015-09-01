@@ -236,6 +236,7 @@ define(function (require, exports) {
      * Parse the panel size information and dispatch the PANELS_RESIZED ui event
      *
      * @private
+     * @param {{toolbarWidth: number=, panelWidth: number=, headerHeight: number=}} sizes
      * @return {Promise}
      */
     var updatePanelSizes = function (sizes) {
@@ -262,19 +263,11 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updateToolbarWidth = function (toolbarWidth) {
-        return this.dispatchAsync(events.ui.TOOLBAR_PINNED, { toolbarWidth: toolbarWidth })
-            .bind(this)
-            .then(function () {
-                var centerOffsets = this.flux.store("ui").getState().centerOffsets;
-                return adapterUI.setOverlayOffsets(centerOffsets);
-            })
-            .then(function () {
-                this.transfer(setOverlayCloaking);
-            });
+        return this.transfer(updatePanelSizes, { toolbarWidth: toolbarWidth });
     };
     updateToolbarWidth.reads = [];
-    updateToolbarWidth.writes = [locks.JS_UI, locks.PS_APP];
-    updateToolbarWidth.transfers = [setOverlayCloaking];
+    updateToolbarWidth.writes = [];
+    updateToolbarWidth.transfers = [updatePanelSizes];
     updateToolbarWidth.modal = true;
 
     /**
