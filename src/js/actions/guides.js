@@ -151,15 +151,15 @@ define(function (require, exports) {
             if (horizontal) {
                 guideArea = {
                     x: canvasBounds.left,
-                    y: guideTL.y - policyThickness - 1,
+                    y: Math.floor(guideTL.y - policyThickness - 1),
                     width: canvasBounds.right - canvasBounds.left,
-                    height: policyThickness * 2 + 1
+                    height: Math.ceil(policyThickness * 2 + 1)
                 };
             } else {
                 guideArea = {
-                    x: guideTL.x - policyThickness,
+                    x: Math.floor(guideTL.x - policyThickness - 1),
                     y: canvasBounds.top,
-                    width: policyThickness * 2 + 1,
+                    width: Math.ceil(policyThickness * 2 + 1),
                     height: canvasBounds.bottom - canvasBounds.top
                 };
             }
