@@ -183,7 +183,8 @@ define(function (require, exports, module) {
             { scale: 1.5, suffix: "hdpi" },
             { scale: 2, suffix: "xhdpi" },
             { scale: 3, suffix: "xxhdpi" },
-            { scale: 4, suffix: "xxxhdpi" }
+            { scale: 4, suffix: "xxxhdpi" },
+            { scale: 1, suffix: "", format: "svg" }
         ]
     };
 

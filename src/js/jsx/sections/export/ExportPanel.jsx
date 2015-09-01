@@ -240,7 +240,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Button
                                 className="button-iOS"
-                                title=""
+                                title={strings.TOOLTIPS.EXPORT_IOS_PRESETS}
                                 onClick={addIOSAssetClickHandler || _.noop}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
@@ -249,7 +249,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Button
                                 className="button-xdpi"
-                                title=""
+                                title={strings.TOOLTIPS.EXPORT_HDPI_PRESETS}
                                 onClick={addHDPIAssetClickHandler || _.noop}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
