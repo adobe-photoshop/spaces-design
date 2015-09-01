@@ -49,7 +49,7 @@ define(function (require, exports, module) {
             this._lastAngle = 0;
         },
 
-        /*
+        /**
          * Force a re-render on undo/redo.
          *
          * @private

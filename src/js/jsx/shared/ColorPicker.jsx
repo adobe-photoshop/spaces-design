@@ -547,6 +547,7 @@ define(function (require, exports, module) {
             };
         },
 
+        /** @ignore */
         setColor: function (color, quiet) {
             var hsva = this._getHSVA(color);
             this._update(hsva, quiet);
@@ -566,7 +567,7 @@ define(function (require, exports, module) {
          * Get the luminosity of the current color.
          * 
          * @private
-         * return {number} The luminosity in [0,1].
+         * @return {number} The luminosity in [0,1].
          */
         _getLuminosity: function () {
             var brightness = tinycolor(this.state.color.toJS())

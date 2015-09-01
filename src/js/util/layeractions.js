@@ -54,7 +54,7 @@ define(function (require, exports) {
             // discard the -1 values, those are related to selection actions
             if (destinationIndex >= 0) {
                 if (!layerActions.has(destinationIndex)) {
-                    throw new Error ("Could not find index " + destinationIndex + " in layerActions");
+                    throw new Error("Could not find index " + destinationIndex + " in layerActions");
                 }
                 var layerAction = layerActions.get(destinationIndex);
                 if (_.isArray(layerAction.playObject)) {

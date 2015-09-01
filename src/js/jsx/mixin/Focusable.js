@@ -52,6 +52,7 @@ define(function (require, exports, module) {
     var _keyboardPolicy = null;
 
     module.exports = {
+        /** @ignore */
         acquireFocus: function () {
             this.getFlux().actions.policy.addKeyboardPolicies(keyboardPolicyList)
                 .then(function (policy) {
@@ -64,6 +65,7 @@ define(function (require, exports, module) {
                 log.error("Failed to acquire keyboard focus:", message);
             });
         },
+        /** @ignore */
         releaseFocus: function () {
             if (_keyboardPolicy) {
                 this.getFlux().actions.policy.removeKeyboardPolicies(_keyboardPolicy);

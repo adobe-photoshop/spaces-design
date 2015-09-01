@@ -42,15 +42,15 @@ define(function (require, exports, module) {
 
     /**
      * @private
-     * @type {Array.<{test: function (object): boolean,
-     *  response: {err: ?object, result: object=} | function(object): {err: ?object, result: object=}>}
+     * @type {Array.<object>|function} Array.<{test: function (object): boolean, 
+     * response: {err: ?object, result: object=} or function(object): {err: ?object, result: object=}>
      */
     SpacesMock.prototype._getMocks = null;
 
     /**
      * @private
-     * @type {Array.<{test: function (string, object): boolean,
-     *  response: {err: ?object, result: object=} | function(object): {err: ?object, result: object=}>}
+     * @type {Array.<object>|function} Array.<{test: function (string, object): boolean, 
+     * response: {err: ?object, result: object=} or function(object): {err: ?object, result: object=}>
      */
     SpacesMock.prototype._playMocks = null;
 

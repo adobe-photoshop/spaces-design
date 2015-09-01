@@ -73,7 +73,7 @@ define(function (require, exports, module) {
      * @private
      * @param {string} moduleName1
      * @param {string} moduleName2
-     * @return number
+     * @return {number}
      */
     var _actionModuleComparator = function (moduleName1, moduleName2) {
         var module1 = actionIndex[moduleName1],

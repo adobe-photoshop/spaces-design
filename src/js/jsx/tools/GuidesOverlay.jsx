@@ -136,7 +136,9 @@ define(function (require, exports, module) {
             this.drawGuideEdges();
         },
 
-        // Draws the guide edge areas
+        /**
+         * Draws the guide edge areas
+         */
         drawGuideEdges: function () {
             var uiStore = this.getFlux().store("ui"),
                 canvasBounds = uiStore.getCloakRect();

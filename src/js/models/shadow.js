@@ -65,7 +65,7 @@ define(function (require, exports, module) {
      * @param {number} x x coordinate in pixels
      * @param {number} y y coordinate in pixels
      *
-     * @return {{distance: number, angle: number}} object containing distance in pixels and angle in degrees
+     * @return {?{distance: number, angle: number}} object containing distance in pixels and angle in degrees
      */
     var _calculatePolarCoords = function (x, y) {
         if (!_.isNumber(x) || !_.isNumber(y)) {

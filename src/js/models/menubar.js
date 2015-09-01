@@ -274,7 +274,7 @@ define(function (require, exports, module) {
     /**
      * Incorporates artboard templates into the menu and menu actions
      * 
-     * @privates
+     * @private
      * @param {object} menus
      * @param {object} actions
      * @param {Array.<object>} templates

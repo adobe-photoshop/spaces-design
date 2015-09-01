@@ -58,7 +58,7 @@ define(function (require, exports) {
      *
      * @private
      * @param {Array.<string>} categories
-     * @return {string}
+     * @return {?string}
     */
     var getSVGClassFromLayerCategories = function (categories) {
         if (categories.length === 0) {

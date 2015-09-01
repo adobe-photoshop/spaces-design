@@ -99,13 +99,13 @@ define(function (require, exports) {
         }, Immutable.List());
     };
 
-    /*
+    /**
      * Find SVG class for library item based on what type of asset it is
      *
      * @private
      * @param {Array.<string>} categories 
      * @return {string}
-    */
+     */
     var _getSVGClass = function (categories) {
         var type = categories[categories.length - 1],
             // map from item categories to svg icon class name
@@ -123,7 +123,7 @@ define(function (require, exports) {
      *
      * @private
      * @param {string} id ID of layer to select
-    */
+     */
     var _confirmSearch = function (id) {
         var elementInfo = _idMap[id],
             appStore = this.flux.store("application"),

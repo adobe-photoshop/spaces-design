@@ -39,7 +39,8 @@ define(function (require, exports, module) {
     /**
      * The ID of the option display when there are no other valid results
      *
-     * @const {string}
+     * @const
+     * @type {string}
      */
     var PLACEHOLDER_ID = "NO_OPTIONS-placeholder";
 
@@ -335,6 +336,7 @@ define(function (require, exports, module) {
             return optionList;
         },
 
+        /** @ignore */
         _handleDialogClick: function (event) {
             this.refs.datalist.removeAutofillSuggestion();
             event.stopPropagation();
@@ -360,6 +362,7 @@ define(function (require, exports, module) {
             }
         },
 
+        /** @ignore */
         _handleKeyDown: function (event) {
             switch (event.key) {
                 case "Return":
@@ -384,6 +387,7 @@ define(function (require, exports, module) {
             }
         },
 
+        /** @ignore */
         _clearInput: function () {
             this._updateFilter(null);
             this._updateDatalistInput(null);

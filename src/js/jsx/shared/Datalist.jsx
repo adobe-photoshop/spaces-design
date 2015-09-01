@@ -341,6 +341,7 @@ define(function (require, exports, module) {
             }
         },
 
+        /** @ignore */
         _handleSelectClose: function (event, action) {
             if (this.props.autoSelect) {
                 this._handleSelectClick(event, action);

@@ -56,7 +56,7 @@ define(function (require, exports) {
      * 
      * @private
      * @param {HTMLElement} el
-     * @return boolean
+     * @return {boolean}
      */
     var _isInput = function (el) {
         return el instanceof window.HTMLInputElement;
@@ -67,7 +67,7 @@ define(function (require, exports) {
      * 
      * @private
      * @param {HTMLInputElement} el
-     * @return boolean
+     * @return {boolean}
      */
     var _isTextInput = function (el) {
         switch (el.type) {

@@ -212,6 +212,7 @@ define(function (require, exports, module) {
             return this._getNextPrevDocument(false);
         },
         
+        /** @ignore */
         setHostVersion: function (payload) {
             var parts = [
                 payload.versionMajor,

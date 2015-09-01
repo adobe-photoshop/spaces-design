@@ -36,15 +36,21 @@ define(function (require, exports, module) {
                 events.example.SYNC_ACTION, this.setCounter
             );
         },
+
         getState: function () {
             return {
                 time: this.elapsedTime
             };
         },
+        
+        /** @ignore */
         start: function () {
             this.elapsedTime = null;
             this.startTime = new Date().getTime();
         },
+
+        
+        /** @ignore */
         success: function () {
             var stopTime = new Date().getTime();
 
@@ -52,6 +58,8 @@ define(function (require, exports, module) {
             this.startTime = null;
             this.emit("change");
         },
+        
+        /** @ignore */
         fail: function () {
             this.elapsedTime = null;
             this.startTime = null;
@@ -59,6 +67,8 @@ define(function (require, exports, module) {
         },
         startTime: null,
         elapsedTime: null,
+        
+        /** @ignore */
         setCounter: function (payload) {
             var counter = payload.count;
             this.counter = counter;

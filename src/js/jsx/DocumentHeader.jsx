@@ -57,6 +57,7 @@ define(function (require, exports, module) {
             };
         },
 
+        /** @ignore */
         _updateTabContainerScroll: function () {
             var currentTab = window.document.querySelector(".document-title__current");
             if (currentTab) {
@@ -96,7 +97,7 @@ define(function (require, exports, module) {
             this._updateTabContainerScroll();
         },
 
-        /*
+        /**
          * Update the state with the size of the header element on resize
          */
         _handleWindowResize: function () {
@@ -105,6 +106,7 @@ define(function (require, exports, module) {
             });
         },
         
+        /** @ignore */
         _handleTabClick: function (documentID) {
             var selectedDoc = this.getFlux().store("document").getDocument(documentID);
             if (selectedDoc) {

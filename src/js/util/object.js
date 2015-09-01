@@ -127,7 +127,7 @@ define(function (require, exports) {
      * Memoize a lookup function.
      * 
      * @param {function()} lookup Un-memoized lookup function.
-     * @return {function()} Memoized lookup function.
+     * @return {{ value: function }} Memoized lookup function.
      */
     var cachedLookupSpec = function (lookup) {
         var privateCacheName = window.Symbol();

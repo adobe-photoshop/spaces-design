@@ -189,7 +189,7 @@ define(function (require, exports, module) {
          * Remove a single document model for the given document ID
          *
          * @private
-         * @param {{documentID: number} payload
+         * @param {{documentID: number}} payload
          */
         _closeDocument: function (payload) {
             var documentID = payload.documentID;
@@ -290,7 +290,7 @@ define(function (require, exports, module) {
          * Reset the given layer models.
          *
          * @private
-         * @param {{documentID: number, layers: Immutable.Iterable.<{layerID: number, descriptor: object}>} payload
+         * @param {{documentID: number, layers: Immutable.Iterable.<{layerID: number, descriptor: object}>}} payload
          */
         _handleLayerReset: function (payload) {
             var documentID = payload.documentID,
@@ -306,7 +306,7 @@ define(function (require, exports, module) {
          * Reset the given layer bounds models.
          *
          * @private
-         * @param {{documentID: number, layers: Immutable.Iterable.<{layerID: number, descriptor: object}>} payload
+         * @param {{documentID: number, layers: Immutable.Iterable.<{layerID: number, descriptor: object}>}} payload
          */
         _handleBoundsReset: function (payload) {
             var documentID = payload.documentID,
@@ -660,7 +660,7 @@ define(function (require, exports, module) {
          * Update the proportional flag of affected layers
          *
          * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, propotional: bool} payload
+         * @param {{documentID: number, layerIDs: Array.<number>, propotional: bool}} payload
          */
         _handleSetLayersProportional: function (payload) {
             var documentID = payload.documentID,
@@ -1044,7 +1044,7 @@ define(function (require, exports, module) {
          * Updates a guide with new information, or creates a new guide
          * 
          * @private
-         * @param {{documentID: number, index: number, guide: object} payload
+         * @param {{documentID: number, index: number, guide: object}} payload
          */
         _handleGuideSet: function (payload) {
             var documentID = payload.documentID,

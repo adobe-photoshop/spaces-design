@@ -31,7 +31,7 @@ define(function (require, exports) {
      * @constructor
      * @param {!number} action
      * @param {!number} eventKind
-     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}}=} modifiers
+     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}=} modifiers
      */
     var BaseEventPolicy = function (action, eventKind, modifiers) {
         this.action = action;
@@ -77,7 +77,7 @@ define(function (require, exports) {
      * @constructor
      * @param {!number} action
      * @param {!number} event
-     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}}=} modifiers
+     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}=} modifiers
      * @param {number=|string=} key
      */
     var KeyboardEventPolicy = function (action, event, modifiers, key) {
@@ -105,7 +105,7 @@ define(function (require, exports) {
      * @constructor
      * @param {!number} action
      * @param {!number} event
-     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}}=} modifiers
+     * @param {{shift: boolean, control: boolean, alt: boolean, command: boolean}=} modifiers
      * @param {{x: number, y: number, width: number, height: number}=} area
      */
     var PointerEventPolicy = function (action, event, modifiers, area) {

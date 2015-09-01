@@ -248,6 +248,7 @@ define(function (require, exports) {
      *
      * @param {{id: number}} document Document model or object containing document ID
      * @param {number} index Index of the guide to be deleted
+     * @param {object} options
      * @param {boolean=} options.sendChanges If true, will call the action descriptor to delete the guide from PS
      *
      * @return {Promise}

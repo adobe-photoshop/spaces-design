@@ -126,7 +126,7 @@ define(function (require, exports, module) {
          * Parses the input string to a valid number
          *
          * @param {string} rawValue value of the input field
-         * @return {number} Value of the input field as a number or null if invalid
+         * @return {?number} Value of the input field as a number or null if invalid
          */
         _extractValue: function (rawValue) {
             if (this.props.special && rawValue === this.props.special) {
@@ -152,7 +152,7 @@ define(function (require, exports, module) {
             }
         },
         
-        /*
+        /**
          * Formats the number value into a string
          *
          * @param {?number|Immutable.Iterable.<number>} value Value of the input

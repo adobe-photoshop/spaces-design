@@ -146,7 +146,7 @@ define(function (require, exports, module) {
      * @param {object?} descriptor.pathBounds If available, will be parsed as shape layer
      * @param {object?} descriptor.boundsNoEffects Bounds object available for all layers
      *
-     * @return {{top: number, left: number, bottom: number, right: number}}
+     * @return {?{top: number, left: number, bottom: number, right: number}}
      */
     Bounds.parseLayerDescriptor = function (descriptor) {
         var boundsObject;
@@ -228,7 +228,7 @@ define(function (require, exports, module) {
      *
      * @param {Bounds} boundsOne
      * @param {Bounds} boundsTwo
-     * @return {Bounds} Intersection of boundsOne and boundsTwo
+     * @return {?Bounds} Intersection of boundsOne and boundsTwo
      */
     Bounds.intersection = function (boundsOne, boundsTwo) {
         if (!boundsOne || !boundsTwo) {

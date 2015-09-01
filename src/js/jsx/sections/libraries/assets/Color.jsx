@@ -53,6 +53,7 @@ define(function (require, exports, module) {
         },
 
         // Grabbed from CC-libraries-panel
+        /** @ignore */
         _getStringColorValue: function (color) {
             var result;
             if (color) {

@@ -89,6 +89,7 @@ define(function (require, exports, module) {
             );
         },
 
+        /** @ignore */
         handleClick: function (newSelected, event) {
             if (this.props.onClick) {
                 this.props.onClick(event, newSelected);
