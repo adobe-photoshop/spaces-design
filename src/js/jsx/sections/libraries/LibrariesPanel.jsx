@@ -120,8 +120,8 @@ define(function (require, exports, module) {
                 );
             } else {
                 containerContents = (
-                    <div className="libraries__content libraries__info">
-                        <div className="libraries__info__body">
+                    <div className="libraries__content panel__info">
+                        <div className="panel__info__body">
                             {strings.LIBRARIES.NO_CONNECTION}
                         </div>
                     </div>

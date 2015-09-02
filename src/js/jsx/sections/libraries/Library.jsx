@@ -192,14 +192,14 @@ define(function (require, exports, module) {
 
             if (!library || library.elements.length === 0) {
                 return (
-                    <div className="libraries__content libraries__info">
-                        <div className="libraries__info__title">
+                    <div className="libraries__content panel__info">
+                        <div className="panel__info__title">
                             {strings.LIBRARIES.INTRO_TITLE}
                         </div>
-                        <div className="libraries__info__body">
+                        <div className="panel__info__body">
                             {strings.LIBRARIES.INTRO_BODY}
                         </div>
-                        <div className="libraries__info__link">
+                        <div className="panel__info__link">
                             <a href="#" onClick={ui.openURL.bind(null, strings.LIBRARIES.INTRO_URL)}>
                                 {strings.LIBRARIES.INTRO_LINK_TITLE}
                             </a>
