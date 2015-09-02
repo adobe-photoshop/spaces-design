@@ -90,13 +90,13 @@ define(function (require, exports, module) {
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.TAB),
             enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER),
-            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
-            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN),
-            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT),
-            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT);
 
         this.keyboardPolicyList = [
@@ -237,8 +237,7 @@ define(function (require, exports, module) {
             return;
         }
 
-        var detail = event.detail,
-            direction = "";
+        var detail = event.detail;
 
         switch (detail.keyCode) {
         case OS.eventKeyCode.ESCAPE: // Escape
@@ -252,23 +251,6 @@ define(function (require, exports, module) {
         case OS.eventKeyCode.ENTER: // Enter
             flux.actions.superselect.diveIn(currentDocument);
             break;
-        case OS.eventKeyCode.ARROW_UP:
-            direction = "up";
-            break;
-        case OS.eventKeyCode.ARROW_DOWN:
-            direction = "down";
-            break;
-        case OS.eventKeyCode.ARROW_LEFT:
-            direction = "left";
-            break;
-        case OS.eventKeyCode.ARROW_RIGHT:
-            direction = "right";
-            break;
-        }
-
-        if (direction !== "") {
-            var bigStep = detail.modifiers.shift;
-            flux.actions.transform.nudgeLayersThrottled(direction, bigStep);
         }
 
         if (detail.keyChar === " ") {

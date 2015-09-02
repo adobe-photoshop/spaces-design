@@ -1129,6 +1129,7 @@ define(function (require, exports) {
 
         descriptor.addListener("transform", _layerTransformHandler);
         descriptor.addListener("move", _layerTransformHandler);
+        descriptor.addListener("nudge", _layerTransformHandler);
         descriptor.addListener("editArtboardEvent", _artboardTransformHandler);
         return Promise.resolve();
     };
@@ -1141,6 +1142,7 @@ define(function (require, exports) {
     var onReset = function () {
         descriptor.removeListener("transform", _layerTransformHandler);
         descriptor.removeListener("move", _layerTransformHandler);
+        descriptor.removeListener("nudge", _layerTransformHandler);
         descriptor.removeListener("editArtboardEvent", _artboardTransformHandler);
 
         return Promise.resolve();
