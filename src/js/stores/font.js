@@ -146,31 +146,31 @@ define(function (require, exports, module) {
                     psObj = fontRecord.get(fontObj.font, null);
 
                 if (!psObj) {
-                    throw new Error("The font for layer is not available!");
-                }
+                    log.warn("The font for layer is not available!");
+                } else {
+                    obj.adbeFont = {
+                        family: fontObj.family,
+                        name: fontObj.font,
+                        postScriptName: psObj.postScriptName,
+                        style: psObj.style
+                    };
 
-                obj.adbeFont = {
-                    family: fontObj.family,
-                    name: fontObj.font,
-                    postScriptName: psObj.postScriptName,
-                    style: psObj.style
-                };
+                    obj.fontFamily = fontObj.family;
 
-                obj.fontFamily = fontObj.family;
+                    var style = psObj.style.toLowerCase();
+                    if (style.indexOf("italic") !== -1) {
+                        obj.fontStyle = "italic";
+                    } else if (style.indexOf("oblique") !== -1) {
+                        obj.fontStyle = "oblique";
+                    }
 
-                var style = psObj.style.toLowerCase();
-                if (style.indexOf("italic") !== -1) {
-                    obj.fontStyle = "italic";
-                } else if (style.indexOf("oblique") !== -1) {
-                    obj.fontStyle = "oblique";
-                }
+                    if (style.indexOf("bold") !== -1) {
+                        obj.fontWeight = "bold";
+                    }
 
-                if (style.indexOf("bold") !== -1) {
-                    obj.fontWeight = "bold";
-                }
-
-                if (style.indexOf("light") !== -1 || style.indexOf("thin") !== -1) {
-                    obj.fontWeight = "lighter";
+                    if (style.indexOf("light") !== -1 || style.indexOf("thin") !== -1) {
+                        obj.fontWeight = "lighter";
+                    }
                 }
             }
 
