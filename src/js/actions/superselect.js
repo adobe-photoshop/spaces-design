@@ -703,6 +703,10 @@ define(function (require, exports) {
      */
     var marqueeSelect = function (doc, ids, add) {
         this.dispatch(events.ui.SUPERSELECT_MARQUEE, { enabled: false });
+
+        if (!ids) {
+            return Promise.resolve();
+        }
         
         var layers = Immutable.List(ids.map(doc.layers.byID.bind(doc.layers))),
             modifier = add ? "add" : "select";

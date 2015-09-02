@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var _ = require("lodash");
+    var _ = require("lodash"),
+        Promise = require("bluebird");
 
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
@@ -35,6 +36,7 @@ define(function (require, exports, module) {
     var Tool = require("js/models/tool"),
         VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type"),
+        events = require("js/events"),
         system = require("js/util/system"),
         shortcuts = require("js/util/shortcuts"),
         SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay"),
@@ -68,10 +70,14 @@ define(function (require, exports, module) {
             };
 
             return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
+                .bind(this)
                 .then(function () {
-                    UI.setPointerPropagationMode({
-                        defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY
-                    });
+                    var propMode = UI.setPointerPropagationMode({
+                            defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY
+                        }),
+                        marquee = this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { enabled: false });
+
+                    return Promise.join(propMode, marquee);
                 });
         };
 
