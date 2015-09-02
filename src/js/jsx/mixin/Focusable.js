@@ -54,24 +54,45 @@ define(function (require, exports, module) {
     module.exports = {
         /** @ignore */
         acquireFocus: function () {
-            this.getFlux().actions.policy.addKeyboardPolicies(keyboardPolicyList)
-                .then(function (policy) {
-                    _keyboardPolicy = policy;
+            return OS.acquireKeyboardFocus()
+                .bind(this)
+                .then(function () {
+                    if (_keyboardPolicy) {
+                        return;
+                    }
+
+                    var flux = this.getFlux();
+                    if (!flux.store("tool").getModalToolState()) {
+                        return;
+                    }
+
+                    return flux.actions.policy.addKeyboardPolicies(keyboardPolicyList)
+                        .bind(this)
+                        .then(function (policy) {
+                            _keyboardPolicy = policy;
+                        });
+                })
+                .catch(function (err) {
+                    var message = err instanceof Error ? (err.stack || err.message) : err;
+
+                    log.error("Failed to acquire keyboard focus:", message);
                 });
-
-            return OS.acquireKeyboardFocus().catch(function (err) {
-                var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                log.error("Failed to acquire keyboard focus:", message);
-            });
         },
         /** @ignore */
         releaseFocus: function () {
+            var keyboardPolicy;
             if (_keyboardPolicy) {
-                this.getFlux().actions.policy.removeKeyboardPolicies(_keyboardPolicy);
+                keyboardPolicy = _keyboardPolicy;
+                _keyboardPolicy = null;
             }
-            
+
             return OS.releaseKeyboardFocus()
+                .bind(this)
+                .then(function () {
+                    if (keyboardPolicy) {
+                        return this.getFlux().actions.policy.removeKeyboardPolicies(keyboardPolicy);
+                    }
+                })
                 .catch(function (err) {
                     var message = err instanceof Error ? (err.stack || err.message) : err;
 
