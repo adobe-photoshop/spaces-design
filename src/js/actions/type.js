@@ -595,7 +595,7 @@ define(function (require, exports) {
 
         this.dispatchAsync(events.style.HIDE_HUD);
         
-        return descriptor.playObject(applyObj, options)
+        return layerActionsUtil.playSimpleLayerActions(document, targetLayers, applyObj, true, options)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);

@@ -35,13 +35,13 @@ define(function (require, exports) {
         layerEffectAdapter = require("adapter/lib/layerEffect"),
         textLayerAdapter = require("adapter/lib/textLayer"),
         libraryAdapter = require("adapter/lib/libraries"),
-        path = require("js/util/path"),
         os = require("adapter/os");
 
-    var events = require("../events"),
-        locks = require("../locks"),
+    var events = require("js/events"),
+        locks = require("js/locks"),
         strings = require("i18n!nls/strings"),
         pathUtil = require("js/util/path"),
+        log = require("js/util/log"),
         layerActionsUtil = require("js/util/layeractions"),
         collection = require("js/util/collection"),
         layerActions = require("./layers"),
@@ -158,7 +158,7 @@ define(function (require, exports) {
         var tempName = (new Date().getTime()).toString();
             
         return os.getTempFilename(tempName).then(function (tempFilePath) {
-            var tempBasePath = path.dirname(tempFilePath.path),
+            var tempBasePath = pathUtil.dirname(tempFilePath.path),
                 tempPreviewPath = [tempBasePath, pathUtil.sep, tempName, ".png"].join("");
             
             /*
@@ -319,6 +319,11 @@ define(function (require, exports) {
         var typeData = fontStore.getTypeObjectFromLayer(currentLayer),
             tempPreviewPath;
         
+        if (!typeData.adbeFont) {
+            log.warn("Can't create character style from mixed type layers!");
+            return Promise.resolve();
+        }
+
         return _getTempPaths()
             .bind(this)
             .then(function (paths) {
