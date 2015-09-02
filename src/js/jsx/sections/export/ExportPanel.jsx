@@ -177,10 +177,6 @@ define(function (require, exports, module) {
                 // don't support exports of the background
                 containerContents = null;
                 disabled = true;
-            } else if (document.layers.selected.size === 0 && document.layers.hasArtboard) {
-                // don't support document exports when artboards
-                containerContents = null;
-                disabled = true;
             } else {
                 var selectedLayers = this.props.document.layers.selected;
 
