@@ -50,14 +50,13 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings"),
+        global = require("js/util/global"),
         Bounds = require("js/models/bounds");
 
     var templatesJSON = require("text!static/templates.json"),
         templates = JSON.parse(templatesJSON);
 
     var PS_MAX_NEST_DEPTH = 9;
-
-    var EXTENSION_DATA_NAMESPACE = "designSpace";
 
     /**
      * Properties to be included when requesting layer
@@ -155,13 +154,15 @@ define(function (require, exports) {
         // Always start with index 1 because when a document consists only of a background layer (index 0), 
         // the photoshop action will fail.
         // And it is safe to ignore ALL bg layers because we don't use extension data on them
-        var indexRange = _.range(1, startIndex + numberOfLayers),
+        var nameSpace = global.EXTENSION_DATA_NAMESPACE,
+            indexRange = _.range(1, startIndex + numberOfLayers),
             extensionPlayObjects = indexRange.map(function (i) {
-                return layerLib.getExtensionData(docRef, layerLib.referenceBy.index(i), EXTENSION_DATA_NAMESPACE);
+                var layerRef = layerLib.referenceBy.index(i);
+                return layerLib.getExtensionData(docRef, layerRef, nameSpace);
             }),
             extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
                 .map(function (extensionData) {
-                    var extensionDataRoot = extensionData[EXTENSION_DATA_NAMESPACE];
+                    var extensionDataRoot = extensionData[nameSpace];
                     return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
                 })
                 .then(function (extensionDataArray) {

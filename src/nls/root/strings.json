@@ -234,6 +234,7 @@
         "LIBRARY_VIEW_ON_WEBSITE": "View on Website",
         "LIBRARY_CLICK_TO_APPLY": "Click to apply",
         "LIBRARY_DELETE": "Delete",
+        "EXPORT_EXPORT_ASSETS": "Export these assets",
         "EXPORT_ADD_ASSET": "Add export asset",
         "EXPORT_REMOVE_ASSET": "Remove asset configuration"
     },

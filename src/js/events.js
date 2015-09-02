@@ -111,7 +111,7 @@ define(function (require, exports, module) {
         },
         export: {
             ASSET_CHANGED: "exportAssetChanged",
-            DELETE_LAYER_ASSET: "exportDeleteLayerAsset",
+            DELETE_ASSET: "exportDeleteLayerAsset",
             SERVICE_STATUS_CHANGED: "exportServiceStatusChanged",
             SET_AS_REQUESTED: "exportSetStatusRequested"
         },

@@ -29,6 +29,7 @@ define(function (require, exports) {
 
     var descriptor = require("adapter/ps/descriptor"),
         layerLib = require("adapter/lib/layer"),
+        documentLib = require("adapter/lib/document"),
         generatorLib = require("adapter/lib/generator"),
         preferenceLib = require("adapter/lib/preference");
 
@@ -40,14 +41,9 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
         log = require("js/util/log"),
+        global = require("js/util/global"),
         ExportAsset = require("js/models/exportasset"),
         ExportService = require("js/util/exportservice");
-
-    /**
-     * Export metadata is stored in the "extension" data structure in Ps, using this as the namespace
-     * @type {string}
-     */
-    var EXTENSION_DATA_NAMESPACE = "designSpace";
 
     /**
      * An instance of the ExportService utility used to communicate with the generator plugin
@@ -65,7 +61,8 @@ define(function (require, exports) {
 
     /**
      * Fetch relevant data from both the document and export stores, and sync the metadata to
-     * the photoshop layer "extension data"
+     * the photoshop "extension data".  If layerID is not supplied, then only document level 
+     * metadata is synced
      *
      * Note that the underlying adapter API to setExtensionData requires the full data structure to be supplied
      * which is why we are always fetching directly from both stores prior to calling setExtensionData
@@ -74,26 +71,67 @@ define(function (require, exports) {
      *
      * @private
      * @param {number} documentID
-     * @param {number} layerID
+     * @param {number=} layerID Optional. If not supplied, sync doc-level metadata
      * @return {Promise}
      */
-    var _syncLayerExportMetadata = function (documentID, layerID) {
+    var _syncExportMetadata = function (documentID, layerID) {
         var documentExports = this.flux.stores.export.getDocumentExports(documentID),
-            layerExports = documentExports && documentExports.getLayerExports(layerID),
-            layerExportsArray = layerExports && layerExports.toJS(),
-            document = this.flux.stores.document.getDocument(documentID),
-            layer = document && document.layers.byID(layerID),
-            exportEnabled = document && layer && layer.exportEnabled;
+            exportsMetadata,
+            playObject;
 
-        var exportsMetadata = {
-            exportAssets: layerExportsArray,
-            exportEnabled: exportEnabled === undefined ? false : exportEnabled
-        };
+        if (layerID || layerID === 0) {
+            var layerExports = documentExports && documentExports.getLayerExports(layerID),
+                layerExportsArray = layerExports && layerExports.toJS() || [],
+                document = this.flux.stores.document.getDocument(documentID),
+                layer = document && document.layers.byID(layerID),
+                exportEnabled;
 
-        var playObject = layerLib.setExtensionData(documentID,
-                layerID, EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata);
+            if (!document || !layer) {
+                throw new Error("Could not sync export metadata for doc:" + documentID + ", layer:" + layerID);
+            }
+
+            exportEnabled = layer.exportEnabled;
+
+            exportsMetadata = {
+                exportAssets: layerExportsArray,
+                exportEnabled: !!exportEnabled
+            };
+
+            // set layer extension data
+            playObject = layerLib.setExtensionData(documentID,
+                layerID, global.EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata);
+        } else {
+            var rootExports = documentExports && documentExports.rootExports,
+            rootExportsArray = rootExports && rootExports.toJS() || [];
+
+            exportsMetadata = {
+                exportAssets: rootExportsArray
+            };
+
+            // set document extension data
+            playObject = documentLib.setExtensionData(documentID,
+                global.EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata);
+        }
 
         return descriptor.playObject(playObject);
+    };
+
+    /**
+     * Update the status of all assets that are being requested
+     * This update does not get synced to PS metadata
+     *
+     * @param {number} documentID
+     * @param {Immutable.Iterable.<number>=} layerIDs
+     * @return {Promise}
+     */
+    var _setAssetsRequested = function (documentID, layerIDs) {
+        var payload = { documentID: documentID };
+
+        if (layerIDs) {
+            payload.layerIDs = layerIDs;
+        }
+
+        return this.dispatchAsync(events.export.SET_AS_REQUESTED, payload);
     };
 
     /**
@@ -101,14 +139,14 @@ define(function (require, exports) {
      *
      * @private
      * @param {Document} document
-     * @param {Layer} layer
+     * @param {Layer=} layer If not supplied, this is a document-level asset
      * @param {number} assetIndex index of this asset within the layer's list
      * @param {ExportAsset} asset asset to export
      * @return {Promise}
      */
     var _exportAsset = function (document, layer, assetIndex, asset, baseDir) {
         var fileName = (layer ? layer.name : strings.EXPORT.EXPORT_DOCUMENT_FILENAME) + asset.suffix;
-        return _exportService.exportLayerAsset(document, layer, asset, fileName, baseDir)
+        return _exportService.exportAsset(document, layer, asset, fileName, baseDir)
             .bind(this)
             .then(function (pathArray) {
                 // Do we need to be aware of exports that return >1 file path?
@@ -116,16 +154,16 @@ define(function (require, exports) {
                     filePath: pathArray[0],
                     status: ExportAsset.STATUS.STABLE
                 };
-                return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
+                return this.transfer(updateExportAsset, document, layer, assetIndex, assetProps);
             })
             .catch(function (e) {
                 log.error("Export Failed for asset %d of layerID %d, documentID %d, with error",
-                    assetIndex, layer.id, document.id, e);
+                    assetIndex, layer && layer.id, document.id, e);
                 var assetProps = {
                     filePath: "",
                     status: ExportAsset.STATUS.ERROR
                 };
-                return this.transfer(updateLayerExportAsset, document, layer, assetIndex, assetProps);
+                return this.transfer(updateExportAsset, document, layer, assetIndex, assetProps);
             }) ;
     };
 
@@ -215,15 +253,17 @@ define(function (require, exports) {
 
     /**
      * Merge the given set of asset properties into the Export Asset model and persist in the the Ps metadata
+     * If layer is not supplied, treat this as document root level asset
      *
      * @param {Document} document
-     * @param {Layer} layer
+     * @param {Layer=} layer
      * @param {number} assetIndex index of this asset within the layer's list
      * @param {object} props ExportAsset-like properties to be merged
      * @return {Promise}
      */
-    var updateLayerExportAsset = function (document, layer, assetIndex, props) {
+    var updateExportAsset = function (document, layer, assetIndex, props) {
         var documentID = document.id,
+            layerID = layer && layer.id,
             assetPropsArray = [],
             payload;
 
@@ -231,18 +271,18 @@ define(function (require, exports) {
 
         payload = {
             documentID: documentID,
-            layerIDs: layer.id,
+            layerIDs: layerID,
             assetPropsArray: assetPropsArray
         };
 
         return this.dispatchAsync(events.export.ASSET_CHANGED, payload)
             .bind(this)
             .then(function () {
-                return _syncLayerExportMetadata.call(this, documentID, layer.id);
+                return _syncExportMetadata.call(this, documentID, layerID);
             });
     };
-    updateLayerExportAsset.reads = [locks.JS_DOC];
-    updateLayerExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
+    updateExportAsset.reads = [locks.JS_DOC];
+    updateExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
 
     /**
      * Set the numerical scale of the asset specified by the given index
@@ -254,11 +294,11 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updateLayerAssetScale = function (document, layer, assetIndex, scale) {
-        return this.transfer(updateLayerExportAsset, document, layer, assetIndex, { scale: scale || 1 });
+        return this.transfer(updateExportAsset, document, layer, assetIndex, { scale: scale || 1 });
     };
     updateLayerAssetScale.reads = [];
     updateLayerAssetScale.writes = [];
-    updateLayerAssetScale.transfers = [updateLayerExportAsset];
+    updateLayerAssetScale.transfers = [updateExportAsset];
 
     /**
      * Set the filename suffix of the asset specified by the given index
@@ -270,11 +310,11 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updateLayerAssetSuffix = function (document, layer, assetIndex, suffix) {
-        return this.transfer(updateLayerExportAsset, document, layer, assetIndex, { suffix: suffix });
+        return this.transfer(updateExportAsset, document, layer, assetIndex, { suffix: suffix });
     };
     updateLayerAssetSuffix.reads = [];
     updateLayerAssetSuffix.writes = [];
-    updateLayerAssetSuffix.transfers = [updateLayerExportAsset];
+    updateLayerAssetSuffix.transfers = [updateExportAsset];
 
     /**
      * Set the format of the asset specified by the given index
@@ -286,66 +326,53 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updateLayerAssetFormat = function (document, layer, assetIndex, format) {
-        return this.transfer(updateLayerExportAsset, document, layer, assetIndex, { format: format });
+        return this.transfer(updateExportAsset, document, layer, assetIndex, { format: format });
     };
     updateLayerAssetFormat.reads = [];
     updateLayerAssetFormat.writes = [];
-    updateLayerAssetFormat.transfers = [updateLayerExportAsset];
+    updateLayerAssetFormat.transfers = [updateExportAsset];
 
     /**
      * Adds an asset with the given scale to this layer, and force layer exportEnabled if this is the first asset
      *
      * @param {Document} document
-     * @param {Layer} layer
+     * @param {Immutable.List.<Layer>=} layers
      * @param {number} assetIndex index of this asset within the layer's list
      * @param {number} scale
      * @return {Promise}
      */
-    var addLayerAsset = function (document, layer, assetIndex, scale) {
-        var updateLayerPromise;
+    var addAsset = function (document, layers, assetIndex, scale) {
+        var updatePromise,
+            layer;
 
-        if (assetIndex === 0 && !layer.exportEnabled) {
+        // Currently we only support adding to the first layer,
+        // but this is a way-point to a brighter future
+        if (layers && layers.size > 0) {
+            layer = layers.first();
+        }
+
+        // If this is the first layer-level asset, ensure that the layer is exportEnabled
+        if (assetIndex === 0 && layer && !layer.exportEnabled) {
             var payload = {
                 documentID: document.id,
                 layerIDs: [layer.id],
                 exportEnabled: true
             };
-            updateLayerPromise = this.dispatchAsync(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload);
+            updatePromise = this.dispatchAsync(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload);
         } else {
-            updateLayerPromise = Promise.resolve();
+            updatePromise = Promise.resolve();
         }
 
         // Since updateLayerExport handles the metadata sync, we must be sure that the layer model is updated first
-        return updateLayerPromise
+        return updatePromise
             .bind(this)
             .then(function () {
-                return this.transfer(updateLayerExportAsset, document, layer, assetIndex, { scale: scale });
+                return this.transfer(updateExportAsset, document, layer, assetIndex, { scale: scale });
             });
     };
-    addLayerAsset.reads = [];
-    addLayerAsset.writes = [];
-    addLayerAsset.transfers = [updateLayerExportAsset];
-
-    /**
-     * Update the status of all assets that are being requested
-     * This update does not get synced to PS metadata
-     *
-     * @param {Document} document
-     */
-    var setAllAssetsRequested = function (document) {
-        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
-
-        if (!documentExports) {
-            return Promise.resolve();
-        }
-
-        var layersWithExports = documentExports.getLayersWithExports(document, undefined, true),
-            layerIDs = collection.pluck(layersWithExports, "id").toArray();
-
-        return this.dispatchAsync(events.export.SET_AS_REQUESTED, { documentID: document.id, layerIDs: layerIDs });
-    };
-    setAllAssetsRequested.reads = [];
-    setAllAssetsRequested.writes = [locks.JS_EXPORT];
+    addAsset.reads = [];
+    addAsset.writes = [];
+    addAsset.transfers = [updateExportAsset];
 
     /**
      * Delete the Export Asset configuration specified by the given index
@@ -355,23 +382,23 @@ define(function (require, exports) {
      * @param {number} assetIndex index of this asset within the layer's list
      * @return {Promise}
      */
-    var deleteLayerExportAsset = function (document, layer, assetIndex) {
+    var deleteExportAsset = function (document, layer, assetIndex) {
         var documentID = document.id,
-            layerID = layer.id,
+            layerID = layer ? layer.id : null,
             payload = {
                 documentID: documentID,
                 layerID: layerID,
                 assetIndex: assetIndex
             };
 
-        return this.dispatchAsync(events.export.DELETE_LAYER_ASSET, payload)
+        return this.dispatchAsync(events.export.DELETE_ASSET, payload)
             .bind(this)
             .then(function () {
-                return _syncLayerExportMetadata.call(this, documentID, layer.id);
+                return _syncExportMetadata.call(this, documentID, layerID);
             });
     };
-    deleteLayerExportAsset.reads = [locks.JS_DOC];
-    deleteLayerExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
+    deleteExportAsset.reads = [locks.JS_DOC];
+    deleteExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
 
     /**
      * Sets the exportEnabled flag for a given layer or layers
@@ -396,7 +423,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 return Promise.all(layerIDs.map(function (layerID) {
-                    return _syncLayerExportMetadata.call(this, document.id, layerID);
+                    return _syncExportMetadata.call(this, document.id, layerID);
                 }, this));
             });
     };
@@ -448,12 +475,16 @@ define(function (require, exports) {
     setAllNonABLayersExportEnabled.transfers = [setLayerExportEnabled];
 
     /**
-     * Export all assets for the given document for which export has been enabled (layer.exportEnabled)
+     * Export all layer assets for the given document for which export has been enabled (layer.exportEnabled)
+     * 
+     * Or, if layerIDs param is supplied, export only those layers' assets
+     * and disregard the layer's exportEnabled value
      *
      * @param {Document} document
+     * @param {Immutable.Iterable.<number>=} layerIDs
      * @return {Promise} Resolves when all assets have been exported, or if canceled via the file chooser
      */
-    var exportAllAssets = function (document) {
+    var exportLayerAssets = function (document, layerIDs) {
         if (!document) {
             Promise.resolve("No Document");
         }
@@ -467,38 +498,93 @@ define(function (require, exports) {
             layerExportsMap = documentExports && documentExports.layerExportsMap;
 
         if (!layerExportsMap || layerExportsMap.size < 1) {
-            return Promise.resolve("no assets to export");
+            return Promise.resolve();
         }
 
-        return _exportService.promptForFolder(_lastFolderPath || "~")
-            .bind(this)
-            .then(
-                function (baseDir) {
-                    _lastFolderPath = baseDir;
+        // helper to perform the export after a directory has been determined
+        var exportToDir = function (baseDir) {
+            _lastFolderPath = baseDir;
 
-                    // Iterate over the exports map, find the associated layer, test of "exportEnabled"
-                    var exportArray = documentExports.getLayersWithExports(document, undefined, true)
-                        .flatMap(function (layer) {
-                            return documentExports.getLayerExports(layer.id)
-                                .map(function (asset, index) {
-                                    return _exportAsset.call(this, document, layer, index, asset, baseDir);
-                                }, this);
-                        }, this);
-
-                    return Promise.all(exportArray.toArray());
-                },
-                function (err) {
-                    // promptForFolder rejected, probably just user-canceled
-                    if (err.message && err.message.startsWith("cancelError: cancel")) {
-                        log.warn("Prompt for folder failed, and it wasn't a simple 'cancel'");
-                        throw new Error("Failed to open an OS folder chooser dialog: " + err.message);
-                    }
-                    return Promise.resolve();
+            var layersList;
+            if (layerIDs) {
+                // TODO push this logic into DocumentExports model, and filter first on layerIDs
+                layersList = documentExports.getLayersWithExports(document).filter(function (layer) {
+                    return layerIDs.includes(layer.id);
                 });
+            } else {
+                layersList = documentExports.getLayersWithExports(document, undefined, true);
+            }
+
+            var layerIdList = collection.pluck(layersList, "id");
+
+            return _setAssetsRequested.call(this, document.id, layerIdList).then(function () {
+                // Iterate over the layers, find the associated export assets, and export them
+                var exportArray = layersList.flatMap(function (layer) {
+                    return documentExports.getLayerExports(layer.id)
+                        .map(function (asset, index) {
+                            return _exportAsset.call(this, document, layer, index, asset, baseDir);
+                        }, this);
+                }, this);
+
+                return Promise.all(exportArray.toArray());
+            });
+        }.bind(this);
+
+        // prompt for folder and then export to the result.
+        // resolve immediately if no folder is returned
+        return _exportService.promptForFolder(_lastFolderPath || "~")
+            .then(function (baseDir) {
+                return baseDir ? exportToDir(baseDir) : Promise.resolve();
+            });
     };
-    exportAllAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
-    exportAllAssets.writes = [locks.GENERATOR];
-    exportAllAssets.transfers = [updateLayerExportAsset];
+    exportLayerAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
+    exportLayerAssets.writes = [locks.GENERATOR];
+    exportLayerAssets.transfers = [updateExportAsset];
+
+    /**
+     * Export all document-level assets for the given document
+     *
+     * @param {Document} document
+     * @return {Promise} resolves when all assets have been exported
+     */
+    var exportDocumentAssets = function (document) {
+        if (!document) {
+            return Promise.resolve("No Document");
+        }
+
+        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
+
+        if (!documentExports) {
+            return Promise.resolve("No Document Exports");
+        }
+
+        if (!_exportService || !_exportService.ready()) {
+            return _setServiceAvailable.call(this, false);
+        }
+
+        // helper to perform the export after a directory has been determined
+        var exportToDir = function (baseDir) {
+            return _setAssetsRequested.call(this, document.id).then(function () {
+                _lastFolderPath = baseDir;
+
+                // Iterate over the root document assets, and export them
+                var exportArray = documentExports.rootExports.map(function (asset, index) {
+                    return _exportAsset.call(this, document, null, index, asset, baseDir);
+                }, this).toArray();
+
+                return Promise.all(exportArray);
+            });
+        }.bind(this);
+
+        // prompt for folder and then export to the result.
+        // resolve immediately if no folder is returned
+        return _exportService.promptForFolder(_lastFolderPath || "~").then(function (baseDir) {
+            return baseDir ? exportToDir(baseDir) : Promise.resolve();
+        });
+    };
+    exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
+    exportDocumentAssets.writes = [locks.GENERATOR];
+    exportDocumentAssets.transfers = [updateExportAsset];
 
     /**
      * After start up, ensure that generator is enabled, and then initialize the export service
@@ -606,17 +692,17 @@ define(function (require, exports) {
 
     exports.openExportPanel = openExportPanel;
     exports.closeExportPanel = closeExportPanel;
-    exports.updateLayerExportAsset = updateLayerExportAsset;
+    exports.updateExportAsset = updateExportAsset;
     exports.updateLayerAssetScale = updateLayerAssetScale;
     exports.updateLayerAssetSuffix = updateLayerAssetSuffix;
     exports.updateLayerAssetFormat = updateLayerAssetFormat;
-    exports.addLayerAsset = addLayerAsset;
-    exports.setAllAssetsRequested = setAllAssetsRequested;
-    exports.deleteLayerExportAsset = deleteLayerExportAsset;
+    exports.addAsset = addAsset;
+    exports.deleteExportAsset = deleteExportAsset;
     exports.setLayerExportEnabled = setLayerExportEnabled;
     exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
     exports.setAllNonABLayersExportEnabled = setAllNonABLayersExportEnabled;
-    exports.exportAllAssets = exportAllAssets;
+    exports.exportLayerAssets = exportLayerAssets;
+    exports.exportDocumentAssets = exportDocumentAssets;
     exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 });
