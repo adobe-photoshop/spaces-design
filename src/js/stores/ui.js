@@ -432,6 +432,7 @@ define(function (require, exports, module) {
 
             if (this._recalculateCenterOffset()) {
                 this._centerCurrentDocumentOnce();
+                this.emit("change");
             }
         },
         
