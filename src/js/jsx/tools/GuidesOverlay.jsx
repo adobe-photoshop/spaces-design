@@ -84,6 +84,7 @@ define(function (require, exports, module) {
 
         componentWillUnmount: function () {
             OS.removeListener("externalMouseMove", this.mouseMoveHandler);
+            window.removeEventListener("mousemove", this.windowMouseMoveHandler);
         },
 
         componentDidMount: function () {
@@ -94,6 +95,7 @@ define(function (require, exports, module) {
             
             // Marquee mouse handlers
             OS.addListener("externalMouseMove", this.mouseMoveHandler);
+            window.addEventListener("mousemove", this.windowMouseMoveHandler);
         },
 
         componentDidUpdate: function () {
@@ -115,6 +117,23 @@ define(function (require, exports, module) {
                 this._currentMouseX = event.location[0];
                 this._currentMouseY = event.location[1];
                 
+                this.updateMouseOverHighlights();
+            }
+        },
+
+        /**
+         * Attaches to mouse move events coming from the HTML world
+         * so we can set highlights manually. This one is used because if the mouse
+         * moves fast enough, D3 on("mouseout") does not get called
+         *
+         * @private
+         * @param {MouseEvent} event
+         */
+        windowMouseMoveHandler: function (event) {
+            if (this.isMounted()) {
+                this._currentMouseX = event.x;
+                this._currentMouseY = event.y;
+
                 this.updateMouseOverHighlights();
             }
         },
