@@ -86,7 +86,6 @@ define(function (require, exports) {
             function (required, optional) {
                 return _.chain(required)
                     .zipWith(optional, _.merge)
-                    .reverse()
                     .value();
             });
     };
@@ -316,10 +315,16 @@ define(function (require, exports) {
     /**
      * Re-gets the guides of the given document and rebuilds the models
      *
-     * @param {Document} document
+     * @param {Document=} document Default is active document
      * @return {Promise}
      */
     var queryCurrentGuides = function (document) {
+        var appStore = this.flux.store("application");
+
+        if (document === undefined) {
+            document = appStore.getCurrentDocument();
+        }
+        
         var docRef = documentLib.referenceBy.id(document.id);
 
         return _getGuidesForDocumentRef(docRef)

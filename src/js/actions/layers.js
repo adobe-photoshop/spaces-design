@@ -44,6 +44,7 @@ define(function (require, exports) {
         log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
+        guides = require("./guides"),
         tools = require("./tools"),
         layerActionsUtil = require("js/util/layeractions"),
         locks = require("js/locks"),
@@ -487,13 +488,17 @@ define(function (require, exports) {
                 } else {
                     this.dispatch(events.document.history.nonOptimistic.RESET_BOUNDS, payload);
                 }
-            }).then(function () {
+            })
+            .then(function () {
+                return this.transfer(guides.queryCurrentGuides);
+            })
+            .then(function () {
                 return this.transfer(tools.resetBorderPolicies);
             });
     };
     resetBounds.reads = [locks.PS_DOC];
     resetBounds.writes = [locks.JS_DOC];
-    resetBounds.transfers = [tools.resetBorderPolicies];
+    resetBounds.transfers = [tools.resetBorderPolicies, guides.queryCurrentGuides];
 
     /** 
      * Transfers to reset bounds, but if there is a failure, quietly fails instead of 
