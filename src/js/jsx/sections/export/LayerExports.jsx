@@ -147,7 +147,7 @@ define(function (require, exports, module) {
                         value={scaleOption.title}
                         onChange={this._handleUpdateScale}
                         live={false}
-                        size="column-3" />
+                        size="column-4" />
                     <Gutter />
                     <TextInput
                         value={exportAsset.suffix}
@@ -210,7 +210,7 @@ define(function (require, exports, module) {
                         <div className="formline">
                             <Label
                                 title={strings.EXPORT.TITLE_SCALE}
-                                size="column-3">
+                                size="column-4">
                                 {strings.EXPORT.TITLE_SCALE}
                             </Label>
                             <Gutter />

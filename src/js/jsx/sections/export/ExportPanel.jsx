@@ -34,7 +34,8 @@ define(function (require, exports, module) {
 
     var os = require("adapter/os");
 
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
+    var Gutter = require("jsx!js/jsx/shared/Gutter"),
+        TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         LayerExports = require("jsx!js/jsx/sections/export/LayerExports"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
@@ -119,6 +120,53 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex, nextScale);
         },
+        
+        /**
+         * Add 3 default iOS assets to this list
+         *
+         * @private
+         */
+        _addIOSAssetClickHandler: function (layer) {
+            var document = this.props.document,
+                documentExports = this.state.documentExports,
+                layerExports = documentExports && documentExports.layerExportsMap.get(layer.id),
+                nextAssetIndex = (layerExports && layerExports.size) || 0;
+            
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex, 1);
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex, "");
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 1, 2);
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 1, "@2x");
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 2, 3);
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 2, "@3x");
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 3, 1);
+            this.getFlux().actions.export.updateLayerAssetFormat(document, layer, nextAssetIndex + 3, "svg");
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 3, "");
+        },
+        
+        /**
+         * Add some default Android assets to this list
+         *
+         * @private
+         */
+        _addHDPIAssetClickHandler: function (layer) {
+            var document = this.props.document,
+                documentExports = this.state.documentExports,
+                layerExports = documentExports && documentExports.layerExportsMap.get(layer.id),
+               nextAssetIndex = (layerExports && layerExports.size) || 0;
+            
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex, 0.75);
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex, "-ldpi");
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 1, 1);
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 1, "-mdpi");
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 2, 1.5);
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 2, "-hdpi");
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 3, 2);
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 3, "-xhdpi");
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 4, 3);
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 4, "-xxhdpi");
+            this.getFlux().actions.export.addLayerAsset(document, layer, nextAssetIndex + 5, 4);
+            this.getFlux().actions.export.updateLayerAssetSuffix(document, layer, nextAssetIndex + 5, "-xxxhdpi");
+        },
 
         /**
          * Stop event propagation to prevent double-clicks from collapsing the panel.
@@ -134,7 +182,9 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 disabled = this.props.disabled,
                 containerContents,
-                addAssetClickHandler;
+                addAssetClickHandler,
+                addIOSAssetClickHandler,
+                addHDPIAssetClickHandler;
 
             if (!document || !this.props.visible || disabled) {
                 containerContents = null;
@@ -148,6 +198,8 @@ define(function (require, exports, module) {
                     disabled = true;
                 } else {
                     addAssetClickHandler = this._addAssetClickHandler.bind(this, selectedLayer);
+                    addIOSAssetClickHandler = this._addIOSAssetClickHandler.bind(this, selectedLayer);
+                    addHDPIAssetClickHandler = this._addHDPIAssetClickHandler.bind(this, selectedLayer);
                     containerContents = (
                         <div>
                             <LayerExports {...this.props}
@@ -186,8 +238,26 @@ define(function (require, exports, module) {
                                 onClick={addAssetClickHandler || _.noop}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
-                                    viewbox="0 0 12 12"
-                                    CSSID="plus" />
+                                    viewbox="0 0 16 16"
+                                    CSSID="add-new" />
+                            </Button>
+                            <Gutter />
+                            <Button
+                                className="button-iOS"
+                                title=""
+                                onClick={addIOSAssetClickHandler || _.noop}>
+                                <SVGIcon
+                                    viewbox="0 0 24 16"
+                                    CSSID="iOS" />
+                            </Button>
+                            <Gutter />
+                            <Button
+                                className="button-xdpi"
+                                title=""
+                                onClick={addHDPIAssetClickHandler || _.noop}>
+                                <SVGIcon
+                                    viewbox="0 0 24 16"
+                                    CSSID="hdpi" />
                             </Button>
                         </div>
                     </TitleHeader>
