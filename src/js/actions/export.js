@@ -175,7 +175,6 @@ define(function (require, exports) {
      * at the given index.
      * Sync to PS metadata afterwards
      *
-     * 
      * @private
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>=} layers if not supplied, then doc-level assets
@@ -186,10 +185,9 @@ define(function (require, exports) {
     var _insertAssetsAtIndex = function (document, layers, assetIndex, props) {
         var documentID = document.id,
             layerIDs = layers && collection.pluck(layers, "id") || undefined,
-            assetPropsArray = Array.isArray(props) ? props : [props],
-            payload;
+            assetPropsArray = Array.isArray(props) ? props : [props];
 
-        payload = {
+        var payload = {
             documentID: documentID,
             layerIDs: layerIDs,
             assetPropsArray: assetPropsArray,

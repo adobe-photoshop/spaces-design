@@ -28,8 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        classnames = require("classnames"),
-        _ = require("lodash");
+        classnames = require("classnames");
 
     var os = require("adapter/os");
 
@@ -210,7 +209,7 @@ define(function (require, exports, module) {
                                 className="button-plus"
                                 disabled={exportDisabled}
                                 title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
-                                onClick={exportAssetsClickHandler || _.noop}
+                                onClick={exportAssetsClickHandler}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
                                     CSSID="export" />
@@ -219,7 +218,7 @@ define(function (require, exports, module) {
                             <Button
                                 className="button-plus"
                                 title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
-                                onClick={addAssetClickHandler || _.noop}
+                                onClick={addAssetClickHandler}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
                                     viewbox="0 0 16 16"
@@ -229,7 +228,7 @@ define(function (require, exports, module) {
                             <Button
                                 className="button-iOS"
                                 title={strings.TOOLTIPS.EXPORT_IOS_PRESETS}
-                                onClick={addIOSAssetClickHandler || _.noop}>
+                                onClick={addIOSAssetClickHandler}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
                                     CSSID="iOS" />
@@ -238,7 +237,7 @@ define(function (require, exports, module) {
                             <Button
                                 className="button-xdpi"
                                 title={strings.TOOLTIPS.EXPORT_HDPI_PRESETS}
-                                onClick={addHDPIAssetClickHandler || _.noop}>
+                                onClick={addHDPIAssetClickHandler}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
                                     CSSID="hdpi" />

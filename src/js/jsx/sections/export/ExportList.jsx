@@ -202,13 +202,9 @@ define(function (require, exports, module) {
 
             if (documentExports) {
                 if (layers && layers.size > 0) {
-                    var allExports = layers.map(function (layer) {
-                        return documentExports.getLayerExports(layer.id);
-                    });
-                    
-                    assetGroups = collection.zip(allExports);
+                    assetGroups = documentExports.getAssetGroups(layers).toList();
                 } else {
-                    assetGroups = collection.zip(Immutable.List.of(documentExports.rootExports));
+                    assetGroups = collection.zip(Immutable.List.of(documentExports.rootExports)).toList();
                 }
             }
 
