@@ -992,91 +992,6 @@ define(function (require, exports) {
     rotateLayersInCurrentDocument.transfers = [rotate];
 
     /**
-     * Nudges the given layers in the given direction
-     *
-     * @param {string} direction Direction of nudge
-     * @param {boolean} bigStep Flag to indicate bigger nudge
-     *
-     * @return {Promise}
-     */
-    var nudgeLayers = function (direction, bigStep) {
-        // Different from other actions, nudge always makes sure to get the latest document model
-        // Since we rely on the bounds information from the model to compute new positions
-        // Otherwise, superselectTool.onKeyDown's document model and the current document model
-        // can fall out of sync and produce false results, breaking parity
-        var document = this.flux.store("application").getCurrentDocument(),
-            layerSpec = document.layers.selected;
-
-        if (layerSpec.isEmpty()) {
-            return Promise.resolve();
-        }
-
-        var hasLocked = layerSpec.some(function (layer) {
-            return layer.locked;
-        });
-
-        if (hasLocked) {
-            return Promise.resolve();
-        }
-
-        layerSpec = layerSpec.filterNot(function (layer) {
-            return layer.kind === layer.layerKinds.GROUPEND;
-        });
-
-        var options = {
-                historyStateInfo: {
-                    name: strings.ACTIONS.NUDGE_LAYERS,
-                    target: documentLib.referenceBy.id(document.id)
-                }
-            },
-            payload = {
-                documentID: document.id,
-                positions: []
-            },
-            deltaX = 0,
-            deltaY = 0,
-            bigNudge = 10,
-            nudge = 1;
-
-        switch (direction) {
-            case "up":
-                deltaY = bigStep ? -bigNudge : -nudge;
-                break;
-            case "down":
-                deltaY = bigStep ? bigNudge : nudge;
-                break;
-            case "left":
-                deltaX = bigStep ? -bigNudge : -nudge;
-                break;
-            case "right":
-                deltaX = bigStep ? bigNudge : nudge;
-                break;
-        }
-
-        var translateLayerActions = layerSpec.reduce(function (actions, layer) {
-            var currentBounds = document.layers.childBounds(layer),
-                position = {
-                    x: currentBounds.left + deltaX,
-                    y: currentBounds.top + deltaY
-                },
-                layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
-
-            return actions.concat(layerActions);
-        }, Immutable.List(), this);
-
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
-                .bind(this).then(function () {
-                    this.transfer(toolActions.resetBorderPolicies);
-                }),
-            positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
-        
-        return Promise.join(positionPromise, dispatchPromise);
-    };
-    nudgeLayers.reads = [locks.JS_APP];
-    nudgeLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    nudgeLayers.transfers = [toolActions.resetBorderPolicies];
-
-    /**
      * Transform event handler initialized in beforeStartup
      *
      * @private
@@ -1129,6 +1044,7 @@ define(function (require, exports) {
 
         descriptor.addListener("transform", _layerTransformHandler);
         descriptor.addListener("move", _layerTransformHandler);
+        descriptor.addListener("nudge", _layerTransformHandler);
         descriptor.addListener("editArtboardEvent", _artboardTransformHandler);
         return Promise.resolve();
     };
@@ -1141,6 +1057,7 @@ define(function (require, exports) {
     var onReset = function () {
         descriptor.removeListener("transform", _layerTransformHandler);
         descriptor.removeListener("move", _layerTransformHandler);
+        descriptor.removeListener("nudge", _layerTransformHandler);
         descriptor.removeListener("editArtboardEvent", _artboardTransformHandler);
 
         return Promise.resolve();
@@ -1170,5 +1087,4 @@ define(function (require, exports) {
     exports.setRadius = setRadius;
     exports.rotate = rotate;
     exports.rotateLayersInCurrentDocument = rotateLayersInCurrentDocument;
-    exports.nudgeLayers = nudgeLayers;
 });

@@ -386,11 +386,8 @@ define(function (require, exports, module) {
 
             this._currentMouseDown = false;
 
-            if (this._marqueeRect) {
-                var superselect = this.getFlux().actions.superselect;
-                superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
-                this._marqueeRect = null;
-            }
+            this.getFlux().actions.superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
+            this._marqueeRect = null;
         },
 
         /**
