@@ -354,7 +354,7 @@ define(function (require, exports) {
                 }
                 break;
             case "document":
-                targetBounds = currentDoc.bounds;
+                targetBounds = currentDoc.visibleBounds;
                 break;
             default:
                 throw new Error("Unexpected 'on' value");
