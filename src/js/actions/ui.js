@@ -33,7 +33,8 @@ define(function (require, exports) {
         adapterUI = require("adapter/ps/ui"),
         adapterOS = require("adapter/os");
 
-    var events = require("js/events"),
+    var Bounds = require("js/models/bounds"),
+        events = require("js/events"),
         locks = require("js/locks"),
         shortcuts = require("./shortcuts"),
         preferences = require("./preferences"),
@@ -374,7 +375,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var zoom = function (payload) {
-        var uiState = this.flux.store("ui").getState(),
+        var uiStore = this.flux.store("ui"),
+            uiState = uiStore.getState(),
             document = this.flux.store("application").getCurrentDocument(),
             zoom = payload.zoom,
             bounds = document.layers.selectedAreaBounds,
@@ -387,7 +389,17 @@ define(function (require, exports) {
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         if (!bounds || bounds.width === 0) {
-            bounds = document.visibleBounds;
+            var cloakRect = uiStore.getCloakRect(),
+                tl = uiStore.transformWindowToCanvas(cloakRect.left, cloakRect.top),
+                br = uiStore.transformWindowToCanvas(cloakRect.right, cloakRect.bottom),
+                model = {
+                    left: tl.x,
+                    top: tl.y,
+                    right: br.x,
+                    bottom: br.y
+                };
+                
+            bounds = new Bounds(model);
         }
 
         var factor = window.devicePixelRatio,
