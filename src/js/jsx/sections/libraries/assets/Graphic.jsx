@@ -76,6 +76,15 @@ define(function (require, exports, module) {
                 this.setState({ renditionPath: renditionPath });
             }
         },
+            
+        /**
+         * Open the selected asset in Photoshop for edit.
+         *
+         * @private
+         */
+        _handleOpenForEdit: function () {
+            this.getFlux().actions.libraries.openGraphicForEdit(this.props.element);
+        },
 
         render: function () {
             var element = this.props.element,
@@ -88,9 +97,10 @@ define(function (require, exports, module) {
 
             return (
                 <div className={classNames}
-                     key={element.id}
-                     onMouseDown={this.props.handleDragStart}>
-                    <div className="libraries__asset__preview libraries__asset__preview-graphic">
+                     key={element.id}>
+                    <div className="libraries__asset__preview libraries__asset__preview-graphic"
+                         onMouseDown={this.props.handleDragStart}
+                         onDoubleClick={this._handleOpenForEdit}>
                         <AssetPreviewImage
                             element={this.props.element}
                             onComplete={this._handlePreviewCompleted}/>

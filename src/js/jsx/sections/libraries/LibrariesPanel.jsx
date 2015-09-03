@@ -221,7 +221,7 @@ define(function (require, exports, module) {
         }
 
         return promise.then(function () {
-            flux.actions.libraries.createElementFromSelectedLayer();
+            flux.actions.libraries.createGraphicFromSelectedLayer();
         });
     };
 

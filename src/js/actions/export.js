@@ -695,21 +695,20 @@ define(function (require, exports) {
     copyFile.writes = [locks.GENERATOR];
     
     /**
-     * Remove files at specific locations.
+     * Delete files at specific locations.
      *
      * @param {Array.<string>} filePaths
      * @return {Promise}
      */
-    var removeFiles = function (filePaths) {
+    var deleteFiles = function (filePaths) {
         if (!_exportService || !_exportService.ready()) {
             return _setServiceAvailable.call(this, false);
         }
 
-        return _exportService.removeFiles(filePaths);
+        return _exportService.deleteFiles(filePaths);
     };
-    removeFiles.reads = [];
-    removeFiles.writes = [locks.GENERATOR];
->>>>>>> Add export actions for libraries: copyFile & removeFiles.
+    deleteFiles.reads = [];
+    deleteFiles.writes = [locks.GENERATOR];
 
     /**
      * After start up, ensure that generator is enabled, and then initialize the export service
@@ -832,7 +831,7 @@ define(function (require, exports) {
     exports.afterStartup = afterStartup;
     
     exports.copyFile = copyFile;
-    exports.removeFiles = removeFiles;
+    exports.deleteFiles = deleteFiles;
 
     exports.onReset = onReset;
 });

@@ -45,18 +45,14 @@ define(function (require, exports) {
         layerActionsUtil = require("js/util/layeractions"),
         collection = require("js/util/collection"),
         layerActions = require("./layers"),
+        exportActions = require("./export"),
+        documentActions = require("./documents"),
         searchActions = require("./search/libraries"),
         shapeActions = require("./shapes"),
         typeActions = require("./type"),
+        preferencesActions = require("./preferences"),
         policyActions = require("./policy"),
-        preferencesActions = require("./preferences");
-
-    /**
-     * Preference name for storing the ID of the last selected library.
-     *
-     * @private
-     */
-    var _LAST_SELECTED_LIBRARY_ID_PREF = "lastSelectedLibraryID";
+        LibrarySyncStatus = require("js/models/library_sync_status");
 
     /**
      * For image elements, their extensions signify their representation type
@@ -129,6 +125,23 @@ define(function (require, exports) {
      */
     var RENDITION_DEFAULT_SIZE = 80,
         RENDITION_GRAPHIC_SIZE = 202;
+        
+    /**
+     * List of preference names used by the library store.
+     *
+     * @private
+     * @type {string}
+     */
+    var _EDIT_STATUS_PREF = "graphicEditStatus",
+        _LAST_SELECTED_LIBRARY_ID_PREF = "lastSelectedLibraryID";
+        
+    /**
+     * For listening library sync events.
+     *
+     * @private 
+     * @type {LibrarySyncStatus}
+     */
+    var _librarySyncStatus;
 
     /**
      * Finds a usable representation for the image element that PS will accept
@@ -160,13 +173,14 @@ define(function (require, exports) {
             
         return os.getTempFilename(tempName).then(function (tempFilePath) {
             var tempBasePath = pathUtil.dirname(tempFilePath.path),
-                tempPreviewPath = [tempBasePath, pathUtil.sep, tempName, ".png"].join("");
+                // Add an extra 'p' to the end of the preview filename incase the temp file is also a PNG.
+                tempPreviewPath = [tempBasePath, pathUtil.sep, tempName, "p.png"].join("");
             
             /*
                 tempName: 1440197513414
                 tempBasePath: /var/folders/qg/zxx...52g6/T/TemporaryItems
                 tempFilePath: /var/folders/qg/zxx...52g6/T/TemporaryItems/1440197513414
-                tempPreviewPath: /var/folders/qg/zxx...52g6/T/TemporaryItems/1440197513414.png
+                tempPreviewPath: /var/folders/qg/zxx...52g6/T/TemporaryItems/1440197513414p.png
              */
             return {
                 tempName: tempName,
@@ -192,7 +206,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var createElementFromSelectedLayer = function () {
+    var createGraphicFromSelectedLayer = function () {
         var appStore = this.flux.store("application"),
             libStore = this.flux.store("library"),
             currentDocument = appStore.getCurrentDocument(),
@@ -228,9 +242,6 @@ define(function (require, exports) {
             .bind(this)
             .then(function (paths) {
                 // Export the selected layers
-                
-                // Add an extra 'p' to the end of the preview filename incase the exported layer is also a PNG.
-                paths.tempPreviewPath = paths.tempPreviewPath.replace(".png", "p.png");
 
                 var previewSize = { w: RENDITION_GRAPHIC_SIZE, h: RENDITION_GRAPHIC_SIZE },
                     exportObj = libraryAdapter.exportLayer(paths.tempBasePath, paths.tempPreviewPath,
@@ -283,9 +294,9 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, payload);
             });
     };
-    createElementFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
-    createElementFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createElementFromSelectedLayer.transfers = [layerActions.resetLayers];
+    createGraphicFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
+    createGraphicFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    createGraphicFromSelectedLayer.transfers = [layerActions.resetLayers];
 
     /**
      * Uploads the selected single layer's character style to the current library
@@ -366,7 +377,7 @@ define(function (require, exports) {
                     });
             })
             .then(function () {
-                return this.dispatch(events.libraries.ASSET_CREATED, {});
+                return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
             });
     };
     createCharacterStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP, locks.JS_TYPE];
@@ -500,6 +511,202 @@ define(function (require, exports) {
     };
     renameAsset.reads = [];
     renameAsset.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    
+    /**
+     * Open the specified graphic asset for edit by creating a temp copy of the asset's document and open
+     * in Photoshop. The library store will listen to the document save and close event. 
+     * 
+     * @param {AdobeLibraryElement} element
+     * @return {Promise}
+     */
+    var openGraphicForEdit = function (element) {
+        var representation = element.getPrimaryRepresentation();
+        
+        if (representation.type !== _REP_PHOTOSHOP_TYPE) {
+            // Due to the limitation in DS, we only support editing psd file.
+            // TODO we should support editing images (png, jpg, etc.) by running the 
+            // flatten command.
+            log.debug("[CC Lib] unsupported graphic type: " + representation.type);
+            return Promise.resolve();
+        }
+        
+        var tempFilePath,
+            tempPreviewPath;
+        
+        return Promise.bind(this)
+            .then(function () {
+                // Create a temp file of the element by copying its primary representation.
+                
+                var graphicEditStatus = this.flux.stores.library.getEditStatusByElement(element);
+                
+                // If the element already have a temp file, update the temp file path.
+                if (graphicEditStatus) {
+                    tempFilePath = graphicEditStatus.documentPath;
+                    tempPreviewPath = graphicEditStatus.previewPath;
+                    return;
+                }
+                
+                // Otherwise, create a temp copy of the element for edit.
+                return _getTempPaths()
+                    .bind(this)
+                    .then(function (paths) {
+                        // Get temp file path and element's content path
+                        
+                        var tempFilename = this.flux.stores.library.generateTempFilename(element);
+                        
+                        tempFilePath = paths.tempBasePath + pathUtil.sep + tempFilename;
+                        tempPreviewPath = tempFilePath.replace(".psd", "p.png");
+
+                        return Promise.fromNode(function (done) {
+                            element.getPrimaryRepresentation().getContentPath(done);
+                        });
+                    })
+                    .then(function (contentPath) {
+                        // Copy the element's content to the temp path
+                        
+                        if (!contentPath) {
+                            return Promise.reject("Failed to fetch content of element: " + element.name);
+                        }
+                        
+                        return this.transfer(exportActions.copyFile, contentPath, tempFilePath);
+                    });
+            })
+            .then(function () {
+                // Open the graphic asset's temp file and tell PS to generate an updated 
+                // preview whenever the file is saved
+                
+                var previewSetting = {
+                    path: tempPreviewPath,
+                    width: RENDITION_GRAPHIC_SIZE,
+                    height: RENDITION_GRAPHIC_SIZE
+                };
+                
+                return this.transfer(documentActions.open, tempFilePath, { externalPreview: previewSetting });
+            })
+            .then(function () {
+                var documentID = this.flux.stores.application.getCurrentDocumentID(),
+                    payload = {
+                        documentID: documentID,
+                        documentPath: tempFilePath,
+                        previewPath: tempPreviewPath,
+                        element: element
+                    };
+
+                return this.dispatchAsync(events.libraries.OPEN_GRAPHIC_FOR_EDIT, payload);
+            })
+            .then(function () {
+                return this.transfer(preferencesActions.setPreference,
+                    _EDIT_STATUS_PREF, this.flux.stores.library.getEditStatus(true));
+            })
+            .catch(function (e) {
+                log.warn("[CC Lib] openGraphicForEdit:" + e);
+            });
+    };
+    openGraphicForEdit.reads = [];
+    openGraphicForEdit.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    openGraphicForEdit.transfers = [exportActions.copyFile, documentActions.open,
+        preferencesActions.setPreference];
+    
+    /**
+     * Update the graphic asset's content by creating a new primary representation with the 
+     * updated document and preview file.
+     *
+     * @param {number} documentID
+     * @return {Promise}
+     */
+    var updateGraphicContent = function (documentID) {
+        var libraryStore = this.flux.stores.library,
+            editStatus = libraryStore.getEditStatus().get(documentID);
+            
+        if (!editStatus) {
+            return Promise.resolve();
+        }
+        
+        var element = libraryStore.getElementByReference(editStatus.elementReference);
+        
+        // Skip if the document's associated element is deleted, but keep the edit status so that
+        // the temp files will be deleted when the document is closed.
+        if (!element) {
+            return Promise.resolve();
+        }
+        
+        var library = element.library;
+            
+        // Check if the library exists - if it was deleted, switch to the current library
+        if (!library || library.deletedLocally) {
+            library = libraryStore.getCurrentLibrary();
+
+            if (!library) {
+                // There's no current library, so don't do anything
+                return Promise.resolve();
+            }
+        }
+        
+        this.dispatch(events.libraries.UPDATING_GRAPHIC_CONTENT, { documentID: documentID });
+
+        library.beginOperation();
+        
+        // If the element we're editing was deleted, we recreate it as a new element, so the changes aren't lost.
+        // Otherwise, we just remove the existing representations so we can add the new ones
+        if (element.deletedLocally) {
+            element = library.createElement(element.name, element.type);
+        } else {
+            // TODO should keep representation's stock data
+            element.removeAllRepresentations();
+        }
+        
+        return Promise.fromNode(function (done) {
+                var newRepresentation = element.createRepresentation(_REP_PHOTOSHOP_TYPE, "primary");
+                    
+                // TODO should check and limit file size to 1024MB
+                newRepresentation.updateContentFromPath(editStatus.documentPath, done);
+            })
+            .bind(this)
+            .then(function () {
+                element.setRenditionCache(RENDITION_GRAPHIC_SIZE, editStatus.previewPath);
+            })
+            .finally(function () {
+                library.endOperation();
+            })
+            .then(function () {
+                this.dispatch(events.libraries.UPDATED_GRAPHIC_CONTENT, { documentID: documentID });
+            })
+            .then(function () {
+                if (editStatus.isDocumentClosed) {
+                    return this.tansfer(deleteGraphicTempFiles, documentID);
+                }
+            });
+    };
+    updateGraphicContent.reads = [];
+    updateGraphicContent.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    
+    /**
+     * Delete graphic asset's temp document and preview files.
+     *
+     * @param {number} documentID
+     */
+    var deleteGraphicTempFiles = function (documentID) {
+        var libraryStore = this.flux.stores.library,
+            editStatus = libraryStore.getEditStatus().get(documentID);
+            
+        if (!editStatus) {
+            return Promise.resolve();
+        }
+        
+        var tempFiles = [editStatus.documentPath, editStatus.previewPath];
+                    
+        return this.transfer(exportActions.deleteFiles, tempFiles)
+            .bind(this)
+            .then(function () {
+                this.dispatch(events.libraries.DELETED_GRAPHIC_TEMP_FILES, { documentID: documentID });
+                
+                return this.transfer(preferencesActions.setPreference,
+                    _EDIT_STATUS_PREF, this.flux.stores.library.getEditStatus(true));
+            });
+    };
+    deleteGraphicTempFiles.reads = [];
+    deleteGraphicTempFiles.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    deleteGraphicTempFiles.transfers = [exportActions.deleteFiles, preferencesActions.setPreference];
 
     /**
      * Removes asset from the library it belongs to.
@@ -733,10 +940,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var selectLibrary = function (id) {
-        return this.dispatchAsync(events.libraries.LIBRARY_SELECTED, { id: id })
-            .then(function () {
-                return this.transfer(preferencesActions.setPreference, _LAST_SELECTED_LIBRARY_ID_PREF, id);
-            });
+        this.dispatch(events.libraries.LIBRARY_SELECTED, { id: id });
+        
+        return this.transfer(preferencesActions.setPreference,
+            _LAST_SELECTED_LIBRARY_ID_PREF, this.flux.stores.library.getCurrentLibraryID());
     };
     selectLibrary.reads = [];
     selectLibrary.writes = [locks.JS_LIBRARIES];
@@ -752,11 +959,15 @@ define(function (require, exports) {
         var libStore = this.flux.store("library"),
             libraryCollection = libStore.getLibraryCollection(),
             newLibrary = libraryCollection.createLibrary(name);
+            
+        this.dispatch(events.libraries.LIBRARY_CREATED, { library: newLibrary });
 
-        return this.dispatchAsync(events.libraries.LIBRARY_CREATED, { library: newLibrary });
+        return this.transfer(preferencesActions.setPreference,
+            _LAST_SELECTED_LIBRARY_ID_PREF, libStore.getCurrentLibraryID());
     };
     createLibrary.reads = [];
     createLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    createLibrary.transfers = [preferencesActions.setPreference];
 
     /**
      * Removes a library from the collection
@@ -782,11 +993,15 @@ define(function (require, exports) {
             })
             .bind(this)
             .then(function () {
-                return this.dispatchAsync(events.libraries.LIBRARY_REMOVED, payload);
+                this.dispatch(events.libraries.LIBRARY_REMOVED, payload);
+                
+                return this.transfer(preferencesActions.setPreference,
+                    _LAST_SELECTED_LIBRARY_ID_PREF, libStore.getCurrentLibraryID());
             });
     };
     removeLibrary.reads = [];
     removeLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    removeLibrary.transfers = [preferencesActions.setPreference];
     
     /**
      * Sync all libraries.
@@ -837,15 +1052,37 @@ define(function (require, exports) {
         }
 
         searchActions.registerLibrarySearch.call(this, libraryCollection.libraries);
-
-        var preferences = this.flux.store("preferences").getState();
-
-        var payload = {
-            lastSelectedLibraryID: preferences.get(_LAST_SELECTED_LIBRARY_ID_PREF),
-            collection: libraryCollection
-        };
-
-        return this.dispatchAsync(events.libraries.LIBRARIES_LOADED, payload);
+        
+        // List to library collection's sync event.
+        _librarySyncStatus = new LibrarySyncStatus(libraryCollection);
+        _librarySyncStatus.addSyncListener(handleSyncingLibraries.bind(this));
+        
+        var preferenceState = this.flux.stores.preferences.getState(),
+            graphicEditStatusPref = preferenceState.get(_EDIT_STATUS_PREF) || {},
+            lastSelectedLibraryID = preferenceState.get(_LAST_SELECTED_LIBRARY_ID_PREF);
+            
+        return this.dispatchAsync(events.libraries.LIBRARIES_LOADED, {
+            collection: libraryCollection,
+            editStatus: graphicEditStatusPref,
+            lastSelectedLibraryID: lastSelectedLibraryID
+        });
+    };
+    
+    /**
+     * Callback for LibrarySyncStatus. Check LibrarySyncStatus#addSyncListener for details.
+     *
+     * @private
+     * @param {boolean} isSyncing
+     * @param {boolean} libraryNumberChanged
+     */
+    var handleSyncingLibraries = function (isSyncing, libraryNumberChanged) {
+        this.dispatch(events.libraries.SYNCING_LIBRARIES, {
+            isSyncing: isSyncing,
+            libraryNumberChanged: libraryNumberChanged
+        });
+        
+        this.flux.actions.preferences.setPreference(_LAST_SELECTED_LIBRARY_ID_PREF,
+            this.flux.stores.library.getCurrentLibraryID());
     };
 
     var beforeStartup = function () {
@@ -911,7 +1148,10 @@ define(function (require, exports) {
     exports.removeLibrary = removeLibrary;
     exports.syncLibraries = syncLibraries;
 
-    exports.createElementFromSelectedLayer = createElementFromSelectedLayer;
+    exports.createGraphicFromSelectedLayer = createGraphicFromSelectedLayer;
+    exports.openGraphicForEdit = openGraphicForEdit;
+    exports.updateGraphicContent = updateGraphicContent;
+    exports.deleteGraphicTempFiles = deleteGraphicTempFiles;
     exports.createCharacterStyleFromSelectedLayer = createCharacterStyleFromSelectedLayer;
     exports.createLayerStyleFromSelectedLayer = createLayerStyleFromSelectedLayer;
     exports.createColorAsset = createColorAsset;

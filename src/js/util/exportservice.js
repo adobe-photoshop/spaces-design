@@ -178,13 +178,13 @@ define(function (require, exports, module) {
     };
     
     /**
-     * Remove files at specific locations.
+     * Delete files at specific locations.
      *
      * @param {Array.<string>} filePaths
      * @return {Promise}
      */
-    ExportService.prototype.removeFiles = function (filePaths) {
-        return this._spacesDomain.exec("removeFiles", { filePaths: filePaths });
+    ExportService.prototype.deleteFiles = function (filePaths) {
+        return this._spacesDomain.exec("deleteFiles", { filePaths: filePaths });
     };
 
     /**
