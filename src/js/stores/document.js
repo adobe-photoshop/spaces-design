@@ -440,11 +440,11 @@ define(function (require, exports, module) {
         /**
          * Update the "exportEnabled" flag for a set of layers
          *
-         * @param {{documentID: number, layerIDs: Array.<number>, exportEnabled: boolean}} payload
+         * @param {{documentID: number, layerIDs: Immutable.Iterable.<number>, exportEnabled: boolean}} payload
          */
         _handleLayerExportEnabledChanged: function (payload) {
             var documentID = payload.documentID,
-                layerIDs = Immutable.Set(payload.layerIDs),
+                layerIDs = payload.layerIDs,
                 exportEnabled = payload.exportEnabled;
 
             this._updateLayerProperties(documentID, layerIDs, { exportEnabled: exportEnabled });

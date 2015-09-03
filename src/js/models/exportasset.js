@@ -51,7 +51,7 @@ define(function (require, exports, module) {
      *
      * @type {Imutable.List.<number>}
      */
-    var SCALES = Immutable.List([0.5, 1, 1.5, 2, 3]);
+    var SCALES = Immutable.List([1, 2, 3, 4, 5, 0.5, 0.75, 1.5]);
 
     /**
      * @constructor
@@ -147,11 +147,59 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Returns true if the provided ExportAsset has all the same core properties as this
+     * This simply requires equality of scale, suffix, and format
+     * 
+     * @param {ExportAsset} otherAsset
+     * @return {boolean}
+     */
+    ExportAsset.prototype.similarTo = function (otherAsset) {
+        return this.scale === otherAsset.scale &&
+            this.suffix === otherAsset.suffix &&
+            this.format === otherAsset.format;
+    };
+
+    /**
+     * Compare two Export Assets for similarity.
+     * This simply requires equality of scale, suffix, and format
+     *
+     * @param {ExportAsset} a
+     * @param {ExportAsset} b
+     * @return {boolean}
+     */
+    ExportAsset.similar = function (a, b) {
+        return a && b && a.similarTo(b);
+    };
+
+    /**
      * Attach some enums to the export
      */
     ExportAsset.STATUS = STATUS;
     ExportAsset.FORMATS = FORMATS;
     ExportAsset.SCALES = SCALES;
-    
+
+    /**
+     * Predefined sets of assets that can be quickly added
+     *
+     * @type {Map.<string, Array.<object>>}
+     */
+    ExportAsset.PRESET_ASSETS = {
+        IOS: [
+            { scale: 1, suffix: "" },
+            { scale: 2 },
+            { scale: 3 },
+            { scale: 1, suffix: "", format: "svg" }
+        ],
+        HDPI: [
+            { scale: 0.75, suffix: "ldpi" },
+            { scale: 1, suffix: "mdpi" },
+            { scale: 1.5, suffix: "hdpi" },
+            { scale: 2, suffix: "xhdpi" },
+            { scale: 3, suffix: "xxhdpi" },
+            { scale: 4, suffix: "xxxhdpi" },
+            { scale: 1, suffix: "", format: "svg" }
+        ]
+    };
+
     module.exports = ExportAsset;
 });

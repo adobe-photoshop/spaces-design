@@ -28,6 +28,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var ExportAsset = require("./exportasset"),
+        collection = require("js/util/collection"),
         objUtil = require("js/util/object");
 
     /**
@@ -149,6 +150,70 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Given a set of layers, produce a "zipped" list of of lists of ExportAssets for those layers,
+     * grouped by index within the layers
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Immutable.IndexedSeq.<Immutable.Iterable.<?ExportAsset>>}
+     */
+    Object.defineProperty(DocumentExports.prototype, "getAssetGroups",
+        objUtil.cachedLookupSpec(function (layers) {
+            var exportLists = layers.map(function (layer) {
+                return this.getLayerExports(layer.id);
+            }, this);
+
+            return collection.zip(exportLists);
+        }));
+
+    /**
+     * Given a set of layers, get a list of common ExportAssets, or null if none
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Immutable.List.<?ExportAsset>}
+     */
+    Object.defineProperty(DocumentExports.prototype, "getUniformAssets",
+        objUtil.cachedLookupSpec(function (layers) {
+            var assetGroups = this.getAssetGroups(layers);
+
+            return assetGroups
+                .map(function (group) {
+                    return collection.uniformValue(group, ExportAsset.similar);
+                })
+                .toList(); // assetGroups is an IndexedSeq
+        }));
+
+    /**
+     * Given a set of layers, get a list of common ExportAssets, but trimmed
+     * to include only those with valid values.
+     * Caveat: this changes the relative position of the assets in their original list,
+     * so don't rely on the key for updating these assets later!
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Immutable.Iterable.<ExportAsset>}
+     */
+    Object.defineProperty(DocumentExports.prototype, "getUniformAssetsOnly",
+        objUtil.cachedLookupSpec(function (layers) {
+            return this.getUniformAssets(layers).filter(function (val) {
+                return !!val;
+            });
+        }));
+
+    /**
+     * Given a set of layers, find the index of the last asset that is common to them all.
+     * Per Immutable's findLastIndex, if not found then -1 is returned.
+     * This is useful because this is used to add indexes at (this + 1)
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {number}
+     */
+    Object.defineProperty(DocumentExports.prototype, "getLastUniformAssetIndex",
+        objUtil.cachedLookupSpec(function (layers) {
+            return this.getUniformAssets(layers).findLastIndex(function (val) {
+                return !!val;
+            });
+        }));
+
+    /**
      * Merge an array of asset-like objects into a List of ExportAssets
      * If the array is larger than the list, new Assets are added
      * The array may be sparse, and the matching elements in the assetList are not modified
@@ -187,7 +252,7 @@ define(function (require, exports, module) {
      * Given an array of layerIDs and an array of asset prop objects,
      * merge the props into each layer assets by index, adding where necessary
      *
-     * @param {Array.<number>} layerIDs 
+     * @param {Immutable.Iterable.<number>} layerIDs 
      * @param {Array.<?object>} assetProps Array of asset property objects (possibly sparse)
      *
      * @return {DocumentExports}
@@ -201,6 +266,56 @@ define(function (require, exports, module) {
         }, this));
 
         return this.mergeDeepIn(["layerExportsMap"], nextLayerExportsMap);
+    };
+
+    /**
+     * Splice an array of new assets into the given layers at the given index.
+     * New ExportAssets are generated from the provided property objects
+     *
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {Array.<object>} assetProps Array of asset property objects
+     * @param {number} index index at which to insert the new elements
+     * @return {DocumentExport}
+     */
+    DocumentExports.prototype.spliceLayerAssets = function (layerIDs, assetProps, index) {
+        var nextLayerExportsMap = Immutable.Map(layerIDs.map(function (layerID) {
+            var newAssetArray = assetProps.map(function (props) {
+                var newAsset = new ExportAsset(props);
+                if (!_.has(props, "suffix")) {
+                    newAsset = newAsset.deriveSuffix();
+                }
+                return newAsset;
+            });
+
+            var assetList = this.layerExportsMap.get(layerID) || Immutable.List(),
+                nextAssetList = assetList.splice.apply(assetList, [index, 0].concat(newAssetArray));
+
+            return [layerID, nextAssetList];
+        }, this));
+        return this.mergeDeepIn(["layerExportsMap"], nextLayerExportsMap);
+    };
+
+    /**
+     * Splice an array of new assets into the document root list, at the given index.
+     * New ExportAssets are generated from the provided property objects
+     *
+     * @param {Array.<object>} assetProps Array of asset property objects
+     * @param {number} index index at which to insert the new elements
+     * @return {DocumentExport}
+     */
+    DocumentExports.prototype.spliceRootAssets = function (assetProps, index) {
+        var newAssetArray = assetProps.map(function (props) {
+            var newAsset = new ExportAsset(props);
+            if (!_.has(props, "suffix")) {
+                newAsset = newAsset.deriveSuffix();
+            }
+            return newAsset;
+        });
+
+        var rootExports = this.rootExports,
+            nextRootExports = rootExports.splice.apply(rootExports, [index, 0].concat(newAssetArray));
+
+        return this.mergeIn(["rootExports"], nextRootExports);
     };
     
     /**
@@ -219,12 +334,15 @@ define(function (require, exports, module) {
     /**
      * Remove the asset from the given layer's list, by index
      *
-     * @param {number} layerID
+     * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number} assetIndex
      * @return {DocumentExports}
      */
-    DocumentExports.prototype.removeLayerAsset = function (layerID, assetIndex) {
-        return this.deleteIn(["layerExportsMap", layerID, assetIndex]);
+    DocumentExports.prototype.removeLayerAsset = function (layerIDs, assetIndex) {
+        var nextLayerExportsMap = this.layerExportsMap.map(function (layerExports, key) {
+            return layerIDs.includes(key) ? layerExports.delete(assetIndex) : layerExports;
+        });
+        return this.set("layerExportsMap", nextLayerExportsMap);
     };
 
     /**

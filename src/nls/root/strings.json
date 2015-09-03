@@ -236,7 +236,9 @@
         "LIBRARY_DELETE": "Delete",
         "EXPORT_EXPORT_ASSETS": "Export these assets",
         "EXPORT_ADD_ASSET": "Add export asset",
-        "EXPORT_REMOVE_ASSET": "Remove asset configuration"
+        "EXPORT_REMOVE_ASSET": "Remove asset configuration",
+        "EXPORT_IOS_PRESETS": "Add 3 iOS assets + SVG",
+        "EXPORT_HDPI_PRESETS": "Add 6 HDPI assets + SVG"
     },
     "LAYER_KIND": {
         "0": "Any Layer",
@@ -373,7 +375,7 @@
         "EXPORT_LIST_ALL_ASSETS": "All Assets",
         "BUTTON_EXPORT": "Export",
         "BUTTON_CANCEL": "Cancel",
-        "SELECT_SINGLE_LAYER": "Please select a single layer",
+        "SELECT_SINGLE_LAYER": "DEPRECATED",
         "TITLE_SCALE": "Scale",
         "TITLE_SUFFIX": "Suffix",
         "TITLE_SETTINGS": "Settings",

@@ -24,18 +24,16 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Immutable = require("immutable"),
-        React = require("react"),
+    var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        classnames = require("classnames"),
-        _ = require("lodash");
+        classnames = require("classnames");
 
     var os = require("adapter/os");
 
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        ExportList = require("jsx!js/jsx/sections/export/ExportList"),
+    var ExportList = require("jsx!js/jsx/sections/export/ExportList"),
+        TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
@@ -109,28 +107,13 @@ define(function (require, exports, module) {
          *
          * @private
          */
-        _addAssetClickHandler: function () {
+        _addAssetClickHandler: function (preset) {
             var document = this.props.document,
-                selectedLayers = document && document.layers.selected,
+                selectedLayers = document && document.layers.selected, // maybe this should be more restrictive?
                 documentExports = this.state.documentExports,
-                exportsList,
-                layer;
+                props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
 
-            if (selectedLayers && selectedLayers.size > 0) {
-                // temp until we find a better way to handle more layers...
-                layer = selectedLayers.first();
-                exportsList = layer && documentExports && documentExports.layerExportsMap.get(layer.id);
-            } else {
-                exportsList = documentExports && documentExports.rootExports;
-            }
-                
-            var existingScales = (exportsList && collection.pluck(exportsList, "scale")) || Immutable.List(),
-                remainingScales = collection.difference(ExportAsset.SCALES, existingScales),
-                nextScale = remainingScales.size > 0 ? remainingScales.first() : null,
-                nextAssetIndex = (exportsList && exportsList.size) || 0;
-
-            var layers = layer ? Immutable.List.of(layer) : null;
-            this.getFlux().actions.export.addAsset(document, layers, nextAssetIndex, nextScale);
+            this.getFlux().actions.export.addAsset(document, documentExports, selectedLayers, props);
         },
 
         /**
@@ -162,17 +145,17 @@ define(function (require, exports, module) {
 
         render: function () {
             var document = this.props.document,
+                documentExports = this.state.documentExports,
                 disabled = this.props.disabled,
+                exportDisabled = false,
                 containerContents,
                 addAssetClickHandler,
+                addIOSAssetClickHandler,
+                addHDPIAssetClickHandler,
                 exportAssetsClickHandler;
 
             if (!document || !this.props.visible || disabled) {
                 containerContents = null;
-            } else if (document.layers.selected.size > 1) {
-                // FOR NOW - we don't allow multiple selected layers
-                containerContents = (<div>{strings.EXPORT.SELECT_SINGLE_LAYER}</div>);
-                disabled = true;
             } else if (document.layers.backgroundSelected) {
                 // don't support exports of the background
                 containerContents = null;
@@ -180,7 +163,15 @@ define(function (require, exports, module) {
             } else {
                 var selectedLayers = this.props.document.layers.selected;
 
+                if (selectedLayers.size > 0) {
+                    exportDisabled = documentExports.getUniformAssetsOnly(selectedLayers).size === 0;
+                } else {
+                    exportDisabled = documentExports.rootExports.size === 0;
+                }
+
                 addAssetClickHandler = this._addAssetClickHandler;
+                addIOSAssetClickHandler = this._addAssetClickHandler.bind(this, "IOS");
+                addHDPIAssetClickHandler = this._addAssetClickHandler.bind(this, "HDPI");
                 exportAssetsClickHandler = this._exportAssetsClickHandler;
 
                 containerContents = (
@@ -216,8 +207,9 @@ define(function (require, exports, module) {
                         <div className="layer-exports__workflow-buttons">
                             <Button
                                 className="button-plus"
+                                disabled={exportDisabled}
                                 title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
-                                onClick={exportAssetsClickHandler || _.noop}
+                                onClick={exportAssetsClickHandler}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
                                     CSSID="export" />
@@ -226,11 +218,29 @@ define(function (require, exports, module) {
                             <Button
                                 className="button-plus"
                                 title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
-                                onClick={addAssetClickHandler || _.noop}
+                                onClick={addAssetClickHandler}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
-                                    viewbox="0 0 12 12"
-                                    CSSID="plus" />
+                                    viewbox="0 0 16 16"
+                                    CSSID="add-new" />
+                            </Button>
+                            <Gutter />
+                            <Button
+                                className="button-iOS"
+                                title={strings.TOOLTIPS.EXPORT_IOS_PRESETS}
+                                onClick={addIOSAssetClickHandler}>
+                                <SVGIcon
+                                    viewbox="0 0 24 16"
+                                    CSSID="iOS" />
+                            </Button>
+                            <Gutter />
+                            <Button
+                                className="button-xdpi"
+                                title={strings.TOOLTIPS.EXPORT_HDPI_PRESETS}
+                                onClick={addHDPIAssetClickHandler}>
+                                <SVGIcon
+                                    viewbox="0 0 24 16"
+                                    CSSID="hdpi" />
                             </Button>
                         </div>
                     </TitleHeader>

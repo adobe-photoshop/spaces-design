@@ -38,6 +38,7 @@ define(function (require, exports, module) {
         ExportAsset = require("js/models/exportasset");
 
     var mathUtil = require("js/util/math"),
+        collection = require("js/util/collection"),
         strings = require("i18n!nls/strings");
 
     /**
@@ -77,9 +78,9 @@ define(function (require, exports, module) {
 
         propTypes: {
             document: React.PropTypes.object.isRequired,
-            layer: React.PropTypes.object,
+            layers: React.PropTypes.instanceOf(Immutable.Iterable).isRequired,
             index: React.PropTypes.number.isRequired,
-            exportAsset: React.PropTypes.object.isRequired
+            exportAssets: React.PropTypes.instanceOf(Immutable.Iterable).isRequired
         },
 
         /**
@@ -89,10 +90,10 @@ define(function (require, exports, module) {
          */
         _handleDeleteClick: function () {
             var document = this.props.document,
-                layer = this.props.layer,
+                layers = this.props.layers,
                 index = this.props.index;
 
-            this.getFlux().actions.export.deleteExportAsset(document, layer, index);
+            this.getFlux().actions.export.deleteExportAsset(document, layers, index);
         },
 
         /**
@@ -104,7 +105,7 @@ define(function (require, exports, module) {
             var scaleNum = mathUtil.parseNumber(scale);
 
             this.getFlux().actions.export.updateLayerAssetScale(
-                this.props.document, this.props.layer, this.props.index, scaleNum);
+                this.props.document, this.props.layers, this.props.index, scaleNum);
         },
 
         /**
@@ -114,7 +115,7 @@ define(function (require, exports, module) {
          */
         _handleUpdateSuffix: function (event, suffix) {
             this.getFlux().actions.export.updateLayerAssetSuffix(
-                this.props.document, this.props.layer, this.props.index, suffix);
+                this.props.document, this.props.layers, this.props.index, suffix);
         },
 
         /**
@@ -126,16 +127,22 @@ define(function (require, exports, module) {
             var formatLower = format && format.toLowerCase();
 
             this.getFlux().actions.export.updateLayerAssetFormat(
-                this.props.document, this.props.layer, this.props.index, formatLower);
+                this.props.document, this.props.layers, this.props.index, formatLower);
         },
 
         render: function () {
-            var layer = this.props.layer,
-                exportAsset = this.props.exportAsset,
-                scale = exportAsset.scale || 1,
+            var exportAssets = this.props.exportAssets,
+                exportAsset = collection.uniformValue(exportAssets, ExportAsset.similar);
+
+            if (!exportAsset) {
+                // We only display an asset if it is functionally uniform across all layers
+                return null;
+            }
+
+            var scale = exportAsset.scale,
                 scaleOption = _scaleOptions.has(scale.toString()) ?
                     _scaleOptions.get(scale.toString()) : _scaleOptions.get("1"),
-                keySuffix = (layer && layer.key || this.props.document.id) + "-" + this.props.index,
+                keySuffix = this.props.faceKey,
                 scaleListID = "exportAsset-scale-" + keySuffix,
                 formatListID = "exportAsset-format-" + keySuffix;
 
@@ -148,7 +155,7 @@ define(function (require, exports, module) {
                         value={scaleOption.title}
                         onChange={this._handleUpdateScale}
                         live={false}
-                        size="column-3" />
+                        size="column-4" />
                     <Gutter />
                     <TextInput
                         value={exportAsset.suffix}
@@ -188,28 +195,32 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.props.document,
                 layers = this.props.layers,
-                layer = layers && layers.size > 0 && layers.first(), // simplification
                 documentExports = this.props.documentExports,
-                exportsList,
+                keyprefix = layers && collection.pluck(layers, "key").join("-") || document.id,
+                assetGroups,
                 exportComponents;
 
-            if (layer) {
-                exportsList = documentExports && documentExports.layerExportsMap.get(layer.id);
-            } else {
-                exportsList = documentExports && documentExports.rootExports;
+            if (documentExports) {
+                if (layers && layers.size > 0) {
+                    assetGroups = documentExports.getAssetGroups(layers).toList();
+                } else {
+                    assetGroups = collection.zip(Immutable.List.of(documentExports.rootExports)).toList();
+                }
             }
 
-            if (!exportsList || exportsList.size < 1) {
+            if (!assetGroups || assetGroups.size < 1) {
                 return null;
             } else {
-                exportComponents = exportsList.map(function (i, k) {
+                exportComponents = assetGroups.map(function (i, k) {
+                    var key = keyprefix + "-" + k;
                     return (
                         <ExportAssetFace
                             document={document}
-                            layer={layer || null}
+                            layers={layers}
                             index={k}
-                            key={k}
-                            exportAsset={i} />
+                            key={key}
+                            faceKey={key}
+                            exportAssets={i} />
                     );
                 }, this).toArray();
 
@@ -218,7 +229,7 @@ define(function (require, exports, module) {
                         <div className="formline">
                             <Label
                                 title={strings.EXPORT.TITLE_SCALE}
-                                size="column-3">
+                                size="column-4">
                                 {strings.EXPORT.TITLE_SCALE}
                             </Label>
                             <Gutter />

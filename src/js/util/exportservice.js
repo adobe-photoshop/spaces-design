@@ -49,7 +49,7 @@ define(function (require, exports, module) {
      * @const
      * @type {number}
      */
-    var CONNECTION_TIMEOUT_MS = 9000;
+    var CONNECTION_TIMEOUT_MS = 20000;
 
     /**
      * Maximum number of retry attempts

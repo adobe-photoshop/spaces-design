@@ -497,7 +497,7 @@ define(function (require, exports) {
                             onClick={this._addDropShadow.bind(this, layers)}>
                             <SVGIcon
                                 viewbox="0 0 12 12"
-                                CSSID="plus" />
+                                CSSID="add-new" />
                         </Button>
                     </header>
                     <div className="shadow-list__list-container">
@@ -585,7 +585,7 @@ define(function (require, exports) {
                             onClick={this._addInnerShadow.bind(this, layers)}>
                             <SVGIcon
                                 viewbox="0 0 12 12"
-                                CSSID="plus" />
+                                CSSID="add-new" />
                         </Button>
                     </header>
                     <div className="shadow-list__list-container">
