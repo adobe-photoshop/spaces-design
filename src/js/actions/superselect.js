@@ -616,8 +616,6 @@ define(function (require, exports) {
             copyDrag = modifiers.option;
 
         if (panning) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-                        
             var dragEvent = {
                 eventKind: eventKind,
                 location: coordinates,
@@ -672,8 +670,6 @@ define(function (require, exports) {
                                 descriptor.addListener("moveToArtboard", _moveToArtboardListener);
                             }
 
-                            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-                            
                             var dragEvent = {
                                 eventKind: eventKind,
                                 location: coordinates,

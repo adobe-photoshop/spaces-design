@@ -129,11 +129,7 @@ define(function (require, exports) {
 
         var setFacePlayObject = textLayerLib.setPostScript(layerRefs, postscript),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE, modal),
-            setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
-                .bind(this)
-                .then(function () {
-                    locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
-                }),
+            setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
             updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
 
         return Promise.join(updatePromise, setFacePromise).bind(this).then(function () {
@@ -189,11 +185,7 @@ define(function (require, exports) {
 
         var setFacePlayObject = textLayerLib.setFace(layerRefs, family, style),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE, modal),
-            setFacePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
-                .bind(this)
-                .then(function () {
-                    locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions);
-                }),
+            setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
             updatePromise = this.transfer(updateFace, document, layers, family, style);
 
         return Promise.join(updatePromise, setFacePromise).bind(this).then(function () {
@@ -334,11 +326,7 @@ define(function (require, exports) {
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_SIZE, modal),
-            setSizePromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
-                .bind(this)
-                .then(function () {
-                    locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions);
-                }),
+            setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions),
             updatePromise = this.transfer(updateSize, document, layers, size);
 
         return Promise.join(updatePromise, setSizePromise).bind(this).then(function () {
@@ -391,11 +379,7 @@ define(function (require, exports) {
 
         var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, psTracking),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_TRACKING, modal),
-            setTrackingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
-                .bind(this)
-                .then(function () {
-                    locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions);
-                }),
+            setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions),
             updatePromise = this.transfer(updateTracking, document, layers, tracking);
 
         return Promise.join(updatePromise, setTrackingPromise).bind(this).then(function () {
@@ -452,11 +436,7 @@ define(function (require, exports) {
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_LEADING, modal),
-            setLeadingPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
-                .bind(this)
-                .then(function () {
-                    locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions);
-                }),
+            setLeadingPromise = locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions),
             updatePromise = this.transfer(updateLeading, document, layers, leading);
 
         return Promise.join(updatePromise, setLeadingPromise).bind(this).then(function () {
@@ -510,11 +490,7 @@ define(function (require, exports) {
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT,
                 modal, false, options),
-            setAlignmentPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
-                .bind(this)
-                .then(function () {
-                    locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions);
-                }),
+            setAlignmentPromise = locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions),
             transferPromise = this.transfer(updateAlignment, document, layers, alignment);
 
         return Promise.join(transferPromise, setAlignmentPromise).bind(this).then(function () {
