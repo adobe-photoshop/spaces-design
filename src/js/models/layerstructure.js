@@ -121,8 +121,10 @@ define(function (require, exports, module) {
 
         // Traverse up to root
         while (layerAncestor && !visitedParents.hasOwnProperty(layerAncestor.id)) {
-            // Remove the current parent because we're already below it
-            selectableLayers = pull(selectableLayers, layerAncestor);
+            if (!layerAncestor.isArtboard) {
+                // Remove the current parent because we're already below it
+                selectableLayers = pull(selectableLayers, layerAncestor);
+            }
 
             // So we don't process this parent again
             visitedParents[layerAncestor.id] = layerAncestor;
@@ -343,7 +345,7 @@ define(function (require, exports, module) {
                         this.hasVisibleDescendant(layer) &&
                         !this.hasInvisibleAncestor(layer) &&
                         !this.hasLockedAncestor(layer) &&
-                        !visitedParents.hasOwnProperty(layer.id);
+                        (layer.isArtboard || !visitedParents.hasOwnProperty(layer.id));
                 }, this)
                 .toList();
         },
