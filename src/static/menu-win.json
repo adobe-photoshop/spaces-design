@@ -297,7 +297,13 @@
                     "separator": true
                 },
                 {
-                    "id": "CREATE_ARTBOARD"
+                    "id": "CREATE_ARTBOARD",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "control": true
+                        }
+                    }
                 },
                 {
                     "id": "NEW_ARTBOARD_FROM_TEMPLATE",
