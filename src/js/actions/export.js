@@ -676,6 +676,40 @@ define(function (require, exports) {
     exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportDocumentAssets.writes = [locks.GENERATOR];
     exportDocumentAssets.transfers = [promptForFolder, updateExportAsset];
+    
+    /**
+     * Copy file from one location to another.
+     *
+     * @param {string} sourcePath
+     * @param {string} targetPath
+     * @return {Promise} 
+     */
+    var copyFile = function (sourcePath, targetPath) {
+        if (!_exportService || !_exportService.ready()) {
+            return _setServiceAvailable.call(this, false);
+        }
+
+        return _exportService.copyFile(sourcePath, targetPath);
+    };
+    copyFile.reads = [];
+    copyFile.writes = [locks.GENERATOR];
+    
+    /**
+     * Remove files at specific locations.
+     *
+     * @param {Array.<string>} filePaths
+     * @return {Promise}
+     */
+    var removeFiles = function (filePaths) {
+        if (!_exportService || !_exportService.ready()) {
+            return _setServiceAvailable.call(this, false);
+        }
+
+        return _exportService.removeFiles(filePaths);
+    };
+    removeFiles.reads = [];
+    removeFiles.writes = [locks.GENERATOR];
+>>>>>>> Add export actions for libraries: copyFile & removeFiles.
 
     /**
      * After start up, ensure that generator is enabled, and then initialize the export service
@@ -796,5 +830,9 @@ define(function (require, exports) {
     exports.exportLayerAssets = exportLayerAssets;
     exports.exportDocumentAssets = exportDocumentAssets;
     exports.afterStartup = afterStartup;
+    
+    exports.copyFile = copyFile;
+    exports.removeFiles = removeFiles;
+
     exports.onReset = onReset;
 });
