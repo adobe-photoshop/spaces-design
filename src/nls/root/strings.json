@@ -381,7 +381,9 @@
         "TITLE_SCALE": "Scale",
         "TITLE_SUFFIX": "Suffix",
         "TITLE_SETTINGS": "Settings",
-        "EXPORT_DOCUMENT_FILENAME": "document"
+        "EXPORT_DOCUMENT_FILENAME": "document",
+        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "Unsupported Layer",
+        "NO_ASSETS": "Nothing configured"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",
