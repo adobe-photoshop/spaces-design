@@ -697,14 +697,15 @@ define(function (require, exports) {
      * Otherwise will add/transfer selection to layers
      *
      * @param {Document} doc Owner document
+     * @param {boolean} runMarquee Will run marquee select only if true
      * @param {?Array.<number>} ids Layer IDs
      * @param {boolean} add Flag to add to or replace selection
      * @return {Promise}
      */
-    var marqueeSelect = function (doc, ids, add) {
+    var marqueeSelect = function (doc, runMarquee, ids, add) {
         this.dispatch(events.ui.SUPERSELECT_MARQUEE, { enabled: false });
 
-        if (!ids) {
+        if (!runMarquee || !ids) {
             return Promise.resolve();
         }
         

@@ -297,8 +297,8 @@ define(function (require, exports, module) {
                      onMouseLeave={!disabled && this.props.onMouseLeaveDroppable}>
                     <svg width="100%" height="100%">
                         <g id="overlay" width="100%" height="100%">
-                            {toolOverlay}
                             {policyOverlay}
+                            {toolOverlay}
                             <GuidesOverlay />
                         </g>
                     </svg>

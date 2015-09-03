@@ -384,9 +384,14 @@ define(function (require, exports, module) {
                 return;
             }
 
+            var runMarquee = !!this._marqueeRect;
+            
+            this.getFlux().actions.superselect.marqueeSelect(
+                this.state.document, runMarquee,
+                this._marqueeResult, event.shiftKey
+            );
+            
             this._currentMouseDown = false;
-
-            this.getFlux().actions.superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
             this._marqueeRect = null;
             this._marqueeResult = null;
         },
