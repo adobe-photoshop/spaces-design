@@ -370,14 +370,13 @@ define(function (require, exports) {
      * Sets zoom to the value in the payload
      * Centering on the selection, pan is on by default
      *
-     * @param {{zoom: number, pan: boolean}} payload
+     * @param {{zoom: number}} payload
      * @return {Promise}
      */
     var zoom = function (payload) {
         var uiState = this.flux.store("ui").getState(),
             document = this.flux.store("application").getCurrentDocument(),
             zoom = payload.zoom,
-            pan = payload.hasOwnProperty("pan") ? payload.pan : true,
             bounds = document.layers.selectedAreaBounds,
             panZoomDescriptor = {
                 animate: true,
@@ -387,23 +386,17 @@ define(function (require, exports) {
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
-        if (bounds && bounds.width === 0) {
-            // If selected layers don't have any bounds (happens with empty pixel layers)
-            // Don't pan
-            pan = false;
+        if (!bounds || bounds.width === 0) {
+            bounds = document.visibleBounds;
         }
 
-        // We only add these to descriptor if we want to pan, without them, PS will only zoom.
-        if (pan && bounds) {
-            var factor = window.devicePixelRatio,
-                offsets = uiState.centerOffsets;
+        var factor = window.devicePixelRatio,
+            offsets = uiState.centerOffsets,
+            panDescriptor = _calculatePanZoom(bounds, offsets, zoom, factor);
 
-            var panDescriptor = _calculatePanZoom(bounds, offsets, zoom, factor);
-
-            panZoomDescriptor.x = panDescriptor.x;
-            panZoomDescriptor.y = panDescriptor.y;
-        }
-
+        panZoomDescriptor.x = panDescriptor.x;
+        panZoomDescriptor.y = panDescriptor.y;
+    
         return descriptor.play("setPanZoom", panZoomDescriptor)
             .bind(this)
             .then(function () {

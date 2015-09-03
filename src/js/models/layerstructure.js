@@ -296,6 +296,31 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Bounds of all the top layers
+         * @type {Immutable.List.<Bounds>}
+         */
+        "topBounds": function () {
+            return this.top
+                .toSeq()
+                .map(function (layer) {
+                    return this.childBounds(layer);
+                }, this)
+                .filter(function (bounds) {
+                    return bounds && bounds.area > 0;
+                })
+                .toList();
+        },
+
+        /**
+         * Overall bounds of all the layers in the structure
+         *
+         * @return {Bounds}
+         */
+        "overallBounds": function () {
+            return Bounds.union(this.topBounds);
+        },
+
+        /**
          * The set of artboards in the document
          * @type {Immutable.List.<Layer>}
          */
