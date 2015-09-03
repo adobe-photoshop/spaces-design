@@ -697,7 +697,7 @@ define(function (require, exports) {
      * Otherwise will add/transfer selection to layers
      *
      * @param {Document} doc Owner document
-     * @param {Array.<number>} ids Layer IDs
+     * @param {?Array.<number>} ids Layer IDs
      * @param {boolean} add Flag to add to or replace selection
      * @return {Promise}
      */
