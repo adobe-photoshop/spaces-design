@@ -1104,14 +1104,13 @@ define(function (require, exports) {
         }, this);
 
         _layerTransformHandler = synchronization.debounce(function (event) {
-            // If it was a simple click/didn't move anything, there is no need to update bounds,
-            // just redraw the overlay
-            if (event.trackerEndedWithoutBreakingHysteresis) {
-                return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-            }
-
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-
+            
+            // If it was a simple click/didn't move anything, there is no need to update bounds
+            if (event.trackerEndedWithoutBreakingHysteresis) {
+                return Promise.resolve();
+            }
+            
             var appStore = this.flux.store("application"),
                 currentDoc = appStore.getCurrentDocument(),
                 textLayers = currentDoc.layers.allSelected.filter(function (layer) {

@@ -633,8 +633,6 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-
         return this.transfer(selectDocument, nextDocument);
     };
     selectNextDocument.reads = [locks.JS_APP, locks.JS_DOC];
@@ -654,8 +652,6 @@ define(function (require, exports) {
         if (!previousDocument) {
             return Promise.resolve();
         }
-
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         return this.transfer(selectDocument, previousDocument);
     };

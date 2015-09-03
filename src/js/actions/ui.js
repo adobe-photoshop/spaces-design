@@ -468,7 +468,6 @@ define(function (require, exports) {
 
         // Handles spacebar + drag, scroll and window resize events
         _scrollHandler = function (event) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
             setTransformDebounced(event);
         }.bind(this);
         descriptor.addListener("scroll", _scrollHandler);
