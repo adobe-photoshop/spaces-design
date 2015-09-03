@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable"),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        _ = require("lodash");
 
     var os = require("adapter/os");
 
@@ -41,6 +42,17 @@ define(function (require, exports, module) {
         synchronization = require("js/util/synchronization");
 
     var PS_MAX_NEST_DEPTH = 10;
+
+    /**
+     * After the first render, the render window size will be calculated as
+     * parent container height divided by layer face height. For the first
+     * render, this approximation is used.
+     *
+     * @const
+     * @private
+     * @type {number}
+     */
+    var INITIAL_RENDER_WINDOW_SIZE = 100;
 
     /**
      * Get the layer faces that correspond to the current document. Used for
@@ -90,13 +102,15 @@ define(function (require, exports, module) {
         _mountedLayerIDs: null,
 
         /**
-         * The list of layers last scrolled to. Used by _scrollToSelection
-         * when determining whether to scroll.
+         * A layer which will be centered in the layers panel on the next render.
+         * This is always a "visible" layer, meaning it does not have a collapsed
+         * ancestor. This reference is nullified after scrolling to center the
+         * layer in the panel.
          *
          * @private
-         * @type {Immutable.List.<Layer>}
+         * @type {?Layer}
          */
-        _lastScrolledTo: Immutable.List(),
+        _focusLayer: null,
 
         getStateFromFlux: function () {
             var flux = this.getFlux(),
@@ -111,17 +125,59 @@ define(function (require, exports, module) {
             };
         },
 
+        /**
+         * Before rendering, set the _focusLayer so that its position in the
+         * index can be taken into account when computing the render window.
+         * After rendering, the panel will be scrolled to the focus layer.
+         *
+         * @param {Document} nextDocument
+         * @param {Document=} previousDocument
+         */
+        _updateFocusLayer: function (nextDocument, previousDocument) {
+            var nextLayers = nextDocument.layers,
+                nextSelected = nextLayers.selected,
+                nextSelectedIDs = collection.pluck(nextSelected, "id"),
+                previousSelected = previousDocument ? previousDocument.layers.selected : Immutable.List(),
+                previousSelectedIDs = collection.pluck(previousSelected, "id");
+
+            if (Immutable.is(nextSelectedIDs, previousSelectedIDs)) {
+                return;
+            }
+
+            var focusLayer = collection.difference(nextSelected, previousSelected).first();
+            if (focusLayer && !nextLayers.hasCollapsedAncestor(focusLayer)) {
+                this._focusLayer = focusLayer;
+            }
+        },
+
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
             this._mountedLayerIDs = new Set();
+            this._updateFocusLayer(this.props.document);
         },
 
         componentDidMount: function () {
-            this._scrollToSelection(this.props.document.layers);
+            this._initRenderWindow();
+            this._scrollToFocusLayer();
+
+            // Used to re-set the render window parameters (e.g., heights of the scroll 
+            // container and layer faces) after window resize, etc.
+            this._initRenderWindowDebounced = _.debounce(this._initRenderWindow, 1000);
+            window.addEventListener("resize", this._initRenderWindowDebounced);
+        },
+
+        componentWillUnmount: function () {
+            window.removeEventListener("resize", this._initRenderWindowDebounced);
+        },
+
+        componentWillUpdate: function (nextProps) {
+            // Set the focus layer before update
+            this._updateFocusLayer(nextProps.document, this.props.document);
         },
 
         componentDidUpdate: function () {
-            this._scrollToSelection(this.props.document.layers);
+            // Scroll to the focus layer after update
+            this._scrollToFocusLayer();
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -138,6 +194,18 @@ define(function (require, exports, module) {
             }
 
             if (this.state.dropTarget !== nextState.dropTarget) {
+                return true;
+            }
+
+            if (this.state.scrollTop !== nextState.scrollTop) {
+                return true;
+            }
+
+            if (this.state.renderWindowHeight !== nextState.renderWindowHeight) {
+                return true;
+            }
+
+            if (this.state.layerFaceHeight !== nextState.layerFaceHeight) {
                 return true;
             }
 
@@ -171,32 +239,18 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Scrolls the layers panel to make (newly) selected layers visible.
-         *
-         * @param {LayerStructure} layerStructure
+         * Scrolls the layers panel to make the focus layer visible, if defined.
          */
-        _scrollToSelection: function (layerStructure) {
-            var selected = layerStructure.selected;
-            if (selected.isEmpty()) {
+        _scrollToFocusLayer: function () {
+            var focusLayer = this._focusLayer;
+            if (!focusLayer) {
                 return;
             }
 
-            var previous = this._lastScrolledTo,
-                next = collection.difference(selected, previous),
-                visible = next.filterNot(function (layer) {
-                    return layerStructure.hasCollapsedAncestor(layer);
-                });
-
-            if (visible.isEmpty()) {
-                return;
-            }
-
-            var focusLayer = visible.first(),
-                childNode = React.findDOMNode(this.refs[focusLayer.key]);
-
+            var childNode = React.findDOMNode(this.refs[focusLayer.key]);
             if (childNode) {
                 childNode.scrollIntoViewIfNeeded();
-                this._lastScrolledTo = next;
+                this._focusLayer = null;
             }
         },
 
@@ -511,14 +565,104 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Workaround a CEF bug by clearing any active tooltips when scrolling.
+         * Initialize values needed for the render window calculation, including
+         * the height of the scroll container and the layer face height. This
+         * must be called before _updateRenderWindow can be called, and should
+         * be called again whenever those height values may have changed.
+         *
+         * @private
+         */
+        _initRenderWindow: function () {
+            var parent = this.refs.parent,
+                parentNode = React.findDOMNode(parent).parentNode,
+                parentBounds = parentNode.getBoundingClientRect(),
+                scrollTop = parentNode.scrollTop,
+                windowHeight = parentBounds.height;
+
+            // This happens if the LayersPanel is associated with an inactive document
+            if (windowHeight === 0) {
+                return;
+            }
+
+            // Find a valid layer element for a layer face height measurement
+            var children = parentNode.children[0].children,
+                faceHeight,
+                index,
+                child;
+
+            for (index = 0; index < children.length; index++) {
+                child = children[index];
+                if (child.classList.contains("layer__dummy")) {
+                    continue;
+                }
+
+                faceHeight = child.getBoundingClientRect().height;
+                break;
+            }
+
+            this.setState({
+                scrollTop: scrollTop,
+                renderWindowHeight: windowHeight,
+                layerFaceHeight: faceHeight
+            });
+        },
+
+        /**
+         * A debounced version of initRenderWindow, initialized in componentWillMount.
+         *
+         * @private
+         * @type {function}
+         */
+        _initRenderWindowDebounced: null,
+
+        /**
+         * Update the values needed to calculate the render window.
+         *
+         * @private
+         */
+        _updateRenderWindow: function () {
+            var parent = this.refs.parent,
+                parentNode = React.findDOMNode(parent).parentNode,
+                scrollTop = parentNode.scrollTop,
+                previousScrollTop = this.state.scrollTop || 0,
+                scrollChange = scrollTop - previousScrollTop,
+                windowHeight = this.state.renderWindowHeight;
+
+            // Ignore scroll events until the accumlated distance reaches a threshold.
+            // This takes the place of throttling.
+            if (Math.abs(scrollChange) < (windowHeight / 2)) {
+                return;
+            }
+
+            var scrollDown = scrollChange > 0;
+            this.setState({
+                scrollTop: parentNode.scrollTop,
+                scrollDown: scrollDown
+            });
+
+            // Once the updates have quiesced, re-initialize the render window
+            // calculations in case any of the bounds have changed as a result
+            // of something other than window resize.
+            this._initRenderWindowDebounced();
+        },
+
+        /**
+         * Update the render window, assuming no focus layer is defined. Also
+         * workaround a CEF bug by clearing any active tooltips when scrolling.
          * More details here: https://github.com/adobe-photoshop/spaces-design/issues/444
          *
          * @private
          */
         _handleScroll: function () {
             this._setTooltipThrottled("");
-            this._boundingClientRectCache = this.state.dragTargets ? new Map() : null;
+
+            if (this._boundingClientRectCache) {
+                this._boundingClientRectCache.clear();
+            }
+
+            if (!this._focusLayer) {
+                window.requestAnimationFrame(this._updateRenderWindow);
+            }
         },
 
         render: function () {
@@ -530,22 +674,85 @@ define(function (require, exports, module) {
                 dragTargets = this.state.pastDragTargets;
             }
 
-            var layerComponents = doc.layers.allVisibleReversed
-                    .filter(function (layer) {
-                        // Do not render descendants of collapsed layers unless
-                        // they have been mounted previously
-                        if (this._mountedLayerIDs.has(layer.id)) {
-                            return true;
-                        } else if (doc.layers.hasCollapsedAncestor(layer)) {
-                            return false;
-                        } else {
-                            this._mountedLayerIDs.add(layer.id);
-                            return true;
-                        }
-                    }, this)
-                    .map(function (layer, visibleIndex) {
+            // Only render layers that are not hidden by a collapsed ancestor
+            var layersWithExpandedAncestors = doc.layers.allVisibleReversed
+                .filter(function (layer) {
+                    return !doc.layers.hasCollapsedAncestor(layer);
+                });
+
+            var windowHeight = this.state.renderWindowHeight,
+                faceHeight = this.state.layerFaceHeight,
+                layersInRenderWindow;
+
+            // Calculate the exact or approximate number of layers faces that
+            // fit in visible part of the panel.
+            if (windowHeight && faceHeight) {
+                layersInRenderWindow = Math.ceil(windowHeight / faceHeight);
+            } else {
+                layersInRenderWindow = INITIAL_RENDER_WINDOW_SIZE;
+            }
+
+            var topVisibleIndex,
+                bottomVisibleIndex,
+                focusIndex;
+            
+            if (this._focusLayer) {
+                // If there is a focus layer, render a window of layers around that
+                var halfWindow = Math.round(layersInRenderWindow / 2);
+
+                focusIndex = layersWithExpandedAncestors.indexOf(this._focusLayer);
+                topVisibleIndex = Math.max(0, focusIndex - halfWindow);
+                bottomVisibleIndex = Math.min(layersWithExpandedAncestors.size - 1, focusIndex + halfWindow);
+            } else if (windowHeight && faceHeight) {
+                // Otherwise, assuming the render window values have been calculated,
+                // render a window of layers around the current scroll position. This
+                // is the most common case.
+                topVisibleIndex = Math.floor(this.state.scrollTop / faceHeight);
+                bottomVisibleIndex = Math.min(layersWithExpandedAncestors.size - 1,
+                    topVisibleIndex + layersInRenderWindow);
+            } else {
+                // If all else fails, just render the beginning of the list.
+                topVisibleIndex = 0;
+                bottomVisibleIndex = Math.min(layersWithExpandedAncestors.size - 1,
+                    layersInRenderWindow);
+            }
+
+            // Add padding layers to the top and the bottom of the list of layers
+            // to render. Add additional padding in the direction of the scroll. 
+            var scrollUp = this.state.scrollDown === false,
+                scrollDown = this.state.scrollDown === true,
+                topPadding = layersInRenderWindow * (scrollUp ? 2 : 1),
+                bottomPadding = layersInRenderWindow * (scrollDown ? 2 : 1);
+
+            // But, use a little less padding if we're rendering around a focus
+            // layer because we're probably making a direct jump from far away,
+            // and thus may have to render many new layers, which is expensive.
+            if (focusIndex > 0) {
+                topPadding = Math.round(topPadding / 2);
+                bottomPadding = Math.round(bottomPadding / 2);
+            }
+
+            // Trim the list of potential layers to the render window
+            var topRenderedIndex = Math.max(0, topVisibleIndex - topPadding),
+                bottomRenderedIndex = Math.min(bottomVisibleIndex + bottomPadding, layersWithExpandedAncestors.size),
+                renderedSize = bottomRenderedIndex - topRenderedIndex,
+                layersHiddenAbove = topRenderedIndex,
+                layersHiddenBelow = layersWithExpandedAncestors.size - bottomRenderedIndex,
+                layerComponents = layersWithExpandedAncestors
+                    .slice(topRenderedIndex, bottomRenderedIndex)
+                    .map(function (layer, index) {
                         var isDropTarget = !!dropTarget && dropTarget.key === layer.key,
-                            dropPosition = isDropTarget && this.state.dropPosition;
+                            dropPosition = isDropTarget && this.state.dropPosition,
+                            marginTop,
+                            marginBottom;
+
+                        // Add margins to the top and bottom layers in order to maintain
+                        // a constant scroll height.
+                        if (index === 0 && layersHiddenAbove > 0) {
+                            marginTop = layersHiddenAbove * faceHeight;
+                        } else if (index === (renderedSize - 1) && layersHiddenBelow > 0) {
+                            marginBottom = layersHiddenBelow * faceHeight;
+                        }
 
                         return (
                             <LayerFace
@@ -555,7 +762,7 @@ define(function (require, exports, module) {
                                 document={doc}
                                 layer={layer}
                                 keyObject={layer}
-                                visibleLayerIndex={visibleIndex}
+                                visibleLayerIndex={index}
                                 dragPlaceholderClass="face__placeholder"
                                 zone={doc.id}
                                 isValid={this._validDropTarget}
@@ -564,12 +771,15 @@ define(function (require, exports, module) {
                                 onDrop={this._handleDrop}
                                 getDragItems={this._getDraggingLayers}
                                 isDropTarget={isDropTarget}
-                                dropPosition={dropPosition} />
+                                dropPosition={dropPosition}
+                                marginTop={marginTop}
+                                marginBottom={marginBottom} />
                         );
                     }, this);
 
+            // Only render the bottom dummy layer if no other layers are hidden below.
             var bottomLayer = doc.layers.byIndex(1);
-            if (bottomLayer.kind === bottomLayer.layerKinds.GROUPEND) {
+            if (bottomLayer.kind === bottomLayer.layerKinds.GROUPEND && layersHiddenBelow === 0) {
                 var isBottomDropTarget = dropTarget && dropTarget.key === "dummy";
                 
                 layerComponents = layerComponents.push(
@@ -590,7 +800,8 @@ define(function (require, exports, module) {
             });
 
             var childComponents = (
-                <ul ref="parent" className={layerListClasses}>
+                <ul ref="parent"
+                    className={layerListClasses}>
                     {layerComponents}
                 </ul>
             );
