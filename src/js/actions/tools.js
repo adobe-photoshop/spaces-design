@@ -164,6 +164,31 @@ define(function (require, exports) {
                     height: Math.max(psSelectionHeight - inset * 2, 0)
                 }
             ),
+            insideCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {
+                    command: true
+                },
+                {
+                    x: psSelectionTL.x + inset,
+                    y: psSelectionTL.y + inset,
+                    width: Math.max(psSelectionWidth - inset * 2, 0),
+                    height: Math.max(psSelectionHeight - inset * 2, 0)
+                }
+            ),
+            // Used for distort/skew transformations
+            noOutsetCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                {
+                    command: true
+                },
+                {
+                    x: psSelectionTL.x - inset,
+                    y: psSelectionTL.y - inset,
+                    width: psSelectionWidth + inset * 2,
+                    height: psSelectionHeight + inset * 2
+                }
+            ),
             outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 {},
@@ -189,6 +214,8 @@ define(function (require, exports) {
 
         var pointerPolicyList = [
             insidePolicy,
+            insideCommandPolicy,
+            noOutsetCommandPolicy,
             outsidePolicy,
             outsideShiftPolicy
         ];
