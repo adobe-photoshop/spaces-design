@@ -268,3 +268,28 @@
 .column-half {
     width: 0.5rem;
 }
+
+.panel__info {
+    flex-shrink: 1;
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 1rem;
+    text-align: center;
+    line-height: 1.8rem;
+    margin: 0 2rem;
+    color: @item-disabled;
+
+    div {
+        margin-bottom: 1rem;
+    }
+    &__title {
+        color: @item-inactive;
+    }
+    &__link a {
+        color: @item-inactive;
+    }
+}
