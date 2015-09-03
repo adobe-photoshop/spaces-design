@@ -136,7 +136,7 @@ define(function (require, exports, module) {
         componentDidMount: function () {
             this._currentMouseX = null;
             this._currentMouseY = null;
-            this._marqueeResult = [];
+            this._marqueeResult = null;
 
             this._drawDebounced();
             
@@ -388,6 +388,7 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
             this._marqueeRect = null;
+            this._marqueeResult = null;
         },
 
         /**
