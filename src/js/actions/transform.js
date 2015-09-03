@@ -71,10 +71,10 @@ define(function (require, exports) {
      */
     var _getMoveLayerActions = function (document, targetLayer, position, moveResults) {
         var overallBounds = document.layers.childBounds(targetLayer),
-            movingLayers = document.layers.descendants(targetLayer),
             deltaX = position.hasOwnProperty("x") ? position.x - overallBounds.left : 0,
             deltaY = position.hasOwnProperty("y") ? position.y - overallBounds.top : 0,
-            documentRef = documentLib.referenceBy.id(document.id);
+            documentRef = documentLib.referenceBy.id(document.id),
+            movingLayers = document.layers.descendants(targetLayer);
 
         moveResults = moveResults || [];
 
@@ -85,31 +85,19 @@ define(function (require, exports) {
             var layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
                 translateObj;
 
-            if (layer.isArtboard) {
-                var newX = position.hasOwnProperty("x") ? position.x : layer.bounds.left,
-                    newY = position.hasOwnProperty("y") ? position.y : layer.bounds.top,
-                    boundingBox = {
-                        top: newY,
-                        bottom: newY + layer.bounds.height,
-                        left: newX,
-                        right: newX + layer.bounds.width
-                    };
+            moveResults.push({
+                layer: layer,
+                x: layer.bounds.left + deltaX,
+                y: layer.bounds.top + deltaY
+            });
 
-                moveResults.push({
-                    layer: layer,
-                    x: newX,
-                    y: newY
-                });
-
-                translateObj = artboardLib.transform(layerRef, boundingBox);
-            } else {
-                moveResults.push({
-                    layer: layer,
-                    x: layer.bounds.left + deltaX,
-                    y: layer.bounds.top + deltaY
-                });
-                translateObj = layerLib.translate(layerRef, deltaX, deltaY);
+            // If the targetlayer is an artboard, we want the move action played only for it
+            // But we still want to reposition the child layers in our models so we stop here
+            if (targetLayer.isArtboard && layer !== targetLayer) {
+                return playObjects;
             }
+                
+            translateObj = layerLib.translate(layerRef, deltaX, deltaY);
 
             return playObjects.push({
                 layer: layer,
