@@ -348,20 +348,18 @@
         "ZOOM_TO_SELECTION": {
             "$action": "ui.centerOn",
             "$payload": {
-                "on": "selection",
                 "zoomInto": true,
                 "preserveFocus": true
             },
-            "$enable-rule": "layer-selected"
+            "$enable-rule": "have-document"
         },
         "CENTER_SELECTION": {
             "$action": "ui.centerOn",
             "$payload": {
-                "on": "selection",
                 "zoomInto": false,
                 "preserveFocus": true
             },
-            "$enable-rule": "layer-selected"
+            "$enable-rule": "have-document"
         },
         "TOGGLE_GUIDES": {
             "$action": "documents.toggleGuidesVisibility",

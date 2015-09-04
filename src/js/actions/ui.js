@@ -348,18 +348,25 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
+        var selection;
         switch (payload.on) {
-            case "selection":
-                targetBounds = currentDoc.layers.selectedAreaBounds;
-                if (!targetBounds || targetBounds.empty) {
-                    targetBounds = currentDoc.bounds;
-                }
-                break;
-            case "document":
+        case "selection":
+            selection = true;
+            break;
+        case "document":
+            selection = false;
+            break;
+        default:
+            selection = !currentDoc.layers.selected.isEmpty();
+        }
+
+        if (selection) {
+            targetBounds = currentDoc.layers.selectedAreaBounds;
+            if (!targetBounds || targetBounds.empty) {
                 targetBounds = currentDoc.visibleBounds;
-                break;
-            default:
-                throw new Error("Unexpected 'on' value");
+            }
+        } else {
+            targetBounds = currentDoc.visibleBounds;
         }
 
         return this.transfer(centerBounds, targetBounds, payload.zoomInto);

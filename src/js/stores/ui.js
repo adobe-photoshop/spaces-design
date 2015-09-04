@@ -119,15 +119,7 @@ define(function (require, exports, module) {
          * @type {number}
          */
         _toolbarWidth: null,
-        
-        /**
-         * A set of unique document IDs that are centered after panel resized. If a document's id is not in the set,
-         * it will be centered when it is selected.
-         *
-         * @private
-         * @type {Set.<number>}
-         */
-        _centeredDocumentIDs: null,
+    
 
         initialize: function () {
             this.bindActions(
@@ -139,9 +131,7 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated,
                 events.document.RESET_BOUNDS, this._handleLayersUpdated,
-                events.document.history.nonOptimistic.RESET_BOUNDS, this._handleLayersUpdated,
-                events.document.SELECT_DOCUMENT, this._handleSelectDocument,
-                events.document.CLOSE_DOCUMENT, this._handleCloseDocument
+                events.document.history.nonOptimistic.RESET_BOUNDS, this._handleLayersUpdated
             );
 
             this._handleReset();
@@ -161,7 +151,6 @@ define(function (require, exports, module) {
             this._centerOffsets = null;
             this._transformMatrix = null;
             this._inverseTransformMatrix = null;
-            this._centeredDocumentIDs = new Set();
 
             this._panelWidth = 0;
             this._headerHeight = 0;
@@ -431,44 +420,7 @@ define(function (require, exports, module) {
             }
 
             if (this._recalculateCenterOffset()) {
-                this._centerCurrentDocumentOnce();
                 this.emit("change");
-            }
-        },
-        
-        /**
-         * Center the selected document if panel-resize event occurse. 
-         * 
-         * @private
-         */
-        _handleSelectDocument: function () {
-            this.waitFor(["application"], function () {
-                this._centerCurrentDocumentOnce();
-            });
-        },
-        
-        /**
-         * Handle document close by removing its ID from centered documents list.
-         * 
-         * @private
-         * @param {{documentID: number}} payload
-         */
-        _handleCloseDocument: function (payload) {
-            this._centeredDocumentIDs.delete(payload.documentID);
-        },
-        
-        /**
-         * Center the selected document once.
-         *
-         * @private
-         */
-        _centerCurrentDocumentOnce: function () {
-            var applicationStore = this.flux.store("application"),
-                currentDocId = applicationStore.getCurrentDocumentID();
-            
-            if (currentDocId && !this._centeredDocumentIDs.has(currentDocId)) {
-                this._centeredDocumentIDs.add(currentDocId);
-                this.flux.actions.ui.centerOn({ on: "document", zoomInto: true, preserveFocus: true });
             }
         },
 
