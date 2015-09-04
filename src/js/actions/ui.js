@@ -453,6 +453,7 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _scrollHandler,
+        _activationChangeHandler,
         _resizeHandler;
 
     /**
@@ -476,6 +477,12 @@ define(function (require, exports) {
             setTransformDebounced(event);
         }.bind(this);
         descriptor.addListener("scroll", _scrollHandler);
+
+        // Handles Photoshop focus change events
+        _activationChangeHandler = function (event) {
+            this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: event.becameActive });
+        }.bind(this);
+        adapterOS.addListener("activationChanged", _activationChangeHandler);
 
         var windowResizeDebounced = synchronization.debounce(function () {
             return this.flux.actions.ui.setOverlayCloaking();
@@ -518,6 +525,7 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("scroll", _scrollHandler);
+        adapterOS.removeListener("activationChanged", _activationChangeHandler);
         window.removeEventListener("resize", _resizeHandler);
 
         return Promise.resolve();
