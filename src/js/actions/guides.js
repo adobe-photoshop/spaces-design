@@ -315,7 +315,7 @@ define(function (require, exports) {
     /**
      * Clears all the guides in the given document
      *
-     * @param {{id: number}} document Document model or an object containing document ID
+     * @param {Document=} document Document model
      * @return {Promise}
      */
     var clearGuides = function (document) {
@@ -339,7 +339,7 @@ define(function (require, exports) {
             });
     };
     clearGuides.reads = [];
-    clearGuides.writes = [locks.JS_DOC];
+    clearGuides.writes = [locks.JS_DOC, locks.PS_DOC];
     clearGuides.transfers = [resetGuidePolicies];
 
     /**

@@ -526,6 +526,9 @@
                     }
                 },
                 {
+                    "separator": true
+                },
+                {
                     "id": "CLEAR_GUIDES"
                 }
             ]
