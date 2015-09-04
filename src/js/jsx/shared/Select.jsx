@@ -230,7 +230,7 @@ define(function (require, exports, module) {
          * @param {string} id
          */
         _setSelected: function (id) {
-            if (id !== this.state.selected && this.props.onChange(id) !== false) {
+            if (this.props.onChange(id) !== false) {
                 this.setState({
                     selected: id
                 });
