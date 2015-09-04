@@ -48,6 +48,7 @@ define(function (require, exports) {
         searchActions = require("./search/libraries"),
         shapeActions = require("./shapes"),
         typeActions = require("./type"),
+        policyActions = require("./policy"),
         preferencesActions = require("./preferences");
 
     /**
@@ -551,10 +552,26 @@ define(function (require, exports) {
             })
             .bind(this)
             .then(function (path) {
-                var docRef = docAdapter.referenceBy.id(currentDocument.id),
-                    placeObj = libraryAdapter.placeElement(docRef, element, path, location);
+                return this.transfer(policyActions.addKeydownPolicy, true, os.eventKeyCode.ENTER, null)
+                    .bind(this)
+                    .then(function (policyID) {
+                        var docRef = docAdapter.referenceBy.id(currentDocument.id),
+                            placeObj = libraryAdapter.placeElement(docRef, element, path, location);
 
-                return descriptor.playObject(placeObj);
+                        // This command is played "asynchronously", which means that Photoshop will
+                        // allow CEF to run while the command is being played (i.e., while in the
+                        // smart-object placement tracker). As a consequence of playing the command
+                        // in this mode, we do not expect the usual response and instead expect to
+                        // receive a placeEvent notification immediately after the call resolves.
+                        // So, although the command does not resolve until the placement has finished,
+                        // it does resolve before the layer model has been updated because the event
+                        // has not yet been received. For more details see issue #2177.
+                        return descriptor.playObject(placeObj, { synchronous: false })
+                            .bind(this)
+                            .finally(function () {
+                                return this.transfer(policyActions.removeKeyboardPolicies, policyID, true);
+                            });
+                    });
             })
             .then(function () {
                 return this.transfer(layerActions._getLayerIDsForDocumentID, currentDocument.id);
@@ -567,17 +584,16 @@ define(function (require, exports) {
                 //        to get all the layer IDs.
 
                 var nextLayerIDs = nextDocumentIDS.layerIDs,
-                    existingLayerIDs = currentDocument.layers.index.toArray();
+                    existingLayerIDs = currentDocument.layers.index.toArray(),
+                    newLayerIDs = _.difference(nextLayerIDs, existingLayerIDs).reverse();
 
-                return _.difference(nextLayerIDs, existingLayerIDs).reverse();
-            })
-            .then(function (newLayerIDs) {
                 return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true);
             });
     };
     createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
     createLayerFromElement.writes = [locks.PS_DOC];
-    createLayerFromElement.transfers = [layerActions._getLayerIDsForDocumentID, layerActions.addLayers];
+    createLayerFromElement.transfers = [layerActions._getLayerIDsForDocumentID, layerActions.addLayers,
+        policyActions.addKeydownPolicy, policyActions.removeKeyboardPolicies];
 
     /**
      * Applies the given layer style element to the active layers

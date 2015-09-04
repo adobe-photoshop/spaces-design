@@ -731,6 +731,38 @@ define(function (require, exports) {
     toggleSmartGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
 
     /**
+     * Handler for the placeEvent notification. If the event contains
+     * the layer ID of a layer not in the model, calls addLayers on
+     * that layerID.
+     *
+     * @param {{ID: number}} event
+     * @return {Promise}
+     */
+    var handlePlaceEvent = function (event) {
+        var applicationStore = this.flux.store("application"),
+            document = applicationStore.getCurrentDocument();
+
+        if (!document) {
+            var error = new Error("Place event received without a current document");
+            return Promise.reject(error);
+        }
+
+        var layerID = event.ID;
+        if (!layerID) {
+            return this.transfer(updateDocument);
+        }
+
+        if (document.layers.byID(layerID)) {
+            return Promise.resolve();
+        }
+
+        return this.transfer(layerActions.addLayers, document, layerID);
+    };
+    handlePlaceEvent.reads = [locks.JS_APP];
+    handlePlaceEvent.writes = [];
+    handlePlaceEvent.transfers = [updateDocument, "layers.addLayers"];
+
+    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
@@ -866,15 +898,7 @@ define(function (require, exports) {
         // This event is triggered when a new smart object layer is placed,
         // e.g., by dragging an image into an open document.
         _placeEventHandler = function (event) {
-            var document = applicationStore.getCurrentDocument(),
-                layerID = event.ID;
-
-            if (document && layerID) {
-                this.flux.actions.layers.addLayers(document, layerID);
-            } else {
-                log.warn("Place event received without a current document", event);
-                this.flux.actions.documents.updateDocument();
-            }
+            this.flux.actions.documents.handlePlaceEvent(event);
         }.bind(this);
         descriptor.addListener("placeEvent", _placeEventHandler);
 
@@ -951,6 +975,7 @@ define(function (require, exports) {
     exports.packageDocument = packageDocument;
     exports.toggleGuidesVisibility = toggleGuidesVisibility;
     exports.toggleSmartGuidesVisibility = toggleSmartGuidesVisibility;
+    exports.handlePlaceEvent = handlePlaceEvent;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
