@@ -561,6 +561,9 @@
                             "shift": true
                         }
                     }
+                },
+                {
+                    "id": "CLEAR_GUIDES"
                 }
             ]
         },
