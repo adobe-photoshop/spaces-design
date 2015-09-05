@@ -40,6 +40,7 @@ define(function (require, exports, module) {
     var strings = require("i18n!nls/strings"),
         svgUtil = require("js/util/svg"),
         collection = require("js/util/collection"),
+        gridSort = require("js/util/gridsort"),
         ExportAsset = require("js/models/exportasset");
 
     /**
@@ -87,6 +88,12 @@ define(function (require, exports, module) {
                 );
             });
 
+            var prefixComponent = this.props.prefix && (
+                <div className="exports-panel__layer__prefix" >
+                    {this.props.prefix}
+                </div>
+            );
+
             return (
                 <div className="exports-panel__layer-wrapper" >
                     <div className="column-2">
@@ -104,6 +111,7 @@ define(function (require, exports, module) {
                         <div
                             className="exports-panel__layer__name"
                             title={layer.name} >
+                            {prefixComponent}
                             {layer.name}
                         </div>
                         <div className="exports-panel__layer-assets">
@@ -144,11 +152,13 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 document = flux.store("application").getCurrentDocument(),
-                documentExports = document && flux.store("export").getDocumentExports(document.id);
+                exportStore = flux.store("export"),
+                documentExports = document && exportStore.getDocumentExports(document.id);
 
             return {
                 document: document,
-                documentExports: documentExports
+                documentExports: documentExports,
+                exportStore: exportStore
             };
         },
 
@@ -185,10 +195,22 @@ define(function (require, exports, module) {
             this.getFlux().actions.export.setAllArtboardsExportEnabled(this.state.document, enabled);
         },
 
+        /**
+         * Set the useArtboardPrefix flag
+         *
+         * @param {SyntheticEvent} event
+         * @param {boolean} enabled
+         */
+        _setUseArtboardPrefix: function (event, enabled) {
+            this.getFlux().actions.export.setUseArtboardPrefix(enabled);
+        },
+
         render: function () {
             var document = this.state.document,
                 documentExports = this.state.documentExports,
                 layerExportsMap = documentExports && documentExports.layerExportsMap,
+                exportStore = this.state.exportStore,
+                useArtboardPrefix = exportStore.getState().useArtboardPrefix,
                 freshState = this.state.fresh;
 
             if (!document || !documentExports) {
@@ -197,24 +219,26 @@ define(function (require, exports, module) {
 
             // Iterate over all configured assets, build the individual components,
             // and separate into separate lists (artboards vs. non-artboards)
-            var artboardLayers = documentExports.getLayersWithExports(document, true),
+            var artboardLayers = gridSort(documentExports.getLayersWithExports(document, true)),
                 nonABLayers = documentExports.getLayersWithExports(document, false);
 
             // Helper to generate a LayerExportsItem component
-            var layerExportComponent = function (layer) {
-                var layerExports = layerExportsMap.get(layer.id);
+            var layerExportComponent = function (layer, index) {
+                var layerExports = layerExportsMap.get(layer.id),
+                    prefix = exportStore.getExportPrefix(layer, index);
 
                 return (
                     <LayerExportsItem
                         document={document}
                         layer={layer}
+                        prefix={prefix}
                         layerExports={layerExports}
                         freshState={freshState}
                         key={"layer-" + layer.key} />
                 );
             };
 
-            var allArtboardsExportComponents = artboardLayers.reverse().map(layerExportComponent),
+            var allArtboardsExportComponents = artboardLayers.map(layerExportComponent),
                 allNonABLayerExportComponents = nonABLayers.reverse().map(layerExportComponent),
                 allArtboardsExportEnabled = collection.pluck(artboardLayers, "exportEnabled"),
                 allNonABLayersExportEnabled = collection.pluck(nonABLayers, "exportEnabled");
@@ -233,6 +257,12 @@ define(function (require, exports, module) {
                                 </div>
                                 <Gutter />
                                 {strings.EXPORT.EXPORT_LIST_ALL_ARTBOARDS}
+                                <Gutter />
+                                <CheckBox
+                                        checked={useArtboardPrefix}
+                                        onChange={this._setUseArtboardPrefix} />
+                                <Gutter />
+                                    Use Prefix
                             </div>
                             <div className="exports-panel__asset-list__list">
                                 {allArtboardsExportComponents}

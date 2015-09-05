@@ -114,7 +114,8 @@ define(function (require, exports, module) {
             ASSET_ADDED: "exportAssetAdded",
             DELETE_ASSET: "exportDeleteLayerAsset",
             SERVICE_STATUS_CHANGED: "exportServiceStatusChanged",
-            SET_AS_REQUESTED: "exportSetStatusRequested"
+            SET_AS_REQUESTED: "exportSetStatusRequested",
+            SET_STATE_PROPERTY: "setUseArtboardPrefix"
         },
         tool: {
             SELECT_TOOL: "selectTool",

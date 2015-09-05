@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var DocumentExports = require("js/models/documentexports"),
         events = require("../events");
@@ -45,6 +46,12 @@ define(function (require, exports, module) {
         _serviceAvailable: false,
 
         /**
+         * that
+         * @type {boolean}
+         */
+        _useArtboardPrefix: false,
+
+        /**
          * Loads saved preferences from local storage and binds flux actions.
          */
         initialize: function () {
@@ -58,7 +65,8 @@ define(function (require, exports, module) {
                 events.export.DELETE_ASSET, this._deleteAsset,
                 events.export.SET_AS_REQUESTED, this._setAssetsRequested,
                 events.export.SERVICE_STATUS_CHANGED, this._serviceStatusChanged,
-                events.document.DOCUMENT_UPDATED, this._documentUpdated
+                events.document.DOCUMENT_UPDATED, this._documentUpdated,
+                events.export.SET_STATE_PROPERTY, this._setStateProp
             );
         },
 
@@ -90,8 +98,24 @@ define(function (require, exports, module) {
          */
         getState: function () {
             return {
-                serviceAvailable: this._serviceAvailable
+                serviceAvailable: this._serviceAvailable,
+                useArtboardPrefix: this._useArtboardPrefix
             };
+        },
+
+        /**
+         * Generate a prefix for the given layer, based on the index,
+         * using the internal state to determine if a prefix is warranted;
+         * null otherwise
+         *
+         * @param {Layer} layer
+         * @param {number} index
+         * @return {?string}
+         */
+        getExportPrefix: function (layer, index) {
+            if (this._useArtboardPrefix && layer.isArtboard) {
+                return _.padLeft(index + 1, 3, "0");
+            }
         },
 
         /**
@@ -258,6 +282,21 @@ define(function (require, exports, module) {
          */
         _deleteExports: function () {
             this._documentExportsMap = new Immutable.Map();
+        },
+
+        /**
+         * Event handler: Update internal state properties
+         *
+         * @param {{useArtboardPrefix: boolean}} payload
+         */
+        _setStateProp: function (payload) {
+            if (payload.hasOwnProperty("useArtboardPrefix")) {
+                var newValue = !!payload.useArtboardPrefix;
+                if (newValue !== this._useArtboardPrefix) {
+                    this._useArtboardPrefix = newValue;
+                    this.emit("change");
+                }
+            }
         }
 
     });

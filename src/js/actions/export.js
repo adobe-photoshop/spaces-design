@@ -34,6 +34,7 @@ define(function (require, exports) {
         preferenceLib = require("adapter/lib/preference");
 
     var dialog = require("./dialog"),
+        preferences = require("./preferences"),
         events = require("js/events"),
         locks = require("js/locks"),
         globalUtil = require("js/util/global"),
@@ -144,11 +145,15 @@ define(function (require, exports) {
      * @param {Layer=} layer If not supplied, this is a document-level asset
      * @param {number} assetIndex index of this asset within the layer's list
      * @param {ExportAsset} asset asset to export
+     * @param {string=} baseDir Optional directory path in to which assets should be exported
+     * @param {string=} prefix
      * @return {Promise}
      */
-    var _exportAsset = function (document, layer, assetIndex, asset, baseDir) {
+    var _exportAsset = function (document, layer, assetIndex, asset, baseDir, prefix) {
         var fileName = (layer ? layer.name : strings.EXPORT.EXPORT_DOCUMENT_FILENAME) + asset.suffix,
             _layers = layer ? Immutable.List.of(layer) : null;
+
+        fileName = prefix ? prefix + fileName : fileName;
 
         return _exportService.exportAsset(document, layer, asset, fileName, baseDir)
             .bind(this)
@@ -585,7 +590,8 @@ define(function (require, exports) {
 
         var documentID = document.id,
             documentExports = this.flux.stores.export.getDocumentExports(documentID),
-            layerExportsMap = documentExports && documentExports.layerExportsMap;
+            layerExportsMap = documentExports && documentExports.layerExportsMap,
+            exportStore = this.flux.stores.export;
 
         if (!layerExportsMap || layerExportsMap.size < 1) {
             return Promise.resolve();
@@ -609,10 +615,12 @@ define(function (require, exports) {
 
             return _setAssetsRequested.call(this, document.id, layerIdList).then(function () {
                 // Iterate over the layers, find the associated export assets, and export them
-                var exportArray = layersList.flatMap(function (layer) {
+                var exportArray = layersList.flatMap(function (layer, index) {
+                    var prefix = exportStore.getExportPrefix(layer, index);
+
                     return documentExports.getLayerExports(layer.id)
                         .map(function (asset, index) {
-                            return _exportAsset.call(this, document, layer, index, asset, baseDir);
+                            return _exportAsset.call(this, document, layer, index, asset, baseDir, prefix);
                         }, this);
                 }, this);
 
@@ -711,6 +719,22 @@ define(function (require, exports) {
     deleteFiles.writes = [locks.GENERATOR];
 
     /**
+     * Update the both the store state, and the preferences, with useArtboardPrefix
+     *
+     * @param {boolean} enabled
+     * @return {Promise}
+     */
+    var setUseArtboardPrefix = function (enabled) {
+        var dispatchPromise = this.dispatchAsync(events.export.SET_STATE_PROPERTY, { useArtboardPrefix: enabled }),
+            prefPromise = this.transfer(preferences.setPreference, "exportUseArtboardPrefix", enabled);
+
+        return Promise.join(dispatchPromise, prefPromise);
+    };
+    setUseArtboardPrefix.reads = [];
+    setUseArtboardPrefix.writes = [locks.JS_EXPORT, locks.JS_PREF];
+    setUseArtboardPrefix.transfers = [preferences.setPreference];
+
+    /**
      * After start up, ensure that generator is enabled, and then initialize the export service
      *
      * If in debug mode, do a pre check in case we're using a remote connection generator
@@ -788,6 +812,12 @@ define(function (require, exports) {
                     return _enableAndConnect();
                 }
             })
+            .bind(this)
+            .tap(function () {
+                var useArtboardPrefix = this.flux.stores.preferences.getState().get("exportUseArtboardPrefix", false);
+                
+                return this.dispatchAsync(events.export.SET_STATE_PROPERTY, { useArtboardPrefix: useArtboardPrefix });
+            })
             .catch(function (e) {
                 log.error("Export Service failed to initialize.  Giving Up.  Cause: " + e.message);
                 return false;
@@ -828,6 +858,7 @@ define(function (require, exports) {
     exports.promptForFolder = promptForFolder;
     exports.exportLayerAssets = exportLayerAssets;
     exports.exportDocumentAssets = exportDocumentAssets;
+    exports.setUseArtboardPrefix = setUseArtboardPrefix;
     exports.afterStartup = afterStartup;
     
     exports.copyFile = copyFile;
