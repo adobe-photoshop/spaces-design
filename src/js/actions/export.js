@@ -551,12 +551,12 @@ define(function (require, exports) {
                 }
             )
             .finally(function () {
-                return this.transfer(policyActions.reenabledKeyboardPolicies);
+                return this.transfer(policyActions.reenableKeyboardPolicies);
             });
     };
     promptForFolder.reads = [];
     promptForFolder.writes = locks.ALL_LOCKS;
-    promptForFolder.transfers = [policyActions.disableKeyboardPolicies, policyActions.reenabledKeyboardPolicies];
+    promptForFolder.transfers = [policyActions.disableKeyboardPolicies, policyActions.reenableKeyboardPolicies];
 
     /**
      * Export all layer assets for the given document for which export has been enabled (layer.exportEnabled)
@@ -662,13 +662,14 @@ define(function (require, exports) {
 
         // prompt for folder and then export to the result.
         // resolve immediately if no folder is returned
-        return _exportService.promptForFolder(_lastFolderPath || "~").then(function (baseDir) {
-            return baseDir ? exportToDir(baseDir) : Promise.resolve();
-        });
+        return this.transfer(promptForFolder)
+            .then(function (baseDir) {
+                return baseDir ? exportToDir(baseDir) : Promise.resolve();
+            });
     };
     exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportDocumentAssets.writes = [locks.GENERATOR];
-    exportDocumentAssets.transfers = [updateExportAsset];
+    exportDocumentAssets.transfers = [promptForFolder, updateExportAsset];
 
     /**
      * After start up, ensure that generator is enabled, and then initialize the export service

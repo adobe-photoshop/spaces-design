@@ -101,7 +101,7 @@ define(function (require, exports, module) {
          * Get the entire PolicySet of the given kind
          *
          * @param {string} kind
-         * @return {?EventPolicySet} [description]
+         * @return {?EventPolicySet}
          */
         getPolicies: function (kind) {
             return this._policySets[kind];
