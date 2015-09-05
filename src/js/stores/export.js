@@ -31,6 +31,31 @@ define(function (require, exports, module) {
     var DocumentExports = require("js/models/documentexports"),
         events = require("../events");
 
+    /**
+     * Holding cell for various state properties
+     *
+     * @type {Immutable.Record}
+     */
+    var State = Immutable.Record({
+        /**
+         * Export Service is available?
+         * @type {boolean}
+         */
+        serviceAvailable: false,
+
+        /**
+         * Export Service is busy?
+         * @type {boolean}
+         */
+        serviceBusy: false,
+
+        /**
+         * that
+         * @type {boolean}
+         */
+        useArtboardPrefix: false
+    });
+
     var ExportStore = Fluxxor.createStore({
 
         /**
@@ -40,16 +65,11 @@ define(function (require, exports, module) {
         _documentExportsMap: null,
 
         /**
-         * Export Service is available?
-         * @type {boolean}
+         * state
+         *
+         * @type {[type]}
          */
-        _serviceAvailable: false,
-
-        /**
-         * that
-         * @type {boolean}
-         */
-        _useArtboardPrefix: false,
+        _state: new State(),
 
         /**
          * Loads saved preferences from local storage and binds flux actions.
@@ -64,9 +84,9 @@ define(function (require, exports, module) {
                 events.export.ASSET_ADDED, this._assetAdded,
                 events.export.DELETE_ASSET, this._deleteAsset,
                 events.export.SET_AS_REQUESTED, this._setAssetsRequested,
-                events.export.SERVICE_STATUS_CHANGED, this._serviceStatusChanged,
+                events.export.SERVICE_STATUS_CHANGED, this._setState,
                 events.document.DOCUMENT_UPDATED, this._documentUpdated,
-                events.export.SET_STATE_PROPERTY, this._setStateProp
+                events.export.SET_STATE_PROPERTY, this._setState
             );
         },
 
@@ -97,10 +117,7 @@ define(function (require, exports, module) {
          * @return {{serviceAvailable: boolean}}
          */
         getState: function () {
-            return {
-                serviceAvailable: this._serviceAvailable,
-                useArtboardPrefix: this._useArtboardPrefix
-            };
+            return this._state;
         },
 
         /**
@@ -116,17 +133,6 @@ define(function (require, exports, module) {
             if (this._useArtboardPrefix && layer.isArtboard) {
                 return _.padLeft(index + 1, 3, "0");
             }
-        },
-
-        /**
-         * Event handler: Sets the serviceAvailable flag based on the provided payload
-         *
-         * @private
-         * @param {{serviceAvailable: boolean}} payload
-         */
-        _serviceStatusChanged: function (payload) {
-            this._serviceAvailable = !!payload.serviceAvailable;
-            this.emit("change");
         },
 
         /**
@@ -287,18 +293,15 @@ define(function (require, exports, module) {
         /**
          * Event handler: Update internal state properties
          *
-         * @param {{useArtboardPrefix: boolean}} payload
+         * @param {object} payload State-like object
          */
-        _setStateProp: function (payload) {
-            if (payload.hasOwnProperty("useArtboardPrefix")) {
-                var newValue = !!payload.useArtboardPrefix;
-                if (newValue !== this._useArtboardPrefix) {
-                    this._useArtboardPrefix = newValue;
-                    this.emit("change");
-                }
+        _setState: function (payload) {
+            var newState = this._state.merge(payload);
+            if (newState !== this._state) {
+                this._state = newState;
+                this.emit("change");
             }
         }
-
     });
 
     module.exports = ExportStore;

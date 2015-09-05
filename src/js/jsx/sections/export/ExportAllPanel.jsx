@@ -172,7 +172,7 @@ define(function (require, exports, module) {
 
             this.setState({ fresh: false });
 
-            exportActions.exportLayerAssets(document);
+            exportActions.exportLayerAssetsDebounced(document);
         },
 
         /**
@@ -210,7 +210,9 @@ define(function (require, exports, module) {
                 documentExports = this.state.documentExports,
                 layerExportsMap = documentExports && documentExports.layerExportsMap,
                 exportStore = this.state.exportStore,
-                useArtboardPrefix = exportStore.getState().useArtboardPrefix,
+                exportState = exportStore.getState(),
+                useArtboardPrefix = exportState.useArtboardPrefix,
+                serviceBusy = exportState.serviceBusy,
                 freshState = this.state.fresh;
 
             if (!document || !documentExports) {
@@ -243,8 +245,13 @@ define(function (require, exports, module) {
                 allArtboardsExportEnabled = collection.pluck(artboardLayers, "exportEnabled"),
                 allNonABLayersExportEnabled = collection.pluck(nonABLayers, "exportEnabled");
 
+            var panelClassnames = classnames({
+                "exports-panel__container": true,
+                "exports-panel__container__busy": serviceBusy
+            });
+
             return (
-                <div className="exports-panel__container">
+                <div className={panelClassnames}>
                     <TitleHeader
                         title={strings.TITLE_EXPORT} />
                     <div className="exports-panel__two-column">
@@ -291,6 +298,7 @@ define(function (require, exports, module) {
                         </Button>
                         <div className="exports-panel__button-group__separator"></div>
                         <Button
+                            disabled={serviceBusy}
                             onClick={this._exportAllAssets}>
                             {strings.EXPORT.BUTTON_EXPORT}
                         </Button>

@@ -62,6 +62,13 @@ define(function (require, exports) {
     var _lastFolderPath = null;
 
     /**
+     * List of actively running export jobs
+     *
+     * @type {Immutable.Iterable.<Promise>}
+     */
+    var _activeExports = null;
+
+    /**
      * Fetch relevant data from both the document and export stores, and sync the metadata to
      * the photoshop "extension data".  If layerID is not supplied, then only document level 
      * metadata is synced
@@ -163,7 +170,7 @@ define(function (require, exports) {
                     filePath: pathArray[0],
                     status: ExportAsset.STATUS.STABLE
                 };
-                return this.transfer(updateExportAsset, document, _layers, assetIndex, assetProps);
+                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps);
             })
             .catch(function (e) {
                 log.error("Export Failed for asset %d of layerID %d, documentID %d, with error",
@@ -172,8 +179,30 @@ define(function (require, exports) {
                     filePath: "",
                     status: ExportAsset.STATUS.ERROR
                 };
-                return this.transfer(updateExportAsset, document, _layers, assetIndex, assetProps);
+                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps);
             }) ;
+    };
+
+    /**
+     * Store a promise in state that will resolve when all given export promises
+     * are resolved or any are rejected
+     * 
+     * @param {Immutable.Iterable.<Promise>} exportList
+     */
+    var _batchExports = function (exportList) {
+        if (_activeExports) {
+            throw new Error("Can't start a batch export while one is already active");
+        }
+
+        _activeExports = Promise.all(exportList.toArray())
+            .bind(this)
+            .catch(function (err) {
+                log.error("There were errors while exporting", err);
+            })
+            .finally(function () {
+                _activeExports = null;
+                return this.dispatchAsync(events.export.SET_STATE_PROPERTY, { serviceBusy: false });
+            });
     };
 
     /**
@@ -580,6 +609,9 @@ define(function (require, exports) {
      * @return {Promise} Resolves when all assets have been exported, or if canceled via the file chooser
      */
     var exportLayerAssets = function (document, layers) {
+        if (_activeExports) {
+            Promise.reject(new Error("Can not export assets while another batch job in progress"));
+        }
         if (!document) {
             Promise.resolve("No Document");
         }
@@ -613,19 +645,25 @@ define(function (require, exports) {
 
             var layerIdList = collection.pluck(layersList, "id");
 
-            return _setAssetsRequested.call(this, document.id, layerIdList).then(function () {
-                // Iterate over the layers, find the associated export assets, and export them
-                var exportArray = layersList.flatMap(function (layer, index) {
-                    var prefix = exportStore.getExportPrefix(layer, index);
+            return _setAssetsRequested.call(this, document.id, layerIdList)
+                .bind(this)
+                .then(function () {
+                    return this.dispatchAsync(events.export.SET_STATE_PROPERTY, { serviceBusy: true });
+                })
+                .then(function () {
+                    // Iterate over the layers, find the associated export assets, and export them
+                    var exportList = layersList.flatMap(function (layer, index) {
+                        var prefix = exportStore.getExportPrefix(layer, index);
 
-                    return documentExports.getLayerExports(layer.id)
-                        .map(function (asset, index) {
-                            return _exportAsset.call(this, document, layer, index, asset, baseDir, prefix);
-                        }, this);
-                }, this);
+                        return documentExports.getLayerExports(layer.id)
+                            .map(function (asset, index) {
+                                return _exportAsset.call(this, document, layer, index, asset, baseDir, prefix);
+                            }, this);
+                    }, this);
 
-                return Promise.all(exportArray.toArray());
-            });
+                    _batchExports.call(this, exportList);
+                    return Promise.resolve();
+                });
         }.bind(this);
 
         // prompt for folder and then export to the result.
@@ -635,9 +673,9 @@ define(function (require, exports) {
                 return baseDir ? exportToDir(baseDir) : Promise.resolve();
             });
     };
-    exportLayerAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
-    exportLayerAssets.writes = [locks.GENERATOR];
-    exportLayerAssets.transfers = [promptForFolder, updateExportAsset];
+    exportLayerAssets.reads = [locks.JS_DOC];
+    exportLayerAssets.writes = [locks.JS_EXPORT, locks.GENERATOR];
+    exportLayerAssets.transfers = [promptForFolder];
 
     /**
      * Export all document-level assets for the given document
@@ -662,16 +700,22 @@ define(function (require, exports) {
 
         // helper to perform the export after a directory has been determined
         var exportToDir = function (baseDir) {
-            return _setAssetsRequested.call(this, document.id).then(function () {
-                _lastFolderPath = baseDir;
+            return _setAssetsRequested.call(this, document.id)
+                .bind(this)
+                .then(function () {
+                    return this.dispatchAsync(events.export.SET_STATE_PROPERTY, { serviceBusy: true });
+                })
+                .then(function () {
+                    _lastFolderPath = baseDir;
 
-                // Iterate over the root document assets, and export them
-                var exportArray = documentExports.rootExports.map(function (asset, index) {
-                    return _exportAsset.call(this, document, null, index, asset, baseDir);
-                }, this).toArray();
+                    // Iterate over the root document assets, and export them
+                    var exportList = documentExports.rootExports.map(function (asset, index) {
+                        return _exportAsset.call(this, document, null, index, asset, baseDir);
+                    }, this);
 
-                return Promise.all(exportArray);
-            });
+                    _batchExports.call(this, exportList);
+                    return Promise.resolve();
+                });
         }.bind(this);
 
         // prompt for folder and then export to the result.
@@ -832,6 +876,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onReset = function () {
+        _lastFolderPath = null;
+        _activeExports = null;
+
         if (!_exportService) {
             return Promise.resolve();
         }
