@@ -152,6 +152,7 @@ define(function (require, exports, module) {
                         list={scaleListID}
                         className="dialog-export-scale"
                         options={_scaleOptions.toList()}
+                        value={scaleOption.title}
                         defaultSelected={scaleOption.id}
                         onChange={this._handleUpdateScale}
                         live={false}
@@ -169,6 +170,7 @@ define(function (require, exports, module) {
                         list={formatListID}
                         className="dialog-export-format"
                         options={_formatOptions.toList()}
+                        value={exportAsset.format.toUpperCase()}
                         defaultSelected={exportAsset.format}
                         onChange={this._handleUpdateFormat}
                         live={false}

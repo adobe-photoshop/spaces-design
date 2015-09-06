@@ -75,7 +75,8 @@ define(function (require, exports, module) {
                 },
                 amendment: {
                     REORDER_LAYERS: "reorderLayersAmendment",
-                    RESET_LAYERS: "resetLayersAmendement"
+                    RESET_LAYERS: "resetLayersAmendement",
+                    LAYER_EXPORT_ENABLED_CHANGED: "layerExportEnabledChanged"
                 }
             },
             DELETE_LAYERS_NO_HISTORY: "deleteLayersNoHistory",
@@ -85,7 +86,6 @@ define(function (require, exports, module) {
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             REORDER_LAYERS: "reorderLayersNoHistory",
             LAYER_BOUNDS_CHANGED: "layerBoundsChanged",
-            LAYER_EXPORT_ENABLED_CHANGED: "layerExportEnabledChanged",
             RESET_BOUNDS: "resetBoundsNoHistory", // slightly different than above LAYER_BOUNDS_CHANGED
             RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",

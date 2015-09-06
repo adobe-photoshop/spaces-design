@@ -470,7 +470,7 @@ define(function (require, exports) {
                 layerIDs: collection.pluck(_layers, "id"),
                 exportEnabled: true
             };
-            updatePromise = this.dispatchAsync(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload);
+            updatePromise = this.dispatchAsync(events.document.history.amendment.LAYER_EXPORT_ENABLED_CHANGED, payload);
         } else {
             updatePromise = Promise.resolve();
         }
@@ -533,7 +533,7 @@ define(function (require, exports) {
                 exportEnabled: exportEnabled
             };
 
-        return this.dispatchAsync(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload)
+        return this.dispatchAsync(events.document.history.amendment.LAYER_EXPORT_ENABLED_CHANGED, payload)
             .bind(this)
             .then(function () {
                 return _syncExportMetadata.call(this, document.id, layerIDs, true);
