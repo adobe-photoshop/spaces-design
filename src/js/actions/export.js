@@ -153,7 +153,10 @@ define(function (require, exports) {
     };
 
     /**
-     * Helper function to export a single asset using the export service, and update the metadata afterwards
+     * Helper function to export a single asset using the export service, and update the metadata afterwards.
+     * 
+     * When the export service's promise is resolved, a fresh flux action is called
+     * to perform the metadata sync (to wit: it does not transfer to updateExportAsset)
      *
      * @private
      * @param {Document} document
@@ -209,7 +212,7 @@ define(function (require, exports) {
             })
             .finally(function () {
                 _activeExports = null;
-                return this.dispatchAsync(events.export.SET_STATE_PROPERTY, { serviceBusy: false });
+                return _setServiceBusy.call(this, false);
             });
     };
 
@@ -302,6 +305,16 @@ define(function (require, exports) {
      */
     var _setServiceAvailable = function (available) {
         return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: !!available });
+    };
+
+    /**
+     * Update the export store with the new service busy flag;
+     *
+     * @param {boolean} busy
+     * @return {Promise}
+     */
+    var _setServiceBusy = function (busy) {
+        return this.dispatchAsync(events.export.SET_STATE_PROPERTY, { serviceBusy: !!busy });
     };
 
     /**
@@ -419,7 +432,7 @@ define(function (require, exports) {
     updateLayerAssetFormat.transfers = [updateExportAsset];
 
     /**
-     * Adds an asset, or assets to the end of the document asset list, or that of a layer or layers
+     * Adds an asset, or assets, to the end of the document's root asset list, or to that of a set of layers. 
      * If props not provided, choose the next reasonable scale and create an otherwise vanilla asset
      *
      * Recognizes an empty list of layers as implying doc-level export
@@ -617,8 +630,9 @@ define(function (require, exports) {
     /**
      * Prompt the user to choose a folder by opening an OS dialog.
      * Keyboard policies are temporarily disabled while the dialog is open.
+     * Rejects with ExportService.CancelPromptError if user cancels
      *
-     * @return {Promise.<?string>} Promise of a File Path of the chosen folder, returns null if user-canceled
+     * @return {Promise.<?string>} Promise of a File Path of the chosen folder
      */
     var promptForFolder = function () {
         return this.transfer(policyActions.disableKeyboardPolicies)
@@ -653,6 +667,7 @@ define(function (require, exports) {
         if (_activeExports) {
             Promise.reject(new Error("Can not export assets while another batch job in progress"));
         }
+
         if (!document) {
             Promise.resolve("No Document");
         }
@@ -662,61 +677,64 @@ define(function (require, exports) {
         }
 
         var documentID = document.id,
-            documentExports = this.flux.stores.export.getDocumentExports(documentID),
-            layerExportsMap = documentExports && documentExports.layerExportsMap,
-            exportStore = this.flux.stores.export;
+            documentExports = this.flux.stores.export.getDocumentExports(documentID, true),
+            exportStore = this.flux.stores.export,
+            layersList,
+            quickAddPromise;
 
-        if (!layerExportsMap || layerExportsMap.size < 1) {
-            return Promise.resolve();
-        }
+        if (layers) {
+            // Filter only the exportable ones from the provided set of layers
+            layersList = document.layers.filterExportable(layers);
 
-        // helper to perform the export after a directory has been determined
-        var exportToDir = function (baseDir) {
-            _lastFolderPath = baseDir;
-
-            var layersList;
-            if (layers) {
-                layersList = document.layers.filterExportable(layers).filter(function (layer) {
-                    return layerExportsMap.has(layer.id);
-                });
+            // Add a default asset added to any layers that need it
+            var layersWithoutExports = documentExports.filterLayersWithoutExports(layersList);
+            if (layersWithoutExports.isEmpty()) {
+                quickAddPromise = Promise.resolve();
             } else {
-                layersList = documentExports.getLayersWithExports(document, undefined, true);
-                layersList = document.layers.filterExportable(layersList); // consider combining into single op
+                quickAddPromise = this.transfer(addAsset, document, documentExports, layersWithoutExports);
             }
-
-            var layerIdList = collection.pluck(layersList, "id");
-
-            return _setAssetsRequested.call(this, document.id, layerIdList)
-                .bind(this)
-                .then(function () {
-                    return this.dispatchAsync(events.export.SET_STATE_PROPERTY, { serviceBusy: true });
-                })
-                .then(function () {
-                    // Iterate over the layers, find the associated export assets, and export them
-                    var exportList = layersList.flatMap(function (layer, index) {
-                        var prefix = exportStore.getExportPrefix(layer, index);
-
-                        return documentExports.getLayerExports(layer.id)
-                            .map(function (asset, index) {
-                                return _exportAsset.call(this, document, layer, index, asset, baseDir, prefix);
-                            }, this);
-                    }, this);
-
-                    _batchExports.call(this, exportList);
-                    return Promise.resolve();
-                });
-        }.bind(this);
+        } else {
+            // No layers provided, so get all layers that have exports configured and which are "exportEnabled"
+            layersList = documentExports.getLayersWithExports(document, undefined, true);
+            layersList = document.layers.filterExportable(layersList);
+        }
 
         // prompt for folder and then export to the result.
         // resolve immediately if no folder is returned
         return this.transfer(promptForFolder)
+            .bind(this)
             .then(function (baseDir) {
-                return baseDir ? exportToDir(baseDir) : Promise.resolve();
+                _lastFolderPath = baseDir;
+
+                var layerIdList = collection.pluck(layersList, "id");
+                return _setAssetsRequested.call(this, document.id, layerIdList);
+            })
+            .then(_setServiceBusy.bind(this, true))
+            .then(quickAddPromise)
+            .then(function () {
+                // fetch documentExports anew, in case quick-add added any assets
+                var documentExports = this.flux.stores.export.getDocumentExports(documentID, true);
+
+                // Iterate over the layers, find the associated export assets, and export them
+                var exportList = layersList.flatMap(function (layer, index) {
+                    var prefix = exportStore.getExportPrefix(layer, index);
+
+                    return documentExports.getLayerExports(layer.id)
+                        .map(function (asset, index) {
+                            return _exportAsset.call(this, document, layer, index, asset, _lastFolderPath, prefix);
+                        }, this);
+                }, this);
+
+                _batchExports.call(this, exportList);
+                return Promise.resolve();
+            })
+            .catch(ExportService.CancelPromptError, function () {
+                return Promise.resolve();
             });
     };
     exportLayerAssets.reads = [locks.JS_DOC];
     exportLayerAssets.writes = [locks.JS_EXPORT, locks.GENERATOR];
-    exportLayerAssets.transfers = [promptForFolder];
+    exportLayerAssets.transfers = [promptForFolder, addAsset];
 
     /**
      * Export all document-level assets for the given document
@@ -729,46 +747,49 @@ define(function (require, exports) {
             return Promise.resolve("No Document");
         }
 
-        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
-
-        if (!documentExports) {
-            return Promise.resolve("No Document Exports");
-        }
-
         if (!_exportService || !_exportService.ready()) {
             return _setServiceAvailable.call(this, false);
         }
 
-        // helper to perform the export after a directory has been determined
-        var exportToDir = function (baseDir) {
-            return _setAssetsRequested.call(this, document.id)
-                .bind(this)
-                .then(function () {
-                    return this.dispatchAsync(events.export.SET_STATE_PROPERTY, { serviceBusy: true });
-                })
-                .then(function () {
-                    _lastFolderPath = baseDir;
+        var documentExports = this.flux.stores.export.getDocumentExports(document.id, true),
+            quickAddPromise;
 
-                    // Iterate over the root document assets, and export them
-                    var exportList = documentExports.rootExports.map(function (asset, index) {
-                        return _exportAsset.call(this, document, null, index, asset, baseDir);
-                    }, this);
-
-                    _batchExports.call(this, exportList);
-                    return Promise.resolve();
-                });
-        }.bind(this);
+        // Add a default asset if necessary
+        if (!documentExports.rootExports.isEmpty()) {
+            quickAddPromise = Promise.resolve();
+        } else {
+            quickAddPromise = this.transfer(addAsset, document, documentExports, Immutable.List());
+        }
 
         // prompt for folder and then export to the result.
         // resolve immediately if no folder is returned
-        return this.transfer(promptForFolder)
+        this.transfer(promptForFolder)
+            .bind(this)
             .then(function (baseDir) {
-                return baseDir ? exportToDir(baseDir) : Promise.resolve();
+                _lastFolderPath = baseDir;
+
+                return _setAssetsRequested.call(this, document.id);
+            })
+            .then(_setServiceBusy.bind(this, true))
+            .then(function () {
+                // fetch documentExports anew, in case quick-add added any assets
+                var documentExports = this.flux.stores.export.getDocumentExports(document.id, true);
+
+                // Iterate over the root document assets, and export them
+                var exportList = documentExports.rootExports.map(function (asset, index) {
+                    return _exportAsset.call(this, document, null, index, asset, _lastFolderPath);
+                }, this);
+
+                _batchExports.call(this, exportList);
+                return Promise.resolve();
+            })
+            .catch(ExportService.CancelPromptError, function () {
+                return Promise.resolve();
             });
     };
     exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportDocumentAssets.writes = [locks.GENERATOR];
-    exportDocumentAssets.transfers = [promptForFolder, updateExportAsset];
+    exportDocumentAssets.transfers = [promptForFolder, addAsset];
     
     /**
      * Copy file from one location to another.
