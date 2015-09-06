@@ -67,7 +67,7 @@ define(function (require, exports, module) {
         /**
          * state
          *
-         * @type {[type]}
+         * @type {State}
          */
         _state: new State(),
 
@@ -86,8 +86,8 @@ define(function (require, exports, module) {
                 events.export.history.optimistic.DELETE_ASSET, this._deleteAsset,
                 events.export.SET_AS_REQUESTED, this._setAssetsRequested,
                 events.export.SERVICE_STATUS_CHANGED, this._setState,
-                events.document.DOCUMENT_UPDATED, this._documentUpdated,
-                events.export.SET_STATE_PROPERTY, this._setState
+                events.export.SET_STATE_PROPERTY, this._setState,
+                events.document.DOCUMENT_UPDATED, this._documentUpdated
             );
         },
 
@@ -106,10 +106,16 @@ define(function (require, exports, module) {
          * Get the DocumentExports model object associated to the provided documentID
          *
          * @param {number} documentID
+         * @param {boolean=} initialize Optional, if true then create documentExports on the fly if necessary
          * @return {?DocumentExports}
          */
-        getDocumentExports: function (documentID) {
-            return this._documentExportsMap.get(documentID);
+        getDocumentExports: function (documentID, initialize) {
+            var documentExports = this._documentExportsMap.get(documentID);
+            if (!documentExports && initialize) {
+                return new DocumentExports();
+            } else {
+                return documentExports;
+            }
         },
 
         /**

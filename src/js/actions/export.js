@@ -487,6 +487,34 @@ define(function (require, exports) {
     addAsset.transfers = [];
 
     /**
+     * Add a default document to the layer specified by layerID, if it doesn't already have any assets
+     * Does not create a history state
+     *
+     * @param {number} documentID
+     * @param {number} layerID
+     */
+    var addDefaultAsset = function (documentID, layerID) {
+        var documentExports = this.flux.stores.export.getDocumentExports(documentID, true),
+            document = this.flux.stores.document.getDocument(documentID);
+
+        if (!document) {
+            return Promise.reject(new Error("Can not find document " + documentID + " to addDefaultAsset"));
+        }
+
+        var layer = document.layers.byID(layerID),
+            layerExports = documentExports.getLayerExports(layerID);
+
+        if (!layerExports || layerExports.isEmpty()) {
+            return this.transfer(updateExportAsset, document, Immutable.List.of(layer), 0, {}, true);
+        } else {
+            Promise.resolve();
+        }
+    };
+    addDefaultAsset.reads = [locks.JS_DOC, locks.JS_EXPORT];
+    addDefaultAsset.writes = [];
+    addDefaultAsset.transfers = [updateExportAsset];
+
+    /**
      * Delete the Export Asset configuration specified by the given index
      *
      * If layers is empty, or not supplied, delete a document-level asset
@@ -911,6 +939,7 @@ define(function (require, exports) {
     exports.updateLayerAssetSuffix = updateLayerAssetSuffix;
     exports.updateLayerAssetFormat = updateLayerAssetFormat;
     exports.addAsset = addAsset;
+    exports.addDefaultAsset = addDefaultAsset;
     exports.deleteExportAsset = deleteExportAsset;
     exports.setLayerExportEnabled = setLayerExportEnabled;
     exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
