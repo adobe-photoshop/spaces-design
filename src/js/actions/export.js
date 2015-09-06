@@ -533,7 +533,7 @@ define(function (require, exports) {
                 assetIndex: assetIndex
             };
 
-        return this.dispatchAsync(events.export.DELETE_ASSET, payload)
+        return this.dispatchAsync(events.export.history.optimistic.DELETE_ASSET, payload)
             .bind(this)
             .then(function () {
                 return _syncExportMetadata.call(this, documentID, layerIDs);

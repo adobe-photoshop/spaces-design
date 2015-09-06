@@ -155,7 +155,7 @@ define(function (require, exports, module) {
          * @return {?string}
          */
         getExportPrefix: function (layer, index) {
-            if (this._useArtboardPrefix && layer.isArtboard) {
+            if (this._state.useArtboardPrefix && layer.isArtboard) {
                 return _.padLeft(index + 1, 3, "0");
             }
         },

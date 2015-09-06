@@ -221,7 +221,9 @@ define(function (require, exports, module) {
 
             // Iterate over all configured assets, build the individual components,
             // and separate into separate lists (artboards vs. non-artboards)
-            var artboardLayers = gridSort(documentExports.getLayersWithExports(document, true)),
+            var artboards = documentExports.getLayersWithExports(document, true),
+                artboardsFiltered = document.layers.filterExportable(artboards),
+                artboardsSorted = gridSort(artboardsFiltered),
                 nonABLayers = documentExports.getLayersWithExports(document, false);
 
             // Helper to generate a LayerExportsItem component
@@ -240,9 +242,9 @@ define(function (require, exports, module) {
                 );
             };
 
-            var allArtboardsExportComponents = artboardLayers.map(layerExportComponent),
+            var allArtboardsExportComponents = artboardsSorted.map(layerExportComponent),
                 allNonABLayerExportComponents = nonABLayers.reverse().map(layerExportComponent),
-                allArtboardsExportEnabled = collection.pluck(artboardLayers, "exportEnabled"),
+                allArtboardsExportEnabled = collection.pluck(artboardsSorted, "exportEnabled"),
                 allNonABLayersExportEnabled = collection.pluck(nonABLayers, "exportEnabled");
 
             var panelClassnames = classnames({
