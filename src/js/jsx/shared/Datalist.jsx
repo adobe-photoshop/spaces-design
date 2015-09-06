@@ -44,7 +44,7 @@ define(function (require, exports, module) {
             options: React.PropTypes.instanceOf(Immutable.List),
             // ID of the item that should initially be selected
             defaultSelected: React.PropTypes.string,
-            // Initial text value to display
+            // Initial text value to display.  TODO: explain how this behaves differently based on other options
             value: React.PropTypes.string,
             // Callback to handle change of selection. Return false will cancel the selection.
             onChange: React.PropTypes.func,
@@ -302,7 +302,7 @@ define(function (require, exports, module) {
         _handleSelectChange: function (id, force) {
             var confirmSelection = true;
 
-            if (this.props.live || force) {
+            if ((this.props.live || force) && (!this.props.defaultSelected || this.props.defaultSelected !== id)) {
                 confirmSelection = (this.props.onChange(id) !== false);
             }
 

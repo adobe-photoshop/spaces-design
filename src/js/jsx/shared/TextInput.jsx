@@ -208,7 +208,10 @@ define(function (require, exports, module) {
             });
 
             event.stopPropagation();
-            this.props.onChange(event, nextValue);
+
+            if (nextValue !== this.props.value) {
+                this.props.onChange(event, nextValue);
+            }
 
             if (!this.state.editing) {
                 this._releaseFocus();
