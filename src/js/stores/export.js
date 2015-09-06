@@ -81,8 +81,9 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.RESET, this._deleteExports,
                 events.export.ASSET_CHANGED, this._assetUpdated,
-                events.export.ASSET_ADDED, this._assetAdded,
-                events.export.DELETE_ASSET, this._deleteAsset,
+                events.export.history.optimistic.ASSET_CHANGED, this._assetUpdated,
+                events.export.history.optimistic.ASSET_ADDED, this._assetAdded,
+                events.export.history.optimistic.DELETE_ASSET, this._deleteAsset,
                 events.export.SET_AS_REQUESTED, this._setAssetsRequested,
                 events.export.SERVICE_STATUS_CHANGED, this._setState,
                 events.document.DOCUMENT_UPDATED, this._documentUpdated,
@@ -109,6 +110,24 @@ define(function (require, exports, module) {
          */
         getDocumentExports: function (documentID) {
             return this._documentExportsMap.get(documentID);
+        },
+
+        /**
+         * Update a given DocumentExports
+         * This should only be called by other stores.
+         *
+         * @param {number} documentID
+         * @param {DocumentExports} nextDocumentExports
+         */
+        setDocumentExports: function (documentID, nextDocumentExports) {
+            var oldDocumentExports = this.getDocumentExports(documentID);
+
+            if (Immutable.is(oldDocumentExports, nextDocumentExports)) {
+                return;
+            }
+
+            this._documentExportsMap = this._documentExportsMap.set(documentID, nextDocumentExports);
+            this.emit("change");
         },
 
         /**

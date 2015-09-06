@@ -37,6 +37,11 @@ define(function (require, exports, module) {
         document: null,
 
         /**
+         * @type {DocumentExports}
+         */
+        documentExports: null,
+
+        /**
          * @type {string}
          */
         name: null,
@@ -52,6 +57,31 @@ define(function (require, exports, module) {
         rogue: false
 
     });
+
+    /**
+     * Return true if either a document or documentExports is provided,
+     * and it is not equal to its associated property on this object
+     *
+     * @param {Document} document
+     * @param {DocumentExports} documentExports
+     * @return {boolean}
+     */
+    HistoryState.prototype.isInconsistent = function (document, documentExports) {
+        return (this.document && this.document !== document) ||
+            (this.documentExports && this.documentExports !== documentExports);
+    };
+
+    /**
+     * Make a copy of this state that is suitable for generating a new "revert" state
+     *
+     * @return {HistoryState}
+     */
+    HistoryState.prototype.cloneForRevert = function () {
+        return new HistoryState({
+            document: this.document,
+            documentExports: this.documentExports
+        });
+    };
 
     module.exports = HistoryState;
 });

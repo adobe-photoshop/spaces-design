@@ -110,12 +110,17 @@ define(function (require, exports, module) {
             TYPE_COLOR_CHANGED: "typeColorChangedNoHistory"
         },
         export: {
-            ASSET_CHANGED: "exportAssetChanged",
-            ASSET_ADDED: "exportAssetAdded",
-            DELETE_ASSET: "exportDeleteLayerAsset",
+            ASSET_CHANGED: "exportAssetChangedQuietly",
             SERVICE_STATUS_CHANGED: "exportServiceStatusChanged",
             SET_AS_REQUESTED: "exportSetStatusRequested",
-            SET_STATE_PROPERTY: "setUseArtboardPrefix"
+            SET_STATE_PROPERTY: "setUseArtboardPrefix",
+            history: {
+                optimistic: {
+                    ASSET_CHANGED: "exportAssetChanged",
+                    ASSET_ADDED: "exportAssetAdded",
+                    DELETE_ASSET: "exportDeleteLayerAsset"
+                }
+            }
         },
         tool: {
             SELECT_TOOL: "selectTool",

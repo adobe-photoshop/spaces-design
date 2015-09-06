@@ -79,9 +79,10 @@ define(function (require, exports) {
      * @private
      * @param {number} documentID
      * @param {Immutable.Iterable.<number>=} layerIDs Optional. If not supplied, sync doc-level metadata
+     * @param {boolean=} suppressHistory Optional, if truthy then do not supply photoshop with historyStateInfo
      * @return {Promise}
      */
-    var _syncExportMetadata = function (documentID, layerIDs) {
+    var _syncExportMetadata = function (documentID, layerIDs, suppressHistory) {
         var documentExports = this.flux.stores.export.getDocumentExports(documentID),
             document = this.flux.stores.document.getDocument(documentID),
             playObjects;
@@ -110,6 +111,13 @@ define(function (require, exports) {
                 layerID, global.EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata);
         };
 
+        var playOptions = suppressHistory ? undefined : {
+                historyStateInfo: {
+                    name: strings.ACTIONS.MODIFY_EXPORT_ASSETS,
+                    target: documentLib.referenceBy.id(documentID)
+                }
+            };
+
         // prepare play objects for document or layer level, based on existence of layerIDs
         if (layerIDs) {
             playObjects = layerIDs.map(_buildPlayObject).toArray();
@@ -123,7 +131,7 @@ define(function (require, exports) {
                 global.EXTENSION_DATA_NAMESPACE, "exportsMetadata", exportsMetadata)];
         }
 
-        return descriptor.batchPlayObjects(playObjects);
+        return descriptor.batchPlayObjects(playObjects, playOptions);
     };
 
     /**
@@ -170,7 +178,7 @@ define(function (require, exports) {
                     filePath: pathArray[0],
                     status: ExportAsset.STATUS.STABLE
                 };
-                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps);
+                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps, true);
             })
             .catch(function (e) {
                 log.error("Export Failed for asset %d of layerID %d, documentID %d, with error",
@@ -179,7 +187,7 @@ define(function (require, exports) {
                     filePath: "",
                     status: ExportAsset.STATUS.ERROR
                 };
-                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps);
+                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps, true);
             }) ;
     };
 
@@ -229,7 +237,7 @@ define(function (require, exports) {
             assetIndex: assetIndex
         };
 
-        return this.dispatchAsync(events.export.ASSET_ADDED, payload)
+        return this.dispatchAsync(events.export.history.optimistic.ASSET_ADDED, payload)
             .bind(this)
             .then(function () {
                 return _syncExportMetadata.call(this, documentID, layerIDs);
@@ -330,9 +338,10 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>=} layers set of selected layers
      * @param {number} assetIndex index of this asset within the layer's list to append props 
      * @param {object|Array.<object>} props ExportAsset-like properties to be merged, or an array thereof
+     * @param {boolean=} suppressHistory Optional, if truthy then do not supply photoshop with historyStateInfo
      * @return {Promise}
      */
-    var updateExportAsset = function (document, layers, assetIndex, props) {
+    var updateExportAsset = function (document, layers, assetIndex, props, suppressHistory) {
         var documentID = document.id,
             layerIDs = layers && layers.size > 0 && collection.pluck(layers, "id") || undefined,
             assetPropsArray = Array.isArray(props) ? props : [props],
@@ -348,10 +357,14 @@ define(function (require, exports) {
             assetPropsArray: shiftedPropsArray
         };
 
-        return this.dispatchAsync(events.export.ASSET_CHANGED, payload)
+        var event = suppressHistory ?
+            events.export.ASSET_CHANGED :
+            events.export.history.optimistic.ASSET_CHANGED;
+
+        return this.dispatchAsync(event, payload)
             .bind(this)
             .then(function () {
-                return _syncExportMetadata.call(this, documentID, layerIDs);
+                return _syncExportMetadata.call(this, documentID, layerIDs, suppressHistory);
             });
     };
     updateExportAsset.reads = [locks.JS_DOC];
@@ -523,7 +536,7 @@ define(function (require, exports) {
         return this.dispatchAsync(events.document.LAYER_EXPORT_ENABLED_CHANGED, payload)
             .bind(this)
             .then(function () {
-                return _syncExportMetadata.call(this, document.id, layerIDs);
+                return _syncExportMetadata.call(this, document.id, layerIDs, true);
             });
     };
     setLayerExportEnabled.reads = [];
