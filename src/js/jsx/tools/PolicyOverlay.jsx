@@ -69,6 +69,11 @@ define(function (require, exports, module) {
         
         componentDidMount: function () {
             this._drawDebounced();
+            window.addEventListener("resize", this._drawDebounced);
+        },
+
+        componentWillUnmount: function () {
+            window.removeEventListener("resize", this._drawDebounced);
         },
 
         componentDidUpdate: function () {

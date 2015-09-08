@@ -24,8 +24,6 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var os = require("adapter/os");
-
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
@@ -126,23 +124,6 @@ define(function (require, exports, module) {
             });
         },
 
-        /**
-         * Update the sizes of all the panels, including the toolbar.
-         *
-         * @private
-         */
-        _updatePanelSizes: function () {
-            if (this.state.active) {
-                var payload = {
-                    panelWidth: React.findDOMNode(this.refs.panelSet).clientWidth,
-                    headerHeight: React.findDOMNode(this.refs.docHeader).clientHeight,
-                    toolbarWidth: this.refs.toolbar.getToolbarWidth()
-                };
-
-                this.getFlux().actions.ui.updatePanelSizes(payload);
-            }
-        },
-
         componentWillMount: function () {
             window.document.body.addEventListener("keydown", this._suppressBodyKeydown, true);
 
@@ -152,21 +133,12 @@ define(function (require, exports, module) {
             this.props.controller.on("unlock", this._handleControllerUnlock);
         },
 
-        componentDidMount: function () {
-            os.addListener("displayConfigurationChanged", this._updatePanelSizes);
-        },
-
         componentWillUnmount: function () {
             window.document.body.removeEventListener("keydown", this._suppressBodyKeydown);
-            os.removeListener("displayConfigurationChanged", this._updatePanelSizes);
 
             this.props.controller.off("ready", this._handleControllerReady);
             this.props.controller.off("lock", this._handleControllerLock);
             this.props.controller.off("unlock", this._handleControllerUnlock);
-        },
-
-        componentDidUpdate: function () {
-            this._updatePanelSizes();
         },
 
         render: function () {

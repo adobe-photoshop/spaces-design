@@ -30,8 +30,7 @@ define(function (require, exports) {
     var photoshopEvent = require("adapter/lib/photoshopEvent"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        selectionLib = require("adapter/lib/selection"),
-        PS = require("adapter/ps");
+        selectionLib = require("adapter/lib/selection");
 
     var guideActions = require("./guides"),
         historyActions = require("./history"),
@@ -41,6 +40,7 @@ define(function (require, exports) {
         libraryActions = require("./libraries"),
         application = require("./application"),
         preferencesActions = require("./preferences"),
+        menu = require("./menu"),
         ui = require("./ui"),
         events = require("../events"),
         locks = require("js/locks"),
@@ -91,9 +91,20 @@ define(function (require, exports) {
      * Open command number
      * We use this if open document fails
      *
+     * @const
+     * @private
      * @type {number}
      */
     var _OPEN_DOCUMENT = 20;
+
+    /**
+     * Menu command ID to show the extended new document dialog
+     *
+     * @const
+     * @private
+     * @type {number}
+     */
+    var _NEW_DOCUMENT_EXTENDED = 10;
 
     /**
      * Preferences key for the last-used preset
@@ -456,6 +467,25 @@ define(function (require, exports) {
     allocateDocument.lockUI = true;
 
     /**
+     * Show the native PS new document dialog to create a new document.
+     *
+     * @return {Promise}
+     */
+    var createNewExtended = function () {
+        return this.transfer(ui.setOverlayOffsetsForFirstDocument)
+            .bind(this)
+            .then(function () {
+                return this.transfer(menu.native, {
+                    commandID: _NEW_DOCUMENT_EXTENDED,
+                    waitForCompletion: true
+                });
+            });
+    };
+    createNewExtended.reads = [];
+    createNewExtended.writes = [locks.PS_DOC, locks.PS_APP];
+    createNewExtended.transfers = [menu.native, ui.setOverlayOffsetsForFirstDocument];
+
+    /**
      * Creates a document in default settings, or using an optionally supplied preset
      *
      * @param {{preset: string}=} payload Optional payload containing a preset
@@ -486,53 +516,68 @@ define(function (require, exports) {
 
         headlights.logEvent("file", "newFromTemplate", preset);
 
-        var playObject = documentLib.createWithPreset(preset),
-            createPromise = descriptor.playObject(playObject)
-                .bind(this)
-                .then(function (result) {
-                    return this.transfer(allocateDocument, result.documentID);
-                });
+        return this.transfer(ui.setOverlayOffsetsForFirstDocument)
+            .bind(this)
+            .then(function () {
+                var playObject = documentLib.createWithPreset(preset),
+                    createPromise = descriptor.playObject(playObject)
+                        .bind(this)
+                        .then(function (result) {
+                            return this.transfer(allocateDocument, result.documentID);
+                        });
 
-        return Promise.join(createPromise, presetPromise);
+                return Promise.join(createPromise, presetPromise);
+            });
     };
     createNew.reads = [locks.JS_PREF];
     createNew.writes = [locks.PS_DOC, locks.PS_APP];
-    createNew.transfers = [preferencesActions.setPreference, allocateDocument];
+    createNew.transfers = [preferencesActions.setPreference, allocateDocument, ui.setOverlayOffsetsForFirstDocument];
     createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
     /**
-     * Opens the document in the given path
+     * Opens the document in the given path or, if none is given, prompts the
+     * user for a path first.
      *
-     * @param {string} filePath
+     * @param {string=} filePath If not provided, the user is promped for the file.     
      * @param {object=} settings - params accepted by the Adapter function documents#openDocument
      * @return {Promise}
      */
     var open = function (filePath, settings) {
         settings = settings || {};
         
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-
-        var documentRef = {
-            _path: filePath
-        };
-
-        return descriptor.playObject(documentLib.open(documentRef, settings))
+        return this.transfer(ui.setOverlayOffsetsForFirstDocument)
             .bind(this)
             .then(function () {
-                var initPromise = this.transfer(initActiveDocument),
-                    uiPromise = this.transfer(ui.updateTransform),
-                    recentFilesPromise = this.transfer(application.updateRecentFiles);
+                this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
-                return Promise.join(initPromise, uiPromise, recentFilesPromise);
-            }, function () {
-                // If file doesn't exist anymore, user will get an Open dialog
-                // If user cancels out of open dialog, PS will throw, so catch it here
-                return PS.performMenuCommand(_OPEN_DOCUMENT);
+                if (!filePath) {
+                    // An "open" event will be triggered
+                    return this.transfer(menu.native, { commandID: _OPEN_DOCUMENT, waitForCompletion: true });
+                }
+
+                var documentRef = {
+                    _path: filePath
+                };
+
+                return descriptor.playObject(documentLib.open(documentRef, settings))
+                    .bind(this)
+                    .then(function () {
+                        var initPromise = this.transfer(initActiveDocument),
+                            uiPromise = this.transfer(ui.updateTransform),
+                            recentFilesPromise = this.transfer(application.updateRecentFiles);
+
+                        return Promise.join(initPromise, uiPromise, recentFilesPromise);
+                    }, function () {
+                        // If file doesn't exist anymore, user will get an Open dialog
+                        // If user cancels out of open dialog, PS will throw, so catch it here
+                        this.transfer(menu.native, { commandID: _OPEN_DOCUMENT, waitForCompletion: true });
+                    });
             });
     };
     open.reads = [];
     open.writes = [locks.PS_APP, locks.JS_UI];
-    open.transfers = [initActiveDocument, ui.updateTransform, application.updateRecentFiles];
+    open.transfers = [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
+        ui.setOverlayOffsetsForFirstDocument, menu.native];
     open.lockUI = true;
     open.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
@@ -972,6 +1017,7 @@ define(function (require, exports) {
     onReset.writes = [];
 
     exports.createNew = createNew;
+    exports.createNewExtended = createNewExtended;
     exports.open = open;
     exports.close = close;
     exports.selectDocument = selectDocument;
