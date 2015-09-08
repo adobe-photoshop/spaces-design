@@ -836,7 +836,11 @@ define(function (require, exports, module) {
      */
     Object.defineProperty(LayerStructure.prototype, "filterExportable", objUtil.cachedLookupSpec(function (layers) {
         return layers.filterNot(function (layer) {
-            return !layer.bounds || layer.bounds.empty || layer.isBackground || this.isEmptyGroup(layer);
+            return !layer.bounds ||
+                layer.bounds.empty ||
+                layer.isBackground ||
+                layer.kind === layer.layerKinds.ADJUSTMENT ||
+                this.isEmptyGroup(layer);
         }, this);
     }));
 

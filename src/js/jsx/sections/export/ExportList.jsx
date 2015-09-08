@@ -217,7 +217,7 @@ define(function (require, exports, module) {
                         faceKey={key}
                         exportAssets={i} />
                 );
-            }, this).toArray();
+            }, this);
 
             return (
                 <div className="layer-exports__header" >
