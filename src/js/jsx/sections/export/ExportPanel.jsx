@@ -224,7 +224,7 @@ define(function (require, exports, module) {
                                 onClick={this._exportAssetsClickHandler}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
-                                    CSSID="export" />
+                                    CSSID={exportState.serviceBusy ? "loader" : "export"} />
                             </Button>
                             <Gutter />
                             <Button

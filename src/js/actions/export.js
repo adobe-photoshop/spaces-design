@@ -154,7 +154,7 @@ define(function (require, exports) {
 
     /**
      * Helper function to export a single asset using the export service, and update the metadata afterwards.
-     * 
+     *
      * When the export service's promise is resolved, a fresh flux action is called
      * to perform the metadata sync (to wit: it does not transfer to updateExportAsset)
      *
@@ -433,7 +433,7 @@ define(function (require, exports) {
     updateLayerAssetFormat.transfers = [updateExportAsset];
 
     /**
-     * Adds an asset, or assets, to the end of the document's root asset list, or to that of a set of layers. 
+     * Adds an asset, or assets, to the end of the document's root asset list, or to that of a set of layers.
      * If props not provided, choose the next reasonable scale and create an otherwise vanilla asset
      *
      * Recognizes an empty list of layers as implying doc-level export

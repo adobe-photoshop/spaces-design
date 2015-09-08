@@ -252,6 +252,8 @@ define(function (require, exports, module) {
                 "exports-panel__container__busy": serviceBusy
             });
 
+            var exportButton = serviceBusy ? (<SVGIcon CSSID="loader" />) : strings.EXPORT.BUTTON_EXPORT;
+
             return (
                 <div className={panelClassnames}>
                     <TitleHeader
@@ -302,7 +304,7 @@ define(function (require, exports, module) {
                         <Button
                             disabled={serviceBusy}
                             onClick={this._exportAllAssets}>
-                            {strings.EXPORT.BUTTON_EXPORT}
+                            {exportButton}
                         </Button>
                     </div>
                 </div>
