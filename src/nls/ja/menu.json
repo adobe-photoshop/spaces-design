@@ -193,7 +193,8 @@
         "TOGGLE_EXTRAS": "エクストラを表示 | 非表示",
         "TOGGLE_RULERS": "ルーラーを表示 | 非表示",
         "TOGGLE_SMART_GUIDES": "スマートガイドを表示",
-        "TOGGLE_GUIDES": "ガイドを表示"
+        "TOGGLE_GUIDES": "ガイドを表示",
+        "CLEAR_GUIDES": "ガイドを消去"
     },
     "WINDOW": {
         "$MENU": "ウィンドウ",

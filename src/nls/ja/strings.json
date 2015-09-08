@@ -2,7 +2,7 @@
     "ACTIONS": {
         "ADD_STROKE": "ストロークを追加",
         "ADD_FILL": "塗りつぶしを追加",
-        "APPLY_LIBRARY_COLOR": "能_[8416190] Apply Library Color",
+        "APPLY_LIBRARY_COLOR": "ライブラリカラーを適用",
         "SET_STROKE_COLOR": "ストロークのカラーを設定",
         "SET_STROKE": "ストロークを設定",
         "SET_STROKE_OPACITY": "ストロークの不透明度を設定",
@@ -28,7 +28,7 @@
         "PASTE_LAYER_STYLE": "レイヤースタイルをペースト",
         "SAMPLE_GRAPHICS": "サンプルグラフィック",
         "SAMPLE_COLOR": "サンプルカラー",
-        "SAMPLE_STROKE": "能_[8415006] Sample Stroke",
+        "SAMPLE_STROKE": "サンプル線",
         "SET_PROPORTIONAL_SCALE": "プロポーショナルスケーリングを設定",
         "SET_TYPE_FACE": "字体を設定",
         "SET_TYPE_COLOR": "文字のカラーを設定",
@@ -234,8 +234,11 @@
         "LIBRARY_VIEW_ON_WEBSITE": "Web サイトに表示",
         "LIBRARY_CLICK_TO_APPLY": "クリックすると、適用されます",
         "LIBRARY_DELETE": "削除",
+        "EXPORT_EXPORT_ASSETS": "これらのアセットを書き出し",
         "EXPORT_ADD_ASSET": "書き出しアセットを追加",
-        "EXPORT_REMOVE_ASSET": "アセット設定を削除"
+        "EXPORT_REMOVE_ASSET": "アセット設定を削除",
+        "EXPORT_IOS_PRESETS": "3 個の iOS アセット + SVG を追加",
+        "EXPORT_HDPI_PRESETS": "6 個の HDPI アセット + SVG を追加"
     },
     "LAYER_KIND": {
         "0": "すべてのレイヤー",
@@ -372,7 +375,7 @@
         "EXPORT_LIST_ALL_ASSETS": "すべてのアセット",
         "BUTTON_EXPORT": "書き出し",
         "BUTTON_CANCEL": "キャンセル",
-        "SELECT_SINGLE_LAYER": "単一のレイヤーを選択してください",
+        "SELECT_SINGLE_LAYER": "非推奨",
         "TITLE_SCALE": "拡大・縮小",
         "TITLE_SUFFIX": "接尾辞",
         "TITLE_SETTINGS": "設定",
