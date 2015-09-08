@@ -313,6 +313,36 @@ define(function (require, exports) {
     setGuide.transfers = [resetGuidePolicies, deleteGuide];
 
     /**
+     * Clears all the guides in the given document
+     *
+     * @param {Document=} document Document model
+     * @return {Promise}
+     */
+    var clearGuides = function (document) {
+        if (document === undefined) {
+            var appStore = this.flux.store("application");
+
+            document = appStore.getCurrentDocument();
+        }
+
+        var payload = {
+                documentID: document.id
+            },
+            clearObj = documentLib.clearGuides(documentLib.referenceBy.id(document.id)),
+            dispatchPromise = this.dispatchAsync(events.document.history.nonOptimistic.GUIDES_CLEARED, payload),
+            clearPromise = descriptor.playObject(clearObj);
+
+        return Promise.join(dispatchPromise, clearPromise)
+            .bind(this)
+            .then(function () {
+                return this.transfer(resetGuidePolicies);
+            });
+    };
+    clearGuides.reads = [];
+    clearGuides.writes = [locks.JS_DOC, locks.PS_DOC];
+    clearGuides.transfers = [resetGuidePolicies];
+
+    /**
      * Re-gets the guides of the given document and rebuilds the models
      *
      * @param {Document=} document Default is active document
@@ -416,6 +446,7 @@ define(function (require, exports) {
     exports.deleteGuide = deleteGuide;
     exports.resetGuidePolicies = resetGuidePolicies;
     exports.queryCurrentGuides = queryCurrentGuides;
+    exports.clearGuides = clearGuides;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;

@@ -99,7 +99,8 @@ define(function (require, exports, module) {
                 events.document.TYPE_PROPERTIES_CHANGED, this._handleTypePropertiesChanged,
                 events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged,
                 events.document.history.nonOptimistic.GUIDE_SET, this._handleGuideSet,
-                events.document.history.nonOptimistic.GUIDE_DELETED, this._handleGuideDeleted
+                events.document.history.nonOptimistic.GUIDE_DELETED, this._handleGuideDeleted,
+                events.document.history.nonOptimistic.GUIDES_CLEARED, this._handleGuidesCleared
             );
 
             this._handleReset();
@@ -1092,6 +1093,21 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID];
 
             var nextDocument = document.deleteIn(["guides", index]);
+
+            this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Clears all the guides
+         *
+         * @private
+         * @param {{documentID: number}} payload
+         */
+        _handleGuidesCleared: function (payload) {
+            var documentID = payload.documentID,
+                document = this._openDocuments[documentID];
+
+            var nextDocument = document.set("guides", Immutable.List());
 
             this.setDocument(nextDocument, true);
         }

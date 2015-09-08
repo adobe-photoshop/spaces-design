@@ -561,6 +561,12 @@
                             "shift": true
                         }
                     }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "CLEAR_GUIDES"
                 }
             ]
         },
