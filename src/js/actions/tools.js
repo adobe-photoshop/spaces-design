@@ -39,6 +39,7 @@ define(function (require, exports) {
         locks = require("js/locks"),
         policy = require("./policy"),
         shortcuts = require("./shortcuts"),
+        system = require("js/util/system"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
@@ -152,7 +153,8 @@ define(function (require, exports) {
             // The resize rectangles are roughly 8 points radius
             inset = 4,
             // In case of artboards, we have no rotate, so we can stay within the border
-            outset = artboards ? inset : 27;
+            outset = artboards ? inset : 27,
+            distortModifier = system.isMac ? { command: true } : { control: true };
 
         var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
@@ -166,9 +168,7 @@ define(function (require, exports) {
             ),
             insideCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
-                {
-                    command: true
-                },
+                distortModifier,
                 {
                     x: psSelectionTL.x + inset,
                     y: psSelectionTL.y + inset,
@@ -179,9 +179,7 @@ define(function (require, exports) {
             // Used for distort/skew transformations
             noOutsetCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
-                {
-                    command: true
-                },
+                distortModifier,
                 {
                     x: psSelectionTL.x - inset,
                     y: psSelectionTL.y - inset,
