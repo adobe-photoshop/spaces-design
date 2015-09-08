@@ -25,11 +25,16 @@
     display: flex;
     justify-content: flex-start;
     align-content: center;
+    margin-right: 1rem;
+    margin-top: 0.7rem;
 }
 
 .color-input .stroke__preview {
-    width: 100%;
-    background-color: @focus-highlight;
+    width: 50%;
+    height: 50%;
+    left: 25%;
+    background-color: @bg-panel;
+    border-radius: 0.2rem;
 }
 
 .color-input .type__preview {
@@ -51,8 +56,8 @@
 }
 
 .color-input__swatch__color {
-    width: 5rem;
-    height: 5rem;
+    width: 3rem;
+    height: 3rem;
     display: flex;
     align-items: center;
     flex-grow: 0;
@@ -62,6 +67,11 @@
     margin: 0;
     justify-content: center;
     overflow: hidden;
+}
+
+.color-input__empty {
+    height: 3.7rem; 
+    width: 4rem;
 }
 
 .color-widget {

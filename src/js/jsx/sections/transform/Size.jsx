@@ -183,10 +183,11 @@ define(function (require, exports, module) {
             return (
                 <div className="formline">
                     <Label
-                        title={strings.TOOLTIPS.SET_WIDTH}>
+                        title={strings.TOOLTIPS.SET_WIDTH}
+                        className="label__medium__left-aligned"
+                        size="column-1">
                         {strings.TRANSFORM.W}
                     </Label>
-                    <Gutter />
                     <NumberInput
                         disabled={disabled}
                         value={widths}
@@ -198,10 +199,11 @@ define(function (require, exports, module) {
                     {proportionalToggle}
                     <Label
                         size="column-1"
+                        className="label__medium__left-aligned"
                         title={strings.TOOLTIPS.SET_HEIGHT}>
                         {strings.TRANSFORM.H}
                     </Label>
-                    <Gutter />
+                    <div className="column-6">
                     <NumberInput
                         value={heights}
                         disabled={disabled}
@@ -210,7 +212,7 @@ define(function (require, exports, module) {
                         min={MIN_LAYER_SIZE}
                         max={MAX_LAYER_SIZE}
                         size="column-5" />
-                    <Gutter />
+                    </div>
                 </div>
             );
         }

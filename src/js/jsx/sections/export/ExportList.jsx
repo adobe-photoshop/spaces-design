@@ -229,19 +229,22 @@ define(function (require, exports, module) {
                         <div className="formline">
                             <Label
                                 title={strings.EXPORT.TITLE_SCALE}
-                                size="column-4">
+                                size="column-4"
+                                className="label__medium__left-aligned">
                                 {strings.EXPORT.TITLE_SCALE}
                             </Label>
                             <Gutter />
                             <Label
                                 title={strings.EXPORT.TITLE_SUFFIX}
-                                size="column-6">
+                                size="column-6"
+                                className="label__medium__left-aligned">
                                 {strings.EXPORT.TITLE_SUFFIX}
                             </Label>
                             <Gutter />
                             <Label
                                 title={strings.EXPORT.TITLE_SETTINGS}
-                                size="column-4">
+                                size="column-4"
+                                className="label__medium__left-aligned">
                                 {strings.EXPORT.TITLE_SETTINGS}
                             </Label>
                             <Gutter />

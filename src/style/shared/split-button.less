@@ -21,58 +21,56 @@
  *
  */
 
-/*.split-button__item__disabled, .split-button__item__disabled:hover {
-    color: @item-disabled;
-    svg {
-        fill: @item-disabled;
-    }
-}
-
-.split-button__item:hover {
-    color: @item-hover;
-    svg {
-        fill: @item-hover;
-    }
-}*/
-
 .split-button {
     &__item {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: @item-active;
+        color: @item-inactive;
+        
+        margin: 0 auto;
+        flex-grow: 1;
+
         svg {
             box-sizing: content-box;
             width: 1.6rem;
             height: 1.6rem;
-            fill: @item-active;
+            fill: @item-inactive;
             stroke: none;
-            color: @warm-gray;
+            color: @item-inactive;
           use {
             width: 1.6rem;
             height: 1.6rem;
           }
         }
+
         &:hover {
             color: @item-hover;
             svg {
                 fill: @item-hover;
             }
         }
+
+        &__selected {
+            color: @item-hover;
+            svg {
+                fill: @item-hover;
+            }
+        }
+
         &__disabled, &__disabled:hover {
             color: @item-disabled;
             svg {
                 fill: @item-disabled;
             }
         }
-    }
-}
 
-.split-button__item__selected {
-    color: @item-hover;
-    svg {
-        fill: @item-hover;
+        &__fixed {
+            margin: 0;
+            flex-grow: 0;
+        }
     }
+
 }
 
 .vector-operations {

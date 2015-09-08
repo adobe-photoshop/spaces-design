@@ -190,7 +190,7 @@ define(function (require, exports, module) {
             });
 
             var sectionClasses = classnames({
-                "style": true,
+                "export": true,
                 "section": true,
                 "section__collapsed": !this.props.visible
             });

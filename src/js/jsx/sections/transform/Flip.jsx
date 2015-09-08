@@ -163,7 +163,7 @@ define(function (require, exports, module) {
                 swapDisabled = this.state.swapDisabled;
 
             return (
-                <SplitButtonList>
+                <SplitButtonList className="button-radio__fixed" size="column-9">
                     <SplitButtonItem
                         title={strings.TOOLTIPS.FLIP_HORIZONTAL}
                         iconId="flip-horizontal"

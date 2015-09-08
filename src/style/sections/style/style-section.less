@@ -23,23 +23,16 @@
 
 @style-button-size: 1.6rem;
 
-.style {
+.effects,
+.appearance,
+.type, {
     min-height: 3rem;
-    flex-grow: 1;
     flex-shrink: 1;
+    
+    .section-container__collapsed {
+        display: none;
+    }    
 }
-
-.style .section-container {
-    // flex-basis: 41.5rem;
-}
-
-.style .section-container__collapsed {
-    display: none;
-}
-
-// .style.section.section__sibling-collapsed {
-//     flex-grow: 999999;
-// }
 
 .style-workflow-buttons {
     display: flex;
@@ -89,4 +82,10 @@
     .button-toggle {
         height: 2rem; // prevent bleed over stroke alignment datalist
     }
+}
+
+.appearance,
+.type {
+    height: 22rem;
+    flex-grow: 0;
 }

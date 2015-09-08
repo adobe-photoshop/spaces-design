@@ -29,7 +29,9 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var Datalist = require("jsx!js/jsx/shared/Datalist"),
+    var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+        SplitButtonList = SplitButton.SplitButtonList,
+        SplitButtonItem = SplitButton.SplitButtonItem,
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
@@ -53,7 +55,6 @@ define(function (require, exports, module) {
             title: strings.STYLE.STROKE.ALIGNMENT_MODES.OUTSIDE
         }
     });
-    var _alignmentModesList = _alignmentModes.toList();
 
     var StrokeAlignment = React.createClass({
         mixins: [FluxMixin],
@@ -91,25 +92,35 @@ define(function (require, exports, module) {
                 alignmentTitle = _alignmentModes.has(alignment) ? _alignmentModes.get(alignment).title :
                     (alignments.size > 1 ? strings.TRANSFORM.MIXED : alignment);
 
-            
             // Hack to disable the Fill BlendMode instance
             if (this.props.disabled) {
                 alignmentTitle = null;
             }
 
-            var listID = "alignment-" + this.props.id + "-" + this.props.document.id;
-
             return (
-                <Datalist
-                    list={listID}
-                    disabled={this.props.disabled}
-                    className="dialog-stroke-alignment"
-                    options={_alignmentModesList}
-                    value={alignmentTitle}
-                    defaultSelected={alignment}
-                    size="column-9"
-                    onChange={this._handleChange}
-                    onFocus={this.props.onFocus} />
+                <SplitButtonList size="column-9">
+                    <SplitButtonItem
+                        title={strings.STYLE.STROKE.ALIGNMENT_MODES.INSIDE}
+                        iconId="stroke-inner"
+                        selected={alignment === "INSIDE"}
+                        onClick={this._handleChange.bind(this, "INSIDE")}
+                        className={"split-button__item__fixed"}
+                        disabled={this.props.disabled} />
+                    <SplitButtonItem
+                        title={strings.STYLE.STROKE.ALIGNMENT_MODES.CENTER}
+                        iconId="stroke-middle"
+                        selected={alignment === "CENTER"}
+                        className={"split-button__item__fixed"}
+                        onClick={this._handleChange.bind(this, "CENTER")}
+                        disabled={this.props.disabled} />
+                    <SplitButtonItem
+                        title={strings.STYLE.STROKE.ALIGNMENT_MODES.OUTSIDE}
+                        iconId="stroke-outer"
+                        selected={alignment === "OUTSIDE"}
+                        className={"split-button__item__fixed"}
+                        onClick={this._handleChange.bind(this, "OUTSIDE")}
+                        disabled={this.props.disabled} />
+                </SplitButtonList>
             );
         }
     });

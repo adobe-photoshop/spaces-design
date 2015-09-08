@@ -30,12 +30,14 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
+    var Label = require("jsx!js/jsx/shared/Label"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
+        BlendMode = require("jsx!./BlendMode"),
+        Opacity = require("jsx!./Opacity"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection"),
@@ -548,23 +550,43 @@ define(function (require, exports, module) {
                 weightListID = "weights-" + this.props.document.id;
 
             return (
-                <div ref="type" className="type sub-section">
-                    <header className="sub-header">
-                        <h3>
-                            {strings.STYLE.TYPE.TITLE}
-                        </h3>
-                        <Gutter />
-                        <hr className="sub-header-rule"/>
-                        <div className="button-cluster">
+                <div ref="type">
+                    <div className="formline">
+                        <div className="control-group__vertical">
+                            <ColorInput
+                                id={colorPickerID}
+                                ref="color"
+                                className="type"
+                                context={collection.pluck(this.props.document.layers.selected, "id")}
+                                title={strings.TOOLTIPS.SET_TYPE_COLOR}
+                                editable={!this.props.disabled}
+                                defaultValue={colors}
+                                opaque={this.state.opaque}
+                                onChange={this._handleColorChange}
+                                onColorChange={this._handleOpaqueColorChange}
+                                onAlphaChange={this._handleAlphaChange}
+                                swatchOverlay={typeOverlay} />
                         </div>
-                    </header>
-
+                        <div className="control-group__vertical control-group__no-label">
+                            <BlendMode
+                                    document={this.props.document}
+                                    containerType={"type"}
+                                    layers={this.props.document.layers.selected} />
+                        </div>
+                        <div className="control-group__vertical">
+                            <Label
+                                size="column-4"
+                                className={"label__medium__left-aligned"}
+                                title={strings.TOOLTIPS.SET_OPACITY}>
+                                {strings.STYLE.OPACITY}
+                            </Label>
+                            <Opacity
+                                document={this.props.document}
+                                containerType={"type"}
+                                layers={this.props.document.layers.selected} />
+                        </div>
+                    </div>
                     <div className="formline" >
-                        <Label
-                            title={strings.TOOLTIPS.SET_TYPEFACE}>
-                            {strings.STYLE.TYPE.TYPEFACE}
-                        </Label>
-                        <Gutter />
                         <Datalist
                             className="dialog-type-typefaces"
                             sorted={true}
@@ -574,17 +596,16 @@ define(function (require, exports, module) {
                             defaultSelected={postScriptName}
                             options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}
-                            size="column-14"
-                        />
-                        <Gutter />
+                            size="column-27" />
                     </div>
-
-                    <div className="formline">
-                        <Label
-                            title={strings.TOOLTIPS.SET_WEIGHT}>
-                            {strings.STYLE.TYPE.WEIGHT}
-                        </Label>
-                        <Gutter />
+                    <div className="formline formline__space-between">
+                        <div className={"control-group control-group__vertical column-4"}>
+                            <NumberInput
+                                value={sizes}
+                                onChange={this._handleSizeChange}
+                                disabled={locked} />
+                        </div>
+                        <div className={"control-group control-group__vertical"}>
                         <Datalist
                             className="dialog-type-weights"
                             sorted={true}
@@ -595,101 +616,67 @@ define(function (require, exports, module) {
                             defaultSelected={postScriptName}
                             options={familyFontOptions}
                             onChange={this._handleTypefaceChange}
-                            size="column-14" />
-                        <Gutter />
+                            size="column-22" />
+                        </div>
                     </div>
-
-                    <div className="formline">
-                        <Gutter />
-                        <ColorInput
-                            id={colorPickerID}
-                            ref="color"
-                            className="type"
-                            context={collection.pluck(this.props.document.layers.selected, "id")}
-                            title={strings.TOOLTIPS.SET_TYPE_COLOR}
-                            editable={!this.props.disabled}
-                            defaultValue={colors}
-                            opaque={this.state.opaque}
-                            onChange={this._handleColorChange}
-                            onColorChange={this._handleOpaqueColorChange}
-                            onAlphaChange={this._handleAlphaChange}
-                            swatchOverlay={typeOverlay}>
-
-                            <div className="compact-stats__body">
-                                <div className="compact-stats__body__column">
-                                    <Label
-                                        title={strings.TOOLTIPS.SET_TYPE_SIZE}
-                                        size="column-4">
-                                        {strings.STYLE.TYPE.SIZE}
-                                    </Label>
-                                    <NumberInput
-                                        value={sizes}
-                                        onChange={this._handleSizeChange}
-                                        disabled={locked} />
-                                </div>
-                                <Gutter />
-                                <div className="compact-stats__body__column">
-                                    <Label
-                                        size="column-4"
-                                        title={strings.TOOLTIPS.SET_LETTERSPACING}>
-                                        {strings.STYLE.TYPE.LETTER}
-                                    </Label>
-                                    <NumberInput
-                                        value={trackings}
-                                        disabled={locked}
-                                        onChange={this._handleTrackingChange}
-                                        valueType="size" />
-                                </div>
-                                <Gutter />
-                                <div className="compact-stats__body__column">
-                                    <Label
-                                        size="column-4"
-                                        title={strings.TOOLTIPS.SET_LINESPACING}>
-                                            {strings.STYLE.TYPE.LINE}
-                                    </Label>
-                                    <NumberInput
-                                        value={leadings}
-                                        disabled={locked}
-                                        special={strings.STYLE.TYPE.AUTO_LEADING}
-                                        onChange={this._handleLeadingChange}
-                                        valueType="size" />
-                                </div>
-                            </div>
-                        </ColorInput>
-                    </div>
-                    <div className="formline">
-                        <Label
-                            title={strings.TOOLTIPS.SET_TYPE_ALIGNMENT}>
-                            {strings.STYLE.TYPE.ALIGN}
-                        </Label>
-                        <Gutter />
-                        <SplitButtonList>
-                            <SplitButtonItem
-                                disabled={this.props.disabled}
-                                iconId="text-left"
-                                selected={alignment === "left"}
-                                onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
-                                title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
-                            <SplitButtonItem
-                                disabled={this.props.disabled}
-                                iconId="text-center"
-                                selected={alignment === "center"}
-                                onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
-                                title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
-                            <SplitButtonItem
-                                disabled={this.props.disabled}
-                                iconId="text-right"
-                                selected={alignment === "right"}
-                                onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
-                                title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
-                            <SplitButtonItem
-                                iconId="text-justified"
-                                selected={alignment === "justifyAll"}
-                                disabled={this.props.disabled || !box}
-                                onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}
-                                title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
-                        </SplitButtonList>
-                        <Gutter />
+                    <div className="formline formline__space-between">
+                        <div className="control-group column-10 control-group__vertical">
+                            <SplitButtonList size="column-10" className="button-radio__fixed">
+                                <SplitButtonItem
+                                    disabled={this.props.disabled}
+                                    iconId="text-left"
+                                    className={"split-button__item__fixed"}
+                                    selected={alignment === "left"}
+                                    onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
+                                    title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
+                                <SplitButtonItem
+                                    disabled={this.props.disabled}
+                                    iconId="text-center"
+                                    className={"split-button__item__fixed"}
+                                    selected={alignment === "center"}
+                                    onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
+                                    title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
+                                <SplitButtonItem
+                                    disabled={this.props.disabled}
+                                    iconId="text-right"
+                                    className={"split-button__item__fixed"}
+                                    selected={alignment === "right"}
+                                    onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
+                                    title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
+                                <SplitButtonItem
+                                    iconId="text-justified"
+                                    className={"split-button__item__fixed"}
+                                    selected={alignment === "justifyAll"}
+                                    disabled={this.props.disabled || !box}
+                                    onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}
+                                    title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
+                            </SplitButtonList>
+                        </div>
+                        <div className="control-group">
+                            <Label
+                                size="column-2"
+                                title={strings.TOOLTIPS.SET_LETTERSPACING}>
+                                <SVGIcon CSSID="text-tracking" />
+                            </Label>
+                            <NumberInput
+                                value={trackings}
+                                disabled={locked}
+                                onChange={this._handleTrackingChange}
+                                valueType="size" />
+                        </div>
+                        <div className=" control-group control-group__vertical">
+                            <Label
+                                size="column-2"
+                                title={strings.TOOLTIPS.SET_LINESPACING}>
+                                <SVGIcon CSSID="text-leading" />
+                            </Label>
+                            <NumberInput
+                                value={leadings}
+                                disabled={locked}
+                                special={strings.STYLE.TYPE.AUTO_LEADING}
+                                onChange={this._handleLeadingChange}
+                                valueType="size" />
+                        </div>
                     </div>
                 </div>
             );

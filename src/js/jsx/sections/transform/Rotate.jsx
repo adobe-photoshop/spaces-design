@@ -31,14 +31,16 @@ define(function (require, exports, module) {
 
     var collection = require("js/util/collection");
 
-    var NumberInput = require("jsx!js/jsx/shared/NumberInput");
+    var NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+        Label = require("jsx!js/jsx/shared/Label"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        strings = require("i18n!nls/strings");
 
     var Rotate = React.createClass({
         mixins: [FluxMixin],
         
         propTypes: {
-            document: React.PropTypes.object,
-            layers: React.PropTypes.arrayOf(React.PropTypes.object)
+            document: React.PropTypes.object
         },
 
         /**
@@ -144,15 +146,22 @@ define(function (require, exports, module) {
                 disabled = this._disabled(document, layers);
 
             return (
-                <NumberInput
-                    disabled={disabled}
-                    // HACK: This lets 0 as a value work and not be considered the starting value
-                    value={disabled ? "" : "0"}
-                    onChange={this._rotateLayer}
-                    step={1}
-                    bigstep={15}
-                    ref="rotate"
-                    size="column-3" />
+                <div className="control-group">
+                    <Label
+                        size="column-3"
+                        title={strings.TOOLTIPS.SET_ROTATION}>
+                        <SVGIcon CSSID="rotation" />
+                    </Label>
+                    <NumberInput
+                        disabled={disabled}
+                        // HACK: This lets 0 as a value work and not be considered the starting value
+                        value={disabled ? "" : "0"}
+                        onChange={this._rotateLayer}
+                        step={1}
+                        bigstep={15}
+                        ref="rotate"
+                        size="column-3" />
+                </div>
             );
         }
     });

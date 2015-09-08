@@ -90,16 +90,6 @@ button {
     justify-content: center;
 }
 
-.button-radio li {
-    margin: 0 auto;
-    // border-right: @hairline solid;
-    flex-grow: 1;
-}
-
-.button-radio li:last-child {
-    border: none;
-}
-
 .button-combo:focus {
     cursor: text;
     .background-transparency(@item-active, .3);
@@ -112,6 +102,10 @@ button {
   flex-shrink: 0;
   flex-grow: 1;
   height: 3rem;
+}
+
+.button-radio__fixed {
+    flex-grow: 0;
 }
 
 .button-combo {

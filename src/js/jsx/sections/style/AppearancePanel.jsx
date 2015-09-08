@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2015 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"), 
@@ -28,6 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        Immutable = require("immutable"),
         classnames = require("classnames");
 
     var os = require("adapter/os");
@@ -35,23 +36,12 @@ define(function (require, exports, module) {
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        Blend = require("jsx!./Blend"),
-        Vector = require("jsx!./Vector"),
         Type = require("jsx!./Type"),
-        DropShadowList = require("jsx!./Shadow").DropShadowList,
-        InnerShadowList = require("jsx!./Shadow").InnerShadowList,
-        Fill = require("jsx!./Fill"),
-        Stroke = require("jsx!./Stroke"),
+        VectorAppearance = require("jsx!./VectorAppearance"),
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization");
 
-    /**
-     * @const
-     * @type {number} The maximum allowed number of effects of a given kind per layer
-     */
-    var MAX_EFFECT_COUNT = 10;
-
-    var StylePanel = React.createClass({
+    var AppearancePanel = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("style")],
 
         /**
@@ -93,6 +83,15 @@ define(function (require, exports, module) {
                 return true;
             }
 
+            if (nextProps.hidden !== this.props.hidden) {
+                return true;
+            }
+            
+            if (!Immutable.is(this.props.document.layers.selected,
+                nextProps.document.layers.selected)) {
+                return true;
+            }
+            
             if (!nextProps.visible && !this.props.visible) {
                 return false;
             }
@@ -147,14 +146,19 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            if (this.props.document.layers.selected.isEmpty()) {
+                return null;
+            }
+            
             var containerClasses = classnames({
                 "section-container": true,
                 "section-container__collapsed": !this.props.visible
             });
-
+            
             var sectionClasses = classnames({
-                "style": true,
                 "section": true,
+                "appearance": true,
+                "section__sibling-collapsed": !this.props.visibleSibling,
                 "section__collapsed": !this.props.visible
             });
 
@@ -173,22 +177,8 @@ define(function (require, exports, module) {
 
             var containerContents = this.props.document && this.props.visible && !this.props.disabled && (
                 <div>
-                    <Blend {...this.props}
-                        onFocus={this._handleFocus}/>
-                    <Vector {...this.props}
-                        onFocus={this._handleFocus}/>
-                    <Type {...this.props}
-                        onFocus={this._handleFocus} />
-                    <Fill {...this.props}
-                        onFocus={this._handleFocus} />
-                    <Stroke {...this.props}
-                        onFocus={this._handleFocus} />
-                    <DropShadowList {...this.props}
-                        onFocus={this._handleFocus}
-                        max={MAX_EFFECT_COUNT} />
-                    <InnerShadowList {...this.props}
-                        onFocus={this._handleFocus}
-                        max={MAX_EFFECT_COUNT} />
+                    <VectorAppearance document={this.props.document} />
+                    <Type document={this.props.document} />
                 </div>
             );
 
@@ -197,7 +187,7 @@ define(function (require, exports, module) {
                     className={sectionClasses}
                     onScroll={this._handleScroll}>
                     <TitleHeader
-                        title={strings.TITLE_STYLE}
+                        title={strings.TITLE_APPEARANCE}
                         visible={this.props.visible}
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>
@@ -206,10 +196,8 @@ define(function (require, exports, module) {
                                 className={copyStyleClasses}
                                 title={strings.STYLE.COPY}
                                 disabled={copyStyleDisabled}
-                                onClick={this._handleStyleCopy}
-                                onDisabledClick={this._blockInput}
                                 onDoubleClick={this._blockInput}
-                                onDisabledDoubleClick={this._blockInput}>
+                                onClick={this._handleStyleCopy}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
                                     CSSID="style-copy" />
@@ -218,10 +206,8 @@ define(function (require, exports, module) {
                                 className={pasteStyleClasses}
                                 title={strings.STYLE.PASTE}
                                 disabled={pasteStyleDisabled}
-                                onClick={this._handleStylePaste}
-                                onDisabledClick={this._blockInput}
                                 onDoubleClick={this._blockInput}
-                                onDisabledDoubleClick={this._blockInput}>
+                                onClick={this._handleStylePaste}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
                                     CSSID="style-paste" />
@@ -236,5 +222,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = StylePanel;
+    module.exports = AppearancePanel;
 });
