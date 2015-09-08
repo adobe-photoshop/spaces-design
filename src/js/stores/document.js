@@ -85,7 +85,7 @@ define(function (require, exports, module) {
                 events.document.history.optimistic.STROKE_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.history.optimistic.STROKE_COLOR_CHANGED, this._handleStrokePropertiesChanged,
                 events.document.history.optimistic.STROKE_OPACITY_CHANGED, this._handleStrokePropertiesChanged,
-                events.document.history.nonOptimistic.STROKE_ADDED, this._handleStrokePropertiesChanged,
+                events.document.history.nonOptimistic.STROKE_ADDED, this._handleStrokeAdded,
                 events.document.history.optimistic.LAYER_EFFECT_CHANGED, this._handleLayerEffectPropertiesChanged,
                 events.document.history.optimistic.LAYER_EFFECT_DELETED, this._handleDeletedLayerEffect,
                 events.document.history.optimistic.LAYER_EFFECTS_BATCH_CHANGED, this._handleLayerEffectsBatchChanged,
@@ -736,6 +736,24 @@ define(function (require, exports, module) {
                 strokeProperties = payload.strokeProperties,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.setStrokeProperties(layerIDs, strokeProperties),
+                nextDocument = document.set("layers", nextLayers);
+
+            this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Adds a stroke to the specified document and layers
+         * This also handles updating strokes where we're refetching from Ps
+         *
+         * @private
+         * @param {{documentID: !number, strokeStyleDescriptor: object}} payload
+         */
+        _handleStrokeAdded: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                strokeStyleDescriptor = payload.strokeStyleDescriptor,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.addStroke(layerIDs, strokeStyleDescriptor),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
