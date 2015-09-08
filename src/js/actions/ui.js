@@ -285,7 +285,8 @@ define(function (require, exports) {
         return {
             x: zoom * bounds.xCenter / factor + (offset.right - offset.left) / 2,
             y: zoom * bounds.yCenter / factor + (offset.bottom - offset.top) / 2,
-            z: zoom
+            z: zoom,
+            animate: false
         };
     };
 
@@ -381,7 +382,7 @@ define(function (require, exports) {
             zoom = payload.zoom,
             bounds = document.layers.selectedAreaBounds,
             panZoomDescriptor = {
-                animate: true,
+                animate: false,
                 resize: true,
                 z: zoom
             };
