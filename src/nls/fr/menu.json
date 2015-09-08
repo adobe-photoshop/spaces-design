@@ -193,7 +193,8 @@
         "TOGGLE_EXTRAS": "Afficher | Masquer les extras",
         "TOGGLE_RULERS": "Afficher | Masquer les règles",
         "TOGGLE_SMART_GUIDES": "Afficher les repères commentés",
-        "TOGGLE_GUIDES": "Afficher les repères"
+        "TOGGLE_GUIDES": "Afficher les repères",
+        "CLEAR_GUIDES": "Effacer les repères"
     },
     "WINDOW": {
         "$MENU": "Fenêtre",

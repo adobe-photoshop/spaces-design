@@ -193,7 +193,8 @@
         "TOGGLE_EXTRAS": "Extras anzeigen | ausblenden",
         "TOGGLE_RULERS": "Lineale anzeigen | ausblenden",
         "TOGGLE_SMART_GUIDES": "Intelligente Hilfslinien anzeigen",
-        "TOGGLE_GUIDES": "Hilfslinien einblenden"
+        "TOGGLE_GUIDES": "Hilfslinien einblenden",
+        "CLEAR_GUIDES": "Hilfslinien löschen"
     },
     "WINDOW": {
         "$MENU": "Fenster",

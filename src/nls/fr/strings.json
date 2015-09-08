@@ -2,7 +2,7 @@
     "ACTIONS": {
         "ADD_STROKE": "Ajouter un contour",
         "ADD_FILL": "Ajouter un fond",
-        "APPLY_LIBRARY_COLOR": "[8416190] é_Apply Library Color",
+        "APPLY_LIBRARY_COLOR": "Appliquer la couleur de la bibliothèque",
         "SET_STROKE_COLOR": "Définir la couleur du contour",
         "SET_STROKE": "Définir le contour",
         "SET_STROKE_OPACITY": "Définir l'opacité du contour",
@@ -28,7 +28,7 @@
         "PASTE_LAYER_STYLE": "Coller le style de calque",
         "SAMPLE_GRAPHICS": "Exemple de graphique",
         "SAMPLE_COLOR": "Couleur d'échantillon",
-        "SAMPLE_STROKE": "[8415006] é_Sample Stroke",
+        "SAMPLE_STROKE": "Contour d'échantillon",
         "SET_PROPORTIONAL_SCALE": "Définir la mise à l'échelle proportionnelle",
         "SET_TYPE_FACE": "Définir la police",
         "SET_TYPE_COLOR": "Définir la couleur du texte",
@@ -234,8 +234,11 @@
         "LIBRARY_VIEW_ON_WEBSITE": "Afficher sur le site web",
         "LIBRARY_CLICK_TO_APPLY": "Cliquez pour appliquer.",
         "LIBRARY_DELETE": "Supprimer",
+        "EXPORT_EXPORT_ASSETS": "Exporter ces fichiers",
         "EXPORT_ADD_ASSET": "Ajouter un fichier exporté",
-        "EXPORT_REMOVE_ASSET": "Supprimer la configuration d'un fichier"
+        "EXPORT_REMOVE_ASSET": "Supprimer la configuration d'un fichier",
+        "EXPORT_IOS_PRESETS": "Ajouter 3 fichiers iOS + SVG",
+        "EXPORT_HDPI_PRESETS": "Ajouter 6 fichiers HDPI + SVG"
     },
     "LAYER_KIND": {
         "0": "Tout calque",
@@ -372,7 +375,7 @@
         "EXPORT_LIST_ALL_ASSETS": "Tous les fichiers",
         "BUTTON_EXPORT": "Exportation",
         "BUTTON_CANCEL": "Annuler",
-        "SELECT_SINGLE_LAYER": "Sélectionnez un seul calque",
+        "SELECT_SINGLE_LAYER": "DEPRECATED",
         "TITLE_SCALE": "Echelle",
         "TITLE_SUFFIX": "Suffixe ",
         "TITLE_SETTINGS": "Settings",
