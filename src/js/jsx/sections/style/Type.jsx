@@ -65,38 +65,12 @@ define(function (require, exports, module) {
                 return collection.pluck(document.layers.selected, "opacity");
             };
 
-            if (!Immutable.is(this.state.postScriptMap, nextState.postScriptMap)) {
-                if (nextState.postScriptMap) {
-                    // The list of all selectable type faces
-                    var typefaces = nextState.postScriptMap
-                        .entrySeq()
-                        .sortBy(function (entry) {
-                            return entry[0];
-                        })
-                        .map(function (entry) {
-                            var psName = entry[0],
-                                fontObj = entry[1];
-
-                            return {
-                                id: psName,
-                                title: fontObj.font
-                            };
-                        })
-                        .toList();
-
-                    this.setState({
-                        typefaces: typefaces
-                    });
-                }
-
-                return true;
-            }
-
             if (this.state.opaque !== nextState.opaque) {
                 return true;
             }
 
-            return !Immutable.is(this.state.typefaces, nextState.typefaces) ||
+            return !Immutable.is(this.state.postScriptMap, nextState.postScriptMap) ||
+                !Immutable.is(this.state.typefaces, nextState.typefaces) ||
                 !Immutable.is(getTexts(this.props.document), getTexts(nextProps.document)) ||
                 !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document));
         },
@@ -112,6 +86,7 @@ define(function (require, exports, module) {
                 initialized: fontState.initialized,
                 postScriptMap: fontState.postScriptMap,
                 familyMap: fontState.familyMap,
+                typefaces: fontState.typefaces,
                 // Force opacity while in the type modal tool state
                 opaque: modalState
             };
