@@ -168,7 +168,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _exportAsset = function (document, layer, assetIndex, asset, baseDir, prefix) {
-        var fileName = (layer ? layer.name : strings.EXPORT.EXPORT_DOCUMENT_FILENAME) + asset.suffix,
+        var baseName = layer ? layer.name : document.nameWithoutExtension || strings.EXPORT.EXPORT_DOCUMENT_FILENAME,
+            fileName = baseName + asset.suffix,
             _layers = layer ? Immutable.List.of(layer) : null;
 
         fileName = prefix ? prefix + fileName : fileName;
@@ -763,7 +764,7 @@ define(function (require, exports) {
 
         // prompt for folder and then export to the result.
         // resolve immediately if no folder is returned
-        this.transfer(promptForFolder)
+        return this.transfer(promptForFolder)
             .bind(this)
             .then(function (baseDir) {
                 _lastFolderPath = baseDir;

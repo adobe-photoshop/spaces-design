@@ -185,6 +185,15 @@ define(function (require, exports, module) {
             } else {
                 return this.bounds;
             }
+        },
+
+        /**
+         * Strip the file extension from the document name
+         *
+         * @return {string}
+         */
+        "nameWithoutExtension": function () {
+            return this.name.replace(/\.psd$/i, "");
         }
     }));
 
