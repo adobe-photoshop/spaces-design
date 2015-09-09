@@ -134,12 +134,12 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Stop event propagation to prevent double-clicks from collapsing the panel.
+         * Handler which stops propagation of the given event
          *
          * @private
-         * @param {SyntheticEvent} event
+         * @param {Event} event
          */
-        _addAssetDoubleClickHandler: function (event) {
+        _blockInput: function (event) {
             event.stopPropagation();
         },
 
@@ -213,25 +213,25 @@ define(function (require, exports, module) {
                     <TitleHeader
                         title={strings.TITLE_EXPORT}
                         visible={this.props.visible}
-                        disabled={disabled}
+                        disabled={false}
                         onDoubleClick={this.props.onVisibilityToggle}>
                         <div className="layer-exports__workflow-buttons">
                             <Button
                                 className="button-plus"
-                                disabled={exportDisabled || disabled}
+                                disabled={exportDisabled || disabled || !this.props.visible}
                                 title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
                                 onClick={this._exportAssetsClickHandler}
-                                onDoubleClick={this._addAssetDoubleClickHandler}>
+                                onDoubleClick={this._blockInput}>
                                 <SVGIcon
                                     CSSID={exportState.serviceBusy ? "loader" : "export"} />
                             </Button>
                             <Gutter />
                             <Button
                                 className="button-plus"
-                                disabled={disabled}
+                                disabled={disabled || !this.props.visible}
                                 title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
                                 onClick={this._addAssetClickHandler}
-                                onDoubleClick={this._addAssetDoubleClickHandler}>
+                                onDoubleClick={this._blockInput}>
                                 <SVGIcon
                                     viewbox="0 0 16 16"
                                     CSSID="add-new" />
@@ -239,9 +239,10 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Button
                                 className="button-iOS"
-                                disabled={disabled}
+                                disabled={disabled || !this.props.visible}
                                 title={strings.TOOLTIPS.EXPORT_IOS_PRESETS}
-                                onClick={this._addAssetClickHandler.bind(this, "IOS")}>
+                                onClick={this._addAssetClickHandler.bind(this, "IOS")}
+                                onDoubleClick={this._blockInput}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
                                     CSSID="iOS" />
@@ -249,9 +250,10 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Button
                                 className="button-xdpi"
-                                disabled={disabled}
+                                disabled={disabled || !this.props.visible}
                                 title={strings.TOOLTIPS.EXPORT_HDPI_PRESETS}
-                                onClick={this._addAssetClickHandler.bind(this, "HDPI")}>
+                                onClick={this._addAssetClickHandler.bind(this, "HDPI")}
+                                onDoubleClick={this._blockInput}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
                                     CSSID="hdpi" />
