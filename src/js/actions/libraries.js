@@ -866,9 +866,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
         
-        // To make textLayerAdapter.applyTextStyle apply text color correctly, styleData.color must be an array.
-        if (styleData.color && !(styleData.color instanceof Array)) {
-            styleData.color = [styleData.color];
+        if (styleData.color instanceof Array) {
+            styleData.color = styleData.color[0];
         }
 
         var textLayerIDs = collection.pluck(textLayers, "id"),
