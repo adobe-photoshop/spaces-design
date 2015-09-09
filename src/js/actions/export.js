@@ -698,6 +698,7 @@ define(function (require, exports) {
             // No layers provided, so get all layers that have exports configured and which are "exportEnabled"
             layersList = documentExports.getLayersWithExports(document, undefined, true);
             layersList = document.layers.filterExportable(layersList);
+            quickAddPromise = Promise.resolve();
         }
 
         // prompt for folder and then export to the result.
@@ -711,7 +712,7 @@ define(function (require, exports) {
                 return _setAssetsRequested.call(this, document.id, layerIdList);
             })
             .then(_setServiceBusy.bind(this, true))
-            .then(quickAddPromise)
+            .return(quickAddPromise)
             .then(function () {
                 // fetch documentExports anew, in case quick-add added any assets
                 var documentExports = this.flux.stores.export.getDocumentExports(documentID, true);

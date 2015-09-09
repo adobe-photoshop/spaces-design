@@ -197,8 +197,7 @@ define(function (require, exports, module) {
 
             var containerClasses = classnames({
                 "section-container": true,
-                "section-container__collapsed": !this.props.visible,
-                "exports-panel__container__busy": exportState.serviceBusy // TEMP
+                "section-container__collapsed": !this.props.visible
             });
 
             var sectionClasses = classnames({

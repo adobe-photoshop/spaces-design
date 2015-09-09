@@ -247,12 +247,11 @@ define(function (require, exports, module) {
                 allArtboardsExportEnabled = collection.pluck(artboardsSorted, "exportEnabled"),
                 allNonABLayersExportEnabled = collection.pluck(nonABLayers, "exportEnabled");
 
-            var panelClassnames = classnames({
-                "exports-panel__container": true,
-                "exports-panel__container__busy": serviceBusy
-            });
+            var panelClassnames = classnames("exports-panel__container");
 
-            var exportButton = serviceBusy ? (<SVGIcon CSSID="loader" />) : strings.EXPORT.BUTTON_EXPORT;
+            var exportButton = serviceBusy ?
+                (<SVGIcon CSSID="loader" viewbox="0 0 16 16" />)
+                : strings.EXPORT.BUTTON_EXPORT;
 
             return (
                 <div className={panelClassnames}>
