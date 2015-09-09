@@ -359,7 +359,7 @@ define(function (require, exports) {
                 
                 currentLibrary.beginOperation();
                 
-                var newElement = currentLibrary.createElement(currentLayer.name, ELEMENT_CHARACTERSTYLE_TYPE),
+                var newElement = currentLibrary.createElement("", ELEMENT_CHARACTERSTYLE_TYPE),
                     representation = newElement.createRepresentation(_REP_CHARACTERSTYLE_TYPE, "primary"),
                     imageRepresentation = newElement.createRepresentation(_REP_PNG_TYPE, "rendition");
                     
@@ -814,9 +814,11 @@ define(function (require, exports) {
      */
     var applyLayerStyle = function (element) {
         var appStore = this.flux.store("application"),
-            currentDocument = appStore.getCurrentDocument();
+            currentDocument = appStore.getCurrentDocument(),
+            selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
+            selectedUnlockedLayers = selectedLayers.filter(function (l) { return !l.locked; });
 
-        if (!currentDocument || currentDocument.layers.selected.isEmpty()) {
+        if (selectedUnlockedLayers.isEmpty()) {
             return Promise.resolve();
         }
 
@@ -827,7 +829,8 @@ define(function (require, exports) {
             })
             .bind(this)
             .then(function (path) {
-                var layerRef = layerEffectAdapter.referenceBy.current,
+                var layerIDs = collection.pluck(selectedUnlockedLayers, "id"),
+                    layerRef = layerIDs.map(layerEffectAdapter.referenceBy.id).toArray(),
                     placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path),
                     options = {
                         historyStateInfo: {
@@ -836,7 +839,8 @@ define(function (require, exports) {
                         }
                     };
 
-                return descriptor.playObject(placeObj, options);
+                return layerActionsUtil.playSimpleLayerActions(currentDocument, selectedUnlockedLayers,
+                    placeObj, false, options);
             })
             .then(function () {
                 // FIXME: This can be more optimistic
@@ -860,9 +864,9 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument(),
             selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
-            textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); });
+            textLayers = selectedLayers.filter(function (l) { return l.isTextLayer() && !l.locked; });
 
-        if (!currentDocument || textLayers.isEmpty()) {
+        if (textLayers.isEmpty()) {
             return Promise.resolve();
         }
         
@@ -887,7 +891,7 @@ define(function (require, exports) {
                 }
             };
 
-        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, true, options)
+        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, false, options)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetLayers, currentDocument, textLayers);

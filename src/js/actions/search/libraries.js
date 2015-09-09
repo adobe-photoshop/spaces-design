@@ -76,7 +76,7 @@ define(function (require, exports) {
                         return;
                     }
 
-                    if (categoryKey === "CHARACTERSTYLE") {
+                    if (categoryKey === "CHARACTERSTYLE" && !title) {
                         var charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
                             font = charStyle.adbeFont,
                             fontString = font.name + " " + font.style,
@@ -134,8 +134,7 @@ define(function (require, exports) {
     var _confirmSearch = function (id) {
         var elementInfo = _idMap[id],
             appStore = this.flux.store("application"),
-            currentDocument = appStore.getCurrentDocument(),
-            currentLayers = currentDocument ? currentDocument.layers.selected : Immutable.List();
+            currentDocument = appStore.getCurrentDocument();
 
         if (elementInfo) {
             var asset = elementInfo.asset,
@@ -161,26 +160,18 @@ define(function (require, exports) {
                     
                     break;
                 case "LAYERSTYLE":
-                    // Only try to apply layer style if a single layer is selected
-                    // Should probably be handled in applyLayerStyle 
-                    if (currentLayers.size === 1) {
-                        selectPromise
-                            .bind(this)
-                            .then(function () {
-                                this.flux.actions.libraries.applyLayerStyle(asset);
-                            });
-                    }
+                    selectPromise
+                        .bind(this)
+                        .then(function () {
+                            this.flux.actions.libraries.applyLayerStyle(asset);
+                        });
                     break;
                 case "CHARACTERSTYLE":
-                    // Only try to apply character style if a single text layer is selected
-                    // Should probably be handled in applyCharacterStyle 
-                    if (currentLayers.size === 1 && currentLayers.first().isTextLayer()) {
-                        selectPromise
-                            .bind(this)
-                            .then(function () {
-                                this.flux.actions.libraries.applyCharacterStyle(asset);
-                            });
-                    }
+                    selectPromise
+                        .bind(this)
+                        .then(function () {
+                            this.flux.actions.libraries.applyCharacterStyle(asset);
+                        });
                     break;
             }
         }

@@ -27,7 +27,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        classnames = require("classnames"),
         tinycolor = require("tinycolor");
 
     var strings = require("i18n!nls/strings"),
@@ -85,8 +84,11 @@ define(function (require, exports, module) {
          * Apply color to the selected layers.
          *
          * @private
+         * @param {SyntheticEvent} event
          */
-        _handleApply: function () {
+        _handleApply: function (event) {
+            event.stopPropagation();
+
             var colorData = this.state.colorData,
                 color = new ColorModel({ r: colorData.value.r, g: colorData.value.g, b: colorData.value.b });
 
@@ -97,23 +99,18 @@ define(function (require, exports, module) {
             var element = this.props.element,
                 displayName = element.displayName !== "" ? element.displayName : this.state.hexValue;
 
-            var classNames = classnames("libraries__asset", {
-                "libraries__asset-selected": this.props.selected
-            });
-
             return (
-                <div className={classNames}
-                     key={element.id}>
+                 <AssetSection
+                    element={this.props.element}
+                    onSelect={this.props.onSelect}
+                    selected={this.props.selected}
+                    title={displayName}
+                    key={element.id}>
                     <div className="libraries__asset__preview"
                          style={{ background: this.state.hexValue }}
                          title={strings.LIBRARIES.CLICK_TO_APPLY}
                          onClick={this._handleApply}/>
-                     <AssetSection
-                        element={this.props.element}
-                        onSelect={this.props.onSelect}
-                        selected={this.props.selected}
-                        title={displayName}/>
-                </div>
+                </AssetSection>
             );
         }
     });

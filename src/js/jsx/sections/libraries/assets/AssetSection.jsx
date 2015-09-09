@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        _ = require("lodash");
+        _ = require("lodash"),
+        classnames = require("classnames");
 
     var strings = require("i18n!nls/strings"),
         ui = require("js/util/ui");
@@ -47,6 +48,13 @@ define(function (require, exports, module) {
             title: React.PropTypes.string.isRequired,
             subTitle: React.PropTypes.string
         },
+        
+        /**
+         * True if title is in editing mode.
+         * 
+         * @type {boolean}
+         */
+        _isEditingTitle: false,
 
         getInitialState: function () {
             return {
@@ -61,10 +69,16 @@ define(function (require, exports, module) {
 
         /**
          * Handle select asset event.
+         * 
          * @private
+         * @param {SyntheticEvent=} event
          */
-        _handleSelect: function () {
-            if (this.props.onSelect) {
+        _handleSelect: function (event) {
+            if (event) {
+                event.stopPropagation();
+            }
+
+            if (!this._isEditingTitle && this.props.onSelect) {
                 this.props.onSelect(this.props.element);
             }
         },
@@ -109,17 +123,43 @@ define(function (require, exports, module) {
             this.getFlux().actions.libraries.removeAsset(this.props.element);
             this.setState({ deleting: false });
         },
-
+        
         /**
-         * Handle asset title click event.
-         *
+         * Click on element title will treat as select the asset. Before processing the event, we will wait 
+         * to make sure it is not part of a title-double-clicked event, as double clikc on element title will 
+         * also trigger a click event. 
+         * 
          * @private
          * @param {SyntheticEvent} event
          */
-        _handleClickTitle: function (event) {
-            // Capture the title click event to prevent the asset select event from interrupting
-            // asset rename, because double click on asset title will also trigger a single click event.
+        _handleTitleClicked: function (event) {
             event.stopPropagation();
+            
+            if (!this._isEditingTitle) {
+                window.setTimeout(function () {
+                    if (!this._isEditingTitle) {
+                        this._handleSelect();
+                    }
+                }.bind(this), 250);
+            }
+        },
+
+        /**
+         * Handle start editing title.
+         * 
+         * @private
+         */
+        _handleStartEditingTitle: function () {
+            this._isEditingTitle = true;
+        },
+
+        /**
+         * Handle end editing title.
+         * 
+         * @private
+         */
+        _handleEndEditingTitle: function () {
+            this._isEditingTitle = false;
         },
 
         render: function () {
@@ -149,20 +189,22 @@ define(function (require, exports, module) {
                     </SplitButtonList>
                 );
             } else {
-                var subTitle = this.props.subTitle && (<div className="libraries__asset__section__subtitle">
+                var subTitle = this.props.subTitle && (<div className="libraries__asset__subtitle">
                         {this.props.subTitle}
                     </div>);
 
                 sectionContent = (
-                    <div className="libraries__asset__section__title">
+                    <div className="libraries__asset__title">
                         <TextInput
                             ref="input"
                             editable={true}
                             title={this.props.title}
                             value={this.props.title}
                             preventHorizontalScrolling={true}
-                            onClick={this._handleClickTitle}
-                            onChange={this._handleRename}/>
+                            onClick={this._handleTitleClicked}
+                            onDoubleClick={this._handleStartEditingTitle}
+                            onChange={this._handleRename}
+                            onBlur={this._handleEndEditingTitle}/>
                         {subTitle}
                     </div>
                 );
@@ -184,10 +226,16 @@ define(function (require, exports, module) {
                         onCancel={this._handleCancelDeletion}/>
                 );
             }
+            
+            var classNames = classnames({
+                "libraries__asset": true,
+                "libraries__asset-selected": this.props.selected
+            }, this.props.classNames);
 
             return (
-                <div className="libraries__asset__section"
+                <div className={classNames}
                      onClick={this._handleSelect}>
+                    {this.props.children}
                     {deleteConfirmationDialog}
                     {sectionContent}
                 </div>

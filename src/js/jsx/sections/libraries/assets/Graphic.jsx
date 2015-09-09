@@ -85,33 +85,45 @@ define(function (require, exports, module) {
         _handleOpenForEdit: function () {
             this.getFlux().actions.libraries.openGraphicForEdit(this.props.element);
         },
+        
+        /**
+         * Handle click preview.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleClickPreview: function (event) {
+            // Stop propagation to avoid triggering the select asset event.
+            event.stopPropagation();
+        },
 
         render: function () {
             var element = this.props.element,
                 dragPreview = this._renderDragPreview();
 
-            var classNames = classnames("libraries__asset", {
-                "assets__graphic__dragging": this.props.isDragging,
-                "libraries__asset-selected": this.props.selected
+            var classNames = classnames({
+                "assets__graphic__dragging": this.props.isDragging
             });
 
             return (
-                <div className={classNames}
-                     key={element.id}>
+                <AssetSection
+                    element={this.props.element}
+                    onSelect={this.props.onSelect}
+                    selected={this.props.selected}
+                    title={element.displayName}
+                    className={classNames}
+                    key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-graphic"
+                         key={this.props.element.id + this.props.element.modified}
                          onMouseDown={this.props.handleDragStart}
+                         onClick={this._handleClickPreview}
                          onDoubleClick={this._handleOpenForEdit}>
                         <AssetPreviewImage
                             element={this.props.element}
                             onComplete={this._handlePreviewCompleted}/>
                     </div>
-                    <AssetSection
-                        element={this.props.element}
-                        onSelect={this.props.onSelect}
-                        selected={this.props.selected}
-                        title={element.displayName}/>
                     {dragPreview}
-                </div>
+                </AssetSection>
             );
         }
     });
