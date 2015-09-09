@@ -91,6 +91,29 @@ define(function (require, exports, module) {
             return this.props !== nextProps;
         },
 
+        componentDidUpdate: function (prevProps) {
+            // Force-update the color picker state when changing contexts
+            var dialog = this.refs.dialog;
+            if (dialog.isOpen() && !Immutable.is(this.props.context, prevProps.context)) {
+                var color = this.refs.colorpicker.props.color;
+                this.updateColorPicker(color, true); // don't emit a change event
+            }
+        },
+
+        componentWillMount: function () {
+            // Force color picker to update upon undo/redo.
+            // The picker otherwise does not necessarily re-render upon receiving new props.
+            // Furthermore, we explicitly listen for changes here instead using the StoreWatchMixin because
+            // we care only about this narrow type of history change (the 'current' pointer being moved)
+            this.getFlux().store("history")
+                .on("timetravel", this._handleHistoryStateChange);
+        },
+
+        componentWillUnmount: function () {
+            this.getFlux().store("history")
+                .off("timetravel", this._handleHistoryStateChange);
+        },
+
         /**
          * Force the ColorPicker slider to update its position.
          *
@@ -100,6 +123,19 @@ define(function (require, exports, module) {
             var colorpicker = this.refs.colorpicker;
             if (colorpicker) {
                 colorpicker.setColor(color, quiet);
+            }
+        },
+
+        /**
+         * Force the color picker to update on history state changes.
+         *
+         * @private
+         */
+        _handleHistoryStateChange: function () {
+            var dialog = this.refs.dialog;
+            if (dialog.isOpen()) {
+                var color = this.refs.colorpicker.props.color;
+                this.updateColorPicker(color, true); // don't emit a change event
             }
         },
 
@@ -283,42 +319,6 @@ define(function (require, exports, module) {
                     </Dialog>
                 </div>
             );
-        },
-
-        componentDidUpdate: function (prevProps) {
-            // Force-update the color picker state when changing contexts
-            var dialog = this.refs.dialog;
-            if (dialog.isOpen() && !Immutable.is(this.props.context, prevProps.context)) {
-                var color = this.refs.colorpicker.props.color;
-                this.updateColorPicker(color, true); // don't emit a change event
-            }
-        },
-
-        /**
-         * Force the color picker to update on history state changes.
-         *
-         * @private
-         */
-        _handleHistoryStateChange: function () {
-            var dialog = this.refs.dialog;
-            if (dialog.isOpen()) {
-                var color = this.refs.colorpicker.props.color;
-                this.updateColorPicker(color, true); // don't emit a change event
-            }
-        },
-
-        componentWillMount: function () {
-            // Force color picker to update upon undo/redo.
-            // The picker otherwise does not necessarily re-render upon receiving new props.
-            // Furthermore, we explicitly listen for changes here instead using the StoreWatchMixin because
-            // we care only about this narrow type of history change (the 'current' pointer being moved)
-            this.getFlux().store("history")
-                .on("timetravel", this._handleHistoryStateChange);
-        },
-
-        componentWillUnmount: function () {
-            this.getFlux().store("history")
-                .off("timetravel", this._handleHistoryStateChange);
         }
     });
 
