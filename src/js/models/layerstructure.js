@@ -828,6 +828,23 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Given a set of layers, return only those layers which will support being exported
+     * This excludes background layers and empty layers
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Immutable.Iterable.<Layer>}
+     */
+    Object.defineProperty(LayerStructure.prototype, "filterExportable", objUtil.cachedLookupSpec(function (layers) {
+        return layers.filterNot(function (layer) {
+            return !layer.bounds ||
+                layer.bounds.empty ||
+                layer.isBackground ||
+                layer.kind === layer.layerKinds.ADJUSTMENT ||
+                this.isEmptyGroup(layer);
+        }, this);
+    }));
+
+    /**
      * Create a new non-group layer model from a Photoshop layer descriptor and
      * add it to the structure.
      *
