@@ -110,51 +110,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Update the color picker and fire a change event when the text input
-         * changes.
-         * 
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _handleInputChanged: function (event) {
-            var value = event.target.value,
-                colorTiny = tinycolor(value),
-                color = Color.fromTinycolor(colorTiny),
-                colorFormat;
-
-            // Only allow fully opaque colors
-            if (this.props.opaque) {
-                color = color.opaque();
-            }
-
-            if (colorTiny.isValid()) {
-                colorFormat = colorTiny.getFormat();
-
-                this.setState({
-                    format: colorFormat
-                });
-            } else {
-                colorFormat = "invalid";
-            }
-
-            this.updateColorPicker(color, true);
-            this.props.onChange(color, false); // do not coalesce this change
-            headlights.logEvent("edit", "color-input", colorFormat);
-        },
-
-        /**
-         * Selects the content of the input on focus.
-         * 
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _handleFocus: function (event) {
-            if (this.props.onFocus) {
-                this.props.onFocus(event);
-            }
-        },
-
-        /**
          * Fire a change event when the color picker's color changes.
          * 
          * @private
@@ -183,20 +138,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Do nothing beyond stopping event propagation if the color picker is
-         * open to prevent the dialog from closing due to a window click.
-         * 
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _handleInputClicked: function (event) {
-            var dialog = this.refs.dialog;
-            if (dialog.isOpen()) {
-                event.stopPropagation();
-            }
-        },
-
-        /**
          * Open the color picker dialog on click.
          *
          * @private
@@ -207,6 +148,27 @@ define(function (require, exports, module) {
             if (this.props.editable && dialog) {
                 dialog.toggle(event);
             }
+        },
+
+        _handleSwatchClick: function (event) {
+            var target = event.target;
+            if (target === window.document.activeElement) {
+                return;
+            }
+
+            return this._toggleColorPicker(event);
+        },
+
+        _handleSwatchFocus: function (event) {
+            return this._toggleColorPicker(event);
+        },
+
+        _handleDialogClose: function () {
+            // tab to next focusable element
+        },
+
+        _handleDialogOpen: function () {
+            this.refs.colorpicker.focusInput();
         },
 
         render: function () {
@@ -270,8 +232,11 @@ define(function (require, exports, module) {
             return (
                 <div className={swatchClassSet}>
                     <div
+                        ref="swatch"
+                        tabIndex="0"
                         className="color-input__swatch__background"
-                        onClick={this._toggleColorPicker}>
+                        onFocus={this._handleSwatchFocus}
+                        onClick={this._handleSwatchClick}>
                         <div
                             title={this.props.title}
                             className="color-input__swatch__color">
@@ -283,6 +248,7 @@ define(function (require, exports, module) {
                         id={this._getID()}
                         className={"color-picker__" + this.props.className}
                         disabled={!this.props.editable}
+                        onOpen={this._handleDialogOpen}
                         onClose={this._handleDialogClose}
                         dismissOnKeys={DISSMISS_ON_KEYS}
                         dismissOnDocumentChange
@@ -290,6 +256,8 @@ define(function (require, exports, module) {
                         dismissOnWindowClick>
                         <ColorPicker
                             ref="colorpicker"
+                            label={label}
+                            editable={this.props.editable}
                             opaque={this.props.opaque}
                             color={color}
                             onMouseDown={this.startCoalescing}

@@ -60,8 +60,10 @@ define(function (require, exports, module) {
     var Color = require("js/models/color"),
         math = require("js/util/math"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+        TextInput = require("jsx!js/jsx/shared/TextInput"),
         Label = require("jsx!js/jsx/shared/Label"),
-        Gutter = require("jsx!js/jsx/shared/Gutter");
+        Gutter = require("jsx!js/jsx/shared/Gutter"),
+        headlights = require("js/util/headlights");
     
     var strings = require("i18n!nls/strings");
 
@@ -431,6 +433,64 @@ define(function (require, exports, module) {
     * @constructor
     */
     var ColorType = React.createClass({
+        /**
+         * Selects the content of the input on focus.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleFocus: function (event) {
+            if (this.props.onFocus) {
+                this.props.onFocus(event);
+            }
+        },
+
+        /**
+         * Do nothing beyond stopping event propagation if the color picker is
+         * open to prevent the dialog from closing due to a window click.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleInputClicked: function (event) {
+            var dialog = this.refs.dialog;
+            if (dialog.isOpen()) {
+                event.stopPropagation();
+            }
+        },
+
+        /**
+         * Update the color picker and fire a change event when the text input
+         * changes.
+         * 
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleInputChanged: function (event) {
+            var value = event.target.value,
+                colorTiny = tinycolor(value),
+                color = Color.fromTinycolor(colorTiny),
+                colorFormat;
+
+            // Only allow fully opaque colors
+            if (this.props.opaque) {
+                color = color.opaque();
+            }
+
+            if (colorTiny.isValid()) {
+                colorFormat = colorTiny.getFormat();
+
+                this.setState({
+                    format: colorFormat
+                });
+            } else {
+                colorFormat = "invalid";
+            }
+
+            this.props.onChange(color);
+            headlights.logEvent("edit", "color-input", colorFormat);
+        },
+
         render: function () {
             return (
                 <div
@@ -444,13 +504,21 @@ define(function (require, exports, module) {
                     </div>
                     <Gutter/>
                     <Gutter/>
-                    <NumberInput
-                        ref="left"
-                        size="column-11"
-                        placeholder="rgba(255,255,255,1)"
-                        value="rgba(255,255,255,1)"/>
+                    <TextInput
+                        ref="input"
+                        live={this.props.editable}
+                        editable={this.props.editable}
+                        value={this.props.label}
+                        singleClick={true}
+                        onChange={this._handleInputChanged}
+                        onFocus={this._handleFocus}
+                        onClick={this._handleInputClicked} />
                   </div>
             );
+        },
+
+        focus: function () {
+            React.findDOMNode(this.refs.input).focus();
         }
     });
 
@@ -460,57 +528,113 @@ define(function (require, exports, module) {
      * @constructor
      */
     var ColorFields = React.createClass({
+        propTypes: {
+            color: React.PropTypes.instanceOf(Color),
+            onChange: React.PropTypes.func
+        },
+
+        _handleRGBChange: function (prop, event, value) {
+            var color = this.props.color,
+                tiny = tinycolor(color.toJS()),
+                rgb = tiny.toRgb();
+
+            rgb[prop] = value;
+
+            this.props.onChange(tinycolor(rgb).toHsv());
+        },
+
+        _handleHSVChange: function (prop, event, value) {
+            var color = this.props.color,
+                tiny = tinycolor(color.toJS()),
+                hsv = tiny.toHsv();
+
+            if (prop !== "h") {
+                value = value / 100;
+            }
+
+            hsv[prop] = value;
+            this.props.onChange(hsv);
+        },
+
         render: function () {
+            var color = this.props.color,
+                tiny = tinycolor(color.toJS()),
+                hsv = tiny.toHsv(),
+                rgb = tiny.toRgb();
+
             return (
                 <div className="color-picker__rgbhsb">
                     <div className="formline">
                         <Label>
                             {strings.COLOR_PICKER.RGB_MODEL.R}
-
                         </Label>
                         <NumberInput
-                            size="column-5"
-                            placeholder="255" />
+                            disabled={this.props.disabled}
+                            value={rgb.r}
+                            onChange={this._handleRGBChange.bind(this, "r")}
+                            min={0}
+                            max={255}
+                            size="column-5" />
                     </div>
                     <div className="formline">
                         <Label>
                             {strings.COLOR_PICKER.RGB_MODEL.G}
                         </Label>
                         <NumberInput
-                            size="column-5"
-                            placeholder="255" />
+                            disabled={this.props.disabled}
+                            value={rgb.g}
+                            onChange={this._handleRGBChange.bind(this, "g")}
+                            min={0}
+                            max={255}
+                            size="column-5" />
                     </div>
                     <div className="formline">
                         <Label>
                             {strings.COLOR_PICKER.RGB_MODEL.B}
                         </Label>
                         <NumberInput
-                            size="column-5"
-                            placeholder="255" />
+                            disabled={this.props.disabled}
+                            value={rgb.b}
+                            onChange={this._handleRGBChange.bind(this, "b")}
+                            min={0}
+                            max={255}
+                            size="column-5" />
                     </div>
                     <div className="formline">
                         <Label>
                             {strings.COLOR_PICKER.HSB_MODEL.H}
                         </Label>
                         <NumberInput
-                            size="column-5"
-                            placeholder="255" />
+                            disabled={this.props.disabled}
+                            value={Math.round(hsv.h)}
+                            onChange={this._handleHSVChange.bind(this, "h")}
+                            min={0}
+                            max={359}
+                            size="column-5" />
                     </div>
                     <div className="formline">
                         <Label>
                             {strings.COLOR_PICKER.HSB_MODEL.S}
                         </Label>
                         <NumberInput
-                            size="column-5"
-                            placeholder="255" />
+                            disabled={this.props.disabled}
+                            value={Math.round(hsv.s * 100)}
+                            onChange={this._handleHSVChange.bind(this, "s")}
+                            min={0}
+                            max={100}
+                            size="column-5" />
                     </div>
                     <div className="formline">
                         <Label>
                             {strings.COLOR_PICKER.HSB_MODEL.B}
                         </Label>
                         <NumberInput
-                            size="column-5"
-                            placeholder="255" />
+                            disabled={this.props.disabled}
+                            value={Math.round(hsv.v * 100)}
+                            onChange={this._handleHSVChange.bind(this, "v")}
+                            min={0}
+                            max={100}
+                            size="column-5" />
                     </div>
                   </div>
             );
@@ -681,6 +805,12 @@ define(function (require, exports, module) {
             }
         },
 
+        _handleColorTypeChange: function (color) {
+            this.setColor(color, true);
+            this.props.onChange(color, false); // do not coalesce this change
+            // FIXME: need to move the Coalesce state into ColorPicker from ColorInput.
+        },
+
         render: function () {
             var luminosity = this._getLuminosity(),
                 hue = this._getBackgroundHue(),
@@ -693,7 +823,9 @@ define(function (require, exports, module) {
 
             return (
                 <div className="color-picker">
-                    <ColorType/>
+                    <ColorType {...this.props}
+                        ref="input"
+                        onChange={this._handleColorTypeChange}/>
                     <Map
                         x={color.s}
                         y={color.v}
@@ -703,7 +835,9 @@ define(function (require, exports, module) {
                         onMouseUp={this._handleMouseUp}
                         onMouseDown={this._handleMouseDown}
                         onChange={this._handleSaturationValueChange} />
-                    <ColorFields />
+                    <ColorFields
+                        color={color}
+                        onChange={this._update} />
                     <div className="color-picker__hue-slider">
                         <Slider
                             vertical={true}
@@ -736,6 +870,10 @@ define(function (require, exports, module) {
 
                 </div>
             );
+        },
+
+        focusInput: function () {
+            this.refs.input.focus();
         }
     });
 
