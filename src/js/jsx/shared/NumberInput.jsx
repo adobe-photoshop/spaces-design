@@ -324,6 +324,12 @@ define(function (require, exports, module) {
                 }
                 event.preventDefault();
                 break;
+            case "Tab":
+                if (this.props.onTabPress) {
+                    this.props.onTabPress();
+                    event.preventDefault();
+                }
+                break;
             }
 
             if (this.props.onKeyDown) {

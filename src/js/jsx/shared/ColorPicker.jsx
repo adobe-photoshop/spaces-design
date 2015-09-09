@@ -906,7 +906,8 @@ define(function (require, exports, module) {
                         </Label>
                         <NumberInput
                             size="column-5"
-                            placeholder="100" />
+                            placeholder="100"
+                            onTabPress={this.focusInput}/>
                     </div>
                     <div className="color-picker__transparency-slider">
                         <Slider
