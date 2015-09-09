@@ -58,6 +58,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Color = require("js/models/color"),
+        Coalesce = require("js/jsx/mixin/Coalesce"),
         math = require("js/util/math"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -488,6 +489,13 @@ define(function (require, exports, module) {
             headlights.logEvent("edit", "color-input", colorFormat);
         },
 
+        /**
+         * Begin the edit of the TextInput
+         */
+        focus: function () {
+            this.refs.input._beginEdit();
+        },
+
         render: function () {
             return (
                 <div
@@ -512,10 +520,6 @@ define(function (require, exports, module) {
                         onClick={this._handleInputClicked} />
                   </div>
             );
-        },
-
-        focus: function () {
-            this.refs.input._beginEdit();
         }
     });
 
@@ -530,6 +534,14 @@ define(function (require, exports, module) {
             onChange: React.PropTypes.func
         },
 
+        /**
+         * Handles any of the R,G,B fields changing
+         *
+         * @private
+         * @param {string} prop Field ID
+         * @param {SyntheticEvent} event
+         * @param {number} value
+         */
         _handleRGBChange: function (prop, event, value) {
             var color = this.props.color,
                 tiny = tinycolor(color.toJS()),
@@ -540,6 +552,14 @@ define(function (require, exports, module) {
             this.props.onChange(tinycolor(rgb).toHsv());
         },
 
+        /**
+         * Handles any of the H,S,V fields changing
+         *
+         * @private
+         * @param {string} prop Field ID
+         * @param {SyntheticEvent} event
+         * @param {number} value
+         */
         _handleHSVChange: function (prop, event, value) {
             var color = this.props.color,
                 tiny = tinycolor(color.toJS()),
@@ -644,7 +664,7 @@ define(function (require, exports, module) {
      * @constructor
      */
     var ColorPicker = React.createClass({
-        mixins: [PureRenderMixin],
+        mixins: [PureRenderMixin, Coalesce],
 
         propTypes: {
             color: React.PropTypes.instanceOf(Color),
@@ -764,13 +784,13 @@ define(function (require, exports, module) {
                         nextRgbaColor = Color.fromTinycolor(tinycolor(nextColor.toJS()));
 
                     if (currentColor.a !== nextColor.a) {
-                        this.props.onAlphaChange(nextRgbaColor);
+                        this._changeAlpha(nextRgbaColor);
                     }
 
                     if (currentRgbaColor.r !== nextRgbaColor.r ||
                         currentRgbaColor.g !== nextRgbaColor.g ||
                         currentRgbaColor.b !== nextRgbaColor.b) {
-                        this.props.onColorChange(nextRgbaColor);
+                        this._changeColor(nextRgbaColor);
                     }
 
                     this.props.onChange(nextRgbaColor);
@@ -779,32 +799,68 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Propagate mousedown events.
-         *
+         * Holding down the mouse starts coalescing
          * @private
          * @param {SyntheticEvent} event
          */
         _handleMouseDown: function (event) {
-            if (this.props.onMouseDown) {
-                this.props.onMouseDown(event);
-            }
+            this.startCoalescing(event);
         },
 
         /**
-         * Propagate mouseup events.
-         *
+         * Mouse ups stop coalescing
+         * 
          * @private
          * @param {SyntheticEvent} event
          */
         _handleMouseUp: function (event) {
-            if (this.props.onMouseUp) {
-                this.props.onMouseUp(event);
+            this.stopCoalescing(event);
+        },
+
+        /**
+         * Handles changes coming from the ColorType component
+         *
+         * @private
+         * @param {Color} color
+         */
+        _handleColorTypeChange: function (color) {
+            this.setColor(color, true);
+            this._changeColor(color);
+        },
+
+        /**
+         * Calls the onColorChange handler with the correct coalesce flag
+         *
+         * @private
+         * @param {Color} color [description]
+         */
+        _changeColor: function (color) {
+            var coalesce = this.shouldCoalesce();
+            this.props.onColorChange(color, coalesce);
+            if (!coalesce) {
+                headlights.logEvent("edit", "color-input", "palette-click");
             }
         },
 
-        _handleColorTypeChange: function (color) {
-            this.setColor(color, true);
-            this.props.onColorChange(color);
+        /**
+         * Calls the onAlphaChange handler with the correct coalesce flag
+         *
+         * @private
+         * @param {Color} color [description]
+         */
+        _changeAlpha: function (color) {
+            var coalesce = this.shouldCoalesce();
+            this.props.onAlphaChange(color, coalesce);
+            if (!coalesce) {
+                headlights.logEvent("edit", "color-input", "palette-alpha");
+            }
+        },
+
+        /**
+         * Focuses on the ColorType component
+         */
+        focusInput: function () {
+            this.refs.input.focus();
         },
 
         render: function () {
@@ -866,10 +922,6 @@ define(function (require, exports, module) {
 
                 </div>
             );
-        },
-
-        focusInput: function () {
-            this.refs.input.focus();
         }
     });
 

@@ -37,10 +37,8 @@ define(function (require, exports, module) {
     var Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         Color = require("js/models/color"),
-        Coalesce = require("js/jsx/mixin/Coalesce"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection"),
-        headlights = require("js/util/headlights");
+        collection = require("js/util/collection");
 
     /**
      * Keys on which to dismiss the color picker dialog 
@@ -48,14 +46,14 @@ define(function (require, exports, module) {
      * @const
      * @type {Array.<key: {string}, modifiers: {object}>} 
      */
-    var DISSMISS_ON_KEYS = [
+    var DISMISS_ON_KEYS = [
         { key: os.eventKeyCode.ESCAPE, modifiers: null },
         { key: os.eventKeyCode.ENTER, modifiers: null },
-        { key: os.eventKeyCode.TAB, modifiers: null}
+        { key: os.eventKeyCode.TAB, modifiers: null }
     ];
 
     var ColorInput = React.createClass({
-        mixins: [FluxMixin, Coalesce],
+        mixins: [FluxMixin],
         propTypes: {
             id: React.PropTypes.string.isRequired,
             defaultValue: React.PropTypes.oneOfType([
@@ -111,34 +109,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Fire a change event when the color picker's color changes.
-         * 
-         * @private
-         * @param {Color} color
-         */
-        _handleColorChanged: function (color, coalesce) {
-            var coalesce = this.shouldCoalesce();
-            this.props.onColorChange(color, coalesce);
-            if (!coalesce) {
-                headlights.logEvent("edit", "color-input", "palette-click");
-            }
-        },
-
-        /**
-         * Fire a change event when the color picker's alpha value changes.
-         *
-         * @private
-         * @param {Color} color
-         */
-        _handleAlphaChanged: function (color) {
-            var coalesce = this.shouldCoalesce();
-            this.props.onAlphaChange(color, coalesce);
-            if (!coalesce) {
-                headlights.logEvent("edit", "color-input", "palette-alpha");
-            }
-        },
-
-        /**
          * Open the color picker dialog on click.
          *
          * @private
@@ -151,6 +121,12 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Toggles the color picker dialog
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
         _handleSwatchClick: function (event) {
             var target = event.target;
             if (target === window.document.activeElement) {
@@ -160,6 +136,12 @@ define(function (require, exports, module) {
             return this._toggleColorPicker(event);
         },
 
+        /**
+         * Toggles the color picker dialog on focus
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
         _handleSwatchFocus: function (event) {
             var target = event.target;
             if (target === window.document.activeElement) {
@@ -169,10 +151,39 @@ define(function (require, exports, module) {
             return this._toggleColorPicker(event);
         },
 
-        _handleDialogClose: function () {
-            // tab to next focusable element
+        /**
+         * Handler for various special keys
+         * On Enter/Return, pops up the dialog
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleKeyDown: function (event) {
+            var key = event.key;
+
+            switch (key) {
+                case "Return":
+                case "Enter":
+                    this._toggleColorPicker(event);
+                    break;
+            }
         },
 
+        /**
+         * On color picker dialog close, we focus on the swatch again
+         * so user can continue tabbing, or re-open the dialog with Enter
+         *
+         * @private
+         */
+        _handleDialogClose: function () {
+            React.findDOMNode(this.refs.swatch).focus();
+        },
+
+        /**
+         * When dialog is opened, we focus on the color input field
+         *
+         * @private
+         */
         _handleDialogOpen: function () {
             this.refs.colorpicker.focusInput();
         },
@@ -242,6 +253,7 @@ define(function (require, exports, module) {
                         tabIndex="0"
                         className="color-input__swatch__background"
                         onFocus={this._handleSwatchFocus}
+                        onKeyDown={this._handleKeyDown}
                         onClick={this._handleSwatchClick}>
                         <div
                             title={this.props.title}
@@ -256,7 +268,7 @@ define(function (require, exports, module) {
                         disabled={!this.props.editable}
                         onOpen={this._handleDialogOpen}
                         onClose={this._handleDialogClose}
-                        dismissOnKeys={DISSMISS_ON_KEYS}
+                        dismissOnKeys={DISMISS_ON_KEYS}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
                         dismissOnWindowClick>
@@ -266,10 +278,8 @@ define(function (require, exports, module) {
                             editable={this.props.editable}
                             opaque={this.props.opaque}
                             color={color}
-                            onMouseDown={this.startCoalescing}
-                            onMouseUp={this.stopCoalescing}
-                            onAlphaChange={this._handleAlphaChanged}
-                            onColorChange={this._handleColorChanged} />
+                            onAlphaChange={this.props.onAlphaChange}
+                            onColorChange={this.props.onColorChange} />
                     </Dialog>
                 </div>
             );
