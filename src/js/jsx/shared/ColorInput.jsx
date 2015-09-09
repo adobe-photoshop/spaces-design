@@ -50,7 +50,8 @@ define(function (require, exports, module) {
      */
     var DISSMISS_ON_KEYS = [
         { key: os.eventKeyCode.ESCAPE, modifiers: null },
-        { key: os.eventKeyCode.ENTER, modifiers: null }
+        { key: os.eventKeyCode.ENTER, modifiers: null },
+        { key: os.eventKeyCode.TAB, modifiers: null}
     ];
 
     var ColorInput = React.createClass({
@@ -115,7 +116,7 @@ define(function (require, exports, module) {
          * @private
          * @param {Color} color
          */
-        _handleColorChanged: function (color) {
+        _handleColorChanged: function (color, coalesce) {
             var coalesce = this.shouldCoalesce();
             this.props.onColorChange(color, coalesce);
             if (!coalesce) {
@@ -160,6 +161,11 @@ define(function (require, exports, module) {
         },
 
         _handleSwatchFocus: function (event) {
+            var target = event.target;
+            if (target === window.document.activeElement) {
+                return;
+            }
+
             return this._toggleColorPicker(event);
         },
 

@@ -453,10 +453,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleInputClicked: function (event) {
-            var dialog = this.refs.dialog;
-            if (dialog.isOpen()) {
-                event.stopPropagation();
-            }
+            event.stopPropagation();
         },
 
         /**
@@ -518,7 +515,7 @@ define(function (require, exports, module) {
         },
 
         focus: function () {
-            React.findDOMNode(this.refs.input).focus();
+            this.refs.input._beginEdit();
         }
     });
 
@@ -807,8 +804,7 @@ define(function (require, exports, module) {
 
         _handleColorTypeChange: function (color) {
             this.setColor(color, true);
-            this.props.onChange(color, false); // do not coalesce this change
-            // FIXME: need to move the Coalesce state into ColorPicker from ColorInput.
+            this.props.onColorChange(color);
         },
 
         render: function () {
