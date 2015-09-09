@@ -35,6 +35,7 @@ define(function (require, exports) {
         layerEffectAdapter = require("adapter/lib/layerEffect"),
         textLayerAdapter = require("adapter/lib/textLayer"),
         libraryAdapter = require("adapter/lib/libraries"),
+        documentLib = require("adapter/lib/document"),
         os = require("adapter/os");
 
     var events = require("js/events"),
@@ -827,9 +828,15 @@ define(function (require, exports) {
             .bind(this)
             .then(function (path) {
                 var layerRef = layerEffectAdapter.referenceBy.current,
-                    placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path);
+                    placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path),
+                    options = {
+                        historyStateInfo: {
+                            name: strings.ACTIONS.APPLY_LAYER_STYLE,
+                            target: documentLib.referenceBy.id(currentDocument.id)
+                        }
+                    };
 
-                return descriptor.playObject(placeObj);
+                return descriptor.playObject(placeObj, options);
             })
             .then(function () {
                 // FIXME: This can be more optimistic
@@ -872,9 +879,15 @@ define(function (require, exports) {
 
         var textLayerIDs = collection.pluck(textLayers, "id"),
             layerRef = textLayerIDs.map(textLayerAdapter.referenceBy.id).toArray(),
-            applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData);
+            applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.APPLY_TEXT_STYLE,
+                    target: documentLib.referenceBy.id(currentDocument.id)
+                }
+            };
 
-        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, true)
+        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, true, options)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetLayers, currentDocument, textLayers);
