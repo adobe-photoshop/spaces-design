@@ -896,17 +896,17 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Focuses on the opacity input component
+         */
+        _focusOpacityInput: function () {
+            React.findDOMNode(this.refs.opacity).focus();
+        },
+
+        /**
          * Focuses on the ColorType component
          */
         focusInput: function () {
             this.refs.input.focus();
-        },
-
-        /**
-         * Focuses on the opacity input component
-         */
-        focusOpacityInput: function () {
-            React.findDOMNode(this.refs.opacity).focus();
         },
 
         render: function () {
@@ -923,7 +923,7 @@ define(function (require, exports, module) {
                 <div className="color-picker">
                     <ColorType {...this.props}
                         ref="input"
-                        onShiftTabPress={this.focusOpacityInput}
+                        onShiftTabPress={this._focusOpacityInput}
                         onChange={this._handleColorTypeChange}/>
                     <Map
                         x={color.s}
