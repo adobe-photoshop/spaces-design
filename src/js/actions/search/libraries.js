@@ -47,7 +47,9 @@ define(function (require, exports) {
     */
     var _getLibrarySearchOptions = function () {
         var libStore = this.flux.store("library"),
-            libraries = libStore.getLibraries();
+            appStore = this.flux.store("application"),
+            libraries = libStore.getLibraries(),
+            currentDocument = appStore.getCurrentDocument();
 
         // Map from vnd.adobe.element type to library strings.SEARCH.CATEGORIES keys
         var VALID_ASSET_TYPES = {
@@ -69,6 +71,11 @@ define(function (require, exports) {
                 var categoryKey = VALID_ASSET_TYPES[category];
                 
                 if (categoryKey) {
+                    // If there is no current document, don't add anything but graphics
+                    if (!currentDocument && categoryKey !== "GRAPHIC") {
+                        return;
+                    }
+
                     if (categoryKey === "CHARACTERSTYLE") {
                         var charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
                             font = charStyle.adbeFont,
@@ -128,8 +135,7 @@ define(function (require, exports) {
         var elementInfo = _idMap[id],
             appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument(),
-            currentLayers = currentDocument.layers.selected,
-            currentLayer = currentLayers.first();
+            currentLayers = currentDocument ? currentDocument.layers.selected : Immutable.List();
 
         if (elementInfo) {
             var asset = elementInfo.asset,
@@ -146,7 +152,11 @@ define(function (require, exports) {
                     selectPromise
                         .bind(this)
                         .then(function () {
-                            this.flux.actions.libraries.createLayerFromElement(asset, location);
+                            if (currentDocument) {
+                                this.flux.actions.libraries.createLayerFromElement(asset, location);
+                            } else {
+                                this.flux.actions.libraries.openGraphicForEdit(asset);
+                            }
                         });
                     
                     break;
@@ -164,7 +174,7 @@ define(function (require, exports) {
                 case "CHARACTERSTYLE":
                     // Only try to apply character style if a single text layer is selected
                     // Should probably be handled in applyCharacterStyle 
-                    if (currentLayers.size === 1 && currentLayer.isTextLayer()) {
+                    if (currentLayers.size === 1 && currentLayers.first().isTextLayer()) {
                         selectPromise
                             .bind(this)
                             .then(function () {
