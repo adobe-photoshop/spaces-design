@@ -169,11 +169,17 @@ define(function (require, exports, module) {
             ASSET_CREATED: "libraryAssetCreated",
             ASSET_REMOVED: "libraryAssetRemoved",
             ASSET_RENAMED: "libraryAssetRenamed",
+            OPEN_GRAPHIC_FOR_EDIT: "libraryOpenGraphicForEdit",
+            UPDATING_GRAPHIC_CONTENT: "libraryUpdatingGraphicContent",
+            UPDATED_GRAPHIC_CONTENT: "libraryUpdatedGraphicContent",
+            CLOSED_GRAPHIC_DOCUMENT: "libraryClosedGraphicDocument",
+            DELETED_GRAPHIC_TEMP_FILES: "libraryDeletedGraphicTempFiles",
             LIBRARY_CREATED: "libraryCreated",
             LIBRARY_REMOVED: "libraryRemoved",
             LIBRARY_RENAMED: "libraryRenamed",
             LIBRARY_SELECTED: "librarySelected",
-            SYNC_LIBRARIES: "syncLibraries"
+            SYNC_LIBRARIES: "librarySyncLibraries",
+            SYNCING_LIBRARIES: "librarySyncingLibraries"
         },
         search: {
             REGISTER_SEARCH_PROVIDER: "registerSearchProvider"

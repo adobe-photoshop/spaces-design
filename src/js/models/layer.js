@@ -576,6 +576,24 @@ define(function (require, exports, module) {
             return smartObjectTypes.LOCAL_LINKED;
         }
     };
+    
+    /**
+     * Return true if the layer is a smart object that links to a CC Libiraries element.
+     * 
+     * @return {boolean}
+     */
+    Layer.prototype.isCloudLinkedSmartObject = function () {
+        return this.smartObjectType() === smartObjectTypes.CLOUD_LINKED;
+    };
+    
+    /**
+     * Return the reference of the layer's linked CC Libraries element. 
+     * 
+     * @return {?string}
+     */
+    Layer.prototype.getLibraryElementReference = function () {
+        return this.isCloudLinkedSmartObject() ? this.smartObject.link.elementReference : null;
+    };
 
     module.exports = Layer;
 });

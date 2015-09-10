@@ -38,6 +38,7 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         toolActions = require("./tools"),
         searchActions = require("./search/documents"),
+        libraryActions = require("./libraries"),
         application = require("./application"),
         preferencesActions = require("./preferences"),
         ui = require("./ui"),
@@ -405,16 +406,19 @@ define(function (require, exports) {
                 var newDocument = this.flux.store("application").getCurrentDocument(),
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
-                    updateTransformPromise = this.transfer(ui.updateTransform);
+                    updateTransformPromise = this.transfer(ui.updateTransform),
+                    deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles, documentID);
 
                 return Promise.join(resetLinkedPromise,
                         updateTransformPromise,
-                        recentFilesPromise);
+                        recentFilesPromise,
+                        deleteTempFilesPromise);
             });
     };
     disposeDocument.reads = [];
     disposeDocument.writes = [locks.JS_DOC, locks.JS_APP];
-    disposeDocument.transfers = ["layers.resetLinkedLayers", application.updateRecentFiles, ui.updateTransform];
+    disposeDocument.transfers = ["layers.resetLinkedLayers", application.updateRecentFiles, ui.updateTransform,
+        "libraries.deleteGraphicTempFiles"];
     disposeDocument.lockUI = true;
 
     /**
@@ -500,16 +504,19 @@ define(function (require, exports) {
      * Opens the document in the given path
      *
      * @param {string} filePath
+     * @param {object=} settings - params accepted by the Adapter function documents#openDocument
      * @return {Promise}
      */
-    var open = function (filePath) {
+    var open = function (filePath, settings) {
+        settings = settings || {};
+        
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         var documentRef = {
             _path: filePath
         };
 
-        return descriptor.playObject(documentLib.open(documentRef, {}))
+        return descriptor.playObject(documentLib.open(documentRef, settings))
             .bind(this)
             .then(function () {
                 var initPromise = this.transfer(initActiveDocument),
@@ -862,10 +869,13 @@ define(function (require, exports) {
             }
 
             this.flux.actions.application.updateRecentFilesThrottled();
+            this.flux.actions.libraries.updateGraphicContent(documentID);
 
             this.dispatch(events.document.SAVE_DOCUMENT, {
-                documentID: documentID
+                documentID: documentID,
+                path: event.in._path
             });
+            
 
             if (!saveAs) {
                 return;

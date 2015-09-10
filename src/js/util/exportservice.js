@@ -165,6 +165,27 @@ define(function (require, exports, module) {
                 return Promise.resolve();
             });
     };
+    
+    /**
+     * Copy file from one location to another.
+     *
+     * @param {string} sourcePath
+     * @param {string} targetPath
+     * @return {Promise} 
+     */
+    ExportService.prototype.copyFile = function (sourcePath, targetPath) {
+        return this._spacesDomain.exec("copyFile", { source: sourcePath, target: targetPath });
+    };
+    
+    /**
+     * Delete files at specific locations.
+     *
+     * @param {Array.<string>} filePaths
+     * @return {Promise}
+     */
+    ExportService.prototype.deleteFiles = function (filePaths) {
+        return this._spacesDomain.exec("deleteFiles", { filePaths: filePaths });
+    };
 
     /**
      * The preference key of the generator domain, used to find the port number stored in photoshop

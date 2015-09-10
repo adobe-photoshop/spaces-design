@@ -47,7 +47,7 @@ define(function (require, exports, module) {
          * @private
          */
         addGraphic: function () {
-            this.getFlux().actions.libraries.createElementFromSelectedLayer();
+            this.getFlux().actions.libraries.createGraphicFromSelectedLayer();
         },
 
         /**
