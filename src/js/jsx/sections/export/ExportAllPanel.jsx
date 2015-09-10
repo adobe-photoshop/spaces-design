@@ -32,7 +32,6 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Button = require("jsx!js/jsx/shared/Button"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
         CheckBox = require("jsx!js/jsx/shared/CheckBox"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
@@ -40,7 +39,6 @@ define(function (require, exports, module) {
     var strings = require("i18n!nls/strings"),
         svgUtil = require("js/util/svg"),
         collection = require("js/util/collection"),
-        gridSort = require("js/util/gridsort"),
         ExportAsset = require("js/models/exportasset");
 
     /**
@@ -88,30 +86,21 @@ define(function (require, exports, module) {
                 );
             });
 
-            var prefixComponent = this.props.prefix && (
-                <div className="exports-panel__layer__prefix" >
-                    {this.props.prefix}
-                </div>
-            );
-
             return (
                 <div className="exports-panel__layer-wrapper" >
-                    <div className="column-2">
+                    <div className="column-2 control-group__vertical">
                         <CheckBox
                             checked={layer.exportEnabled}
                             onChange={this._handleLayerSelectedChanged} />
                     </div>
-                    <Gutter />
-                    <div className="exports-panel__layer-icon" >
+                    <div className="exports-panel__layer-icon control-group__vertical" >
                         <SVGIcon
                             CSSID={layerIconId} />
                     </div>
-                    <Gutter />
                     <div className="exports-panel__layer-info">
                         <div
                             className="exports-panel__layer__name"
                             title={layer.name} >
-                            {prefixComponent}
                             {layer.name}
                         </div>
                         <div className="exports-panel__layer-assets">
@@ -152,13 +141,11 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 document = flux.store("application").getCurrentDocument(),
-                exportStore = flux.store("export"),
-                documentExports = document && exportStore.getDocumentExports(document.id);
+                documentExports = document && flux.store("export").getDocumentExports(document.id);
 
             return {
                 document: document,
-                documentExports: documentExports,
-                exportStore: exportStore
+                documentExports: documentExports
             };
         },
 
@@ -172,7 +159,7 @@ define(function (require, exports, module) {
 
             this.setState({ fresh: false });
 
-            exportActions.exportLayerAssetsDebounced(document);
+            exportActions.exportLayerAssets(document);
         },
 
         /**
@@ -195,24 +182,10 @@ define(function (require, exports, module) {
             this.getFlux().actions.export.setAllArtboardsExportEnabled(this.state.document, enabled);
         },
 
-        /**
-         * Set the useArtboardPrefix flag
-         *
-         * @param {SyntheticEvent} event
-         * @param {boolean} enabled
-         */
-        _setUseArtboardPrefix: function (event, enabled) {
-            this.getFlux().actions.export.setUseArtboardPrefix(enabled);
-        },
-
         render: function () {
             var document = this.state.document,
                 documentExports = this.state.documentExports,
                 layerExportsMap = documentExports && documentExports.layerExportsMap,
-                exportStore = this.state.exportStore,
-                exportState = exportStore.getState(),
-                useArtboardPrefix = exportState.useArtboardPrefix,
-                serviceBusy = exportState.serviceBusy,
                 freshState = this.state.fresh;
 
             if (!document || !documentExports) {
@@ -221,72 +194,54 @@ define(function (require, exports, module) {
 
             // Iterate over all configured assets, build the individual components,
             // and separate into separate lists (artboards vs. non-artboards)
-            var artboards = documentExports.getLayersWithExports(document, true),
-                artboardsFiltered = document.layers.filterExportable(artboards),
-                artboardsSorted = gridSort(artboardsFiltered),
+            var artboardLayers = documentExports.getLayersWithExports(document, true),
                 nonABLayers = documentExports.getLayersWithExports(document, false);
 
             // Helper to generate a LayerExportsItem component
-            var layerExportComponent = function (layer, index) {
-                var layerExports = layerExportsMap.get(layer.id),
-                    prefix = exportStore.getExportPrefix(layer, index);
+            var layerExportComponent = function (layer) {
+                var layerExports = layerExportsMap.get(layer.id);
 
                 return (
                     <LayerExportsItem
                         document={document}
                         layer={layer}
-                        prefix={prefix}
                         layerExports={layerExports}
                         freshState={freshState}
                         key={"layer-" + layer.key} />
                 );
             };
 
-            var allArtboardsExportComponents = artboardsSorted.map(layerExportComponent),
+            var allArtboardsExportComponents = artboardLayers.reverse().map(layerExportComponent),
                 allNonABLayerExportComponents = nonABLayers.reverse().map(layerExportComponent),
-                allArtboardsExportEnabled = collection.pluck(artboardsSorted, "exportEnabled"),
+                allArtboardsExportEnabled = collection.pluck(artboardLayers, "exportEnabled"),
                 allNonABLayersExportEnabled = collection.pluck(nonABLayers, "exportEnabled");
 
-            var panelClassnames = classnames("exports-panel__container");
-
-            var exportButton = serviceBusy ?
-                (<SVGIcon CSSID="loader" viewbox="0 0 16 16" />)
-                : strings.EXPORT.BUTTON_EXPORT;
-
             return (
-                <div className={panelClassnames}>
+                <div className="exports-panel__container">
                     <TitleHeader
+                        className="dialog-header"
                         title={strings.TITLE_EXPORT} />
                     <div className="exports-panel__two-column">
-                        <div className="exports-panel__asset-list__container">
+                        <div className="exports-panel__asset-list__container export-dialog-right_column">
                             <div className="exports-panel__asset-list__quick-selection">
-                                <div className="column-2" >
+                                <div className="column-2 control-group__vertical" >
                                     <CheckBox
                                         checked={allArtboardsExportEnabled}
                                         onChange={this._setAllArtboardsExportEnabled} />
                                 </div>
-                                <Gutter />
                                 {strings.EXPORT.EXPORT_LIST_ALL_ARTBOARDS}
-                                <Gutter />
-                                <CheckBox
-                                        checked={useArtboardPrefix}
-                                        onChange={this._setUseArtboardPrefix} />
-                                <Gutter />
-                                    Use Prefix
                             </div>
                             <div className="exports-panel__asset-list__list">
                                 {allArtboardsExportComponents}
                             </div>
                         </div>
-                        <Gutter />
-                        <div className="exports-panel__asset-list__container">
+                        <div className="exports-panel__asset-list__container export-dialog-left_column">
                             <div className="exports-panel__asset-list__quick-selection">
-                                <div className="column-2" >
+                                <div className="column-2 control-group__vertical" >
                                     <CheckBox
                                         checked={allNonABLayersExportEnabled}
                                         onChange={this._setAllNonABLayersExportEnabled} />
                                 </div>
-                                <Gutter />
                                 {strings.EXPORT.EXPORT_LIST_ALL_ASSETS}
                             </div>
                             <div className="exports-panel__asset-list__list">
@@ -301,9 +256,8 @@ define(function (require, exports, module) {
                         </Button>
                         <div className="exports-panel__button-group__separator"></div>
                         <Button
-                            disabled={serviceBusy}
                             onClick={this._exportAllAssets}>
-                            {exportButton}
+                            {strings.EXPORT.BUTTON_EXPORT}
                         </Button>
                     </div>
                 </div>
