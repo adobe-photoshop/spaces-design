@@ -616,8 +616,6 @@ define(function (require, exports) {
             copyDrag = modifiers.option;
 
         if (panning) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-                        
             var dragEvent = {
                 eventKind: eventKind,
                 location: coordinates,
@@ -672,8 +670,6 @@ define(function (require, exports) {
                                 descriptor.addListener("moveToArtboard", _moveToArtboardListener);
                             }
 
-                            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
-                            
                             var dragEvent = {
                                 eventKind: eventKind,
                                 location: coordinates,
@@ -697,12 +693,17 @@ define(function (require, exports) {
      * Otherwise will add/transfer selection to layers
      *
      * @param {Document} doc Owner document
-     * @param {Array.<number>} ids Layer IDs
+     * @param {boolean} runMarquee Will run marquee select only if true
+     * @param {?Array.<number>} ids Layer IDs
      * @param {boolean} add Flag to add to or replace selection
      * @return {Promise}
      */
-    var marqueeSelect = function (doc, ids, add) {
+    var marqueeSelect = function (doc, runMarquee, ids, add) {
         this.dispatch(events.ui.SUPERSELECT_MARQUEE, { enabled: false });
+
+        if (!runMarquee || !ids) {
+            return Promise.resolve();
+        }
         
         var layers = Immutable.List(ids.map(doc.layers.byID.bind(doc.layers))),
             modifier = add ? "add" : "select";

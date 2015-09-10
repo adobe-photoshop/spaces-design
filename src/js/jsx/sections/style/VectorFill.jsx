@@ -65,17 +65,17 @@ define(function (require, exports, module) {
                 }),
                 fills = collection.pluck(layers, "fill"),
                 downsample = this._downsampleFills(fills);
-            
+
             this.setState({
                 layers: layers,
                 fill: downsample
             });
         },
-        
+
         componentWillMount: function () {
             this._setFillState(this.props);
         },
-        
+
         componentWillReceiveProps: function (nextProps) {
             this._setFillState(nextProps);
         },
@@ -92,7 +92,7 @@ define(function (require, exports, module) {
                 if (!fill) {
                     return null;
                 }
-            
+
                 if (fill.type === contentLayerLib.contentTypes.SOLID_COLOR) {
                     return fill.color;
                 } else {
@@ -116,11 +116,11 @@ define(function (require, exports, module) {
             var onlyTextLayers = this.props.document.layers.selected.every(function (layer) {
                 return layer.kind === layer.layerKinds.TEXT;
             });
-            
+
             if (onlyTextLayers) {
                 return null;
             }
-            
+
             return (
                 <div className="formline">
                     <div className="control-group__vertical">
@@ -152,10 +152,10 @@ define(function (require, exports, module) {
                             layers={this.props.document.layers.selected} />
                     </div>
                     <div className="control-group__vertical control-group__no-label">
-                            <FillVisiblity
-                                document={this.props.document}
-                                layers={this.state.layers}
-                                fill={this.state.fill} />
+                        <FillVisiblity
+                            document={this.props.document}
+                            layers={this.state.layers}
+                            fill={this.state.fill} />
                     </div>
                 </div>
             );

@@ -29,8 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
+    var Label = require("jsx!js/jsx/shared/Label"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
@@ -78,7 +77,7 @@ define(function (require, exports, module) {
 
         propTypes: {
             document: React.PropTypes.object.isRequired,
-            layers: React.PropTypes.instanceOf(Immutable.Iterable).isRequired,
+            layers: React.PropTypes.instanceOf(Immutable.Iterable), // undefined => doc-level export
             index: React.PropTypes.number.isRequired,
             exportAssets: React.PropTypes.instanceOf(Immutable.Iterable).isRequired
         },
@@ -147,34 +146,37 @@ define(function (require, exports, module) {
                 formatListID = "exportAsset-format-" + keySuffix;
 
             return (
-                <div className="formline">
-                    <Datalist
-                        list={scaleListID}
-                        className="dialog-export-scale"
-                        options={_scaleOptions.toList()}
-                        value={scaleOption.title}
-                        onChange={this._handleUpdateScale}
-                        live={false}
-                        size="column-4" />
-                    <Gutter />
-                    <TextInput
-                        value={exportAsset.suffix}
-                        singleClick={true}
-                        editable={true}
-                        onChange={this._handleUpdateSuffix}
-                        size="column-6" />
-                    <Gutter />
-                    <Datalist
-                        list={formatListID}
-                        className="dialog-export-format"
-                        options={_formatOptions.toList()}
-                        value={exportAsset.format.toUpperCase()}
-                        onChange={this._handleUpdateFormat}
-                        live={false}
-                        size="column-4" />
-                    <Gutter />
+                <div className="formline formline__space-between">
+                    <div className="control-group__vertical">
+                        <Datalist
+                            list={scaleListID}
+                            className="dialog-export-scale"
+                            options={_scaleOptions.toList()}
+                            value={scaleOption.title}
+                            onChange={this._handleUpdateScale}
+                            live={false}
+                            size="column-4" />
+                    </div>
+                    <div className="control-group__vertical">
+                        <TextInput
+                            value={exportAsset.suffix}
+                            singleClick={true}
+                            editable={true}
+                            onChange={this._handleUpdateSuffix}
+                            size="column-8" />
+                    </div>
+                    <div className="control-group__vertical">
+                        <Datalist
+                            list={formatListID}
+                            className="dialog-export-format"
+                            options={_formatOptions.toList()}
+                            value={exportAsset.format.toUpperCase()}
+                            onChange={this._handleUpdateFormat}
+                            live={false}
+                            size="column-8" />
+                    </div>
                     <Button
-                        className="layer-exports__delete-button"
+                        className="layer-exports__delete-button control-group__vertical"
                         title={strings.TOOLTIPS.EXPORT_REMOVE_ASSET}
                         onClick={this._handleDeleteClick}>
                         <SVGIcon CSSID="delete" />
@@ -189,7 +191,7 @@ define(function (require, exports, module) {
         propTypes: {
             document: React.PropTypes.object.isRequired,
             documentExports: React.PropTypes.object.isRequired,
-            layers: React.PropTypes.instanceOf(Immutable.Iterable)
+            layers: React.PropTypes.instanceOf(Immutable.Iterable) // undefined => doc-level export
         },
 
         render: function () {
@@ -200,59 +202,51 @@ define(function (require, exports, module) {
                 assetGroups,
                 exportComponents;
 
-            if (documentExports) {
-                if (layers && layers.size > 0) {
-                    assetGroups = documentExports.getAssetGroups(layers).toList();
-                } else {
-                    assetGroups = collection.zip(Immutable.List.of(documentExports.rootExports)).toList();
-                }
-            }
-
-            if (!assetGroups || assetGroups.size < 1) {
-                return null;
+            if (layers) {
+                assetGroups = documentExports.getAssetGroups(layers).toList();
             } else {
-                exportComponents = assetGroups.map(function (i, k) {
-                    var key = keyprefix + "-" + k;
-                    return (
-                        <ExportAssetFace
-                            document={document}
-                            layers={layers}
-                            index={k}
-                            key={key}
-                            faceKey={key}
-                            exportAssets={i} />
-                    );
-                }, this).toArray();
-
-                return (
-                    <div className="layer-exports__header" >
-                        <div className="formline">
-                            <Label
-                                title={strings.EXPORT.TITLE_SCALE}
-                                size="column-4"
-                                className="label__medium__left-aligned">
-                                {strings.EXPORT.TITLE_SCALE}
-                            </Label>
-                            <Gutter />
-                            <Label
-                                title={strings.EXPORT.TITLE_SUFFIX}
-                                size="column-6"
-                                className="label__medium__left-aligned">
-                                {strings.EXPORT.TITLE_SUFFIX}
-                            </Label>
-                            <Gutter />
-                            <Label
-                                title={strings.EXPORT.TITLE_SETTINGS}
-                                size="column-4"
-                                className="label__medium__left-aligned">
-                                {strings.EXPORT.TITLE_SETTINGS}
-                            </Label>
-                            <Gutter />
-                        </div>
-                        {exportComponents}
-                    </div>
-                );
+                assetGroups = collection.zip(Immutable.List.of(documentExports.rootExports)).toList();
             }
+
+            exportComponents = assetGroups.map(function (i, k) {
+                var key = keyprefix + "-" + k;
+                return (
+                    <ExportAssetFace
+                        document={document}
+                        layers={layers}
+                        index={k}
+                        key={key}
+                        faceKey={key}
+                        exportAssets={i} />
+                );
+            }, this);
+
+            return (
+                <div className="layer-exports__header" >
+                    <div className="formline formline__space-between">
+                        <Label
+                            title={strings.EXPORT.TITLE_SCALE}
+                            size="column-4"
+                            className="label__medium__left-aligned">
+                            {strings.EXPORT.TITLE_SCALE}
+                        </Label>
+                        <Label
+                            title={strings.EXPORT.TITLE_SUFFIX}
+                            size="column-8"
+                            className="label__medium__left-aligned">
+                            {strings.EXPORT.TITLE_SUFFIX}
+                        </Label>
+                        <Label
+                            title={strings.EXPORT.TITLE_SETTINGS}
+                            size="column-8"
+                            className="label__medium__left-aligned">
+                            {strings.EXPORT.TITLE_SETTINGS}
+                        </Label>
+                        <div className="column-2"></div>
+                    </div>
+                    {exportComponents}
+                </div>
+            );
         }
     });
 

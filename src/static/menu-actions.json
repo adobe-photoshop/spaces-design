@@ -341,7 +341,6 @@
             "$action": "ui.zoom",
             "$payload": {
                 "zoom": 1,
-                "pan": true,
                 "preserveFocus": true
             },
             "$enable-rule": "have-document"
@@ -370,6 +369,10 @@
         },
         "TOGGLE_SMART_GUIDES": {
             "$action": "documents.toggleSmartGuidesVisibility",
+            "$enable-rule": "supported-document"
+        },
+        "CLEAR_GUIDES": {
+            "$action": "guides.clearGuides",
             "$enable-rule": "supported-document"
         }
     },

@@ -56,6 +56,13 @@ define(function (require, exports, module) {
          */
         _postScriptMap: Immutable.Map(),
 
+        /**
+         * List of typefaces for populating datalists
+         *
+         * @type {Immutable.List.<{id: string, font: string}>}
+         */
+        _typefaces: Immutable.List(),
+
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
@@ -84,7 +91,8 @@ define(function (require, exports, module) {
             return {
                 initialized: this._initialized,
                 familyMap: this._familyMap,
-                postScriptMap: this._postScriptMap
+                postScriptMap: this._postScriptMap,
+                typefaces: this._typefaces
             };
         },
 
@@ -276,6 +284,23 @@ define(function (require, exports, module) {
                     font: fontName
                 }));
             }, new Map()));
+
+            // The list of all selectable type faces
+            this._typefaces = this._postScriptMap
+                .entrySeq()
+                .sortBy(function (entry) {
+                    return entry[0];
+                })
+                .map(function (entry) {
+                    var psName = entry[0],
+                        fontObj = entry[1];
+
+                    return {
+                        id: psName,
+                        title: fontObj.font
+                    };
+                })
+                .toList();
 
             this._initialized = true;
             this.emit("change");

@@ -35,12 +35,10 @@ define(function (require, exports, module) {
     var ExportList = require("jsx!js/jsx/sections/export/ExportList"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings"),
         ExportAsset = require("js/models/exportasset"),
-        synchronization = require("js/util/synchronization"),
-        collection = require("js/util/collection");
+        synchronization = require("js/util/synchronization");
 
     var ExportPanel = React.createClass({
 
@@ -109,7 +107,7 @@ define(function (require, exports, module) {
          */
         _addAssetClickHandler: function (preset) {
             var document = this.props.document,
-                selectedLayers = document && document.layers.selected, // maybe this should be more restrictive?
+                selectedLayers = document && document.layers.selected,
                 documentExports = this.state.documentExports,
                 props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
 
@@ -126,8 +124,7 @@ define(function (require, exports, module) {
                 selectedLayers = document.layers.selected;
 
             if (selectedLayers.size > 0) {
-                var layerIDs = collection.pluck(selectedLayers, "id");
-                this.getFlux().actions.export.exportLayerAssets(document, layerIDs);
+                this.getFlux().actions.export.exportLayerAssets(document, selectedLayers);
             } else {
                 this.getFlux().actions.export.exportDocumentAssets(document);
             }
@@ -148,39 +145,47 @@ define(function (require, exports, module) {
                 documentExports = this.state.documentExports,
                 disabled = this.props.disabled,
                 exportDisabled = false,
-                containerContents,
-                addAssetClickHandler,
-                addIOSAssetClickHandler,
-                addHDPIAssetClickHandler,
-                exportAssetsClickHandler;
+                selectedLayers,
+                supportedLayers,
+                containerContents;
 
-            if (!document || !this.props.visible || disabled) {
+            if (!document || !documentExports || !this.props.visible || disabled) {
                 containerContents = null;
-            } else if (document.layers.backgroundSelected) {
-                // don't support exports of the background
-                containerContents = null;
-                disabled = true;
             } else {
-                var selectedLayers = this.props.document.layers.selected;
-
-                if (selectedLayers.size > 0) {
-                    exportDisabled = documentExports.getUniformAssetsOnly(selectedLayers).size === 0;
+                selectedLayers = this.props.document.layers.selected;
+                supportedLayers = document.layers.filterExportable(selectedLayers);
+                
+                if (!selectedLayers.isEmpty()) {
+                    if (supportedLayers.isEmpty()) {
+                        // Special case: there are selected layers, but none is supported
+                        disabled = true;
+                        containerContents = (
+                            <div className="libraries__content panel__info">
+                                <div className="panel__info__body">
+                                    {strings.EXPORT.ONLY_UNSUPPORTED_LAYERS_SELECTED}
+                                </div>
+                            </div>
+                        );
+                    } else if (documentExports.getUniformAssetsOnly(supportedLayers).isEmpty()) {
+                        // Special case: there are selected layers, but no common assets (or none at all)
+                        containerContents = (
+                            <div className="libraries__content panel__info">
+                                <div className="panel__info__body">
+                                    {strings.EXPORT.NO_ASSETS}
+                                </div>
+                            </div>
+                        );
+                    }
                 } else {
-                    exportDisabled = documentExports.rootExports.size === 0;
+                    exportDisabled = documentExports.rootExports.isEmpty();
+                    supportedLayers = undefined;
                 }
 
-                addAssetClickHandler = this._addAssetClickHandler;
-                addIOSAssetClickHandler = this._addAssetClickHandler.bind(this, "IOS");
-                addHDPIAssetClickHandler = this._addAssetClickHandler.bind(this, "HDPI");
-                exportAssetsClickHandler = this._exportAssetsClickHandler;
-
-                containerContents = (
-                    <div>
-                        <ExportList {...this.props}
-                            documentExports={this.state.documentExports}
-                            layers={selectedLayers}
-                            onFocus={this._handleFocus}/>
-                    </div>
+                containerContents = containerContents || (
+                    <ExportList {...this.props}
+                        documentExports={this.state.documentExports}
+                        layers={supportedLayers}
+                        onFocus={this._handleFocus}/>
                 );
             }
 
@@ -207,37 +212,37 @@ define(function (require, exports, module) {
                         <div className="layer-exports__workflow-buttons">
                             <Button
                                 className="button-plus"
-                                disabled={exportDisabled}
+                                disabled={exportDisabled || disabled}
                                 title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
-                                onClick={exportAssetsClickHandler}
+                                onClick={this._exportAssetsClickHandler}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
                                     CSSID="export" />
                             </Button>
-                            <Gutter />
                             <Button
                                 className="button-plus"
+                                disabled={disabled}
                                 title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
-                                onClick={addAssetClickHandler}
+                                onClick={this._addAssetClickHandler}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
                                     viewbox="0 0 16 16"
                                     CSSID="add-new" />
                             </Button>
-                            <Gutter />
                             <Button
                                 className="button-iOS"
+                                disabled={disabled}
                                 title={strings.TOOLTIPS.EXPORT_IOS_PRESETS}
-                                onClick={addIOSAssetClickHandler}>
+                                onClick={this._addAssetClickHandler.bind(this, "IOS")}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
                                     CSSID="iOS" />
                             </Button>
-                            <Gutter />
                             <Button
                                 className="button-xdpi"
+                                disabled={disabled}
                                 title={strings.TOOLTIPS.EXPORT_HDPI_PRESETS}
-                                onClick={addHDPIAssetClickHandler}>
+                                onClick={this._addAssetClickHandler.bind(this, "HDPI")}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
                                     CSSID="hdpi" />

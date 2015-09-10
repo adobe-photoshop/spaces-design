@@ -136,7 +136,7 @@ define(function (require, exports, module) {
         componentDidMount: function () {
             this._currentMouseX = null;
             this._currentMouseY = null;
-            this._marqueeResult = [];
+            this._marqueeResult = null;
 
             this._drawDebounced();
             
@@ -384,13 +384,16 @@ define(function (require, exports, module) {
                 return;
             }
 
+            var runMarquee = !!this._marqueeRect;
+            
+            this.getFlux().actions.superselect.marqueeSelect(
+                this.state.document, runMarquee,
+                this._marqueeResult, event.shiftKey
+            );
+            
             this._currentMouseDown = false;
-
-            if (this._marqueeRect) {
-                var superselect = this.getFlux().actions.superselect;
-                superselect.marqueeSelect(this.state.document, this._marqueeResult, event.shiftKey);
-                this._marqueeRect = null;
-            }
+            this._marqueeRect = null;
+            this._marqueeResult = null;
         },
 
         /**
@@ -489,34 +492,38 @@ define(function (require, exports, module) {
                 }
             });
 
-            // Yuck, we gotta traverse the list backwards, and D3 doesn't offer reverse iteration
-            _.forEachRight(d3.selectAll(".layer-bounds")[0], function (element) {
-                var layer = d3.select(element),
-                    layerID = mathUtil.parseNumber(layer.attr("layer-id")),
-                    layerSelected = layer.attr("layer-selected") === "true",
-                    layerModel = layerTree.byID(layerID);
+            uiUtil.hitTestLayers(this.state.document.id, canvasMouse.x, canvasMouse.y)
+                .bind(this)
+                .then(function (hitLayerIDs) {
+                    return hitLayerIDs.findLast(function (id) {
+                        return !this.state.document.layers.byID(id).isArtboard;
+                    }, this);
+                })
+                .then(function (topID) {
+                    // Yuck, we gotta traverse the list backwards, and D3 doesn't offer reverse iteration
+                    _.forEachRight(d3.selectAll(".layer-bounds")[0], function (element) {
+                        var layer = d3.select(element),
+                            layerID = mathUtil.parseNumber(layer.attr("layer-id")),
+                            layerSelected = layer.attr("layer-selected") === "true",
+                            layerModel = layerTree.byID(layerID);
 
-                // Sometimes, the DOM elements may be out of date, and be of different documents
-                if (!layerModel) {
-                    return;
-                }
-                
-                var visibleBounds = layerTree.boundsWithinArtboard(layerModel),
-                    intersects = visibleBounds &&
-                        visibleBounds.left <= canvasMouse.x && visibleBounds.right >= canvasMouse.x &&
-                        visibleBounds.top <= canvasMouse.y && visibleBounds.bottom >= canvasMouse.y;
-
-                if (!underPolicy && !marquee && !highlightFound && intersects) {
-                    if (!layerSelected) {
-                        layer.classed("layer-bounds-hover", true)
-                            .style("stroke-width", 1.0 * scale);
-                    }
-                    highlightFound = true;
-                } else {
-                    layer.classed("layer-bounds-hover", true)
-                        .style("stroke-width", 0.0);
-                }
-            });
+                        // Sometimes, the DOM elements may be out of date, and be of different documents
+                        if (!layerModel) {
+                            return;
+                        }
+                        
+                        if (!underPolicy && !marquee && !highlightFound && layerID === topID) {
+                            if (!layerSelected) {
+                                layer.classed("layer-bounds-hover", true)
+                                    .style("stroke-width", 1.0 * scale);
+                            }
+                            highlightFound = true;
+                        } else {
+                            layer.classed("layer-bounds-hover", true)
+                                .style("stroke-width", 0.0);
+                        }
+                    });
+                });
         },
 
         /**

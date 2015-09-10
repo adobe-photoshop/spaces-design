@@ -193,7 +193,8 @@
         "TOGGLE_EXTRAS": "Show | Hide Extras",
         "TOGGLE_RULERS": "Show | Hide Rulers",
         "TOGGLE_SMART_GUIDES": "Show Smart Guides",
-        "TOGGLE_GUIDES": "Show Guides"
+        "TOGGLE_GUIDES": "Show Guides",
+        "CLEAR_GUIDES": "Clear Guides"
     },
     "WINDOW": {
         "$MENU": "Window",

@@ -71,10 +71,10 @@ define(function (require, exports) {
      */
     var _getMoveLayerActions = function (document, targetLayer, position, moveResults) {
         var overallBounds = document.layers.childBounds(targetLayer),
-            movingLayers = document.layers.descendants(targetLayer),
             deltaX = position.hasOwnProperty("x") ? position.x - overallBounds.left : 0,
             deltaY = position.hasOwnProperty("y") ? position.y - overallBounds.top : 0,
-            documentRef = documentLib.referenceBy.id(document.id);
+            documentRef = documentLib.referenceBy.id(document.id),
+            movingLayers = document.layers.descendants(targetLayer);
 
         moveResults = moveResults || [];
 
@@ -85,31 +85,19 @@ define(function (require, exports) {
             var layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
                 translateObj;
 
-            if (layer.isArtboard) {
-                var newX = position.hasOwnProperty("x") ? position.x : layer.bounds.left,
-                    newY = position.hasOwnProperty("y") ? position.y : layer.bounds.top,
-                    boundingBox = {
-                        top: newY,
-                        bottom: newY + layer.bounds.height,
-                        left: newX,
-                        right: newX + layer.bounds.width
-                    };
+            moveResults.push({
+                layer: layer,
+                x: layer.bounds.left + deltaX,
+                y: layer.bounds.top + deltaY
+            });
 
-                moveResults.push({
-                    layer: layer,
-                    x: newX,
-                    y: newY
-                });
-
-                translateObj = artboardLib.transform(layerRef, boundingBox);
-            } else {
-                moveResults.push({
-                    layer: layer,
-                    x: layer.bounds.left + deltaX,
-                    y: layer.bounds.top + deltaY
-                });
-                translateObj = layerLib.translate(layerRef, deltaX, deltaY);
+            // If the targetlayer is an artboard, we want the move action played only for it
+            // But we still want to reposition the child layers in our models so we stop here
+            if (targetLayer.isArtboard && layer !== targetLayer) {
+                return playObjects;
             }
+                
+            translateObj = layerLib.translate(layerRef, deltaX, deltaY);
 
             return playObjects.push({
                 layer: layer,
@@ -992,91 +980,6 @@ define(function (require, exports) {
     rotateLayersInCurrentDocument.transfers = [rotate];
 
     /**
-     * Nudges the given layers in the given direction
-     *
-     * @param {string} direction Direction of nudge
-     * @param {boolean} bigStep Flag to indicate bigger nudge
-     *
-     * @return {Promise}
-     */
-    var nudgeLayers = function (direction, bigStep) {
-        // Different from other actions, nudge always makes sure to get the latest document model
-        // Since we rely on the bounds information from the model to compute new positions
-        // Otherwise, superselectTool.onKeyDown's document model and the current document model
-        // can fall out of sync and produce false results, breaking parity
-        var document = this.flux.store("application").getCurrentDocument(),
-            layerSpec = document.layers.selected;
-
-        if (layerSpec.isEmpty()) {
-            return Promise.resolve();
-        }
-
-        var hasLocked = layerSpec.some(function (layer) {
-            return layer.locked;
-        });
-
-        if (hasLocked) {
-            return Promise.resolve();
-        }
-
-        layerSpec = layerSpec.filterNot(function (layer) {
-            return layer.kind === layer.layerKinds.GROUPEND;
-        });
-
-        var options = {
-                historyStateInfo: {
-                    name: strings.ACTIONS.NUDGE_LAYERS,
-                    target: documentLib.referenceBy.id(document.id)
-                }
-            },
-            payload = {
-                documentID: document.id,
-                positions: []
-            },
-            deltaX = 0,
-            deltaY = 0,
-            bigNudge = 10,
-            nudge = 1;
-
-        switch (direction) {
-            case "up":
-                deltaY = bigStep ? -bigNudge : -nudge;
-                break;
-            case "down":
-                deltaY = bigStep ? bigNudge : nudge;
-                break;
-            case "left":
-                deltaX = bigStep ? -bigNudge : -nudge;
-                break;
-            case "right":
-                deltaX = bigStep ? bigNudge : nudge;
-                break;
-        }
-
-        var translateLayerActions = layerSpec.reduce(function (actions, layer) {
-            var currentBounds = document.layers.childBounds(layer),
-                position = {
-                    x: currentBounds.left + deltaX,
-                    y: currentBounds.top + deltaY
-                },
-                layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
-
-            return actions.concat(layerActions);
-        }, Immutable.List(), this);
-
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
-                .bind(this).then(function () {
-                    this.transfer(toolActions.resetBorderPolicies);
-                }),
-            positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
-        
-        return Promise.join(positionPromise, dispatchPromise);
-    };
-    nudgeLayers.reads = [locks.JS_APP];
-    nudgeLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    nudgeLayers.transfers = [toolActions.resetBorderPolicies];
-
-    /**
      * Transform event handler initialized in beforeStartup
      *
      * @private
@@ -1104,14 +1007,13 @@ define(function (require, exports) {
         }, this);
 
         _layerTransformHandler = synchronization.debounce(function (event) {
-            // If it was a simple click/didn't move anything, there is no need to update bounds,
-            // just redraw the overlay
-            if (event.trackerEndedWithoutBreakingHysteresis) {
-                return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-            }
-
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-
+            
+            // If it was a simple click/didn't move anything, there is no need to update bounds
+            if (event.trackerEndedWithoutBreakingHysteresis) {
+                return Promise.resolve();
+            }
+            
             var appStore = this.flux.store("application"),
                 currentDoc = appStore.getCurrentDocument(),
                 textLayers = currentDoc.layers.allSelected.filter(function (layer) {
@@ -1129,6 +1031,7 @@ define(function (require, exports) {
 
         descriptor.addListener("transform", _layerTransformHandler);
         descriptor.addListener("move", _layerTransformHandler);
+        descriptor.addListener("nudge", _layerTransformHandler);
         descriptor.addListener("editArtboardEvent", _artboardTransformHandler);
         return Promise.resolve();
     };
@@ -1141,6 +1044,7 @@ define(function (require, exports) {
     var onReset = function () {
         descriptor.removeListener("transform", _layerTransformHandler);
         descriptor.removeListener("move", _layerTransformHandler);
+        descriptor.removeListener("nudge", _layerTransformHandler);
         descriptor.removeListener("editArtboardEvent", _artboardTransformHandler);
 
         return Promise.resolve();
@@ -1170,5 +1074,4 @@ define(function (require, exports) {
     exports.setRadius = setRadius;
     exports.rotate = rotate;
     exports.rotateLayersInCurrentDocument = rotateLayersInCurrentDocument;
-    exports.nudgeLayers = nudgeLayers;
 });

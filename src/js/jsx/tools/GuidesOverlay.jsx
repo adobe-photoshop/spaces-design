@@ -155,6 +155,7 @@ define(function (require, exports, module) {
             svg.selectAll(".guide-edges-group").remove();
 
             if (!currentDocument || this.state.modalState ||
+                !this.state.uiState.overlaysEnabled ||
                 !currentDocument.guidesVisible ||
                 !currentTool || currentTool.id !== "newSelect") {
                 return null;

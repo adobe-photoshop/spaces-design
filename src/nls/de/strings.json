@@ -2,7 +2,7 @@
     "ACTIONS": {
         "ADD_STROKE": "Kontur hinzufügen",
         "ADD_FILL": "Füllung hinzufügen",
-        "APPLY_LIBRARY_COLOR": "[8416190] ü_Apply Library Color",
+        "APPLY_LIBRARY_COLOR": "Bibliotheksfarbe anwenden",
         "SET_STROKE_COLOR": "Konturfarbe festlegen",
         "SET_STROKE": "Kontur festlegen",
         "SET_STROKE_OPACITY": "Strichdeckkraft festlegen",
@@ -28,7 +28,7 @@
         "PASTE_LAYER_STYLE": "Ebenenstil einfügen",
         "SAMPLE_GRAPHICS": "Beispielgrafiken",
         "SAMPLE_COLOR": "Farbe aufnehmen",
-        "SAMPLE_STROKE": "[8415006] ü_Sample Stroke",
+        "SAMPLE_STROKE": "Beispielkontur",
         "SET_PROPORTIONAL_SCALE": "Proportionale Skalierung festlegen",
         "SET_TYPE_FACE": "Schriftart festlegen",
         "SET_TYPE_COLOR": "Schriftfarbe festlegen",
@@ -124,6 +124,8 @@
     },
     "TITLE_PAGES": "Ebenen",
     "TITLE_STYLE": "Stil",
+    "TITLE_EFFECTS": "Effekte",
+    "TITLE_APPEARANCE": "[8448088] ü_Appearance",
     "TITLE_EXPORT": "Exportieren",
     "TITLE_LIBRARIES": "Bibliotheken",
     "NO_DOC": {
@@ -234,8 +236,11 @@
         "LIBRARY_VIEW_ON_WEBSITE": "Auf Website anzeigen",
         "LIBRARY_CLICK_TO_APPLY": "Zum Anwenden klicken",
         "LIBRARY_DELETE": "Löschen",
+        "EXPORT_EXPORT_ASSETS": "Diese Elemente exportieren",
         "EXPORT_ADD_ASSET": "Exportelement hinzufügen",
-        "EXPORT_REMOVE_ASSET": "Elementkonfiguration entfernen"
+        "EXPORT_REMOVE_ASSET": "Elementkonfiguration entfernen",
+        "EXPORT_IOS_PRESETS": "3 iOS-Elemente + SVG hinzufügen",
+        "EXPORT_HDPI_PRESETS": "6 HDPI-Elemente + SVG hinzufügen"
     },
     "LAYER_KIND": {
         "0": "Beliebige Ebene",
@@ -372,11 +377,12 @@
         "EXPORT_LIST_ALL_ASSETS": "Alle Elemente",
         "BUTTON_EXPORT": "Exportieren",
         "BUTTON_CANCEL": "Abbrechen",
-        "SELECT_SINGLE_LAYER": "Wählen Sie eine einzelne Ebene aus",
         "TITLE_SCALE": "Skalieren",
         "TITLE_SUFFIX": "Suffix",
         "TITLE_SETTINGS": "Einstellungen",
-        "EXPORT_DOCUMENT_FILENAME": "Dokument"
+        "EXPORT_DOCUMENT_FILENAME": "Dokument",
+        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "[8448087] ü_No supported layers selected",
+        "NO_ASSETS": "[8448086] ü_No exports configured"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",

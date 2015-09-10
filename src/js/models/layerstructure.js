@@ -121,8 +121,10 @@ define(function (require, exports, module) {
 
         // Traverse up to root
         while (layerAncestor && !visitedParents.hasOwnProperty(layerAncestor.id)) {
-            // Remove the current parent because we're already below it
-            selectableLayers = pull(selectableLayers, layerAncestor);
+            if (!layerAncestor.isArtboard) {
+                // Remove the current parent because we're already below it
+                selectableLayers = pull(selectableLayers, layerAncestor);
+            }
 
             // So we don't process this parent again
             visitedParents[layerAncestor.id] = layerAncestor;
@@ -294,6 +296,31 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Bounds of all the top layers
+         * @type {Immutable.List.<Bounds>}
+         */
+        "topBounds": function () {
+            return this.top
+                .toSeq()
+                .map(function (layer) {
+                    return this.childBounds(layer);
+                }, this)
+                .filter(function (bounds) {
+                    return bounds && bounds.area > 0;
+                })
+                .toList();
+        },
+
+        /**
+         * Overall bounds of all the layers in the structure
+         *
+         * @return {Bounds}
+         */
+        "overallBounds": function () {
+            return Bounds.union(this.topBounds);
+        },
+
+        /**
          * The set of artboards in the document
          * @type {Immutable.List.<Layer>}
          */
@@ -343,7 +370,7 @@ define(function (require, exports, module) {
                         this.hasVisibleDescendant(layer) &&
                         !this.hasInvisibleAncestor(layer) &&
                         !this.hasLockedAncestor(layer) &&
-                        !visitedParents.hasOwnProperty(layer.id);
+                        (layer.isArtboard || !visitedParents.hasOwnProperty(layer.id));
                 }, this)
                 .toList();
         },
@@ -798,6 +825,23 @@ define(function (require, exports, module) {
         }
 
         return bounds;
+    }));
+
+    /**
+     * Given a set of layers, return only those layers which will support being exported
+     * This excludes background layers and empty layers
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {Immutable.Iterable.<Layer>}
+     */
+    Object.defineProperty(LayerStructure.prototype, "filterExportable", objUtil.cachedLookupSpec(function (layers) {
+        return layers.filterNot(function (layer) {
+            return !layer.bounds ||
+                layer.bounds.empty ||
+                layer.isBackground ||
+                layer.kind === layer.layerKinds.ADJUSTMENT ||
+                this.isEmptyGroup(layer);
+        }, this);
     }));
 
     /**

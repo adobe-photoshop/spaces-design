@@ -35,6 +35,57 @@ define(function (require, exports) {
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     /**
+     * The previous policies during temporary policies disabling
+     *
+     * @type {?EventPolicySet}
+     */
+    var _cachedKeyboardPolicies = null;
+
+    /**
+     * The previous default keyboard mode during temporary policies disabling
+     *
+     * @type {?number}
+     */
+    var _cachedKeyboardMode = null;
+
+    /**
+     * For a given policy kind, fetch the master policy list and set it in photoshop
+     * If a policyListID is provided, then attempt to remove it on error
+     *
+     * @param {string} kind
+     * @param {number=} policyListID
+     *
+     * @return {Promise} Resolves when polices are set in photoshop
+     */
+    var _syncPolicies = function (kind, policyListID) {
+        var policyStore = this.flux.store("policy"),
+            masterPolicyList = policyStore.getMasterPolicyList(kind),
+            promise;
+
+        if (kind === PolicyStore.eventKind.KEYBOARD) {
+            promise = adapterUI.setKeyboardEventPropagationPolicy(masterPolicyList);
+        } else {
+            promise = adapterUI.setPointerEventPropagationPolicy(masterPolicyList);
+        }
+
+        return promise.catch(function (err) {
+                if (policyListID) {
+                    try {
+                        policyStore.removePolicyList(kind, policyListID);
+                    } catch (err2) {
+                        // ignore
+                    }
+                }
+                    
+                throw err;
+            })
+            .bind(this)
+            .tap(function () {
+                this.dispatch(events.policies.POLICIES_INSTALLED);
+            });
+    };
+
+    /**
      * Install a new policy list.
      *
      * @private 
@@ -43,32 +94,14 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _addPolicies = function (kind, policies) {
-        var policyStore = this.flux.store("policy"),
-            policyListID = policyStore.addPolicyList(kind, policies),
-            masterPolicyList = policyStore.getMasterPolicyList(kind),
-            commitFn;
-
-        if (kind === PolicyStore.eventKind.KEYBOARD) {
-            commitFn = adapterUI.setKeyboardEventPropagationPolicy;
-        } else {
-            commitFn = adapterUI.setPointerEventPropagationPolicy;
+        if (_cachedKeyboardPolicies && kind === PolicyStore.eventKind.KEYBOARD) {
+            var msg = "Trying to add keyboard policies but a cached state exists";
+            return Promise.reject(new Error(msg));
         }
+        var policyStore = this.flux.store("policy"),
+            policyListID = policyStore.addPolicyList(kind, policies);
 
-        return commitFn.call(adapterUI, masterPolicyList)
-            .bind(this)
-            .catch(function (err) {
-                try {
-                    policyStore.removePolicyList(kind, policyListID);
-                } catch (err2) {
-                    // ignore
-                }
-                
-                throw err;
-            })
-            .tap(function () {
-                this.dispatch(events.policies.POLICIES_INSTALLED);
-            })
-            .return(policyListID);
+        return _syncPolicies.call(this, kind, policyListID).return(policyListID);
     };
 
     /**
@@ -82,24 +115,15 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _removePolicies = function (kind, id, commit) {
+        if (_cachedKeyboardPolicies && kind === PolicyStore.eventKind.KEYBOARD) {
+            var msg = "Trying to remove keyboard policies but a cached state exists: " + id;
+            return Promise.reject(new Error(msg));
+        }
         var policyStore = this.flux.store("policy");
 
         if (policyStore.removePolicyList(kind, id)) {
             if (commit) {
-                var masterPolicyList = policyStore.getMasterPolicyList(kind),
-                    commitFn;
-
-                if (kind === PolicyStore.eventKind.KEYBOARD) {
-                    commitFn = adapterUI.setKeyboardEventPropagationPolicy;
-                } else {
-                    commitFn = adapterUI.setPointerEventPropagationPolicy;
-                }
-
-                return commitFn.call(adapterUI, masterPolicyList)
-                    .bind(this)
-                    .tap(function () {
-                        this.dispatch(events.policies.POLICIES_INSTALLED);
-                    });
+                return _syncPolicies.call(this, kind);
             } else {
                 return Promise.resolve();
             }
@@ -189,6 +213,64 @@ define(function (require, exports) {
     removePointerPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
 
     /**
+     * Temporarily disable keyboard policies, caching the previous state
+     *
+     * @return {Promise}
+     */
+    var disableKeyboardPolicies = function () {
+        if (_cachedKeyboardPolicies || _cachedKeyboardMode) {
+            return Promise.reject(new Error("Can not disable keyboard policies if a cached state exists"));
+        }
+
+        var policyStore = this.flux.store("policy"),
+            kind = PolicyStore.eventKind.KEYBOARD;
+
+        _cachedKeyboardPolicies = policyStore.getPolicies(kind);
+
+        return adapterUI.getKeyboardPropagationMode()
+            .bind(this)
+            .then(function (mode) {
+                _cachedKeyboardMode = mode;
+                policyStore.clearPolicies(kind);
+                return _syncPolicies.call(this, kind);
+            })
+            .then(function () {
+                return adapterUI.setKeyboardPropagationMode(
+                    { defaultMode: adapterUI.keyboardPropagationMode.FOCUS_PROPAGATE });
+            });
+    };
+    disableKeyboardPolicies.reads = [];
+    disableKeyboardPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+
+    /**
+     * Re-enabled cached keyboard policies
+     *
+     * @return {Promise}
+     */
+    var reenableKeyboardPolicies = function () {
+        if (!_cachedKeyboardPolicies || !_cachedKeyboardMode) {
+            return Promise.reject(new Error("Can not re-renable keyboard policies, no previously cached state"));
+        }
+
+        var kind = PolicyStore.eventKind.KEYBOARD,
+            policyStore = this.flux.store("policy");
+
+        policyStore.setPolicies(kind, _cachedKeyboardPolicies);
+
+        return adapterUI.setKeyboardPropagationMode({ defaultMode: _cachedKeyboardMode })
+            .bind(this)
+            .then(function () {
+                return _syncPolicies.call(this, kind);
+            })
+            .finally(function () {
+                _cachedKeyboardPolicies = null;
+                _cachedKeyboardMode = null;
+            });
+    };
+    reenableKeyboardPolicies.reads = [];
+    reenableKeyboardPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+
+    /**
      * Set the default keyboard propagation policy.
      *
      * @return {Promise}
@@ -204,11 +286,28 @@ define(function (require, exports) {
     beforeStartup.reads = [];
     beforeStartup.writes = [locks.PS_APP, locks.JS_POLICY];
 
+    /**
+     * Reset
+     *
+     * @return {Promise}
+     */
+    var onReset = function () {
+        _cachedKeyboardPolicies = null;
+        _cachedKeyboardMode = null;
+
+        return Promise.resolve();
+    };
+    onReset.reads = [];
+    onReset.writes = [];
+
     exports.addKeydownPolicy = addKeydownPolicy;
     exports.addKeyboardPolicies = addKeyboardPolicies;
     exports.removeKeyboardPolicies = removeKeyboardPolicies;
     exports.addPointerPolicies = addPointerPolicies;
     exports.removePointerPolicies = removePointerPolicies;
+    exports.disableKeyboardPolicies = disableKeyboardPolicies;
+    exports.reenableKeyboardPolicies = reenableKeyboardPolicies;
 
     exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
 });

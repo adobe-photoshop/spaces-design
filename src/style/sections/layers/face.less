@@ -56,7 +56,7 @@
     align-items: center;
     flex-direction: row;
     height: 3rem;
-    padding-left: 0.5rem;
+    padding-left: 0.4rem;
     flex-grow: 10;
     flex-shrink: 100;
     box-sizing: border-box;
@@ -75,7 +75,7 @@
 
 .generate-depth(@n, @i: 0) when (@i =< @n) {
   .face__depth-@{i} {
-    padding-left: (@i * 1.8rem);
+    padding-left: (@i * 1.8rem)+1;
   }
   .generate-depth(@n, (@i + 1));
 }

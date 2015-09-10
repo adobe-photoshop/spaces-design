@@ -53,7 +53,7 @@ define(function (require, exports, module) {
          * The set of policy sets, indexed by event kind
          * 
          * @private
-         * @type {Object.<string, Array.<EventPolicySet>>}
+         * @type {Object.<string, EventPolicySet>}
          */
         _policySets: null,
 
@@ -86,6 +86,35 @@ define(function (require, exports, module) {
                 sets[_eventKind[kind]] = new EventPolicySet();
                 return sets;
             }.bind(this), {});
+        },
+
+        /**
+         * Reset the policy set of the given kind
+         *
+         * @param {string} kind
+         */
+        clearPolicies: function (kind) {
+            this._policySets[kind] = new EventPolicySet();
+        },
+
+        /**
+         * Get the entire PolicySet of the given kind
+         *
+         * @param {string} kind
+         * @return {?EventPolicySet}
+         */
+        getPolicies: function (kind) {
+            return this._policySets[kind];
+        },
+
+        /**
+         * Set PolicySet of the given kind
+         *
+         * @param {string} kind
+         * @param {EventPolicySet} policySet
+         */
+        setPolicies: function (kind, policySet) {
+            this._policySets[kind] = policySet;
         },
 
         /**

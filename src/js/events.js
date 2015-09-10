@@ -49,7 +49,6 @@ define(function (require, exports, module) {
                     BLEND_MODE_CHANGED: "blendModeChanged",
                     REORDER_LAYERS: "reorderLayers",
                     REPOSITION_LAYERS: "repositionLayers",
-                    NUDGE_LAYERS: "nudgeLayers",
                     RESIZE_LAYERS: "resizeLayers",
                     SET_LAYERS_PROPORTIONAL: "setLayersProportional",
                     STROKE_COLOR_CHANGED: "strokeColorChanged",
@@ -71,6 +70,7 @@ define(function (require, exports, module) {
                     COMBINE_SHAPES: "combineShapes",
                     DELETE_LAYERS: "deleteLayersNonOptimistic", // eg: ps deletes the entire layer after last path del,
                     GUIDE_SET: "guideSet",
+                    GUIDES_CLEARED: "guidesCleared",
                     GUIDE_DELETED: "guideDeleted"
                 },
                 amendment: {

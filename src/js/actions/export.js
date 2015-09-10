@@ -43,7 +43,8 @@ define(function (require, exports) {
         log = require("js/util/log"),
         global = require("js/util/global"),
         ExportAsset = require("js/models/exportasset"),
-        ExportService = require("js/util/exportservice");
+        ExportService = require("js/util/exportservice"),
+        policyActions = require("js/actions/policy");
 
     /**
      * An instance of the ExportService utility used to communicate with the generator plugin
@@ -374,9 +375,15 @@ define(function (require, exports) {
      * Adds an asset, or assets to the end of the document asset list, or that of a layer or layers
      * If props not provided, choose the next reasonable scale and create an otherwise vanilla asset
      *
+     * Recognizes an empty list of layers as implying doc-level export
+     *
+     * Layer-level exports:
+     * Will only add assets to those layers which are supported.
+     * Adds assets after the last uniform asset shared by the given set of layers.
+     *
      * @param {Document} document
      * @param {DocumentExports} documentExports
-     * @param {Immutable.List.<Layer>=} layers
+     * @param {Immutable.List.<Layer>} layers
      * @param {object|Array.object=} props asset-like object, or an array thereof.  if not supplied, picks next scale
      * @return {Promise}
      */
@@ -387,19 +394,19 @@ define(function (require, exports) {
             _props,
             _layers;
 
-        if (documentExports) {
-            if (layers && layers.size > 0) {
-                exportsList = documentExports.getUniformAssetsOnly(layers);
-                assetIndex = documentExports.getLastUniformAssetIndex(layers) + 1;
-                _layers = layers;
-            } else {
-                exportsList = documentExports.rootExports;
-                assetIndex = exportsList.size;
-            }
+        if (layers.size > 0) {
+            var supportedLayers = document.layers.filterExportable(layers);
+
+            exportsList = documentExports.getUniformAssetsOnly(supportedLayers);
+            assetIndex = documentExports.getLastUniformAssetIndex(supportedLayers) + 1;
+            _layers = supportedLayers;
+        } else {
+            exportsList = documentExports.rootExports;
+            assetIndex = exportsList.size;
         }
 
+        // If not supplied, set a default asset based on the next scale in the list that doesn't already exist
         if (!props) {
-            // find the next scale in the list that doesn't already exist
             var existingScales = (exportsList && collection.pluck(exportsList, "scale")) || Immutable.List(),
                 remainingScales = collection.difference(ExportAsset.SCALES, existingScales),
                 nextScale = remainingScales.size > 0 ? remainingScales.first() : ExportAsset.SCALES.first();
@@ -533,16 +540,41 @@ define(function (require, exports) {
     setAllNonABLayersExportEnabled.transfers = [setLayerExportEnabled];
 
     /**
+     * Prompt the user to choose a folder by opening an OS dialog.
+     * Keyboard policies are temporarily disabled while the dialog is open.
+     *
+     * @return {Promise.<?string>} Promise of a File Path of the chosen folder, returns null if user-canceled
+     */
+    var promptForFolder = function () {
+        return this.transfer(policyActions.disableKeyboardPolicies)
+            .bind(this)
+            .then(
+                function () {
+                    return _exportService.promptForFolder(_lastFolderPath || "~");
+                },
+                function (e) {
+                    throw new Error("Failed to stash keyboard policies prior to opening OS dialog: " + e.message);
+                }
+            )
+            .finally(function () {
+                return this.transfer(policyActions.reenableKeyboardPolicies);
+            });
+    };
+    promptForFolder.reads = [];
+    promptForFolder.writes = locks.ALL_LOCKS;
+    promptForFolder.transfers = [policyActions.disableKeyboardPolicies, policyActions.reenableKeyboardPolicies];
+
+    /**
      * Export all layer assets for the given document for which export has been enabled (layer.exportEnabled)
      * 
-     * Or, if layerIDs param is supplied, export only those layers' assets
+     * Or, if layers is supplied, export only those layers' assets
      * and disregard the layer's exportEnabled value
      *
      * @param {Document} document
-     * @param {Immutable.Iterable.<number>=} layerIDs
+     * @param {Immutable.Iterable.<Layer>=} layers Optional.  If not supplied export all exportEnabled layers
      * @return {Promise} Resolves when all assets have been exported, or if canceled via the file chooser
      */
-    var exportLayerAssets = function (document, layerIDs) {
+    var exportLayerAssets = function (document, layers) {
         if (!document) {
             Promise.resolve("No Document");
         }
@@ -564,13 +596,13 @@ define(function (require, exports) {
             _lastFolderPath = baseDir;
 
             var layersList;
-            if (layerIDs) {
-                // TODO push this logic into DocumentExports model, and filter first on layerIDs
-                layersList = documentExports.getLayersWithExports(document).filter(function (layer) {
-                    return layerIDs.includes(layer.id);
+            if (layers) {
+                layersList = document.layers.filterExportable(layers).filter(function (layer) {
+                    return layerExportsMap.has(layer.id);
                 });
             } else {
                 layersList = documentExports.getLayersWithExports(document, undefined, true);
+                layersList = document.layers.filterExportable(layersList); // consider combining into single op
             }
 
             var layerIdList = collection.pluck(layersList, "id");
@@ -590,14 +622,14 @@ define(function (require, exports) {
 
         // prompt for folder and then export to the result.
         // resolve immediately if no folder is returned
-        return _exportService.promptForFolder(_lastFolderPath || "~")
+        return this.transfer(promptForFolder)
             .then(function (baseDir) {
                 return baseDir ? exportToDir(baseDir) : Promise.resolve();
             });
     };
     exportLayerAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportLayerAssets.writes = [locks.GENERATOR];
-    exportLayerAssets.transfers = [updateExportAsset];
+    exportLayerAssets.transfers = [promptForFolder, updateExportAsset];
 
     /**
      * Export all document-level assets for the given document
@@ -636,13 +668,14 @@ define(function (require, exports) {
 
         // prompt for folder and then export to the result.
         // resolve immediately if no folder is returned
-        return _exportService.promptForFolder(_lastFolderPath || "~").then(function (baseDir) {
-            return baseDir ? exportToDir(baseDir) : Promise.resolve();
-        });
+        return this.transfer(promptForFolder)
+            .then(function (baseDir) {
+                return baseDir ? exportToDir(baseDir) : Promise.resolve();
+            });
     };
     exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportDocumentAssets.writes = [locks.GENERATOR];
-    exportDocumentAssets.transfers = [updateExportAsset];
+    exportDocumentAssets.transfers = [promptForFolder, updateExportAsset];
 
     /**
      * After start up, ensure that generator is enabled, and then initialize the export service
@@ -759,6 +792,7 @@ define(function (require, exports) {
     exports.setLayerExportEnabled = setLayerExportEnabled;
     exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
     exports.setAllNonABLayersExportEnabled = setAllNonABLayersExportEnabled;
+    exports.promptForFolder = promptForFolder;
     exports.exportLayerAssets = exportLayerAssets;
     exports.exportDocumentAssets = exportDocumentAssets;
     exports.afterStartup = afterStartup;

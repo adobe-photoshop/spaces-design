@@ -377,11 +377,12 @@
         "EXPORT_LIST_ALL_ASSETS": "All Assets",
         "BUTTON_EXPORT": "Export",
         "BUTTON_CANCEL": "Cancel",
-        "SELECT_SINGLE_LAYER": "DEPRECATED",
         "TITLE_SCALE": "Scale",
         "TITLE_SUFFIX": "Suffix",
         "TITLE_SETTINGS": "Settings",
-        "EXPORT_DOCUMENT_FILENAME": "document"
+        "EXPORT_DOCUMENT_FILENAME": "document",
+        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "No supported layers selected",
+        "NO_ASSETS": "No exports configured"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",

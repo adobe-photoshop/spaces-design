@@ -33,7 +33,8 @@ define(function (require, exports) {
         adapterUI = require("adapter/ps/ui"),
         adapterOS = require("adapter/os");
 
-    var events = require("js/events"),
+    var Bounds = require("js/models/bounds"),
+        events = require("js/events"),
         locks = require("js/locks"),
         shortcuts = require("./shortcuts"),
         preferences = require("./preferences"),
@@ -284,7 +285,8 @@ define(function (require, exports) {
         return {
             x: zoom * bounds.xCenter / factor + (offset.right - offset.left) / 2,
             y: zoom * bounds.yCenter / factor + (offset.bottom - offset.top) / 2,
-            z: zoom
+            z: zoom,
+            animate: false
         };
     };
 
@@ -354,7 +356,7 @@ define(function (require, exports) {
                 }
                 break;
             case "document":
-                targetBounds = currentDoc.bounds;
+                targetBounds = currentDoc.visibleBounds;
                 break;
             default:
                 throw new Error("Unexpected 'on' value");
@@ -370,40 +372,44 @@ define(function (require, exports) {
      * Sets zoom to the value in the payload
      * Centering on the selection, pan is on by default
      *
-     * @param {{zoom: number, pan: boolean}} payload
+     * @param {{zoom: number}} payload
      * @return {Promise}
      */
     var zoom = function (payload) {
-        var uiState = this.flux.store("ui").getState(),
+        var uiStore = this.flux.store("ui"),
+            uiState = uiStore.getState(),
             document = this.flux.store("application").getCurrentDocument(),
             zoom = payload.zoom,
-            pan = payload.hasOwnProperty("pan") ? payload.pan : true,
             bounds = document.layers.selectedAreaBounds,
             panZoomDescriptor = {
-                animate: true,
+                animate: false,
                 resize: true,
                 z: zoom
             };
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
-        if (bounds && bounds.width === 0) {
-            // If selected layers don't have any bounds (happens with empty pixel layers)
-            // Don't pan
-            pan = false;
+        if (!bounds || bounds.width === 0) {
+            var cloakRect = uiStore.getCloakRect(),
+                tl = uiStore.transformWindowToCanvas(cloakRect.left, cloakRect.top),
+                br = uiStore.transformWindowToCanvas(cloakRect.right, cloakRect.bottom),
+                model = {
+                    left: tl.x,
+                    top: tl.y,
+                    right: br.x,
+                    bottom: br.y
+                };
+                
+            bounds = new Bounds(model);
         }
 
-        // We only add these to descriptor if we want to pan, without them, PS will only zoom.
-        if (pan && bounds) {
-            var factor = window.devicePixelRatio,
-                offsets = uiState.centerOffsets;
+        var factor = window.devicePixelRatio,
+            offsets = uiState.centerOffsets,
+            panDescriptor = _calculatePanZoom(bounds, offsets, zoom, factor);
 
-            var panDescriptor = _calculatePanZoom(bounds, offsets, zoom, factor);
-
-            panZoomDescriptor.x = panDescriptor.x;
-            panZoomDescriptor.y = panDescriptor.y;
-        }
-
+        panZoomDescriptor.x = panDescriptor.x;
+        panZoomDescriptor.y = panDescriptor.y;
+    
         return descriptor.play("setPanZoom", panZoomDescriptor)
             .bind(this)
             .then(function () {
@@ -448,6 +454,7 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _scrollHandler,
+        _activationChangeHandler,
         _resizeHandler;
 
     /**
@@ -468,10 +475,15 @@ define(function (require, exports) {
 
         // Handles spacebar + drag, scroll and window resize events
         _scrollHandler = function (event) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
             setTransformDebounced(event);
         }.bind(this);
         descriptor.addListener("scroll", _scrollHandler);
+
+        // Handles Photoshop focus change events
+        _activationChangeHandler = function (event) {
+            this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: event.becameActive });
+        }.bind(this);
+        adapterOS.addListener("activationChanged", _activationChangeHandler);
 
         var windowResizeDebounced = synchronization.debounce(function () {
             return this.flux.actions.ui.setOverlayCloaking();
@@ -514,6 +526,7 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("scroll", _scrollHandler);
+        adapterOS.removeListener("activationChanged", _activationChangeHandler);
         window.removeEventListener("resize", _resizeHandler);
 
         return Promise.resolve();
