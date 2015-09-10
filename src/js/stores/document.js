@@ -100,7 +100,8 @@ define(function (require, exports, module) {
                 events.document.LAYER_EXPORT_ENABLED_CHANGED, this._handleLayerExportEnabledChanged,
                 events.document.history.nonOptimistic.GUIDE_SET, this._handleGuideSet,
                 events.document.history.nonOptimistic.GUIDE_DELETED, this._handleGuideDeleted,
-                events.document.history.nonOptimistic.GUIDES_CLEARED, this._handleGuidesCleared
+                events.document.history.nonOptimistic.GUIDES_CLEARED, this._handleGuidesCleared,
+                events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, this._handleAddVectorMask
             );
 
             this._handleReset();
@@ -1108,6 +1109,23 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID];
 
             var nextDocument = document.set("guides", Immutable.List());
+
+            this.setDocument(nextDocument, true);
+        },
+        
+        /**
+         * Update layer with the correct vector mask property
+         *
+         * @private
+         * @param {{{documentID: number, layerIDs: Array.<number>, vectorMaskEnabled: boolean}}} payload
+         */
+        _handleAddVectorMask: function (payload) {
+            var documentID = payload.documentID,
+                layerIDs = payload.layerIDs,
+                vectorMaskEnabled = payload.vectorMaskEnabled,
+                document = this._openDocuments[documentID],
+                nextLayers = document.layers.setProperties(layerIDs, { vectorMaskEnabled: vectorMaskEnabled }),
+                nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
         }

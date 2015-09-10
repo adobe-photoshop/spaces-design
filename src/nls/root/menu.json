@@ -106,7 +106,8 @@
             "WEB_1440_900": "Web (1440 x 900)",
             "WEB_1920_1080": "Web (1920 x 1080)"
         },
-        "EDIT_VECTOR_MASK": "Edit Vector Mask"
+        "EDIT_VECTOR_MASK": "Edit Vector Mask",
+        "CREATE_ARTBOARD": "Create New Artboard"
     },
     "TYPE": {
         "$MENU": "Type",

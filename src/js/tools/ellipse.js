@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         OS = require("adapter/os"),
-        UI = require("adapter/ps/ui");
+        UI = require("adapter/ps/ui"),
+        vectorMaskLib = require("adapter/lib/vectorMask");
 
     var Tool = require("js/models/tool"),
         toolActions = require("js/actions/tools"),
@@ -39,38 +40,59 @@ define(function (require, exports, module) {
         shortcuts = require("js/util/shortcuts");
 
     /**
+     * Sets the tool into either path or shape mode and calls the approprate PS actions based on that mode
+     *
+     * @private
+     */
+    var _selectHandler = function () {
+        var toolStore = this.flux.store("tool"),
+            vectorMode = toolStore.getVectorMode() || false,
+            toolMode = toolLib.shapeVectorTool,
+            firstLaunch = true;
+
+        if (vectorMode) {
+            toolMode = toolLib.pathVectorTool;
+        }
+
+        var setObj = toolLib.setShapeTool(toolMode);
+
+        var setPromise = descriptor.playObject(setObj);
+
+        if (!vectorMode && firstLaunch) {
+            var fillColor = [217, 217, 217],
+                strokeColor = [157, 157, 157];
+
+            var defaultPromise = this.transfer(toolActions.installShapeDefaults,
+                "ellipseTool", strokeColor, 2, 100, fillColor);
+
+            firstLaunch = false;
+            return Promise.join(defaultPromise, setPromise);
+        } else if (!vectorMode) {
+            return Promise.join(setPromise);
+        } else {
+            return setPromise
+            .then(function () {
+                return UI.setSuppressTargetPaths(false);
+            })
+            .then(function () {
+                return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+            });
+        }
+    };
+
+    /**
      * @implements {Tool}
      * @constructor
      */
     var EllipseTool = function () {
-        var resetPromise = descriptor.playObject(toolLib.resetShapeTool()),
-            firstLaunch = true;
-            
-        /** @ignore */
-        var selectHandler = function () {
-            var defaultPromise;
-
-            if (firstLaunch) {
-                var fillColor = [217, 217, 217],
-                    strokeColor = [157, 157, 157];
-
-                defaultPromise = this.transfer(toolActions.installShapeDefaults,
-                    "ellipseTool", strokeColor, 2, 100, fillColor);
-
-                firstLaunch = false;
-                return Promise.join(defaultPromise, resetPromise);
-            } else {
-                return resetPromise;
-            }
-        };
-
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, { shift: true }, shortcuts.GLOBAL.TOOLS.SHAPE);
         
-        Tool.call(this, "ellipse", "Ellipse", "ellipseTool", selectHandler);
+        Tool.call(this, "ellipse", "Ellipse", "ellipseTool", _selectHandler);
 
         this.keyboardPolicyList = [shiftUKeyPolicy];
         this.activationKey = shortcuts.GLOBAL.TOOLS.ELLIPSE;
+        this.handleVectorMaskMode = true;
     };
     util.inherits(EllipseTool, Tool);
 

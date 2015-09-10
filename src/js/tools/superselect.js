@@ -24,19 +24,18 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var _ = require("lodash"),
-        Promise = require("bluebird");
+    var _ = require("lodash");
 
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
         OS = require("adapter/os"),
         UI = require("adapter/ps/ui"),
-        toolLib = require("adapter/lib/tool");
+        toolLib = require("adapter/lib/tool"),
+        vectorMaskLib = require("adapter/lib/vectorMask");
 
     var Tool = require("js/models/tool"),
         VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type"),
-        events = require("js/events"),
         system = require("js/util/system"),
         shortcuts = require("js/util/shortcuts"),
         SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay"),
@@ -50,6 +49,58 @@ define(function (require, exports, module) {
     var _spaceKeyDown;
 
     /**
+     * @private
+     */
+    var _selectHandler = function () {
+        var toolOptions = {
+                "$AtSl": false, // Don't auto select on drag
+                "$ASGr": false, // Don't auto select Groups,
+                "$Abbx": true // Show transform controls
+            };
+
+        var toolStore = this.flux.store("tool"),
+            vectorMode = toolStore.getVectorMode() || false;
+
+        if (!vectorMode) {
+            return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
+                .then(function () {
+                    UI.setPointerPropagationMode({
+                        defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY
+                    });
+                });
+        } else {
+            return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
+                .then(function () {
+                    descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
+                        { synchronous: false });
+                });
+        }
+    };
+
+    /**
+     * @private
+     */
+    var _deselectHandler = function () {
+        return UI.setPointerPropagationMode({
+            defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
+        });
+    };
+
+    /**
+     * @private
+     */
+    var _nativeToolName = function () {
+        var toolStore = this.flux.store("tool"),
+            vectorMode = toolStore.getVectorMode() || false;
+
+        if (vectorMode) {
+            return "directSelectTool";
+        } else {
+            return "moveTool";
+        }
+    };
+
+    /**
      * @implements {Tool}
      * @constructor
      */
@@ -57,38 +108,14 @@ define(function (require, exports, module) {
         this.id = "newSelect";
         this.icon = "newSelect";
         this.name = "Super Select";
-        this.nativeToolName = "moveTool";
+        this.nativeToolName = _nativeToolName;
         this.dragging = false;
         this.dragEvent = null;
         this.activationKey = shortcuts.GLOBAL.TOOLS.SELECT;
-        
-        var selectHandler = function () {
-            var toolOptions = {
-                "$AtSl": false, // Don't auto select on drag
-                "$ASGr": false, // Don't auto select Groups,
-                "$Abbx": true // Show transform controls
-            };
+        this.handleVectorMaskMode = true;
 
-            return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
-                .bind(this)
-                .then(function () {
-                    var propMode = UI.setPointerPropagationMode({
-                            defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY
-                        }),
-                        marquee = this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { enabled: false });
-
-                    return Promise.join(propMode, marquee);
-                });
-        };
-
-        var deselectHandler = function () {
-            return UI.setPointerPropagationMode({
-                defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
-            });
-        };
-
-        this.selectHandler = selectHandler;
-        this.deselectHandler = deselectHandler;
+        this.selectHandler = _selectHandler;
+        this.deselectHandler = _deselectHandler;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),

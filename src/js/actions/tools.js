@@ -32,7 +32,9 @@ define(function (require, exports) {
         documentLib = require("adapter/lib/document"),
         adapterOS = require("adapter/os"),
         adapterUI = require("adapter/ps/ui"),
-        adapterPS = require("adapter/ps");
+        adapterPS = require("adapter/ps"),
+        UI = require("adapter/ps/ui"),
+        vectorMaskLib = require("adapter/lib/vectorMask");
 
     var events = require("../events"),
         guides = require("./guides"),
@@ -40,6 +42,7 @@ define(function (require, exports) {
         policy = require("./policy"),
         shortcuts = require("./shortcuts"),
         system = require("js/util/system"),
+        utilShortcuts = require("js/util/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
@@ -327,11 +330,17 @@ define(function (require, exports) {
                 return currentTool.deselectHandler.call(this, currentTool);
             })
             .then(function () {
-                var psToolName = nextTool.nativeToolName,
+                var psToolName = nextTool.nativeToolName.call(this),
                     setToolPlayObject = toolLib.setTool(psToolName);
 
                 // Set the new native tool
                 return descriptor.playObject(setToolPlayObject);
+            })
+            .then(function () {
+                if (!nextTool.handleVectorMaskMode) {
+                    return this.dispatch(events.tool.VECTOR_STATE_CHANGE, false);
+                }
+                return Promise.resolve();
             })
             .then(function () {
                 var selectHandler = nextTool.selectHandler;
@@ -361,6 +370,7 @@ define(function (require, exports) {
     selectTool.transfers = [resetBorderPolicies, policy.removePointerPolicies, installShapeDefaults,
         policy.removeKeyboardPolicies, policy.addPointerPolicies, policy.addKeyboardPolicies,
         shortcuts.addShortcut, shortcuts.removeShortcut];
+    selectTool.modal = true;
 
     /**
      * Initialize the current tool based on the current native tool
@@ -419,7 +429,8 @@ define(function (require, exports) {
      * @private
      * @type {function()}
      */
-    var _toolModalStateChangedHandler;
+    var _toolModalStateChangedHandler,
+        _vectorMaskHandler;
     
     /**
      * Register event listeners for native tool selection change events, register
@@ -476,6 +487,88 @@ define(function (require, exports) {
 
             return promises;
         }.bind(this), []);
+    
+        _vectorMaskHandler = function () {
+            var toolStore = this.flux.store("tool"),
+                vectorMode = toolStore.getVectorMode() || false,
+                currentTool = toolStore.getCurrentTool(),
+                firstLaunch = false;
+
+            if (!currentTool.handleVectorMaskMode) {
+                return Promise.resolve();
+            }
+
+            var appStore = this.flux.store("application"),
+            currentDocument = appStore.getCurrentDocument(),
+            currentLayers = currentDocument.layers.selected,
+            currentLayer = currentLayers.first(),
+            initPromise;
+
+            if (!currentLayer) {
+                return Promise.resolve();
+            }
+            if (!currentLayer.vectorMaskEnabled) {
+                initPromise = descriptor.playObject(vectorMaskLib.createRevealAllMask());
+            } else {
+                initPromise = Promise.resolve();
+            }
+
+            var toolMode = toolLib.shapeVectorTool;
+
+            if (!vectorMode) {
+                toolMode = toolLib.pathVectorTool;
+            }
+            var dispatchPromise = this.dispatch(events.tool.VECTOR_STATE_CHANGE, !vectorMode);
+            
+            if (currentTool.id === "rectangle" || currentTool.id === "ellipse" || currentTool.id === "pen") {
+                var setObj = toolLib.setShapeTool(toolMode),
+                    resetPromise = descriptor.batchPlayObjects([setObj]);
+
+                
+                if (vectorMode && firstLaunch) {
+                    var fillColor = [217, 217, 217],
+                        strokeColor = [157, 157, 157];
+
+                    var defaultPromise = this.transfer(installShapeDefaults,
+                        currentTool.nativeToolName(), strokeColor, 2, 100, fillColor);
+
+                    firstLaunch = false;
+                    return Promise.join(initPromise, defaultPromise, resetPromise, dispatchPromise);
+                } else if (vectorMode) {
+                    return Promise.join(initPromise, resetPromise, dispatchPromise);
+                } else {
+                    return Promise.join(initPromise, resetPromise, dispatchPromise)
+                    .then(function () {
+                        return UI.setSuppressTargetPaths(false);
+                    })
+                    .then(function () {
+                        return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+                    });
+                }
+            } else if (currentTool.id === "newSelect" || currentTool.id === "superselectVector") {
+                if (vectorMode) {
+                    return flux.actions.tools.select(toolStore.getToolByID("newSelect"))
+                    .then(function () {
+                        return Promise.join(initPromise, dispatchPromise);
+                    });
+                } else {
+                    return flux.actions.tools.select(toolStore.getToolByID("superselectVector"))
+                    .then(function () {
+                        return Promise.join(initPromise, dispatchPromise);
+                    })
+                    .then(function () {
+                        return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+                    })
+                    .then(function () {
+                        descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
+                            { synchronous: false });
+                    });
+                }
+            }
+        }.bind(this);
+
+        var vectorMaskPromise = this.transfer(shortcuts.addShortcut,
+                utilShortcuts.GLOBAL.TOOLS.MASK_SELECT, {}, _vectorMaskHandler, "vectorModeSwitch");
 
         var endModalPromise = adapterPS.endModalToolState(true);
 
@@ -483,7 +576,7 @@ define(function (require, exports) {
         var initToolPromise = this.transfer(initTool),
             shortcutsPromise = Promise.all(shortcutPromises);
 
-        return Promise.join(endModalPromise, initToolPromise, shortcutsPromise)
+        return Promise.join(endModalPromise, initToolPromise, shortcutsPromise, vectorMaskPromise)
             .bind(this)
             .then(function () {
                 return this.transfer(changeModalState, false);
@@ -502,6 +595,7 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
+        this.transfer(shortcuts.removeShortcut, "vectorModeSwitch");
 
         _currentTransformPolicyID = null;
 
@@ -510,6 +604,7 @@ define(function (require, exports) {
     onReset.modal = true;
     onReset.reads = [];
     onReset.writes = [];
+    onReset.transfers = [shortcuts.removeShortcut];
 
     exports.installShapeDefaults = installShapeDefaults;
     exports.resetBorderPolicies = resetBorderPolicies;
