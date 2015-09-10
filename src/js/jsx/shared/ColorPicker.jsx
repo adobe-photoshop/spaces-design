@@ -756,6 +756,17 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Event handler for the transparency input
+         * Converts from percentage to decimal
+         *
+         * @param {SyntheticEvent} event
+         * @param {number} alpha
+         */
+        _handleTransparencyInput: function (event, alpha) {
+            this._handleTransparencyChange(alpha / 100);
+        },
+
+        /**
          * Event handler for the hue slider.
          * 
          * @param {number} hue
@@ -944,7 +955,9 @@ define(function (require, exports, module) {
                             size="column-5"
                             placeholder="100"
                             ref="opacity"
-                            onKeyDown={this._handleKeyDown}/>
+                            value={Math.round(color.a * 100)}
+                            onKeyDown={this._handleKeyDown}
+                            onChange={this._handleTransparencyInput}/>
                     </div>
                     <div className="color-picker__transparency-slider">
                         <Slider
