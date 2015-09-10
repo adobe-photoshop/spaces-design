@@ -307,9 +307,9 @@ define(function (require, exports, module) {
             });
 
             var overlay;
-            if (this.props.hasOwnProperty("hue")) {
+            if (this.props.hasOwnProperty("color")) {
                 // this is an alpha slider
-                var bgColor = tinycolor({ h: this.props.hue, s: 1, v: 1 }).toHexString(),
+                var bgColor = tinycolor(this.props.color.toJS()).toHexString(),
                     bgGradient = "linear-gradient(to right, rgba(1, 1, 1, 0) 0%, " + bgColor + " 100%)";
 
                 overlay = (
@@ -510,15 +510,14 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            var swatchOverlay = this.props.swatchOverlay(tinycolor(this.props.color.toJS()));
+
             return (
                 <div
                     className="color-picker__colortype">
                     <div
-                        className="color-picker__colortype__thumb empty">
-                    </div>
-                    <Gutter/>
-                    <div
                         className="color-picker__colortype__thumb selected">
+                        {swatchOverlay}
                     </div>
                     <Gutter/>
                     <Gutter/>
@@ -963,7 +962,7 @@ define(function (require, exports, module) {
                         <Slider
                             vertical={false}
                             value={color.a}
-                            hue={color.h}
+                            color={color}
                             max={1}
                             disabled={this.props.opaque}
                             onMouseUp={this._handleMouseUp}

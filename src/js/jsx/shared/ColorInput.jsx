@@ -310,6 +310,7 @@ define(function (require, exports, module) {
                         dismissOnWindowClick>
                         <ColorPicker
                             ref="colorpicker"
+                            swatchOverlay={this.props.swatchOverlay}
                             label={label}
                             editable={this.props.editable}
                             opaque={this.props.opaque}
