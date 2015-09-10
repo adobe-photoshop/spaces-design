@@ -95,6 +95,7 @@
             height: 4rem;
             margin: 0 0rem;
             align-items: center;
+            width: 100%;
         }
 
         &__content-input {
@@ -147,6 +148,9 @@
             flex-shrink: 0;
             text-align: center;
             font-size: 1.3rem;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            color: @item-active;
             
             &:hover {
                 color: @item-hover;
@@ -154,12 +158,17 @@
         }
 
         .libraries__bar__btn-confirm {
-            color: @item-active;
+            color: @item-hover;
+            font-weight: 500;
+            &:hover {
+                color: @item;
+            }
         }
 
         .libraires__bar__input {
             font-size: 1.3rem;
             flex-grow: 1;
+            color: @item-hover;
             
             &::-webkit-input-placeholder {
                color: @item-disabled;
@@ -173,7 +182,7 @@
         justify-content: space-between;
         align-items: center;
         flex: none;
-        height: 3rem;
+        height: 4.8rem;
         margin: 0 2rem;
 
         .libraries-bar__section__left {
@@ -243,10 +252,21 @@
         
         &:hover {
             background-color: @list-hover-color;
+            
+             input {
+                color: @item-hover;
+            }
         }
         
         &-selected, &-selected:hover {
             background-color: @list-select-color;
+            //justify-content: space-between;
+            padding-right: 0;
+            .libraries__asset__title {
+                input {
+                    color: @item-hover;
+                }
+            }
         }
 
         &__preview {
@@ -258,20 +278,22 @@
         &__title {
             display: flex;
             flex-grow: 1;
+            flex-shrink: 1;
             flex-direction: column;
             justify-content: center;
             height: @libraries-preview-height;
 
             input {
+                color: @item-hover;
                 font-size: 1.2rem;
                 -webkit-user-select: none;
                 
 
                 &:focus {
                     align-self: stretch;
-                    background-color:@item-active;
-                    color: @bg-alt;
+                    color: @item-hover;
                     user-select: none;
+                    border-bottom: @hairline solid @focus-highlight;
                 }
                 
                 &[disabled] {
@@ -285,6 +307,9 @@
             padding-bottom: .3rem;
             font-size: 1rem;
             color: @warm-gray;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         &__preview-character-style, &__preview-layer-style, &__preview-graphic {
@@ -365,13 +390,14 @@
         }
 
         &__buttons {
-            flex: none;
             width: auto;
+            flex-shrink: 1;
 
             .split-button__item {
                 justify-content: flex-start;
                 margin: 0;
-                margin-right: 1.5rem;
+                margin-left: 0.8rem;
+                margin-right: 0.8rem;
             }
         }
     }
@@ -388,7 +414,8 @@
         top: 0;
         left: 0;
         width: 32rem;
-        padding: 1.5rem 2rem;
+        height:100%;
+        padding: 2.2rem 2.4rem;
         background-color: rgba(10, 10, 10, .7);
         z-index: 10;
 
@@ -404,9 +431,9 @@
 
         &__title {
             width: 23rem;
-            color: @item-active;
-            font-size: 1.5rem;
-            line-height: 1.5rem;
+            color: @item-hover;
+            font-size: 1.8rem;
+            line-height: 1.8rem;
             padding-bottom: 1.5rem;
             border-bottom: @hairline solid @underlines;
             font-weight: 500;
@@ -415,7 +442,7 @@
         &__body {
             width: 100%;
             color: @item-active;
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             line-height: 2rem;
             padding: 1rem 2.5rem;
         }
@@ -425,10 +452,17 @@
             line-height: 2.5rem;
             font-size: 1.4rem;
             text-align: center;
+            &:hover {
+                color: @item-hover;
+            }
         }
 
         &__btn-confirm {
-            color: @item-active;
+            font-weight: 500;
+            color: @item-hover;
+            &:hover {
+                color: @item;
+            }
         }
 
         &__btn-cancel {

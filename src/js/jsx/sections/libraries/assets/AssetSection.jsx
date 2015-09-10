@@ -166,19 +166,30 @@ define(function (require, exports, module) {
         render: function () {
             var sectionContent,
                 deleteConfirmationDialog,
-                element = this.props.element;
+                element = this.props.element,
+                subTitle = this.props.subTitle && (<div className="libraries__asset__subtitle">
+                            {this.props.subTitle}
+                        </div>);
 
             if (this.props.selected) {
                 var library = element.library,
                     elementLink = ["https://assets.adobe.com/assets/libraries", library.id, element.id].join("/"),
                     shareLink = elementLink + "?dialog=share";
-
                 sectionContent = (
                     <SplitButtonList className="libraries__asset__buttons">
-                        <SplitButtonItem
-                            title={strings.TOOLTIPS.LIBRARY_DELETE}
-                            iconId="delete"
-                            onClick={this._handleDelete} />
+                        <div className="libraries__asset__title">
+                            <TextInput
+                                ref="input"
+                                editable={true}
+                                title={this.props.title || this.props.displayName}
+                                value={this.props.displayName}
+                                preventHorizontalScrolling={true}
+                                onClick={this._handleTitleClicked}
+                                onDoubleClick={this._handleStartEditingTitle}
+                                onChange={this._handleRename}
+                                onBlur={this._handleEndEditingTitle}/>
+                            {subTitle}
+                        </div>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
                             iconId="libraries-share"
@@ -187,14 +198,13 @@ define(function (require, exports, module) {
                             title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
                             iconId="libraries-viewonsite"
                             onClick={ui.openURL.bind(null, elementLink)} />
+                         <SplitButtonItem
+                            title={strings.TOOLTIPS.LIBRARY_DELETE}
+                            iconId="delete"
+                            onClick={this._handleDelete} />
                     </SplitButtonList>
                 );
             } else {
-                var subTitle = this.props.subTitle &&
-                    (<div className="libraries__asset__subtitle" title={this.props.title}>
-                        {this.props.subTitle}
-                    </div>);
-
                 sectionContent = (
                     <div className="libraries__asset__title">
                         <TextInput
