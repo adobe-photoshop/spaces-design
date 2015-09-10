@@ -490,6 +490,19 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Special case handler for shift_tab to focus back on opacity input
+         *
+         * @private
+         * @param {KeyboardEvent} event
+         */
+        _handleKeyDown: function (event) {
+            if (event.shiftKey && event.key === "Tab") {
+                this.props.onShiftTabPress();
+                event.preventDefault();
+            }
+        },
+
+        /**
          * Begin the edit of the TextInput
          */
         focus: function () {
@@ -515,6 +528,7 @@ define(function (require, exports, module) {
                         editable={this.props.editable}
                         value={this.props.label}
                         singleClick={true}
+                        onKeyDown={this._handleKeyDown}
                         onChange={this._handleInputChanged}
                         onFocus={this._handleFocus}
                         onClick={this._handleInputClicked} />
@@ -857,10 +871,31 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Special case handler for tab key on the Opacity input
+         * to transfer the focus back to color input
+         *
+         * @private
+         * @param {KeyboardEvent} event
+         */
+        _handleKeyDown: function (event) {
+            if (!event.shiftKey && event.key === "Tab") {
+                this.focusInput();
+                event.preventDefault();
+            }
+        },
+
+        /**
          * Focuses on the ColorType component
          */
         focusInput: function () {
             this.refs.input.focus();
+        },
+
+        /**
+         * Focuses on the opacity input component
+         */
+        focusOpacityInput: function () {
+            React.findDOMNode(this.refs.opacity).focus();
         },
 
         render: function () {
@@ -877,6 +912,7 @@ define(function (require, exports, module) {
                 <div className="color-picker">
                     <ColorType {...this.props}
                         ref="input"
+                        onShiftTabPress={this.focusOpacityInput}
                         onChange={this._handleColorTypeChange}/>
                     <Map
                         x={color.s}
@@ -907,7 +943,8 @@ define(function (require, exports, module) {
                         <NumberInput
                             size="column-5"
                             placeholder="100"
-                            onTabPress={this.focusInput}/>
+                            ref="opacity"
+                            onKeyDown={this._handleKeyDown}/>
                     </div>
                     <div className="color-picker__transparency-slider">
                         <Slider
