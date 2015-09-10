@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2015 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"), 
@@ -59,7 +59,7 @@ define(function (require, exports, module) {
      * @private
      * @param {Array.<object>} rows
      * @param {Layer} layer
-     * @param {number=} index if not supplied, start at zero
+     * @param {number=} index Optional. If not supplied, start at zero
      * @return {Array.<object>} rows, updated with the layer in its correct row
      */
     var _addLayerToRow = function (rows, layer, index) {

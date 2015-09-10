@@ -156,7 +156,11 @@ define(function (require, exports) {
      * Helper function to export a single asset using the export service, and update the metadata afterwards.
      *
      * When the export service's promise is resolved, a fresh flux action is called
-     * to perform the metadata sync (to wit: it does not transfer to updateExportAsset)
+     * to perform the metadata sync (to wit: it does not transfer to updateExportAsset).
+     * This is because the websocket export call is asynchronous, and should not be handled within the
+     * action that initiates the export.  This is analogous to handling photoshop events with a flux action,
+     * except that here we are not listening to an event,
+     * but rather keeping an unfulfilled promise in the action's state
      *
      * @private
      * @param {Document} document
@@ -164,7 +168,7 @@ define(function (require, exports) {
      * @param {number} assetIndex index of this asset within the layer's list
      * @param {ExportAsset} asset asset to export
      * @param {string=} baseDir Optional directory path in to which assets should be exported
-     * @param {string=} prefix
+     * @param {string=} prefix Optional prefix to apply to the fileName
      * @return {Promise}
      */
     var _exportAsset = function (document, layer, assetIndex, asset, baseDir, prefix) {
@@ -521,7 +525,7 @@ define(function (require, exports) {
         if (!layerExports || layerExports.isEmpty()) {
             return this.transfer(updateExportAsset, document, Immutable.List.of(layer), 0, {}, true);
         } else {
-            Promise.resolve();
+            return Promise.resolve();
         }
     };
     addDefaultAsset.reads = [locks.JS_DOC, locks.JS_EXPORT];
