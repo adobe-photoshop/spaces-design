@@ -70,7 +70,7 @@ define(function (require, exports, module) {
             var document = props.document,
                 // We only care about vector layers. If at least one exists, then this component should render
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.isVector;
+                    return layer.isVector();
                 }),
                 strokes = collection.pluck(layers, "stroke"),
                 downsample = this._downsampleStrokes(strokes);
