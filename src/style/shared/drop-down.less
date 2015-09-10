@@ -45,6 +45,9 @@
     background-size: 1rem;
     border-bottom: @hairline solid transparent;
 
+    svg {
+        fill: @item-active;
+    }
 }
 
 .drop-down:hover {
@@ -56,7 +59,8 @@
 
 .appearance,
 .type,
-.effects {
+.effects,
+.export {
     .drop-down {
         border-bottom: @hairline solid @underlines;
         
