@@ -124,6 +124,8 @@
     },
     "TITLE_PAGES": "レイヤー",
     "TITLE_STYLE": "スタイル",
+    "TITLE_EFFECTS": "効果",
+    "TITLE_APPEARANCE": "アピアランス",
     "TITLE_EXPORT": "書き出し",
     "TITLE_LIBRARIES": "ライブラリ",
     "NO_DOC": {
@@ -375,11 +377,12 @@
         "EXPORT_LIST_ALL_ASSETS": "すべてのアセット",
         "BUTTON_EXPORT": "書き出し",
         "BUTTON_CANCEL": "キャンセル",
-        "SELECT_SINGLE_LAYER": "非推奨",
         "TITLE_SCALE": "拡大・縮小",
         "TITLE_SUFFIX": "接尾辞",
         "TITLE_SETTINGS": "設定",
-        "EXPORT_DOCUMENT_FILENAME": "ドキュメント"
+        "EXPORT_DOCUMENT_FILENAME": "ドキュメント",
+        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "能_[8448087] No supported layers selected",
+        "NO_ASSETS": "能_[8448086] No exports configured"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",

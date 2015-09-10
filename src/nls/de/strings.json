@@ -124,6 +124,8 @@
     },
     "TITLE_PAGES": "Ebenen",
     "TITLE_STYLE": "Stil",
+    "TITLE_EFFECTS": "Effekte",
+    "TITLE_APPEARANCE": "[8448088] ü_Appearance",
     "TITLE_EXPORT": "Exportieren",
     "TITLE_LIBRARIES": "Bibliotheken",
     "NO_DOC": {
@@ -375,11 +377,12 @@
         "EXPORT_LIST_ALL_ASSETS": "Alle Elemente",
         "BUTTON_EXPORT": "Exportieren",
         "BUTTON_CANCEL": "Abbrechen",
-        "SELECT_SINGLE_LAYER": "ABGELEHNT",
         "TITLE_SCALE": "Skalieren",
         "TITLE_SUFFIX": "Suffix",
         "TITLE_SETTINGS": "Einstellungen",
-        "EXPORT_DOCUMENT_FILENAME": "Dokument"
+        "EXPORT_DOCUMENT_FILENAME": "Dokument",
+        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "[8448087] ü_No supported layers selected",
+        "NO_ASSETS": "[8448086] ü_No exports configured"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",

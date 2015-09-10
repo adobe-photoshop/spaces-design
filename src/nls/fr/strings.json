@@ -124,6 +124,8 @@
     },
     "TITLE_PAGES": "Calques",
     "TITLE_STYLE": "Style",
+    "TITLE_EFFECTS": "Effets",
+    "TITLE_APPEARANCE": "[8448088] é_Appearance",
     "TITLE_EXPORT": "Exportation",
     "TITLE_LIBRARIES": "Bibliothèques",
     "NO_DOC": {
@@ -375,11 +377,12 @@
         "EXPORT_LIST_ALL_ASSETS": "Tous les fichiers",
         "BUTTON_EXPORT": "Exportation",
         "BUTTON_CANCEL": "Annuler",
-        "SELECT_SINGLE_LAYER": "DEPRECATED",
         "TITLE_SCALE": "Echelle",
         "TITLE_SUFFIX": "Suffixe ",
         "TITLE_SETTINGS": "Settings",
-        "EXPORT_DOCUMENT_FILENAME": "document"
+        "EXPORT_DOCUMENT_FILENAME": "document",
+        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "[8448087] é_No supported layers selected",
+        "NO_ASSETS": "[8448086] é_No exports configured"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",
