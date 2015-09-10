@@ -149,7 +149,7 @@ define(function (require, exports, module) {
             if (this.props.document.layers.selected.isEmpty()) {
                 return null;
             }
-            
+
             var containerClasses = classnames({
                 "section-container": true,
                 "section-container__collapsed": !this.props.visible

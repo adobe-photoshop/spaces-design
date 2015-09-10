@@ -160,9 +160,18 @@
 /**
  * Exports Panel
  */
+
 .layer-exports__workflow-buttons {
     display: flex;
     flex-direction: row;
+}
+
+.layer-exports__header {
+   width: 100%;
+
+   .formline.formline__space-between div input {
+        font-size: 1.4rem;
+    }
 }
 
 .layer-exports__delete-button {
@@ -171,5 +180,9 @@
         height: 1.6rem;
         fill:  @item-disabled;
         stroke: none;
+    }
+
+    svg:hover {
+        fill: @item-active;
     }
 }

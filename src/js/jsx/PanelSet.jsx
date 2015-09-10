@@ -151,7 +151,7 @@ define(function (require, exports, module) {
         },
 
         /** @ignore */
-        _handlePanelVisibilityToggle: function (panelName) {
+        _handlePanelVisibilityToggle: function (preferenceName, panelName) {
             // NOTE: We may want remove this if we come up with a better unsupported state for panels
             if (this.state.document && this.state.document.unsupported) {
                 return;

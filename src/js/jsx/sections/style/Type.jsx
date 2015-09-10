@@ -544,9 +544,9 @@ define(function (require, exports, module) {
                         </div>
                         <div className="control-group__vertical control-group__no-label">
                             <BlendMode
-                                    document={this.props.document}
-                                    containerType={"type"}
-                                    layers={this.props.document.layers.selected} />
+                                document={this.props.document}
+                                containerType={"type"}
+                                layers={this.props.document.layers.selected} />
                         </div>
                         <div className="control-group__vertical">
                             <Label

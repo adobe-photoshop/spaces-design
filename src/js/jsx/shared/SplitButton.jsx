@@ -79,7 +79,6 @@ define(function (require, exports, module) {
             
             if (!this.props.size) {
                 var numberOfItems = React.Children.count(this.props.children);
-
                 // TODO make this more readable and move complexity to LESS
                 buttonWrapperClasses = classnames({
                     "column-12": numberOfItems < 4,
