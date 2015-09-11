@@ -434,6 +434,12 @@ define(function (require, exports, module) {
     * @constructor
     */
     var ColorType = React.createClass({
+        getInitialState: function () {
+            return {
+                format: "rgb"
+            };
+        },
+        
         /**
          * Selects the content of the input on focus.
          * 
@@ -515,7 +521,8 @@ define(function (require, exports, module) {
                     height: "100%",
                     width: "100%",
                     backgroundColor: colortiny ? colortiny.toRgbString() : "transparent"
-                };
+                },
+                label = colortiny.toString(this.state.format);
                 
             return (
                 <div
@@ -533,7 +540,7 @@ define(function (require, exports, module) {
                         ref="input"
                         live={this.props.editable}
                         editable={this.props.editable}
-                        value={this.props.label}
+                        value={label}
                         singleClick={true}
                         onKeyDown={this._handleKeyDown}
                         onChange={this._handleInputChanged}
