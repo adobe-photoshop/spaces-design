@@ -73,6 +73,7 @@ define(function (require, exports, module) {
 
             // dynamically bind subsets of events.document
             var binder = this.bindActions.bind(this);
+            storeUtil.bindEvents(events.export.history.optimistic, this._handlePreHistoryEvent, binder);
             storeUtil.bindEvents(events.document.history.optimistic, this._handlePreHistoryEvent, binder);
             storeUtil.bindEvents(events.document.history.nonOptimistic, this._handlePostHistoryEvent, binder);
             storeUtil.bindEvents(events.document.history.amendment, this._handleHistoryAmendment, binder);
@@ -165,8 +166,9 @@ define(function (require, exports, module) {
          * @private
          * @param {object} payload
          * @param {Document} document
+         * @param {DocumentExports} documentExports
          */
-        _initializeHistory: function (payload, document) {
+        _initializeHistory: function (payload, document, documentExports) {
             // initialize this document's history
             var documentID = document.id,
                 historyList = [];
@@ -174,7 +176,8 @@ define(function (require, exports, module) {
             var currentState = new HistoryState({
                 id: payload.id,
                 name: payload.name,
-                document: document
+                document: document,
+                documentExports: documentExports
             });
 
             // build out the full list of history states with null placeholder, except current
@@ -223,8 +226,9 @@ define(function (require, exports, module) {
          */
         _handleHistoryFromPhotoshop: function (payload) {
             var documentID = payload.documentID;
-            this.waitFor(["document", "application"], function (documentStore) {
+            this.waitFor(["document", "export", "application"], function (documentStore, exportStore) {
                 var document = documentStore.getDocument(documentID),
+                    documentExports = exportStore.getDocumentExports(documentID),
                     history = this._history.get(documentID),
                     current = this._current.get(documentID),
                     currentState;
@@ -253,7 +257,7 @@ define(function (require, exports, module) {
                         // If we have a document in state, it should match the doc store version
                         // But, if we're at the history max limit, then we will assume this is new rogue state
                         // TODO in the future, ps will hopefully provide a more positive way to recognize this
-                        if (currentState.document && !document.equals(currentState.document)) {
+                        if (currentState.isInconsistent(document, documentExports)) {
                             if (current === this.MAX_HISTORY_SIZE - 1) {
                                 // handle this like a rogue
                                 log.info("Handling this '50th' as though it were a rogue");
@@ -261,6 +265,7 @@ define(function (require, exports, module) {
                                     id: payload.id,
                                     name: payload.name,
                                     document: document,
+                                    documentExports: documentExports,
                                     rogue: true
                                 }));
                             }
@@ -277,8 +282,12 @@ define(function (require, exports, module) {
                         }
 
                         // merge in new state props
-                        var updatedState = currentState.merge(
-                            { id: payload.id, name: payload.name, document: document });
+                        var updatedState = currentState.merge({
+                            id: payload.id,
+                            name: payload.name,
+                            document: document,
+                            documentExports: documentExports
+                        });
 
                         if (history.size > payload.totalStates) {
                             // safety
@@ -309,17 +318,18 @@ define(function (require, exports, module) {
                             id: payload.id,
                             name: payload.name,
                             document: document,
+                            documentExports: documentExports,
                             rogue: true
                         }));
                     } else {
                         log.warn("Re-initializing history because photoshop thinks the current state is " +
                             payload.currentState + " of " + payload.totalStates + ", " +
                             "while our model says " + current + " of " + history.size);
-                        this._initializeHistory.call(this, payload, document);
+                        this._initializeHistory.call(this, payload, document, documentExports);
                     }
                 } else {
                     log.info("Initializing history based on historyState event from ps. %O", payload);
-                    this._initializeHistory.call(this, payload, document);
+                    this._initializeHistory.call(this, payload, document, documentExports);
                 }
             });
         },
@@ -396,7 +406,8 @@ define(function (require, exports, module) {
             if (!nextState.document) {
                 throw new Error("Could not find a valid document for the requested state");
             } else {
-                var nextDocument = nextState.document;
+                var nextDocument = nextState.document,
+                    nextDocumentExports = nextState.documentExports;
 
                 if (payload.selectedIndices) {
                     var selectedLayers = Immutable.Set(payload.selectedIndices.map(function (index) {
@@ -407,8 +418,9 @@ define(function (require, exports, module) {
                     nextDocument = nextDocument.set("layers", nextLayers);
                 }
 
-                // this will emit its own change
+                // these will emit their own changes
                 this.flux.store("document").setDocument(nextDocument);
+                this.flux.store("export").setDocumentExports(documentID, nextDocumentExports);
                 this.emit("timetravel");
             }
         },
@@ -423,18 +435,21 @@ define(function (require, exports, module) {
          */
         _loadLastSavedHistoryState: function (payload) {
             var documentID = payload.documentID,
-                lastSavedDocument = this._history.getIn([documentID, this.lastSavedStateIndex(documentID), "document"]),
-                newState = new HistoryState({ document: lastSavedDocument });
+                lastHistoryState = this._history.getIn([documentID, this.lastSavedStateIndex(documentID)]);
 
-            if (!lastSavedDocument) {
-                throw new Error("Could not revert using cached history because document model not found");
+            if (!lastHistoryState || !lastHistoryState.document) {
+                throw new Error("Could not revert using cached history state, document model not found");
             }
+
+            var newState = lastHistoryState.cloneFoRevert();
 
             // push a new history on top of current
             this._pushHistoryState.call(this, newState, false, true);
             this._saved = this._saved.set(documentID, this._current.get(documentID));
-            // this will emit its own change
-            this.flux.store("document").setDocument(lastSavedDocument);
+
+            // these will emit their own changes
+            this.flux.store("document").setDocument(lastHistoryState.document);
+            this.flux.store("export").setDocumentExports(lastHistoryState.documentExports);
             this.emit("timetravel");
         },
 
@@ -474,18 +489,20 @@ define(function (require, exports, module) {
          * @param {{documentID: number}} payload
          */
         _handleSaveEvent: function (payload) {
-            this.waitFor(["document", "application"], function (documentStore) {
-                var documentID = payload.documentID,
+            this.waitFor(["document", "export", "application"], function (documentStore, exportStore) {
+                var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
-                    currentStateIndex = this._current.get(documentID);
+                    documentExports = exportStore.getDocumentExports(documentID),
+                    currentIndex = this._current.get(documentID);
 
-                if (!currentStateIndex) {
+                if (!currentIndex) {
                     throw new Error("Could not handle save event for document + " + documentID +
                         " because couldn't find current index");
                 }
 
-                this._history = this._history.setIn([documentID, currentStateIndex, "document"], document);
-                this._saved = this._saved.set(documentID, currentStateIndex);
+                this._history = this._history.setIn([documentID, currentIndex, "document"], document);
+                this._history = this._history.setIn([documentID, currentIndex, "documentExports"], documentExports);
+                this._saved = this._saved.set(documentID, currentIndex);
                 this.emit("change");
             });
         },
@@ -523,10 +540,11 @@ define(function (require, exports, module) {
          */
         _handlePostHistoryEvent: function (payload) {
             log.info("Pushing history for an action for which we expect to have gotten a rogue history event");
-            this.waitFor(["document", "application"], function (documentStore) {
+            this.waitFor(["document", "export", "application"], function (documentStore, exportStore) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
-                    nextState = new HistoryState({ document: document });
+                    documentExports = exportStore.getDocumentExports(documentID),
+                    nextState = new HistoryState({ document: document, documentExports: documentExports });
 
                 if (!document) {
                     throw new Error("Could not push history state, document not found: " + documentID);
@@ -543,10 +561,11 @@ define(function (require, exports, module) {
          * @param {object} payload
          */
         _handlePreHistoryEvent: function (payload) {
-            this.waitFor(["document", "application"], function (documentStore) {
+            this.waitFor(["document", "export", "application"], function (documentStore, exportStore) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
-                    nextState = new HistoryState({ document: document });
+                    documentExports = exportStore.getDocumentExports(documentID),
+                    nextState = new HistoryState({ document: document, documentExports: documentExports });
 
                 if (!document) {
                     throw new Error("Could not push history state, document not found: " + documentID);
@@ -562,10 +581,11 @@ define(function (require, exports, module) {
          * @param {object} payload
          */
         _handleHistoryAmendment: function (payload) {
-            this.waitFor(["document", "application"], function (documentStore) {
+            this.waitFor(["document", "export", "application"], function (documentStore, exportStore) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
-                    nextState = new HistoryState({ document: document });
+                    documentExports = exportStore.getDocumentExports(documentID),
+                    nextState = new HistoryState({ document: document, documentExports: documentExports });
 
                 if (!document) {
                     throw new Error("Could not amend history state, document not found: " + documentID);

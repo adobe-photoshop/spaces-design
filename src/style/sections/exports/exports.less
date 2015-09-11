@@ -98,6 +98,15 @@
 
 .exports-panel__layer__name {
     font-size: 1.5rem;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+}
+
+.exports-panel__layer__prefix {
+    font-size: 1.3rem;
+    margin-right: 0.8rem;
+    color: @warm-gray;
 }
 
 .exports-panel__layer-assets {
@@ -147,6 +156,13 @@
     &:hover {
         opacity: 1;
     }
+
+    svg {
+        width: 1.6rem;
+        height: 1.6rem;
+        fill:  @item-active;
+        stroke: none;
+    }
 }
 
 .exports-panel__button-group__separator {
@@ -163,6 +179,14 @@
 .layer-exports__workflow-buttons {
     display: flex;
     flex-direction: row;
+}
+
+.layer-exports__workflow-buttons .button-simple {
+    &__disabled, &__disabled:hover {
+        svg {
+            fill: @item-disabled;
+        }
+    }
 }
 
 .layer-exports__delete-button {

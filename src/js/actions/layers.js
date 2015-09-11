@@ -41,6 +41,7 @@ define(function (require, exports) {
         documentActions = require("./documents"),
         historyActions = require("./history"),
         searchActions = require("./search/layers"),
+        exportActions = require("./export"),
         log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
@@ -1590,7 +1591,8 @@ define(function (require, exports) {
             }),
             layerRef = layerLib.referenceBy.none,
             boundsAndLayerRef,
-            finalBounds;
+            finalBounds,
+            artboardLayerId;
 
         if (boundsOrSpecs instanceof Bounds) {
             finalBounds = boundsOrSpecs.toJS();
@@ -1629,6 +1631,8 @@ define(function (require, exports) {
                     finalBounds = result.artboardRect;
                 }
 
+                artboardLayerId = result.layerSectionStart;
+
                 var payload = {
                     documentID: document.id,
                     groupID: result.layerSectionStart,
@@ -1640,14 +1644,19 @@ define(function (require, exports) {
                     suppressChange: true
                 };
 
-                this.dispatch(events.document.history.optimistic.GROUP_SELECTED, payload);
+                return this.dispatchAsync(events.document.history.optimistic.GROUP_SELECTED, payload);
+            })
+            .then(function () {
                 return this.transfer(resetIndex, document, true, true);
+            })
+            .then(function () {
+                return this.transfer(exportActions.addDefaultAsset, document.id, artboardLayerId);
             });
     };
 
     createArtboard.reads = [locks.JS_APP];
     createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
-    createArtboard.transfers = [resetIndex, addLayers];
+    createArtboard.transfers = [resetIndex, addLayers, exportActions.addDefaultAsset];
     createArtboard.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**

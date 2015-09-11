@@ -55,10 +55,12 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 documentID = this.props.document.id,
-                documentExports = flux.store("export").getDocumentExports(documentID);
+                exportStore = flux.store("export"),
+                documentExports = exportStore.getDocumentExports(documentID);
 
             return {
-                documentExports: documentExports
+                documentExports: documentExports,
+                exportState: exportStore.getState()
             };
         },
 
@@ -125,9 +127,9 @@ define(function (require, exports, module) {
                 selectedLayers = document.layers.selected;
 
             if (selectedLayers.size > 0) {
-                this.getFlux().actions.export.exportLayerAssets(document, selectedLayers);
+                this.getFlux().actions.export.exportLayerAssetsDebounced(document, selectedLayers);
             } else {
-                this.getFlux().actions.export.exportDocumentAssets(document);
+                this.getFlux().actions.export.exportDocumentAssetsDebounced(document);
             }
         },
 
@@ -144,8 +146,9 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.props.document,
                 documentExports = this.state.documentExports,
+                exportState = this.state.exportState,
                 disabled = this.props.disabled,
-                exportDisabled = false,
+                exportDisabled = exportState.serviceBusy || !exportState.serviceAvailable,
                 selectedLayers,
                 supportedLayers,
                 containerContents;
@@ -178,7 +181,7 @@ define(function (require, exports, module) {
                         );
                     }
                 } else {
-                    exportDisabled = documentExports.rootExports.isEmpty();
+                    exportDisabled = exportDisabled || documentExports.rootExports.isEmpty();
                     supportedLayers = undefined;
                 }
 
@@ -220,7 +223,7 @@ define(function (require, exports, module) {
                                 onClick={this._exportAssetsClickHandler}
                                 onDoubleClick={this._addAssetDoubleClickHandler}>
                                 <SVGIcon
-                                    CSSID="export" />
+                                    CSSID={exportState.serviceBusy ? "loader" : "export"} />
                             </Button>
                             <Gutter />
                             <Button

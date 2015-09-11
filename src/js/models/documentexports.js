@@ -150,6 +150,19 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Given a list of layers, return the sub-set that has no export assets configured
+     *
+     * @param {Immutable.List.<Layer>} layers
+     * @return {Immutable.List.<Layer>}
+     */
+    DocumentExports.prototype.filterLayersWithoutExports = function (layers) {
+        return layers.filter(function (layer) {
+            var layerExports = this.getLayerExports(layer.id);
+            return !layerExports || layerExports.isEmpty();
+        }, this);
+    };
+
+    /**
      * Given a set of layers, produce a "zipped" list of of lists of ExportAssets for those layers,
      * grouped by index within the layers
      *

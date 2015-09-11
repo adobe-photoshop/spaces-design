@@ -36,7 +36,8 @@
         "SET_TYPE_LEADING": "Set Type Leading",
         "SET_TYPE_TRACKING": "Set Type Tracking",
         "SET_TYPE_ALIGNMENT": "Set Type Alignment",
-        "UNGROUP_LAYERS": "Ungroup layers"
+        "UNGROUP_LAYERS": "Ungroup layers",
+        "MODIFY_EXPORT_ASSETS": "Updated Export Asset Configurations"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {

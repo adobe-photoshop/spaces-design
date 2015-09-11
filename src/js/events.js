@@ -75,7 +75,8 @@ define(function (require, exports, module) {
                 },
                 amendment: {
                     REORDER_LAYERS: "reorderLayersAmendment",
-                    RESET_LAYERS: "resetLayersAmendement"
+                    RESET_LAYERS: "resetLayersAmendement",
+                    LAYER_EXPORT_ENABLED_CHANGED: "layerExportEnabledChanged"
                 }
             },
             DELETE_LAYERS_NO_HISTORY: "deleteLayersNoHistory",
@@ -85,7 +86,6 @@ define(function (require, exports, module) {
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             REORDER_LAYERS: "reorderLayersNoHistory",
             LAYER_BOUNDS_CHANGED: "layerBoundsChanged",
-            LAYER_EXPORT_ENABLED_CHANGED: "layerExportEnabledChanged",
             RESET_BOUNDS: "resetBoundsNoHistory", // slightly different than above LAYER_BOUNDS_CHANGED
             RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",
@@ -110,11 +110,17 @@ define(function (require, exports, module) {
             TYPE_COLOR_CHANGED: "typeColorChangedNoHistory"
         },
         export: {
-            ASSET_CHANGED: "exportAssetChanged",
-            ASSET_ADDED: "exportAssetAdded",
-            DELETE_ASSET: "exportDeleteLayerAsset",
+            ASSET_CHANGED: "exportAssetChangedQuietly",
             SERVICE_STATUS_CHANGED: "exportServiceStatusChanged",
-            SET_AS_REQUESTED: "exportSetStatusRequested"
+            SET_AS_REQUESTED: "exportSetStatusRequested",
+            SET_STATE_PROPERTY: "setUseArtboardPrefix",
+            history: {
+                optimistic: {
+                    ASSET_CHANGED: "exportAssetChanged",
+                    ASSET_ADDED: "exportAssetAdded",
+                    DELETE_ASSET: "exportDeleteLayerAsset"
+                }
+            }
         },
         tool: {
             SELECT_TOOL: "selectTool",
