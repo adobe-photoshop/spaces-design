@@ -32,7 +32,6 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Button = require("jsx!js/jsx/shared/Button"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
         CheckBox = require("jsx!js/jsx/shared/CheckBox"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
@@ -96,17 +95,15 @@ define(function (require, exports, module) {
 
             return (
                 <div className="exports-panel__layer-wrapper" >
-                    <div className="column-2">
+                    <div className="column-2 control-group__vertical">
                         <CheckBox
                             checked={layer.exportEnabled}
                             onChange={this._handleLayerSelectedChanged} />
                     </div>
-                    <Gutter />
-                    <div className="exports-panel__layer-icon" >
+                    <div className="exports-panel__layer-icon control-group__vertical" >
                         <SVGIcon
                             CSSID={layerIconId} />
                     </div>
-                    <Gutter />
                     <div className="exports-panel__layer-info">
                         <div
                             className="exports-panel__layer__name"
@@ -118,6 +115,7 @@ define(function (require, exports, module) {
                             {assetsComponent}
                         </div>
                     </div>
+
                 </div>
             );
         }
@@ -265,55 +263,56 @@ define(function (require, exports, module) {
             return (
                 <div className={panelClassnames}>
                     <TitleHeader
+                        className="dialog-header"
                         title={strings.TITLE_EXPORT} />
                     <div className="exports-panel__two-column">
                         <div className="exports-panel__asset-list__container">
                             <div className="exports-panel__asset-list__quick-selection">
-                                <div className="column-2" >
+                                <div className="column-2 control-group__vertical" >
                                     <CheckBox
                                         checked={allArtboardsExportEnabled}
                                         onChange={this._setAllArtboardsExportEnabled} />
                                 </div>
-                                <Gutter />
-                                {strings.EXPORT.EXPORT_LIST_ALL_ARTBOARDS}
-                                <Gutter />
+                                <div className="checkbox-label">
+                                    {strings.EXPORT.EXPORT_LIST_ALL_ARTBOARDS}
+                                </div>
+                                <div className="column-4"></div>
                                 <CheckBox
+                                        className="control-group__vertical"
                                         checked={useArtboardPrefix}
                                         onChange={this._setUseArtboardPrefix} />
-                                <Gutter />
                                     Use Prefix
                             </div>
                             <div className="exports-panel__asset-list__list">
                                 {allArtboardsExportComponents}
                             </div>
                         </div>
-                        <Gutter />
+                        <div className="column-4">
+                        </div>
                         <div className="exports-panel__asset-list__container">
+                            
+
                             <div className="exports-panel__asset-list__quick-selection">
-                                <div className="column-2" >
+                                <div className="column-2 control-group__vertical" >
                                     <CheckBox
                                         checked={allNonABLayersExportEnabled}
                                         onChange={this._setAllNonABLayersExportEnabled} />
                                 </div>
-                                <Gutter />
                                 {strings.EXPORT.EXPORT_LIST_ALL_ASSETS}
                             </div>
+
                             <div className="exports-panel__asset-list__list">
                                 {allNonABLayerExportComponents}
                             </div>
+
+                            <div className="exports-panel__button-group">
+                                <Button
+                                    disabled={this.state.exportDisabled || serviceBusy}
+                                    onClick={this._exportAllAssets}>
+                                    {exportButton}
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                    <div className="exports-panel__button-group">
-                        <Button
-                            onClick={this.props.dismissDialog}>
-                            {strings.EXPORT.BUTTON_CANCEL}
-                        </Button>
-                        <div className="exports-panel__button-group__separator"></div>
-                        <Button
-                            disabled={this.state.exportDisabled || serviceBusy}
-                            onClick={this._exportAllAssets}>
-                            {exportButton}
-                        </Button>
                     </div>
                 </div>
 

@@ -172,12 +172,29 @@ dialog::backdrop {
     left: 2rem;
     margin: 0;
     box-shadow: none;
+    
     .select__header {
         padding: 0;
         padding-bottom: 0.4rem;
         margin: 0;
         margin-top: 0.4rem;
     }
+}
+
+.section-title.dialog-header {
+    opacity: .9;
+}
+
+.dialog-header {
+    font-weight: 400;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: @text-xxlarge;
+    letter-spacing: .05rem;
+    overflow: hidden;
+    flex-shrink: 1;
+    color: @item;
+    text-transform: capitalize;
 }
 
 .select {
