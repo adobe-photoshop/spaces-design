@@ -102,9 +102,10 @@ define(function (require, exports) {
     /**
      * List of acceptable image representations that PS can place as
      *
-     * @type {Array}
+     * @private
+     * @type {Set}
      */
-    var _EDITABLE_IMAGE_REPRESENTATIONS = [
+    var _PLACEABLE_GRAPHIC_REPRESENTATION_TYPES = new Set([
         "image/png",
         "image/jpeg",
         "image/jpg",
@@ -115,7 +116,20 @@ define(function (require, exports) {
         "application/photoshop.large",
         "application/illustrator",
         "application/pdf"
-    ];
+    ]);
+    
+    /**
+     * List of graphic representations types that are editable in DS.
+     * Due to the limitation in DS, we only support editing psd file.
+     * 
+     * TODO we should support editing images (png, jpg, etc.) by running the 
+     * flatten command.
+     *
+     * @type {Set}
+     */
+    var EDITABLE_GRAPHIC_REPRESENTATION_TYPES = new Set([
+        _REP_PHOTOSHOP_TYPE
+    ]);
     
     /**
      * Dimention of asset's preview image. Content is guaranteed to fit into a square of `size` x `size` pixels.
@@ -151,11 +165,11 @@ define(function (require, exports) {
      * @param {AdobeLibraryElement} element
      * @return {AdobeLibraryRepresentation}
      */
-    var _findPlacableImageRepresentation = function (element) {
+    var _findPlacableGraphicRepresentation = function (element) {
         var representations = element.representations;
 
         for (var i = 0; i < representations.length; i++) {
-            if (_EDITABLE_IMAGE_REPRESENTATIONS.indexOf(representations[i].type) !== -1) {
+            if (!_PLACEABLE_GRAPHIC_REPRESENTATION_TYPES.has(representations[i].type)) {
                 return representations[i];
             }
         }
@@ -285,14 +299,8 @@ define(function (require, exports) {
                     currentDocument.layers.selected);
             })
             .then(function () {
-                var payload = {
-                    library: currentLibrary,
-                    element: newElement,
-                    document: currentDocument,
-                    layers: firstLayer
-                };
                 // WE ONLY LINK IF THE LAYER WAS A SMART OBJECT
-                return this.dispatchAsync(events.libraries.ASSET_CREATED, payload);
+                return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
             });
     };
     createGraphicFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
@@ -336,6 +344,8 @@ define(function (require, exports) {
             log.warn("Can't create character style from mixed type layers!");
             return Promise.resolve();
         }
+        
+        var newElement;
 
         return _getTempPaths()
             .bind(this)
@@ -359,8 +369,9 @@ define(function (require, exports) {
                 
                 currentLibrary.beginOperation();
                 
-                var newElement = currentLibrary.createElement("", ELEMENT_CHARACTERSTYLE_TYPE),
-                    representation = newElement.createRepresentation(_REP_CHARACTERSTYLE_TYPE, "primary"),
+                newElement = currentLibrary.createElement("", ELEMENT_CHARACTERSTYLE_TYPE);
+                
+                var representation = newElement.createRepresentation(_REP_CHARACTERSTYLE_TYPE, "primary"),
                     imageRepresentation = newElement.createRepresentation(_REP_PNG_TYPE, "rendition");
                     
                 // Where magic happens
@@ -378,7 +389,7 @@ define(function (require, exports) {
                     });
             })
             .then(function () {
-                return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
+                return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
             });
     };
     createCharacterStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP, locks.JS_TYPE];
@@ -406,7 +417,8 @@ define(function (require, exports) {
 
         var currentLayer = currentLayers.first(),
             stylePath,
-            tempPreviewPath;
+            tempPreviewPath,
+            newElement;
             
         return _getTempPaths()
             .bind(this)
@@ -426,7 +438,7 @@ define(function (require, exports) {
                 
                 currentLibrary.beginOperation();
 
-                var newElement = currentLibrary.createElement(currentLayer.name, ELEMENT_LAYERSTYLE_TYPE);
+                newElement = currentLibrary.createElement(currentLayer.name, ELEMENT_LAYERSTYLE_TYPE);
 
                 return Promise.fromNode(function (done) {
                         var representation = newElement.createRepresentation(_REP_LAYERSTYLE_TYPE, "primary");
@@ -446,7 +458,7 @@ define(function (require, exports) {
                     });
             })
             .then(function () {
-                return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
+                return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
             });
     };
     createLayerStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
@@ -488,7 +500,7 @@ define(function (require, exports) {
         currentLibrary.endOperation();
 
         // This is actually synchronous, but actions *must* return promises
-        return this.dispatchAsync(events.libraries.ASSET_CREATED, {});
+        return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
     };
     createColorAsset.reads = [];
     createColorAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
@@ -523,10 +535,7 @@ define(function (require, exports) {
     var openGraphicForEdit = function (element) {
         var representation = element.getPrimaryRepresentation();
         
-        if (representation.type !== _REP_PHOTOSHOP_TYPE) {
-            // Due to the limitation in DS, we only support editing psd file.
-            // TODO we should support editing images (png, jpg, etc.) by running the 
-            // flatten command.
+        if (!EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type)) {
             log.debug("[CC Lib] unsupported graphic type: " + representation.type);
             return Promise.resolve();
         }
@@ -754,7 +763,7 @@ define(function (require, exports) {
 
         return Promise
             .fromNode(function (done) {
-                var representation = _findPlacableImageRepresentation(element);
+                var representation = _findPlacableGraphicRepresentation(element);
 
                 representation.getContentPath(done);
             })
@@ -1158,6 +1167,7 @@ define(function (require, exports) {
     exports.ELEMENT_BRUSH_TYPE = ELEMENT_BRUSH_TYPE;
     exports.ELEMENT_COLORTHEME_TYPE = ELEMENT_COLORTHEME_TYPE;
     exports.EXTENSION_TO_REPRESENTATION_MAP = EXTENSION_TO_REPRESENTATION_MAP;
+    exports.EDITABLE_GRAPHIC_REPRESENTATION_TYPES = EDITABLE_GRAPHIC_REPRESENTATION_TYPES;
 
     exports.selectLibrary = selectLibrary;
     exports.createLibrary = createLibrary;

@@ -47,12 +47,7 @@ define(function (require, exports, module) {
          * @private
          */
         addGraphic: function () {
-            this.getFlux().actions.libraries.createGraphicFromSelectedLayer()
-                .then(function () {
-                    // Scroll to the top of the graphics list to reveal the newly added graphic.
-                    var graphicsListEle = window.document.getElementsByClassName("libraries__assets__graphic")[0];
-                    graphicsListEle.scrollIntoView();
-                });
+            this.getFlux().actions.libraries.createGraphicFromSelectedLayer();
         },
 
         /**

@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        _ = require("lodash");
 
     var strings = require("i18n!nls/strings"),
         ColorModel = require("js/models/color");
@@ -43,15 +44,12 @@ define(function (require, exports, module) {
          * @return {ColorModel}
          */
         _getColor: function () {
-            var representations = this.props.element.representations;
+            var reps = this.props.element.representations,
+                colors = reps.map(function (r) { return r.getValue("color", "data"); }),
+                // Color Asset is guaranteed to have a RGB representation.
+                rgb = _.find(colors, { "mode": "RGB" });
             
-            for (var i = 0; i < representations.length; i++) {
-                var data = representations[i].getValue("color", "data");
-                
-                if (data.mode === "RGB") {
-                    return new ColorModel({ r: data.value.r, g: data.value.g, b: data.value.b });
-                }
-            }
+            return new ColorModel({ r: rgb.value.r, g: rgb.value.g, b: rgb.value.b });
         },
 
         /**
@@ -106,8 +104,8 @@ define(function (require, exports, module) {
         render: function () {
             var element = this.props.element,
                 title = this._getPrimaryColorStringValue(),
-                hextValue = this._getColor().toTinyColor().toHexString().toUpperCase(),
-                displayName = element.displayName || hextValue;
+                hexValue = this._getColor().toTinyColor().toHexString().toUpperCase(),
+                displayName = element.displayName || hexValue;
 
             return (
                  <AssetSection
@@ -118,7 +116,7 @@ define(function (require, exports, module) {
                     title={title}
                     key={element.id}>
                     <div className="libraries__asset__preview"
-                         style={{ background: hextValue }}
+                         style={{ background: hexValue }}
                          title={strings.LIBRARIES.CLICK_TO_APPLY}
                          onClick={this._handleApply}/>
                 </AssetSection>

@@ -47,7 +47,7 @@ define(function (require, exports, module) {
      * @private
      * @const
      */
-    var _ASSET_TYPES = {
+    var _ELEMENT_NAME_TO_TYPE_MAP = {
         "color": librariesAction.ELEMENT_COLOR_TYPE,
         "graphic": librariesAction.ELEMENT_GRAPHIC_TYPE,
         "characterstyle": librariesAction.ELEMENT_CHARACTERSTYLE_TYPE,
@@ -55,11 +55,27 @@ define(function (require, exports, module) {
         "brush": librariesAction.ELEMENT_BRUSH_TYPE,
         "colortheme": librariesAction.ELEMENT_COLORTHEME_TYPE
     };
+    
+    /**
+     * Invert of _ELEMENT_NAME_TO_TYPE_MAP
+     *
+     * @private
+     * @const
+     */
+    var _ELEMENT_TYPE_TO_NAME_MAP = _.invert(_ELEMENT_NAME_TO_TYPE_MAP);
 
     var Library = React.createClass({
         propTypes: {
             library: React.PropTypes.object.isRequired
         },
+        
+        /**
+         * Store the last locally created element. Used to determine whether the library list should scroll 
+         * to reveal the new element.
+         * 
+         * @type {AdobeLibraryElement}
+         */
+        lastLocallyCreatedElement: null,
 
         getInitialState: function () {
             return {
@@ -71,6 +87,19 @@ define(function (require, exports, module) {
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
             this._libraryLastModified = this.props.library.modified;
+        },
+        
+        componentDidUpdate: function () {
+            if (this.lastLocallyCreatedElement !== this.props.lastLocallyCreatedElement) {
+                this.lastLocallyCreatedElement = this.props.lastLocallyCreatedElement;
+                
+                // Scroll to reveal the newly created element.
+                var typeName = _ELEMENT_TYPE_TO_NAME_MAP[this.lastLocallyCreatedElement.type],
+                    sectionClass = "libraries__assets__" + typeName,
+                    graphicsListEle = window.document.getElementsByClassName(sectionClass)[0];
+                    
+                graphicsListEle.scrollIntoView();
+            }
         },
         
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -122,20 +151,20 @@ define(function (require, exports, module) {
          * Render asset components based on type.
          *
          * @private
-         * @param {string} type
+         * @param {string} name
          * @param {string} title
          * @param {Component} AssetComponent
          * @return {?ReactComponent}
          */
-        _renderAssets: function (type, title, AssetComponent) {
-            var elements = this.props.library.getFilteredElements(_ASSET_TYPES[type]);
+        _renderAssets: function (name, title, AssetComponent) {
+            var elements = this.props.library.getFilteredElements(_ELEMENT_NAME_TO_TYPE_MAP[name]);
 
             if (elements.length === 0) {
                 return null;
             }
 
             var components;
-            if (type === "brush") {
+            if (name === "brush") {
                 var brushDescription = strings.LIBRARIES.BRUSHES_UNSUPPORTED;
 
                 components = (<div className="libraries__asset-brush">{brushDescription}</div>);
@@ -156,7 +185,7 @@ define(function (require, exports, module) {
                     }.bind(this));
             }
             
-            var classNames = "libraries__assets libraries__assets__" + type;
+            var classNames = "libraries__assets libraries__assets__" + name;
 
             return (
                 <div className={classNames}>
