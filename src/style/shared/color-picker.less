@@ -256,14 +256,6 @@
         background: @item;
         border-radius: 0.4rem;
         
-        &.selected:after {
-            content: "";
-            position: absolute;
-            bottom: -.4rem;
-            width: 2.4rem;
-            height: .2rem;
-            background: @item;
-        }
         &.empty {
             background: url(../img/ico-color-picker-no-color.svg) no-repeat;
         }
@@ -279,6 +271,10 @@
         flex-basis: 12rem;
         vertical-align: top;
     }
+}
+
+.color-picker__colortype__thumb__overlay {
+    border-radius: 0.2rem;
 }
 
 // Color Sliders
