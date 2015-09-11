@@ -151,6 +151,11 @@
     width: 100%;
 }
 
+.formline__no-padding {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;    
+}
+
 .formline:first-child {
     padding-top: 0;
 }
@@ -253,6 +258,10 @@
     padding: 0 @properties-padding;
 }
 
+.appearance {
+    flex-shrink: 0;
+}
+
 .transform.section {
     flex-grow: 0;
     flex-shrink: 0;
@@ -323,5 +332,35 @@
     }
     &__link a {
         color: @item-inactive;
+    }
+}
+
+.dialog-effects-popover {
+    overflow: visible;
+}
+
+.popover-list {
+    width: 100%;
+    
+    &:before {
+        content: "";
+        position: absolute;
+        top: -0.7rem;
+        left: 5rem;
+        width: 1.6rem;
+        height: 1.6rem;
+        background: @bg-border;
+        box-shadow: -0.2rem -0.2rem 0 0rem @underlines;
+        border-top-left-radius: .2rem;
+        transform: rotate(45deg);
+        -webkit-clip-path: polygon(0% 0%, 2.7rem 0%, 0% 2.7rem);
+    }    
+}
+
+.popover-list__item {
+    padding: 0.8rem;
+    
+    &:hover {
+        color: @text-highlight;
     }
 }

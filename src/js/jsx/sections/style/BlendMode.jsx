@@ -176,41 +176,19 @@ define(function (require, exports, module) {
     var BlendMode = React.createClass({
         mixins: [FluxMixin],
 
-        shouldComponentUpdate: function (nextProps) {
-            var getRelevantProps = function (props) {
-                return collection.pluckAll(props.layers, ["id", "blendMode"]);
-            };
-
-            return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
-        },
-
         getDefaultProps: function () {
-            // The id is used to distinguish among Dialog instances
             return {
-                id: "main"
+                allGroups: false,
+                size: "column-14"
             };
-        },
-
-        /**
-         * Set the blend mode of the selected layers
-         *
-         * @private
-         * @param {string} mode
-         */
-        _handleChange: function (mode) {
-            this.getFlux().actions.layers
-                .setBlendModeThrottled(this.props.document, this.props.layers, mode);
         },
 
         render: function () {
-            var layers = this.props.layers,
-                modes = collection.pluck(layers, "blendMode"),
+            var modes = this.props.modes,
                 mode = collection.uniformValue(modes),
                 title = _blendModes.has(mode) ? _blendModes.get(mode).title :
                     (modes.size > 1 ? strings.TRANSFORM.MIXED : mode),
-                allGroups = layers.every(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUP;
-                }),
+                allGroups = this.props.allGroups,
                 // Remove Pass Through option if any of the layers are not a group
                 modesToShow = _blendModes.update("passThrough", function (item) {
                     item.hidden = !allGroups;
@@ -222,7 +200,7 @@ define(function (require, exports, module) {
                 title = null;
             }
 
-            var listID = "blendmodes-" + this.props.id + this.props.containerType + "-" + this.props.document.id;
+            var listID = this.props.listID;
 
             return (
                 <Datalist
@@ -232,8 +210,8 @@ define(function (require, exports, module) {
                     options={modesToShow}
                     value={title}
                     defaultSelected={mode}
-                    size="column-14"
-                    onChange={this._handleChange}
+                    size={this.props.size}
+                    onChange={this.props.handleChange}
                     onFocus={this.props.onFocus} />
             );
         }

@@ -31,7 +31,7 @@ define(function (require, exports, module) {
 
     var contentLayerLib = require("adapter/lib/contentLayer");
 
-    var BlendMode = require("jsx!./BlendMode"),
+    var LayerBlendMode = require("jsx!./LayerBlendMode"),
         Opacity = require("jsx!./Opacity"),
         Fill = require("jsx!./Fill"),
         FillColor = Fill.FillColor,
@@ -130,13 +130,13 @@ define(function (require, exports, module) {
                             fill={this.state.fill} />
                     </div>
                     <div className="control-group__vertical control-group__no-label">
-                        <BlendMode
-                                id={this.props.id}
-                                document={this.props.document}
-                                disabled={this.props.disabled}
-                                onFocus={this.props.onFocus}
-                                containerType={"appearance"}
-                                layers={this.props.document.layers.selected} />
+                        <LayerBlendMode
+                            id={this.props.id}
+                            document={this.props.document}
+                            disabled={this.props.disabled}
+                            onFocus={this.props.onFocus}
+                            containerType={"appearance"}
+                            layers={this.props.document.layers.selected} />
                     </div>
                     <div className="control-group__vertical">
                         <Label

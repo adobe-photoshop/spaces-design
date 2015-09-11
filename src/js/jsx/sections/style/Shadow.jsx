@@ -31,11 +31,9 @@ define(function (require, exports) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+    var Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+        BlendMode = require("jsx!./BlendMode"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
@@ -203,6 +201,21 @@ define(function (require, exports) {
                     spread,
                     this.props.type);
         },
+        
+        /**
+         * Handle the change of the Shadow blend mode value
+         *
+         * @private
+         * @param {string} blendMode new blend mode
+         */
+        _blendModeChanged: function (blendMode) {
+            this.getFlux().actions.layerEffects
+                .setShadowBlendModeThrottled(this.props.document,
+                    this.props.layers,
+                    this.props.index,
+                    blendMode,
+                    this.props.type);
+        },
 
         /**
          * Handle the change of the Shadow enabled state
@@ -239,7 +252,8 @@ define(function (require, exports) {
                 xPositions: collection.pluck(shadows, "x"),
                 yPositions: collection.pluck(shadows, "y"),
                 blurs: collection.pluck(shadows, "blur"),
-                spreads: collection.pluck(shadows, "spread")
+                spreads: collection.pluck(shadows, "spread"),
+                blendModes: collection.pluck(shadows, "blendMode")
             };
         },
 
@@ -285,133 +299,122 @@ define(function (require, exports) {
                 shadowSpread = this._stringHelper(strings.STYLE.DROP_SHADOW.SPREAD,
                     strings.STYLE.INNER_SHADOW.SPREAD);
 
-            var type = this.props.type;
-            var shadowOverlay = function (colorTiny) {
-                var shadowStyle = {
-                };
-                if (colorTiny) {
-                    var inset = (type === "innerShadow") ? "inset " : "";
-                    shadowStyle.WebkitBoxShadow = inset + collection.uniformValue(downsample.xPositions, 5) + "px " +
-                        collection.uniformValue(downsample.yPositions, 5) + "px " +
-                        collection.uniformValue(downsample.blurs, 0) + "px " +
-                        collection.uniformValue(downsample.spreads, 0) + "px " +
-                        colorTiny.toRgbString();
-                }
+            var type = this.props.type,
+                shadowOverlay = function (colorTiny) {
+                    var fillStyle = {
+                        height: "100%",
+                        width: "100%",
+                        backgroundColor: colorTiny ? colorTiny.toRgbString() : "transparent"
+                    };
 
-                return (
-                    <div
-                        className="shadow__preview">
+                    return (
                         <div
-                            className="shadow__square"
-                            style={shadowStyle}/>
-                    </div>
+                            className="fill__preview"
+                            style={fillStyle}/>
                     );
-            };
+                };
 
-            var colorInputID = "shadow-" + this.props.type + "-" +
-                this.props.index + "-" + this.props.document.id;
+            // Dialog IDs
+            var blendModelistID = "shadow-blendmodes-" + type + this.props.index + "-" + this.props.document.id,
+                colorInputID = "shadow-" + type + "-" + this.props.index + "-" + this.props.document.id;
 
             return (
                 <div className={shadowClasses}>
-                    <div className="formline">
-                        <Gutter />
-                        <ColorInput
-                            id={colorInputID}
-                            className={"shadow"}
-                            context={collection.pluck(this.props.layers, "id")}
-                            title={shadowColorTooltip}
-                            editable={!this.props.readOnly}
-                            defaultValue={downsample.colors}
-                            onChange={this._colorChanged}
+                    <div className="formline formline__no-padding">
+                        <div className="control-group column-3">
+                            <ColorInput
+                                id={colorInputID}
+                                className={"shadow"}
+                                context={collection.pluck(this.props.layers, "id")}
+                                title={shadowColorTooltip}
+                                editable={!this.props.readOnly}
+                                defaultValue={downsample.colors}
+                                onChange={this._colorChanged}
+                                onFocus={this.props.onFocus}
+                                onColorChange={this._opaqueColorChanged}
+                                onAlphaChange={this._alphaChanged}
+                                swatchOverlay={shadowOverlay}>
+                            </ColorInput>
+                        </div>
+                        <div className="control-group column-23">
+                            <BlendMode
+                                listID={blendModelistID}
+                                modes={downsample.blendModes}
+                                handleChange={this._blendModeChanged}
+                                disabled={this.props.disabled}
+                                size="column-20"
+                                onChange={this._blendModeChanged} />
+                        </div>
+                        <ToggleButton
+                            title={shadowToggleTooltip}
+                            name="toggleShadowEnabled"
+                            buttonType="layer-not-visible"
+                            selected={downsample.enabledFlags}
+                            selectedButtonType={"layer-visible"}
                             onFocus={this.props.onFocus}
-                            onColorChange={this._opaqueColorChanged}
-                            onAlphaChange={this._alphaChanged}
-                            swatchOverlay={shadowOverlay}>
-                        </ColorInput>
-                        <div className="compact-stats__body">
-                            <div className="compact-stats__body__column">
-                                <Label
-                                    title={shadowXPositionTooltip}
-                                    size="column-1">
-                                    {shadowXPosition}
-                                </Label>
-                                <NumberInput
-                                    value={downsample.xPositions}
-                                    onChange={this._xChanged}
-                                    onFocus={this.props.onFocus}
-                                    disabled={this.props.readOnly}
-                                    size="column-3" />
-                            </div>
-                            <div className="compact-stats__body__column">
-                                <Label
-                                    title={shadowYPositionTooltip}
-                                    size="column-1">
-                                    {shadowYPosition}
-                                </Label>
-                                <NumberInput
-                                    value={downsample.yPositions}
-                                    onChange={this._yChanged}
-                                    onFocus={this.props.onFocus}
-                                    disabled={this.props.readOnly}
-                                    size="column-3" />
-                            </div>
-                            <div className="compact-stats__body__column">
-                                <Label
-                                    title={shadowBlurTooltip}
-                                    size="column-2">
-                                    {shadowBlur}
-                                </Label>
-                                <NumberInput
-                                    value={downsample.blurs}
-                                    onChange={this._blurChanged}
-                                    onFocus={this.props.onFocus}
-                                    disabled={this.props.readOnly}
-                                    min={MIN_BLUR}
-                                    max={MAX_BLUR}
-                                    size="column-3" />
-                            </div>
-                            <div className="compact-stats__body__column">
-                                <Label
-                                    title={shadowSpreadTooltip}
-                                    size="column-4">
-                                    {shadowSpread}
-                                </Label>
-                                <NumberInput
-                                    value={downsample.spreads}
-                                    onChange={this._spreadChanged}
-                                    onFocus={this.props.onFocus}
-                                    disabled={this.props.readOnly}
-                                    min={MIN_SPREAD}
-                                    max={MAX_SPREAD}
-                                    size="column-3" />
-                            </div>
-                        </div>
-                        <Gutter />
-
-                        <div className="clear">
-                            <ToggleButton
-                                title={shadowToggleTooltip}
-                                name="toggleShadowEnabled"
-                                buttonType="layer-not-visible"
-                                selected={downsample.enabledFlags}
-                                selectedButtonType={"layer-visible"}
+                            onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
+                            size="column-2" />
+                    </div>
+                    <div className="formline formline__no-padding">
+                        <Label
+                            title={shadowXPositionTooltip}
+                            size="column-1">
+                            {shadowXPosition}
+                        </Label>
+                        <NumberInput
+                            value={downsample.xPositions}
+                            onChange={this._xChanged}
+                            onFocus={this.props.onFocus}
+                            disabled={this.props.readOnly}
+                            size="column-3" />
+                        <Label
+                            title={shadowYPositionTooltip}
+                            size="column-1">
+                            {shadowYPosition}
+                        </Label>
+                        <NumberInput
+                            value={downsample.yPositions}
+                            onChange={this._yChanged}
+                            onFocus={this.props.onFocus}
+                            disabled={this.props.readOnly}
+                            size="column-3" />
+                        <Label
+                            title={shadowBlurTooltip}
+                            size="column-2">
+                            {shadowBlur}
+                        </Label>
+                        <NumberInput
+                            value={downsample.blurs}
+                            onChange={this._blurChanged}
+                            onFocus={this.props.onFocus}
+                            disabled={this.props.readOnly}
+                            min={MIN_BLUR}
+                            max={MAX_BLUR}
+                            size="column-3" />
+                        <Label
+                            title={shadowSpreadTooltip}
+                            size="column-4">
+                            {shadowSpread}
+                        </Label>
+                        <div className="column-5">
+                            <NumberInput
+                                value={downsample.spreads}
+                                onChange={this._spreadChanged}
                                 onFocus={this.props.onFocus}
-                                onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
-                                size="column-2"
-                            />
-                            <ToggleButton
-                                title={shadowDeleteTooltip}
-                                name="deleteDropShadowEnabled"
-                                buttonType="delete"
-                                className="delete"
-                                selected={true}
-                                onFocus={this.props.onFocus}
-                                onClick={!this.props.readOnly ? this._handleDelete : _.noop}
-                                size="column-2"
-                            />
+                                disabled={this.props.readOnly}
+                                min={MIN_SPREAD}
+                                max={MAX_SPREAD}
+                                size="column-3" />
                         </div>
-
-                        <Gutter />
+                        <ToggleButton
+                            title={shadowDeleteTooltip}
+                            name="deleteDropShadowEnabled"
+                            buttonType="delete"
+                            className="delete"
+                            selected={true}
+                            onFocus={this.props.onFocus}
+                            onClick={!this.props.readOnly ? this._handleDelete : _.noop}
+                            size="column-2" />
                     </div>
                 </div>
             );
@@ -471,32 +474,23 @@ define(function (require, exports) {
                     );
                 }, this).toList();
             } else {
-                shadowsContent = (
+                shadowsContent = Immutable.List.of((
                     <div className="shadow-list__list-container__mixed">
                         <i>{strings.STYLE.DROP_SHADOW.MIXED}</i>
                     </div>
-                );
+                ));
             }
 
-            // we may want to gate the add dropshadow button to PS's max amout of drop shadows.
+            if (shadowsContent.isEmpty()) {
+                return null;
+            }
 
             return (
-                <div className="shadow-list__container">
-                    <header className="shadow-list__header sub-header">
-                        <h3>
+                <div className="shadow-list__container ">
+                    <header className="section-header section-header__no-padding">
+                        <h3 className="section-title">
                             {strings.STYLE.DROP_SHADOW.TITLE}
                         </h3>
-                        <Gutter />
-                        <hr className="sub-header-rule"/>
-                        <Button
-                            title={strings.STYLE.DROP_SHADOW.ADD}
-                            className="button-plus"
-                            disabled={shadowCountsUnmatch || reachMaximumShadows}
-                            onClick={this._addDropShadow.bind(this, layers)}>
-                            <SVGIcon
-                                viewbox="0 0 12 12"
-                                CSSID="add-new" />
-                        </Button>
                     </header>
                     <div className="shadow-list__list-container">
                         {shadowsContent}
@@ -561,32 +555,23 @@ define(function (require, exports) {
                     );
                 }, this).toList();
             } else {
-                shadowsContent = (
+                shadowsContent = Immutable.List.of((
                     <div className="shadow-list__list-container__mixed">
                         <i>{strings.STYLE.INNER_SHADOW.MIXED}</i>
                     </div>
-                );
+                ));
             }
 
-            // we may want to gate the add dropshadow button to PS's max amout of drop shadows.
+            if (shadowsContent.isEmpty()) {
+                return null;
+            }
 
             return (
                 <div className="shadow-list__container">
-                    <header className="shadow-list__header sub-header">
-                        <h3>
+                    <header className="section-header section-header__no-padding">
+                        <h3 className="section-title">
                             {strings.STYLE.INNER_SHADOW.TITLE}
                         </h3>
-                        <Gutter />
-                        <hr className="sub-header-rule"/>
-                        <Button
-                            title={strings.STYLE.INNER_SHADOW.ADD}
-                            className="button-plus"
-                            disabled={shadowCountsUnmatch || reachMaximumShadows}
-                            onClick={this._addInnerShadow.bind(this, layers)}>
-                            <SVGIcon
-                                viewbox="0 0 12 12"
-                                CSSID="add-new" />
-                        </Button>
                     </header>
                     <div className="shadow-list__list-container">
                         {shadowsContent}
