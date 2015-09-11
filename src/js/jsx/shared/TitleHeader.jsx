@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        classnames = require("classnames"),
         strings = require("i18n!nls/strings");
     
     var TitleHeader = React.createClass({
@@ -38,6 +39,12 @@ define(function (require, exports, module) {
         render: function () {
             var workingTitle = this.props.title;
 
+            var classNameSet = {
+                "section-title": true
+            };
+
+            var className = classnames(classNameSet, this.props.className);
+
             if (this.props.onDoubleClick && !this.props.disabled) {
                 if (this.props.visible) {
                     workingTitle += strings.TOOLTIPS.SECTION_COLLAPSE;
@@ -48,7 +55,7 @@ define(function (require, exports, module) {
 
             return (
                 <header className="section-header" onDoubleClick={this.props.onDoubleClick}>
-                    <div className="section-title" title={workingTitle}>
+                    <div className={className} title={workingTitle}>
                         <h2>
                             {this.props.title}
                         </h2>

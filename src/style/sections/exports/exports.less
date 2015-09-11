@@ -22,8 +22,9 @@
  */
 
 .exports-panel__dialog {
-    background-color: @bg-app;
-    color:@item-active;
+    background-color: @bg-panel;
+    color:@item;
+    border-color: @bg-border;
     line-height: normal;
     width: 66rem;
     max-height: 66rem; //this is important for use with dialog.showModa()
@@ -40,37 +41,57 @@
     margin-left: 5rem;
     margin-right: 5rem;
     width: 56rem;
-    font-size: 1.5rem;
+}
+
+.exports-panel__container .section-header {
+    padding-left: 0;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
 }
 
 .exports-panel__two-column {
     display: flex;
     flex-grow: 1;
     justify-content: space-between;
+    height: 50rem;
 
     .layout-gutter {
         flex-grow: 0;
     }
 }
 
+.export-dialog-right_column {
+    width: 40%;
+}
+
 .exports-panel__asset-list__container {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    margin-left: 1.5rem;
+
 }
 
 .exports-panel__asset-list__quick-selection {
     display: flex;
     flex-direction: row;
+    font-size: @text-large;
+    color: @item;
+    font-weight: 400;
+    margin-bottom: 1rem;
+}
+
+.exports-panel__asset-list__quick-selection span {
+    opacity: .9;
 }
 
 .exports-panel__asset-list__list {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    max-height: 51rem;
+    height: 40rem;
     overflow-y: auto;
-    border: @hairline solid @color-subsection-rule;
+    border: 1.5px solid @color-subsection-rule;
     border-left: none;
     border-right: none;
     margin: 1rem 0;
@@ -89,12 +110,10 @@
     svg {
         width: 3rem;
         height: 3rem;
-        fill:  @color-subsection-rule;
+        fill:  @item-active;
         stroke: none;
     }
 }
-
-.exports-panel__layer {}
 
 .exports-panel__layer__name {
     font-size: 1.5rem;
@@ -107,11 +126,15 @@
     font-size: 1.3rem;
     margin-right: 0.8rem;
     color: @warm-gray;
+    font-size: @text-large;
+    color: @item;
+    opacity: .9;
 }
 
 .exports-panel__layer-assets {
-    font-size: 1.3rem;
+    font-size: @text-medium;
     display: flex;
+    color: @item-active;
 }
 
 .exports-panel__layer-asset {
@@ -144,17 +167,13 @@
     flex-grow: 0;
     justify-content: flex-end;
     margin: .5rem 0rem;
+    color: @item-active;
 }
 
-.exports-panel__button-group .button-simple {
-    margin: 0.5rem;
-    padding: 1rem;
-    font-size: 1.5rem;
-    justify-content: center;
-    opacity: 0.9;
-
-    &:hover {
-        opacity: 1;
+.exports-panel__button-group {
+    
+    .button-simple {
+        color: @item-active;
     }
 
     svg {
@@ -163,6 +182,25 @@
         fill:  @item-active;
         stroke: none;
     }
+}
+
+.exports-panel__button-group .button-simple:hover {
+    color: @item-hover;
+}
+
+.exports-panel__button-group {
+    
+    .button-simple {
+        margin: 0.5rem;
+        padding-top: .25rem;
+        font-size: 1.5rem;
+        justify-content: center;
+        opacity: 0.9;
+
+        &:hover {
+            opacity: 1;
+        }
+    }  
 }
 
 .exports-panel__button-group__separator {
