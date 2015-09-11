@@ -36,7 +36,7 @@ define(function (require, exports, module) {
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
-        BlendMode = require("jsx!./BlendMode"),
+        LayerBlendMode = require("jsx!./LayerBlendMode"),
         Opacity = require("jsx!./Opacity"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         strings = require("i18n!nls/strings"),
@@ -543,10 +543,10 @@ define(function (require, exports, module) {
                                 swatchOverlay={typeOverlay} />
                         </div>
                         <div className="control-group__vertical control-group__no-label">
-                            <BlendMode
-                                    document={this.props.document}
-                                    containerType={"type"}
-                                    layers={this.props.document.layers.selected} />
+                            <LayerBlendMode
+                                document={this.props.document}
+                                containerType={"type"}
+                                layers={this.props.document.layers.selected} />
                         </div>
                         <div className="control-group__vertical">
                             <Label

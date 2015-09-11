@@ -200,6 +200,7 @@
         "SET_LAYER_VISIBILITY": "Set Layer Visibility",
         "LOCK_LAYER": "Lock Layer",
         "LAYER_COUNT": "Selected layers of total layers",
+        "ADD_EFFECT": "Add Layer Effect",
         "TOGGLE_DROP_SHADOW": "Toggle Drop Shadow",
         "DELETE_DROP_SHADOW": "Delete Drop Shadow",
         "SET_DROP_SHADOW_COLOR": "Set Drop Shadow Color",
@@ -341,6 +342,7 @@
         "DROP_SHADOW": {
             "TITLE": "Drop Shadows",
             "ADD": "Add Drop Shadow",
+            "TITLE_SINGLE": "Drop Shadow",
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "Blur",
@@ -350,6 +352,7 @@
         "INNER_SHADOW": {
             "TITLE": "Inner Shadows",
             "ADD": "Add Inner Shadow",
+            "TITLE_SINGLE": "Inner Shadow",            
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "Blur",

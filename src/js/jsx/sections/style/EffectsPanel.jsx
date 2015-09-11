@@ -36,6 +36,7 @@ define(function (require, exports, module) {
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        Dialog = require("jsx!js/jsx/shared/Dialog"),
         DropShadowList = require("jsx!./Shadow").DropShadowList,
         InnerShadowList = require("jsx!./Shadow").InnerShadowList,
         strings = require("i18n!nls/strings"),
@@ -147,6 +148,39 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
 
+        /**
+         * Toggles Effect Popover
+         *
+         * @param {Event} event
+         */
+        _toggleEffectPopover: function (event) {
+            var dialog = this.refs.dialog;
+            dialog.toggle(event);
+        },
+
+        /**
+         * Adds a new effect based on selection from list
+         *
+         * @param {string} effectName for new effect to be added        
+         * @param {Event} event
+         */
+        _handleEffectListClick: function (effectName, event) {
+            var dialog = this.refs.dialog,
+                layers = this.props.document.layers.selected;
+                
+            dialog.toggle(event);
+                
+            switch (effectName) {
+                case "Inner Shadow":
+                    this.getFlux().actions.layerEffects.addShadow(this.props.document, layers, "innerShadow");
+                    break;
+                
+                case "Drop Shadow":
+                    this.getFlux().actions.layerEffects.addShadow(this.props.document, layers, "dropShadow");
+                    break;
+            }
+        },
+
         render: function () {
             if (this.props.document.layers.selected.isEmpty()) {
                 return null;
@@ -188,7 +222,6 @@ define(function (require, exports, module) {
                 </div>
             );
 
-            
             return (
                 <section
                     className={sectionClasses}
@@ -199,6 +232,13 @@ define(function (require, exports, module) {
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>
                         <div className="style-workflow-buttons">
+                            <Button
+                                className="button-plus style-button"
+                                title={strings.TOOLTIPS.ADD_EFFECT}
+                                onClick={this._toggleEffectPopover}>
+                                <SVGIcon
+                                    CSSID="add-new" />
+                            </Button>
                             <Button
                                 className={copyStyleClasses}
                                 title={strings.STYLE.COPY}
@@ -224,6 +264,21 @@ define(function (require, exports, module) {
                     <div className={containerClasses}>
                         {containerContents}
                     </div>
+                    <Dialog
+                        ref="dialog"
+                        id={"effects-popover-" + this.props.document.id}
+                        className={"dialog-effects-popover"}>
+                        <ul className="popover-list">
+                            <li className="popover-list__item"
+                                onClick={this._handleEffectListClick.bind(this, "Drop Shadow")}>
+                                {strings.STYLE.DROP_SHADOW.TITLE_SINGLE}
+                            </li>
+                            <li className="popover-list__item"
+                                onClick={this._handleEffectListClick.bind(this, "Inner Shadow")}>
+                                {strings.STYLE.INNER_SHADOW.TITLE_SINGLE}
+                            </li>
+                        </ul>
+                    </Dialog>
                 </section>
             );
         }

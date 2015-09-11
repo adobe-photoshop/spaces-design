@@ -333,6 +333,23 @@ define(function (require, exports) {
     };
     setShadowSpread.reads = [locks.PS_DOC, locks.JS_DOC];
     setShadowSpread.writes = [locks.PS_DOC, locks.JS_DOC];
+    
+    /**
+     * Set the Drop Shadow Blend Mode value for all selected layers
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers list of layers to update
+     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
+     * @param {string} blendMode  blendMode name
+     * @param {string} type of shadow
+     * @return {Promise}
+     */
+    var setShadowBlendMode = function (document, layers, shadowIndex, blendMode, type) {
+        return _upsertShadowProperties.call(
+           this, document, layers, shadowIndex, { blendMode: blendMode }, null, type);
+    };
+    setShadowBlendMode.reads = [locks.PS_DOC, locks.JS_DOC];
+    setShadowBlendMode.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Duplicates the layer effects of the source layer on all the target layers
@@ -428,6 +445,7 @@ define(function (require, exports) {
     exports.setShadowColor = setShadowColor;
     exports.setShadowX = setShadowX;
     exports.setShadowY = setShadowY;
+    exports.setShadowBlendMode = setShadowBlendMode;
     exports.setShadowBlur = setShadowBlur;
     exports.setShadowSpread = setShadowSpread;
     exports.deleteShadow = deleteShadow;
