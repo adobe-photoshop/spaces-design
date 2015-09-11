@@ -153,8 +153,7 @@ define(function (require, exports, module) {
         
             var toolbarClassName = classnames({
                 "expanded": this.state.pinned || this.state.expanded,
-                "toolbar": true,
-                "toolbar__hidden": !document && !this.state.pinned
+                "toolbar": true
             });
         
             return (

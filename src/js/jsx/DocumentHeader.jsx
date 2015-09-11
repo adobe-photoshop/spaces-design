@@ -28,8 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        Immutable = require("immutable"),
-        classnames = require("classnames");
+        Immutable = require("immutable");
 
     var os = require("adapter/os");
     
@@ -146,11 +145,6 @@ define(function (require, exports, module) {
                 smallTab = this.state.headerWidth / this.state.documentIDs.size < 175;
             // Above: This number tunes when tabs should be shifted to small tabs
 
-            var containerClassName = classnames({
-                "document-container": true,
-                "document-container__withdoc": !!document
-            });
-
             var documentTabs = this.state.documentIDs.map(function (docID) {
                 var doc = documentStore.getDocument(docID);
                 
@@ -169,7 +163,7 @@ define(function (require, exports, module) {
             }, this);
 
             return (
-                <div className={containerClassName} >
+                <div className="document-container">
                     <div className="document-header" ref="tabContainer">
                             {documentTabs}
                     </div>
