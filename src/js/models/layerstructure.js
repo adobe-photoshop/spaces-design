@@ -28,6 +28,7 @@ define(function (require, exports, module) {
 
     var Layer = require("./layer"),
         LayerNode = require("./layernode"),
+        Stroke = require("./stroke"),
         Bounds = require("./bounds"),
         Radii = require("./radii");
 
@@ -1328,6 +1329,37 @@ define(function (require, exports, module) {
             return map.set(layerID, nextLayer);
         }, new Map(), this));
 
+        return this.mergeDeep({
+            layers: nextLayers
+        });
+    };
+
+    /**
+     * Add a new stroke, described by a Photoshop descriptor, to the given layers.
+     * If strokeStyleDescriptor is a single object, it will be applied to all layers
+     * otherwise it should be a List of descriptors which corresponds by index to the provided layerIDs
+     *
+     * @param {Immutable.Iterable.<number>} layerIDs
+     * @param {object | Immutable.Iterable.<object>} strokeStyleDescriptor
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.addStroke = function (layerIDs, strokeStyleDescriptor) {
+        var isList = Immutable.List.isList(strokeStyleDescriptor);
+       
+        var getStroke = function (index) {
+            return isList ?
+                Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor.get(index)) :
+                Stroke.fromStrokeStyleDescriptor(strokeStyleDescriptor);
+        };
+       
+        var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID, index) {
+            var layer = this.byID(layerID),
+                nextStroke = getStroke(index),
+                nextLayer = layer.set("stroke", nextStroke);
+
+            return map.set(layerID, nextLayer);
+        }, new Map(), this));
+       
         return this.mergeDeep({
             layers: nextLayers
         });
