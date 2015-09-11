@@ -60,7 +60,7 @@ define(function (require, exports) {
      *
      * @type {Object}
      */
-    var _EXTENSION_TO_REPRESENTATION_MAP = {
+    var EXTENSION_TO_REPRESENTATION_MAP = {
         "psd": "image/vnd.adobe.photoshop",
         "psb": "application/photoshop.large",
         "ai": "application/illustrator",
@@ -234,8 +234,8 @@ define(function (require, exports) {
 
             var fileExtension = pathUtil.extension(layerFileName);
 
-            if (_EXTENSION_TO_REPRESENTATION_MAP.hasOwnProperty(fileExtension)) {
-                representationType = _EXTENSION_TO_REPRESENTATION_MAP[fileExtension];
+            if (EXTENSION_TO_REPRESENTATION_MAP.hasOwnProperty(fileExtension)) {
+                representationType = EXTENSION_TO_REPRESENTATION_MAP[fileExtension];
             }
         }
 
@@ -1157,6 +1157,7 @@ define(function (require, exports) {
     exports.ELEMENT_COLOR_TYPE = ELEMENT_COLOR_TYPE;
     exports.ELEMENT_BRUSH_TYPE = ELEMENT_BRUSH_TYPE;
     exports.ELEMENT_COLORTHEME_TYPE = ELEMENT_COLORTHEME_TYPE;
+    exports.EXTENSION_TO_REPRESENTATION_MAP = EXTENSION_TO_REPRESENTATION_MAP;
 
     exports.selectLibrary = selectLibrary;
     exports.createLibrary = createLibrary;
