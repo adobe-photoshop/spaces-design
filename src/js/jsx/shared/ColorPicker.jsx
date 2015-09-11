@@ -510,14 +510,22 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var swatchOverlay = this.props.swatchOverlay(tinycolor(this.props.color.toJS()));
-
+            var colortiny = this.props.color ? tinycolor(this.props.color.toJS()) : null,
+                overlayStyle = {
+                    height: "100%",
+                    width: "100%",
+                    backgroundColor: colortiny ? colortiny.toRgbString() : "transparent"
+                };
+                
             return (
                 <div
                     className="color-picker__colortype">
                     <div
-                        className="color-picker__colortype__thumb selected">
-                        {swatchOverlay}
+                        className="color-picker__colortype__thumb">
+                        <div
+                            className="color-picker__colortype__thumb__overlay"
+                            style={overlayStyle}
+                        />
                     </div>
                     <Gutter/>
                     <Gutter/>
@@ -922,6 +930,7 @@ define(function (require, exports, module) {
                 <div className="color-picker">
                     <ColorType {...this.props}
                         ref="input"
+                        color={color}
                         onShiftTabPress={this._focusOpacityInput}
                         onChange={this._handleColorTypeChange}/>
                     <Map
