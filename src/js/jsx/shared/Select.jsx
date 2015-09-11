@@ -183,7 +183,7 @@ define(function (require, exports, module) {
                 middle = Math.floor(high / 2),
                 value;
 
-            while (low < middle && middle < high) {
+            while (low <= middle && middle < high) {
                 value = options.get(middle).id;
                 if (value < key) {
                     low = middle;
