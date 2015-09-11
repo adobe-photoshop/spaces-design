@@ -28,6 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        Immutable = require("immutable"),
         classnames = require("classnames");
 
     var os = require("adapter/os");
@@ -73,7 +74,10 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            if (!nextProps.visible && !this.props.visible) {
+            // If the panel is remaining invisible and the selection state hasn't changed, no need to re-render.
+            // A new layer selection could change the enabled state of the title header buttons
+            if (!nextProps.visible && !this.props.visible &&
+                Immutable.is(this.props.document.layers.selected, nextProps.document.layers.selected)) {
                 return false;
             }
 
@@ -104,6 +108,15 @@ define(function (require, exports, module) {
         },
 
         /**
+         * If currently invisible, force to visible by calling the parent's onVisibilityToggle
+         */
+        _forceVisible: function () {
+            if (!this.props.visible && this.props.onVisibilityToggle) {
+                this.props.onVisibilityToggle();
+            }
+        },
+
+        /**
          * Add a new Asset to this list
          *
          * @private
@@ -114,6 +127,7 @@ define(function (require, exports, module) {
                 documentExports = this.state.documentExports,
                 props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
 
+            this._forceVisible();
             this.getFlux().actions.export.addAsset(document, documentExports, selectedLayers, props);
         },
 
@@ -125,6 +139,8 @@ define(function (require, exports, module) {
         _exportAssetsClickHandler: function () {
             var document = this.props.document,
                 selectedLayers = document.layers.selected;
+
+            this._forceVisible();
 
             if (selectedLayers.size > 0) {
                 this.getFlux().actions.export.exportLayerAssetsDebounced(document, selectedLayers);
@@ -153,7 +169,7 @@ define(function (require, exports, module) {
                 supportedLayers,
                 containerContents;
 
-            if (!document || !documentExports || !this.props.visible || disabled) {
+            if (!documentExports || disabled) {
                 containerContents = null;
             } else {
                 selectedLayers = this.props.document.layers.selected;
@@ -181,11 +197,10 @@ define(function (require, exports, module) {
                         );
                     }
                 } else {
-                    exportDisabled = exportDisabled || documentExports.rootExports.isEmpty();
                     supportedLayers = undefined;
                 }
 
-                containerContents = containerContents || (
+                containerContents = containerContents || this.props.visible && (
                     <div>
                         <ExportList {...this.props}
                             documentExports={this.state.documentExports}
@@ -218,7 +233,7 @@ define(function (require, exports, module) {
                         <div className="layer-exports__workflow-buttons">
                             <Button
                                 className="button-plus"
-                                disabled={exportDisabled || disabled || !this.props.visible}
+                                disabled={exportDisabled || disabled}
                                 title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
                                 onClick={this._exportAssetsClickHandler}
                                 onDoubleClick={this._blockInput}>
@@ -228,7 +243,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Button
                                 className="button-plus"
-                                disabled={disabled || !this.props.visible}
+                                disabled={disabled}
                                 title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
                                 onClick={this._addAssetClickHandler}
                                 onDoubleClick={this._blockInput}>
@@ -239,7 +254,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Button
                                 className="button-iOS"
-                                disabled={disabled || !this.props.visible}
+                                disabled={disabled}
                                 title={strings.TOOLTIPS.EXPORT_IOS_PRESETS}
                                 onClick={this._addAssetClickHandler.bind(this, "IOS")}
                                 onDoubleClick={this._blockInput}>
@@ -250,7 +265,7 @@ define(function (require, exports, module) {
                             <Gutter />
                             <Button
                                 className="button-xdpi"
-                                disabled={disabled || !this.props.visible}
+                                disabled={disabled}
                                 title={strings.TOOLTIPS.EXPORT_HDPI_PRESETS}
                                 onClick={this._addAssetClickHandler.bind(this, "HDPI")}
                                 onDoubleClick={this._blockInput}>
