@@ -265,7 +265,7 @@
         },
         "GROUP_LAYERS": {
             "$action": "layers.groupSelectedInCurrentDocument",
-            "$enable-rule": "layer-selected,no-background"
+            "$enable-rule": "layer-selected,no-background,no-artboards"
         },
         "UNGROUP_LAYERS": {
             "$action": "layers.ungroupSelected",
