@@ -30,20 +30,50 @@ define(function (require, exports, module) {
     var Button = React.createClass({
         mixins: [React.addons.PureRenderMixin],
 
+        /**
+         * Handle a single click
+         *
+         * @param {SyntheticEvent} event
+         */
+        _handleClick: function (event) {
+            if (this.props.disabled) {
+                event.stopPropagation();
+                if (this.props.onDisabledClick) {
+                    this.props.onDisabledClick(event);
+                }
+            } else if (this.props.onClick) {
+                this.props.onClick(event);
+            }
+        },
+
+        /**
+         * Handle a double click
+         *
+         * @param {SyntheticEvent} event
+         */
+        _handleDoubleClick: function (event) {
+            if (this.props.disabled) {
+                event.stopPropagation();
+                if (this.props.onDisabledDoubleClick) {
+                    this.props.onDisabledDoubleClick(event);
+                }
+            } else if (this.props.onDoubleClick) {
+                this.props.onDoubleClick(event);
+            }
+        },
+
         render: function () {
             var classNameSet = {
                 "button-simple": true,
                 "button-simple__disabled": this.props.disabled
             };
 
-            var className = classnames(classNameSet, this.props.className),
-                handleClick = this.props.disabled ? this.props.onDisabledClick : this.props.onClick,
-                handleDoubleClick = this.props.disabled ? this.props.onDisabledDoubleClick : this.props.onDoubleClick;
+            var className = classnames(classNameSet, this.props.className);
 
             return (
                 <div {...this.props}
-                    onClick={handleClick}
-                    onDoubleClick={handleDoubleClick}
+                    onClick={this._handleClick}
+                    onDoubleClick={this._handleDoubleClick}
                     className={className}>
                     {this.props.children}
                 </div>
