@@ -97,7 +97,7 @@ define(function (require, exports, module) {
                     element={this.props.element}
                     onSelect={this.props.onSelect}
                     selected={this.props.selected}
-                    title={displayName}
+                    displayName={displayName}
                     subTitle={fontSizeAndColorStr}
                     key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-character-style"

@@ -45,7 +45,8 @@ define(function (require, exports, module) {
         propTypes: {
             element: React.PropTypes.object.isRequired,
             onSelect: React.PropTypes.func,
-            title: React.PropTypes.string.isRequired,
+            displayName: React.PropTypes.string.isRequired,
+            title: React.PropTypes.string,
             subTitle: React.PropTypes.string
         },
         
@@ -91,7 +92,7 @@ define(function (require, exports, module) {
          * @param {string} newName
          */
         _handleRename: function (event, newName) {
-            if (this.props.title !== newName) {
+            if (this.props.displayName !== newName) {
                 this.getFlux().actions.libraries.renameAsset(this.props.element, newName);
             }
         },
@@ -198,8 +199,8 @@ define(function (require, exports, module) {
                         <TextInput
                             ref="input"
                             editable={true}
-                            title={this.props.title}
-                            value={this.props.title}
+                            title={this.props.title || this.props.displayName}
+                            value={this.props.displayName}
                             preventHorizontalScrolling={true}
                             onClick={this._handleTitleClicked}
                             onDoubleClick={this._handleStartEditingTitle}

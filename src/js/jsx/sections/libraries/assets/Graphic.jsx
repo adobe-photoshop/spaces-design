@@ -110,7 +110,7 @@ define(function (require, exports, module) {
                     element={this.props.element}
                     onSelect={this.props.onSelect}
                     selected={this.props.selected}
-                    title={element.displayName}
+                    displayName={element.displayName}
                     className={classNames}
                     key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-graphic"
