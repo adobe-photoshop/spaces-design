@@ -155,9 +155,11 @@ define(function (require, exports, module) {
                         });
                     }.bind(this));
             }
+            
+            var classNames = "libraries__assets libraries__assets__" + type;
 
             return (
-                <div className="libraries__assets">
+                <div className={classNames}>
                     <div className="libraries__assets__title">
                         {title}
                     </div>

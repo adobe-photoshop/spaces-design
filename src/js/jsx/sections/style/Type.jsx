@@ -567,7 +567,7 @@ define(function (require, exports, module) {
                             sorted={true}
                             disabled={this.props.disabled || !this.state.initialized}
                             list={typefaceListID}
-                            value={familyName || (this.state.initialized && strings.STYLE.TYPE.MIXED)}
+                            value={familyName || (this.state.initialized ? strings.STYLE.TYPE.MIXED : null)}
                             defaultSelected={postScriptName}
                             options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}
