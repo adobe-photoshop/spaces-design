@@ -37,10 +37,8 @@ define(function (require, exports, module) {
     var Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         Color = require("js/models/color"),
-        Coalesce = require("js/jsx/mixin/Coalesce"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection"),
-        headlights = require("js/util/headlights");
+        collection = require("js/util/collection");
 
     /**
      * Keys on which to dismiss the color picker dialog 
@@ -48,13 +46,14 @@ define(function (require, exports, module) {
      * @const
      * @type {Array.<key: {string}, modifiers: {object}>} 
      */
-    var DISSMISS_ON_KEYS = [
+    var DISMISS_ON_KEYS = [
         { key: os.eventKeyCode.ESCAPE, modifiers: null },
-        { key: os.eventKeyCode.ENTER, modifiers: null }
+        { key: os.eventKeyCode.ENTER, modifiers: null },
+        { key: os.eventKeyCode.TAB, modifiers: null }
     ];
 
     var ColorInput = React.createClass({
-        mixins: [FluxMixin, Coalesce],
+        mixins: [FluxMixin],
         propTypes: {
             id: React.PropTypes.string.isRequired,
             defaultValue: React.PropTypes.oneOfType([
@@ -92,6 +91,29 @@ define(function (require, exports, module) {
             return this.props !== nextProps;
         },
 
+        componentDidUpdate: function (prevProps) {
+            // Force-update the color picker state when changing contexts
+            var dialog = this.refs.dialog;
+            if (dialog.isOpen() && !Immutable.is(this.props.context, prevProps.context)) {
+                var color = this.refs.colorpicker.props.color;
+                this.updateColorPicker(color, true); // don't emit a change event
+            }
+        },
+
+        componentWillMount: function () {
+            // Force color picker to update upon undo/redo.
+            // The picker otherwise does not necessarily re-render upon receiving new props.
+            // Furthermore, we explicitly listen for changes here instead using the StoreWatchMixin because
+            // we care only about this narrow type of history change (the 'current' pointer being moved)
+            this.getFlux().store("history")
+                .on("timetravel", this._handleHistoryStateChange);
+        },
+
+        componentWillUnmount: function () {
+            this.getFlux().store("history")
+                .off("timetravel", this._handleHistoryStateChange);
+        },
+
         /**
          * Force the ColorPicker slider to update its position.
          *
@@ -104,96 +126,22 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Force the color picker to update on history state changes.
+         *
+         * @private
+         */
+        _handleHistoryStateChange: function () {
+            var dialog = this.refs.dialog;
+            if (dialog.isOpen()) {
+                var color = this.refs.colorpicker.props.color;
+                this.updateColorPicker(color, true); // don't emit a change event
+            }
+        },
+
         /** @ignore */
         _getID: function () {
             return "colorpicker-" + this.props.id;
-        },
-
-        /**
-         * Update the color picker and fire a change event when the text input
-         * changes.
-         * 
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _handleInputChanged: function (event) {
-            var value = event.target.value,
-                colorTiny = tinycolor(value),
-                color = Color.fromTinycolor(colorTiny),
-                colorFormat;
-
-            // Only allow fully opaque colors
-            if (this.props.opaque) {
-                color = color.opaque();
-            }
-
-            if (colorTiny.isValid()) {
-                colorFormat = colorTiny.getFormat();
-
-                this.setState({
-                    format: colorFormat
-                });
-            } else {
-                colorFormat = "invalid";
-            }
-
-            this.updateColorPicker(color, true);
-            this.props.onChange(color, false); // do not coalesce this change
-            headlights.logEvent("edit", "color-input", colorFormat);
-        },
-
-        /**
-         * Selects the content of the input on focus.
-         * 
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _handleFocus: function (event) {
-            if (this.props.onFocus) {
-                this.props.onFocus(event);
-            }
-        },
-
-        /**
-         * Fire a change event when the color picker's color changes.
-         * 
-         * @private
-         * @param {Color} color
-         */
-        _handleColorChanged: function (color) {
-            var coalesce = this.shouldCoalesce();
-            this.props.onColorChange(color, coalesce);
-            if (!coalesce) {
-                headlights.logEvent("edit", "color-input", "palette-click");
-            }
-        },
-
-        /**
-         * Fire a change event when the color picker's alpha value changes.
-         *
-         * @private
-         * @param {Color} color
-         */
-        _handleAlphaChanged: function (color) {
-            var coalesce = this.shouldCoalesce();
-            this.props.onAlphaChange(color, coalesce);
-            if (!coalesce) {
-                headlights.logEvent("edit", "color-input", "palette-alpha");
-            }
-        },
-
-        /**
-         * Do nothing beyond stopping event propagation if the color picker is
-         * open to prevent the dialog from closing due to a window click.
-         * 
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _handleInputClicked: function (event) {
-            var dialog = this.refs.dialog;
-            if (dialog.isOpen()) {
-                event.stopPropagation();
-            }
         },
 
         /**
@@ -207,6 +155,73 @@ define(function (require, exports, module) {
             if (this.props.editable && dialog) {
                 dialog.toggle(event);
             }
+        },
+
+        /**
+         * Toggles the color picker dialog
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleSwatchClick: function (event) {
+            var target = event.target;
+            if (target === window.document.activeElement) {
+                return;
+            }
+
+            return this._toggleColorPicker(event);
+        },
+
+        /**
+         * Toggles the color picker dialog on focus
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleSwatchFocus: function (event) {
+            var target = event.target;
+            if (target === window.document.activeElement) {
+                return;
+            }
+
+            return this._toggleColorPicker(event);
+        },
+
+        /**
+         * Handler for various special keys
+         * On Enter/Return, pops up the dialog
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleKeyDown: function (event) {
+            var key = event.key;
+
+            switch (key) {
+                case "Return":
+                case "Enter":
+                    this._toggleColorPicker(event);
+                    break;
+            }
+        },
+
+        /**
+         * On color picker dialog close, we focus on the swatch again
+         * so user can continue tabbing, or re-open the dialog with Enter
+         *
+         * @private
+         */
+        _handleDialogClose: function () {
+            React.findDOMNode(this.refs.swatch).focus();
+        },
+
+        /**
+         * When dialog is opened, we focus on the color input field
+         *
+         * @private
+         */
+        _handleDialogOpen: function () {
+            this.refs.colorpicker.focusInput();
         },
 
         render: function () {
@@ -270,8 +285,12 @@ define(function (require, exports, module) {
             return (
                 <div className={swatchClassSet}>
                     <div
+                        ref="swatch"
+                        tabIndex="0"
                         className="color-input__swatch__background"
-                        onClick={this._toggleColorPicker}>
+                        onFocus={this._handleSwatchFocus}
+                        onKeyDown={this._handleKeyDown}
+                        onClick={this._handleSwatchClick}>
                         <div
                             title={this.props.title}
                             className="color-input__swatch__color">
@@ -283,58 +302,24 @@ define(function (require, exports, module) {
                         id={this._getID()}
                         className={"color-picker__" + this.props.className}
                         disabled={!this.props.editable}
+                        onOpen={this._handleDialogOpen}
                         onClose={this._handleDialogClose}
-                        dismissOnKeys={DISSMISS_ON_KEYS}
+                        dismissOnKeys={DISMISS_ON_KEYS}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
                         dismissOnWindowClick>
                         <ColorPicker
                             ref="colorpicker"
+                            swatchOverlay={this.props.swatchOverlay}
+                            label={label}
+                            editable={this.props.editable}
                             opaque={this.props.opaque}
                             color={color}
-                            onMouseDown={this.startCoalescing}
-                            onMouseUp={this.stopCoalescing}
-                            onAlphaChange={this._handleAlphaChanged}
-                            onColorChange={this._handleColorChanged} />
+                            onAlphaChange={this.props.onAlphaChange}
+                            onColorChange={this.props.onColorChange} />
                     </Dialog>
                 </div>
             );
-        },
-
-        componentDidUpdate: function (prevProps) {
-            // Force-update the color picker state when changing contexts
-            var dialog = this.refs.dialog;
-            if (dialog.isOpen() && !Immutable.is(this.props.context, prevProps.context)) {
-                var color = this.refs.colorpicker.props.color;
-                this.updateColorPicker(color, true); // don't emit a change event
-            }
-        },
-
-        /**
-         * Force the color picker to update on history state changes.
-         *
-         * @private
-         */
-        _handleHistoryStateChange: function () {
-            var dialog = this.refs.dialog;
-            if (dialog.isOpen()) {
-                var color = this.refs.colorpicker.props.color;
-                this.updateColorPicker(color, true); // don't emit a change event
-            }
-        },
-
-        componentWillMount: function () {
-            // Force color picker to update upon undo/redo.
-            // The picker otherwise does not necessarily re-render upon receiving new props.
-            // Furthermore, we explicitly listen for changes here instead using the StoreWatchMixin because
-            // we care only about this narrow type of history change (the 'current' pointer being moved)
-            this.getFlux().store("history")
-                .on("timetravel", this._handleHistoryStateChange);
-        },
-
-        componentWillUnmount: function () {
-            this.getFlux().store("history")
-                .off("timetravel", this._handleHistoryStateChange);
         }
     });
 
