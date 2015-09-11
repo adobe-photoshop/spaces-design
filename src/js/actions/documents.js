@@ -407,18 +407,20 @@ define(function (require, exports) {
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform),
-                    deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles, documentID);
+                    deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles, documentID),
+                    policyPromise = this.transfer(toolActions.resetBorderPolicies);
 
                 return Promise.join(resetLinkedPromise,
                         updateTransformPromise,
                         recentFilesPromise,
-                        deleteTempFilesPromise);
+                        deleteTempFilesPromise,
+                        policyPromise);
             });
     };
     disposeDocument.reads = [];
     disposeDocument.writes = [locks.JS_DOC, locks.JS_APP];
     disposeDocument.transfers = ["layers.resetLinkedLayers", application.updateRecentFiles, ui.updateTransform,
-        "libraries.deleteGraphicTempFiles"];
+        "libraries.deleteGraphicTempFiles", toolActions.resetBorderPolicies];
     disposeDocument.lockUI = true;
 
     /**
