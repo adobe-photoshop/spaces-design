@@ -128,7 +128,7 @@ define(function (require, exports, module) {
                 props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
 
             this._forceVisible();
-            this.getFlux().actions.export.addAsset(document, documentExports, selectedLayers, props);
+            this.getFlux().actions.export.addAssetThrottled(document, documentExports, selectedLayers, props);
         },
 
         /**
@@ -140,13 +140,27 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 selectedLayers = document.layers.selected;
 
+            // set the temporary disabled state of the export button
+            this.setState({
+                exportDisabled: true
+            });
+
             this._forceVisible();
 
+            var exportPromise;
             if (selectedLayers.size > 0) {
-                this.getFlux().actions.export.exportLayerAssetsDebounced(document, selectedLayers);
+                exportPromise = this.getFlux().actions.export.exportLayerAssets(document, selectedLayers);
             } else {
-                this.getFlux().actions.export.exportDocumentAssetsDebounced(document);
+                exportPromise = this.getFlux().actions.export.exportDocumentAssets(document);
             }
+
+            exportPromise
+                .bind(this)
+                .then(function () {
+                    this.setState({
+                        exportDisabled: false
+                    });
+                });
         },
 
         /**
@@ -164,7 +178,7 @@ define(function (require, exports, module) {
                 documentExports = this.state.documentExports,
                 exportState = this.state.exportState,
                 disabled = this.props.disabled,
-                exportDisabled = exportState.serviceBusy || !exportState.serviceAvailable,
+                exportDisabled = this.state.exportDisabled || exportState.serviceBusy || !exportState.serviceAvailable,
                 selectedLayers,
                 supportedLayers,
                 containerContents;
