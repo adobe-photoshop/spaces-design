@@ -837,8 +837,10 @@ define(function (require, exports, module) {
      */
     Object.defineProperty(LayerStructure.prototype, "filterExportable", objUtil.cachedLookupSpec(function (layers) {
         return layers.filterNot(function (layer) {
-            return !layer.bounds ||
-                this.childBounds(layer).empty ||
+            var childBounds = this.childBounds(layer);
+            
+            return !childBounds ||
+                childBounds.empty ||
                 layer.isBackground ||
                 layer.kind === layer.layerKinds.ADJUSTMENT ||
                 this.isEmptyGroup(layer);
