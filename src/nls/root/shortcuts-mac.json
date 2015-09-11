@@ -31,8 +31,7 @@
             "SEARCH": "f"
         },
         "LAYER": {
-            "CREATE_ARTBOARD": "b",
-            "EDIT_VECTOR_MASK": "k"
+            "CREATE_ARTBOARD": "b"
         },
         "ARRANGE": {
             "FLIP_HORIZONTAL": "/",
