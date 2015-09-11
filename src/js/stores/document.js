@@ -196,7 +196,9 @@ define(function (require, exports, module) {
             var documentID = payload.documentID;
 
             delete this._openDocuments[documentID];
-            this.emit("change");
+            
+            // Don't emit a change event here because the application store is
+            // what should be used to monitor the set of currently open documents.
         },
 
         /**

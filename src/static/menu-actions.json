@@ -44,20 +44,14 @@
             "$enable-rule": "always-except-modal"
         },
         "NEW_EXTENDED": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 10
-            },
+            "$action": "documents.createNewExtended",
             "$enable-rule": "always-except-modal"
         },
         "NEW_FROM_TEMPLATE": {
             "$enable-rule": "always-except-modal"
         },
         "OPEN": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 20
-            },
+            "$action": "documents.open",
             "$enable-rule": "always-except-modal"
         },
         "CLOSE": {
@@ -344,20 +338,18 @@
         "ZOOM_TO_SELECTION": {
             "$action": "ui.centerOn",
             "$payload": {
-                "on": "selection",
                 "zoomInto": true,
                 "preserveFocus": true
             },
-            "$enable-rule": "layer-selected"
+            "$enable-rule": "have-document"
         },
         "CENTER_SELECTION": {
             "$action": "ui.centerOn",
             "$payload": {
-                "on": "selection",
                 "zoomInto": false,
                 "preserveFocus": true
             },
-            "$enable-rule": "layer-selected"
+            "$enable-rule": "have-document"
         },
         "TOGGLE_GUIDES": {
             "$action": "documents.toggleGuidesVisibility",

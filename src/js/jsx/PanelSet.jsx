@@ -32,8 +32,11 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
+    var os = require("adapter/os");
+
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        IconBar = require("jsx!js/jsx/IconBar"),
         RecentFiles = require("jsx!./sections/nodoc/RecentFiles"),
         ArtboardPresets = require("jsx!./sections/nodoc/ArtboardPresets"),
         PanelColumn = require("jsx!./PanelColumn"),
@@ -44,20 +47,7 @@ define(function (require, exports, module) {
         LayersPanel = require("jsx!./sections/layers/LayersPanel"),
         LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
         collection = require("js/util/collection"),
-        menu = require("i18n!nls/menu"),
         strings = require("i18n!nls/strings");
-
-    var UI = {
-        LAYERS_LIBRARY_COL: "layersLibrariesVisible",
-        PROPERTIES_COL: "propertiesVisible",
-        TRANSFORM_PANEL: "transformVisible",
-        STYLES_PANEL: "stylesVisible",
-        APPEARANCE_PANEL: "appearanceVisible",
-        EFFECTS_PANEL: "effectsVisible",
-        EXPORT_PANEL: "exportVisible",
-        LAYERS_PANEL: "layersVisible",
-        LIBRARIES_PANEL: "libraryVisible"
-    };
 
     var PanelSet = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("application", "document")],
@@ -70,7 +60,7 @@ define(function (require, exports, module) {
                 applicationStore = flux.store("application"),
                 applicationState = applicationStore.getState(),
                 documentIDs = applicationState.documentIDs,
-                activeDocument = flux.store("document").getDocument(applicationState.selectedDocumentID),
+                activeDocument = applicationStore.getCurrentDocument(),
                 activeDocumentInitialized = applicationState.activeDocumentInitialized,
                 recentFilesInitialized = applicationState.recentFilesInitialized,
                 recentFiles = applicationState.recentFiles,
@@ -94,26 +84,75 @@ define(function (require, exports, module) {
                 preferences = preferencesStore.getState();
                 
             // Grab preferences for each UI panel
-            _.forOwn(UI, function (uiComponent) {
+            var uiStore = flux.store("ui");
+            _.forOwn(uiStore.components, function (uiComponent) {
                 fluxState[uiComponent] = preferences.get(uiComponent, true);
             });
       
             return fluxState;
         },
 
-        componentDidUpdate: function (prevProps, prevState) {
-            // NOTE: Special case of going from No Doc state requires update to panel sizes
-            if ((!prevState.activeDocument && this.state.activeDocument) ||
-                prevState[UI.PROPERTIES_COL] !== this.state[UI.PROPERTIES_COL] ||
-                prevState[UI.LAYERS_LIBRARY_COL] !== this.state[UI.LAYERS_LIBRARY_COL]) {
-                var payload = {
-                    panelWidth: React.findDOMNode(this.refs.panelSet).clientWidth
-                };
+        /**
+         * Update the sizes of the panels.
+         *
+         * @private
+         */
+        _updatePanelSizes: function () {
+            var node = React.findDOMNode(this.refs.panelSet),
+                panelWidth;
 
-                this.getFlux().actions.ui.updatePanelSizes(payload);
+            if (node) {
+                panelWidth = node.getBoundingClientRect().width;
+            } else {
+                panelWidth = 0;
+            }
+
+            var columnCount = 0;
+            if (this.state.activeDocument && this.state.activeDocumentInitialized && this.state.documentIDs.size > 0) {
+                var uiStore = this.getFlux().store("ui");
+                if (this.state[uiStore.components.LAYERS_LIBRARY_COL]) {
+                    columnCount++;
+                }
+
+                if (this.state[uiStore.components.PROPERTIES_COL]) {
+                    columnCount++;
+                }
+            } else {
+                columnCount = 1;
+            }
+
+            this.getFlux().actions.ui.updatePanelSizes({
+                panelWidth: panelWidth,
+                columnCount: columnCount
+            });
+        },
+
+        componentDidMount: function () {
+            os.addListener("displayConfigurationChanged", this._updatePanelSizes);
+        },
+
+        componentWillUnmount: function () {
+            os.removeListener("displayConfigurationChanged", this._updatePanelSizes);
+        },
+
+        componentDidUpdate: function (prevProps, prevState) {
+            var hasDoc = function (state) {
+                return !!state.activeDocument;
+            };
+
+            var uiStore = this.getFlux().store("ui"),
+                components = uiStore.components;
+
+            // NOTE: Special case of going from No Doc state requires update to panel sizes
+            if (prevState.activeDocumentInitialized !== this.state.activeDocumentInitialized ||
+                prevState.recentFilesInitialized !== this.state.recentFilesInitialized ||
+                hasDoc(prevState) !== hasDoc(this.state) ||
+                prevState[components.PROPERTIES_COL] !== this.state[components.PROPERTIES_COL] ||
+                prevState[components.LAYERS_LIBRARY_COL] !== this.state[components.LAYERS_LIBRARY_COL]) {
+                this._updatePanelSizes();
             }
         },
-        
+
         shouldComponentUpdate: function (nextProps, nextState) {
             // Don't re-render if we're just going temporarily inactive so that
             // the UI doesn't blink unnecessarily.
@@ -128,11 +167,12 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            var uiVisibilityChanged = _.some(UI, function (uiComponent) {
-                if (this.state[uiComponent] !== nextState[uiComponent]) {
-                    return true;
-                }
-            }, this);
+            var uiStore = this.getFlux().store("ui"),
+                uiVisibilityChanged = _.some(uiStore.components, function (uiComponent) {
+                    if (this.state[uiComponent] !== nextState[uiComponent]) {
+                        return true;
+                    }
+                }, this);
 
             return uiVisibilityChanged ||
                 this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
@@ -168,7 +208,9 @@ define(function (require, exports, module) {
             var documentIDs = this.state.documentIDs;
 
             if (this.state.activeDocument && this.state.activeDocumentInitialized && documentIDs.size > 0) {
-                var activeDocument = this.state.activeDocument,
+                var uiStore = this.getFlux().store("ui"),
+                    components = uiStore.components,
+                    activeDocument = this.state.activeDocument,
                     documentProperties = this.state.mountedDocumentIDs.map(function (documentID) {
                         var current = documentID === activeDocument.id,
                             document = this.getFlux().store("document").getDocument(documentID),
@@ -176,130 +218,113 @@ define(function (require, exports, module) {
                             panelSetclassNames = classnames({
                                 "panel-set": true,
                                 "panel-set__active": current
-                            }),
-                            panelTabBarClassNames = classnames({
-                                "panel__tab-bar": true,
-                                "panel__tab-bar__visible": true
-                            }),
-                            propertiesButtonClassNames = classnames({
-                                "toolbar-button": true,
-                                "tool-selected": this.state[UI.PROPERTIES_COL]
-                            }),
-                            layersButtonClassNames = classnames({
-                                "toolbar-button": true,
-                                "tool-selected": this.state[UI.LAYERS_LIBRARY_COL]
-                            }),
-                            panelCollapse = strings.TOOLTIPS.PANEL_COLUMN_COLLAPSE,
-                            panelExpand = strings.TOOLTIPS.PANEL_COLUMN_EXPAND,
-                            layerColumnTitle = strings.TOOLTIPS.LAYERS_LIBRARIES +
-                                (this.state[UI.LAYERS_LIBRARY_COL] ? panelCollapse : panelExpand),
-                            propertiesColumnTitle = strings.TOOLTIPS.PROPERTIES +
-                                (this.state[UI.PROPERTIES_COL] ? panelCollapse : panelExpand);
+                            });
 
                         return (
-                            <div className={panelSetclassNames} key={documentID}>
+                            <div
+                                key={documentID}
+                                ref={current && "panelSet"}
+                                className={panelSetclassNames}>
                                 <PanelColumn
                                     current={current}
-                                    visible={this.state[UI.PROPERTIES_COL]}
+                                    visible={this.state[components.PROPERTIES_COL]}
                                     onVisibilityToggle=
-                                        {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
+                                        {this._handleColumnVisibilityToggle.bind(this, components.PROPERTIES_COL)}>
                                     <TransformPanel
                                         disabled={disabled}
                                         document={document} />
                                     <AppearancePanel
-                                        ref={UI.APPEARANCE_PANEL}
+                                        ref={components.APPEARANCE_PANEL}
                                         disabled={disabled}
-                                        visible={!disabled && this.state[UI.APPEARANCE_PANEL]}
+                                        visible={!disabled && this.state[components.APPEARANCE_PANEL]}
                                         document={document}
                                         onVisibilityToggle=
                                             {this._handlePanelVisibilityToggle
-                                                .bind(this, UI.APPEARANCE_PANEL)} />
+                                                .bind(this, components.APPEARANCE_PANEL)} />
                                     <EffectsPanel
-                                        ref={UI.EFFECTS_PANEL}
+                                        ref={components.EFFECTS_PANEL}
                                         disabled={disabled}
-                                        visible={!disabled && this.state[UI.EFFECTS_PANEL]}
+                                        visible={!disabled && this.state[components.EFFECTS_PANEL]}
                                         document={document}
                                         onVisibilityToggle=
-                                            {this._handlePanelVisibilityToggle.bind(this, UI.EFFECTS_PANEL)} />
+                                            {this._handlePanelVisibilityToggle.bind(this, components.EFFECTS_PANEL)} />
                                     <ExportPanel
-                                        ref={UI.EXPORT_PANEL}
+                                        ref={components.EXPORT_PANEL}
                                         disabled={disabled}
-                                        visible={!disabled && this.state[UI.EXPORT_PANEL]}
+                                        visible={!disabled && this.state[components.EXPORT_PANEL]}
                                         document={document}
                                         onVisibilityToggle=
-                                            {this._handlePanelVisibilityToggle.bind(this, UI.EXPORT_PANEL)} />
+                                            {this._handlePanelVisibilityToggle.bind(this, components.EXPORT_PANEL)} />
                                 </PanelColumn>
                                 <PanelColumn
                                     current={current}
-                                    visible={this.state[UI.LAYERS_LIBRARY_COL]}
+                                    visible={this.state[components.LAYERS_LIBRARY_COL]}
                                     onVisibilityToggle=
-                                    {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
+                                    {this._handleColumnVisibilityToggle.bind(this, components.LAYERS_LIBRARY_COL)}>
                                     <LayersPanel
-                                        ref={UI.LAYERS_PANEL}
-                                        visible={this.state[UI.LAYERS_PANEL]}
+                                        ref={components.LAYERS_PANEL}
+                                        visible={this.state[components.LAYERS_PANEL]}
                                         document={document}
                                         onVisibilityToggle=
-                                            {this._handlePanelVisibilityToggle.bind(this, UI.LAYERS_PANEL)} />
+                                            {this._handlePanelVisibilityToggle.bind(this, components.LAYERS_PANEL)} />
                                     <LibrariesPanel
-                                        ref={UI.LIBRARIES_PANEL}
+                                        ref={components.LIBRARIES_PANEL}
                                         disabled={disabled}
                                         document={document}
-                                        visible={this.state[UI.LIBRARIES_PANEL]}
-                                        onVisibilityToggle=
-                                            {this._handlePanelVisibilityToggle.bind(this, UI.LIBRARIES_PANEL)} />
+                                        visible={this.state[components.LIBRARIES_PANEL]}
+                                        onVisibilityToggle={this._handlePanelVisibilityToggle.bind(this,
+                                            components.LIBRARIES_PANEL)} />
                                 </PanelColumn>
-                                <div className={panelTabBarClassNames}>
-                                    <Button
-                                        className="toolbar__backToPs"
-                                        title={menu.WINDOW.RETURN_TO_STANDARD}
-                                        onClick={this._handleBackToPSClick}>
-                                        <SVGIcon
-                                            viewbox="0 0 18 16"
-                                            CSSID="workspace" />
-                                    </Button>
-                                    <Button className={propertiesButtonClassNames}
-                                        title={propertiesColumnTitle}
-                                        disabled={false}
-                                        onClick=
-                                        {this._handleColumnVisibilityToggle.bind(this, UI.PROPERTIES_COL)}>
-                                        <SVGIcon
-                                            CSSID="properties" />
-                                    </Button>
-                                    <Button className={layersButtonClassNames}
-                                        title={layerColumnTitle}
-                                        disabled={false}
-                                        onClick=
-                                        {this._handleColumnVisibilityToggle.bind(this, UI.LAYERS_LIBRARY_COL)}>
-                                        <SVGIcon
-                                            CSSID="layers" />
-                                    </Button>
-                                </div>
                             </div>
                         );
                     }, this);
 
+                var propertiesButtonClassNames = classnames({
+                        "toolbar-button": true,
+                        "tool-selected": this.state[components.PROPERTIES_COL]
+                    }),
+                    layersButtonClassNames = classnames({
+                        "toolbar-button": true,
+                        "tool-selected": this.state[components.LAYERS_LIBRARY_COL]
+                    }),
+                    panelCollapse = strings.TOOLTIPS.PANEL_COLUMN_COLLAPSE,
+                    panelExpand = strings.TOOLTIPS.PANEL_COLUMN_EXPAND,
+                    layerColumnTitle = strings.TOOLTIPS.LAYERS_LIBRARIES +
+                        (this.state[components.LAYERS_LIBRARY_COL] ? panelCollapse : panelExpand),
+                    propertiesColumnTitle = strings.TOOLTIPS.PROPERTIES +
+                        (this.state[components.PROPERTIES_COL] ? panelCollapse : panelExpand);
+
                 return (
-                    <div ref="panelSet" className="panel-set__container">
+                    <div className="panel-set__container">
                         {documentProperties}
+                        <IconBar>
+                            <Button className={propertiesButtonClassNames}
+                                title={propertiesColumnTitle}
+                                disabled={false}
+                                onClick=
+                                {this._handleColumnVisibilityToggle.bind(this, components.PROPERTIES_COL)}>
+                                <SVGIcon
+                                    CSSID="properties" />
+                            </Button>
+                            <Button className={layersButtonClassNames}
+                                title={layerColumnTitle}
+                                disabled={false}
+                                onClick=
+                                {this._handleColumnVisibilityToggle.bind(this, components.LAYERS_LIBRARY_COL)}>
+                                <SVGIcon
+                                    CSSID="layers" />
+                            </Button>
+                        </IconBar>
                     </div>
                 );
             } else if (this.state.recentFilesInitialized) {
                 return (
                     <div className="panel-set panel-set__active null-state">
-                        <PanelColumn visible="true">
+                        <PanelColumn ref="panelSet" visible="true">
                             <RecentFiles recentFiles={this.state.recentFiles} />
                             <ArtboardPresets />
                         </PanelColumn>
-                        <div className="panel__tab-bar panel__tab-bar__visible">
-                            <Button
-                                className="toolbar__backToPs"
-                                title={menu.WINDOW.RETURN_TO_STANDARD}
-                                onClick={this._handleBackToPSClick}>
-                                <SVGIcon
-                                    viewbox="0 0 18 16"
-                                    CSSID="workspace" />
-                            </Button>
-                        </div>
+                        <IconBar />
                     </div>
                 );
             } else {
@@ -307,15 +332,6 @@ define(function (require, exports, module) {
                     <div ref="panelSet"></div>
                 );
             }
-        },
-            
-        /**
-         * Close Design Space
-         *
-         * @private
-         */
-        _handleBackToPSClick: function () {
-            this.getFlux().actions.menu.native({ commandID: 5999 });
         }
     });
 

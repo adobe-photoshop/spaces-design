@@ -257,6 +257,43 @@ define(function (require, exports) {
     updatePanelSizes.modal = true;
 
     /**
+     * Set the overlay offsets in PS in anticipation of opening/creating the
+     * first document (i.e., from a state in which there are no open documents).
+     * This is used, e.g., to ensure that the offsets account for the UI columns
+     * that will be shown once the document is open. See #1999 for more details.
+     *
+     * @return {Promise}
+     */
+    var setOverlayOffsetsForFirstDocument = function () {
+        var flux = this.flux,
+            applicationStore = flux.store("application");
+
+        if (applicationStore.getDocumentCount() > 0) {
+            return Promise.resolve();
+        }
+
+        var preferencesStore = flux.store("preferences"),
+            uiStore = flux.store("ui"),
+            preferences = preferencesStore.getState(),
+            columnCount = 0;
+
+        if (preferences.get(uiStore.components.LAYERS_LIBRARY_COL), true) {
+            columnCount++;
+        }
+
+        if (preferences.get(uiStore.components.PROPERTIES_COL), true) {
+            columnCount++;
+        }
+
+        var centerOffsets = uiStore.getCenterOffsets(columnCount);
+
+        return adapterUI.setOverlayOffsets(centerOffsets);
+    };
+    setOverlayOffsetsForFirstDocument.reads = [locks.JS_PREF, locks.JS_APP];
+    setOverlayOffsetsForFirstDocument.writes = [locks.PS_APP];
+    setOverlayOffsetsForFirstDocument.transfers = [];
+
+    /**
      * Updates the center offsets being sent to PS
      *
      * @private
@@ -348,18 +385,25 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
+        var selection;
         switch (payload.on) {
-            case "selection":
-                targetBounds = currentDoc.layers.selectedAreaBounds;
-                if (!targetBounds || targetBounds.empty) {
-                    targetBounds = currentDoc.bounds;
-                }
-                break;
-            case "document":
+        case "selection":
+            selection = true;
+            break;
+        case "document":
+            selection = false;
+            break;
+        default:
+            selection = !currentDoc.layers.selected.isEmpty();
+        }
+
+        if (selection) {
+            targetBounds = currentDoc.layers.selectedAreaBounds;
+            if (!targetBounds || targetBounds.empty) {
                 targetBounds = currentDoc.visibleBounds;
-                break;
-            default:
-                throw new Error("Unexpected 'on' value");
+            }
+        } else {
+            targetBounds = currentDoc.visibleBounds;
         }
 
         return this.transfer(centerBounds, targetBounds, payload.zoomInto);
@@ -543,6 +587,7 @@ define(function (require, exports) {
     exports.setOverlayCloaking = setOverlayCloaking;
     exports.cloak = cloak;
     exports.updatePanelSizes = updatePanelSizes;
+    exports.setOverlayOffsetsForFirstDocument = setOverlayOffsetsForFirstDocument;
     exports.updateToolbarWidth = updateToolbarWidth;
     exports.centerBounds = centerBounds;
     exports.centerOn = centerOn;

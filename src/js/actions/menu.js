@@ -54,7 +54,7 @@ define(function (require, exports) {
     /**
      * Execute a native Photoshop menu command.
      * 
-     * @param {{commandID: number, waitForCompletion: boolean?}} payload
+     * @param {{commandID: number, waitForCompletion: boolean=}} payload
      * @return {Promise}
      */
     var native = function (payload) {

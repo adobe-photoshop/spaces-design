@@ -111,8 +111,10 @@ define(function (require, exports, module) {
                     flux.actions.tools.select(defaultTool);
                 }
             }
+        },
 
-            if (this.state.pinned !== nextState.pinned) {
+        componentDidUpdate: function (prevProps, prevState) {
+            if (prevState.pinned !== this.state.pinned) {
                 this._updateToolbarWidth();
             }
         },
@@ -228,7 +230,7 @@ define(function (require, exports, module) {
             }
 
             var toolbarNode = React.findDOMNode(this);
-            return toolbarNode ? toolbarNode.clientWidth : 0;
+            return toolbarNode ? toolbarNode.getBoundingClientRect().width : 0;
         },
 
         /**

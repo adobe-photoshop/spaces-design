@@ -24,12 +24,29 @@
 define(function (require, exports, module) {
     "use strict";
     
-    var Fluxxor = require("fluxxor"),
-        _ = require("lodash");
+    var Fluxxor = require("fluxxor");
     
     var events = require("../events"),
         log = require("js/util/log"),
         math = require("js/util/math");
+
+    /**
+     * Panel/column identifiers.
+     *
+     * @const
+     * @type {object}
+     */
+    var UI_COMPONENTS = Object.freeze({
+        LAYERS_LIBRARY_COL: "layersLibrariesVisible",
+        PROPERTIES_COL: "propertiesVisible",
+        TRANSFORM_PANEL: "transformVisible",
+        STYLES_PANEL: "stylesVisible",
+        APPEARANCE_PANEL: "appearanceVisible",
+        EFFECTS_PANEL: "effectsVisible",
+        EXPORT_PANEL: "exportVisible",
+        LAYERS_PANEL: "layersVisible",
+        LIBRARIES_PANEL: "libraryVisible"
+    });
 
     var UIStore = Fluxxor.createStore({
 
@@ -56,13 +73,6 @@ define(function (require, exports, module) {
          * @type {Number}
          */
         _zoom: null,
-
-        /**
-         * Center offsets to be applied to zoom calculations
-         *
-         * @type {{top: number, left: number, bottom: number, right: number}}
-         */
-        _centerOffsets: null,
 
         /**
          * Flag to tell whether Scrim should draw any of the SVG overlays or not
@@ -103,6 +113,14 @@ define(function (require, exports, module) {
          * @type {number}
          */
         _panelWidth: null,
+
+        /**
+         * Icon bar width
+         *
+         * @private
+         * @type {number}
+         */
+        _iconBarWidth: null,
         
         /**
          * Document header height
@@ -119,15 +137,14 @@ define(function (require, exports, module) {
          * @type {number}
          */
         _toolbarWidth: null,
-        
+
         /**
-         * A set of unique document IDs that are centered after panel resized. If a document's id is not in the set,
-         * it will be centered when it is selected.
-         *
-         * @private
-         * @type {Set.<number>}
+         * Constants used to refer to different panels/columns.
+         * 
+         * @const
+         * @type {object}
          */
-        _centeredDocumentIDs: null,
+        components: UI_COMPONENTS,
 
         initialize: function () {
             this.bindActions(
@@ -139,9 +156,7 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated,
                 events.document.RESET_BOUNDS, this._handleLayersUpdated,
-                events.document.history.nonOptimistic.RESET_BOUNDS, this._handleLayersUpdated,
-                events.document.SELECT_DOCUMENT, this._handleSelectDocument,
-                events.document.CLOSE_DOCUMENT, this._handleCloseDocument
+                events.document.history.nonOptimistic.RESET_BOUNDS, this._handleLayersUpdated
             );
 
             this._handleReset();
@@ -158,12 +173,12 @@ define(function (require, exports, module) {
             this._marqueeEnabled = false;
             this._marqueeStart = null;
             this._zoom = null;
-            this._centerOffsets = null;
             this._transformMatrix = null;
             this._inverseTransformMatrix = null;
-            this._centeredDocumentIDs = new Set();
 
             this._panelWidth = 0;
+            this._columnCount = 0;
+            this._iconBarWidth = 0;
             this._headerHeight = 0;
             this._toolbarWidth = 0;
         },
@@ -174,7 +189,7 @@ define(function (require, exports, module) {
                 transformMatrix: this._transformMatrix,
                 inverseTransformMatrix: this._inverseTransformMatrix,
                 zoomFactor: this._zoom,
-                centerOffsets: this._centerOffsets,
+                centerOffsets: this.getCenterOffsets(),
                 overlaysEnabled: this._overlaysEnabled,
                 marqueeEnabled: this._marqueeEnabled,
                 marqueeStart: this._marqueeStart
@@ -258,19 +273,44 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Calculate the overlay offsets, optionally taking into account a
+         * (future) number of open columns.
+         *
+         * @return {{top: number, right: number, bottom: number, left: number}}
+         */
+        getCenterOffsets: function (columns) {
+            var right = this._iconBarWidth;
+
+            if (columns === undefined || columns === this._columnCount) {
+                right += this._panelWidth;
+            } else if (columns > 0) {
+                if (columns === 1 && this._columnCount === 2) {
+                    right += (this._panelWidth / 2);
+                } else if (columns === 2 && this._columnCount === 1) {
+                    right += (this._panelWidth * 2);
+                } else {
+                    log.warn("Unable to infer enter offsets for " + columns +
+                        " columns from " + this._columnCount);
+                }
+            }
+
+            return {
+                top: this._headerHeight,
+                right: right,
+                left: this._toolbarWidth,
+                bottom: 0
+            };
+        },
+
+        /**
          * Get the current cloaking rectangle, which omits the static UI.
          *
-         * @private
          * @return {?{top: number, right: number, left: number, bottom: number}}
          */
         getCloakRect: function () {
-            var centerOffsets = this._centerOffsets,
+            var centerOffsets = this.getCenterOffsets(),
                 windowWidth = window.document.body.clientWidth,
                 windowHeight = window.document.body.clientHeight;
-
-            if (!centerOffsets) {
-                return null;
-            }
             
             return {
                 left: centerOffsets.left,
@@ -388,87 +428,40 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Recalculates center offset given all the HTML panel sizes. 
-         *
-         * @private
-         * @return {boolean} true if the offset is updated
-         */
-        _recalculateCenterOffset: function () {
-            var nextCenterOffsets = {
-                top: this._headerHeight,
-                right: this._panelWidth,
-                left: this._toolbarWidth,
-                bottom: 0
-            };
-            
-            if (_.isEqual(this._centerOffsets, nextCenterOffsets)) {
-                return false;
-            }
-            
-            this._centerOffsets = nextCenterOffsets;
-            return true;
-            
-            // We don't emit offset change because we don't react to it
-        },
-
-        /**
          * Updates the center offsets when they change.
          *
          * @private
          * @param {{panelWidth: number=, headerHeight: number=, toolbarWidth: number=}} payload
          */
         _handlePanelResize: function (payload) {
-            if (payload.hasOwnProperty("panelWidth")) {
+            var changed;
+            if (payload.hasOwnProperty("panelWidth") && payload.panelWidth !== this._panelWidth) {
                 this._panelWidth = payload.panelWidth;
+                changed = true;
             }
 
-            if (payload.hasOwnProperty("headerHeight")) {
+            if (payload.hasOwnProperty("columnCount") && payload.columnCount !== this._columnCount) {
+                this._columnCount = payload.columnCount;
+                changed = true;
+            }
+
+            if (payload.hasOwnProperty("iconBarWidth") && payload.iconBarWidth !== this._iconBarWidth) {
+                this._iconBarWidth = payload.iconBarWidth;
+                changed = true;
+            }
+
+            if (payload.hasOwnProperty("headerHeight") && payload.headerHeight !== this._headerHeight) {
                 this._headerHeight = payload.headerHeight;
+                changed = true;
             }
 
-            if (payload.hasOwnProperty("toolbarWidth")) {
+            if (payload.hasOwnProperty("toolbarWidth") && payload.toolbarWidth !== this._toolbarWidth) {
                 this._toolbarWidth = payload.toolbarWidth;
+                changed = true;
             }
 
-            if (this._recalculateCenterOffset()) {
-                this._centerCurrentDocumentOnce();
+            if (changed) {
                 this.emit("change");
-            }
-        },
-        
-        /**
-         * Center the selected document if panel-resize event occurse. 
-         * 
-         * @private
-         */
-        _handleSelectDocument: function () {
-            this.waitFor(["application"], function () {
-                this._centerCurrentDocumentOnce();
-            });
-        },
-        
-        /**
-         * Handle document close by removing its ID from centered documents list.
-         * 
-         * @private
-         * @param {{documentID: number}} payload
-         */
-        _handleCloseDocument: function (payload) {
-            this._centeredDocumentIDs.delete(payload.documentID);
-        },
-        
-        /**
-         * Center the selected document once.
-         *
-         * @private
-         */
-        _centerCurrentDocumentOnce: function () {
-            var applicationStore = this.flux.store("application"),
-                currentDocId = applicationStore.getCurrentDocumentID();
-            
-            if (currentDocId && !this._centeredDocumentIDs.has(currentDocId)) {
-                this._centeredDocumentIDs.add(currentDocId);
-                this.flux.actions.ui.centerOn({ on: "document", zoomInto: true, preserveFocus: true });
             }
         },
 

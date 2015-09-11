@@ -30,6 +30,8 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable"),
         classnames = require("classnames");
+
+    var os = require("adapter/os");
     
     var DocumentHeaderTab = require("jsx!js/jsx/DocumentHeaderTab");
 
@@ -55,6 +57,26 @@ define(function (require, exports, module) {
                 documentIDs: documentIDs,
                 count: count
             };
+        },
+
+        /**
+         * Update the sizes of the panels.
+         *
+         * @private
+         */
+        _updatePanelSizes: function () {
+            var node = React.findDOMNode(this.refs.tabContainer),
+                headerHeight;
+
+            if (node) {
+                headerHeight = node.getBoundingClientRect().height;
+            } else {
+                headerHeight = 0;
+            }
+
+            this.getFlux().actions.ui.updatePanelSizes({
+                headerHeight: headerHeight
+            });
         },
 
         /** @ignore */
@@ -85,11 +107,15 @@ define(function (require, exports, module) {
             this.setState({
                 headerWidth: React.findDOMNode(this).clientWidth
             });
+
+            os.addListener("displayConfigurationChanged", this._updatePanelSizes);
+            this._updatePanelSizes();
             
             window.addEventListener("resize", this._handleWindowResize);
         },
         
         componentWillUnmount: function () {
+            os.removeListener("displayConfigurationChanged", this._updatePanelSizes);
             window.removeEventListener("resize", this._handleWindowResize);
         },
 
