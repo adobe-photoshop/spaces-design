@@ -30,9 +30,6 @@
             "PASTE_LAYER_STYLE": "v",
             "SEARCH": "f"
         },
-        "LAYER": {
-            "EDIT_VECTOR_MASK": "k"
-        },
         "ARRANGE": {
             "FLIP_HORIZONTAL": "/",
             "FLIP_VERTICAL": "/",
