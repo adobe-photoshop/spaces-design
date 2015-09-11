@@ -87,7 +87,8 @@ define(function (require, exports, module) {
             }
 
             var fontSizeAndColorStr = _.remove([fontSizeStr, fontColorHex], null).join(", "),
-                displayName = element.displayName || (font.name + " " + font.style),
+                fontInfo = font.name + " " + font.style,
+                displayName = element.displayName || fontInfo,
                 colorPreview = this.state.hasPreview && fontColorHex && (<div
                     style={{ backgroundColor: fontColorHex }}
                     className="libraries__asset__preview-character-style__color-swatch"/>);
@@ -98,6 +99,7 @@ define(function (require, exports, module) {
                     onSelect={this.props.onSelect}
                     selected={this.props.selected}
                     displayName={displayName}
+                    title={fontInfo}
                     subTitle={fontSizeAndColorStr}
                     key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-character-style"
