@@ -35,6 +35,7 @@ define(function (require, exports) {
         layerEffectAdapter = require("adapter/lib/layerEffect"),
         textLayerAdapter = require("adapter/lib/textLayer"),
         libraryAdapter = require("adapter/lib/libraries"),
+        documentLib = require("adapter/lib/document"),
         os = require("adapter/os");
 
     var events = require("js/events"),
@@ -358,7 +359,7 @@ define(function (require, exports) {
                 
                 currentLibrary.beginOperation();
                 
-                var newElement = currentLibrary.createElement(currentLayer.name, ELEMENT_CHARACTERSTYLE_TYPE),
+                var newElement = currentLibrary.createElement("", ELEMENT_CHARACTERSTYLE_TYPE),
                     representation = newElement.createRepresentation(_REP_CHARACTERSTYLE_TYPE, "primary"),
                     imageRepresentation = newElement.createRepresentation(_REP_PNG_TYPE, "rendition");
                     
@@ -813,9 +814,11 @@ define(function (require, exports) {
      */
     var applyLayerStyle = function (element) {
         var appStore = this.flux.store("application"),
-            currentDocument = appStore.getCurrentDocument();
+            currentDocument = appStore.getCurrentDocument(),
+            selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
+            selectedUnlockedLayers = selectedLayers.filter(function (l) { return !l.locked; });
 
-        if (!currentDocument || currentDocument.layers.selected.isEmpty()) {
+        if (selectedUnlockedLayers.isEmpty()) {
             return Promise.resolve();
         }
 
@@ -826,10 +829,18 @@ define(function (require, exports) {
             })
             .bind(this)
             .then(function (path) {
-                var layerRef = layerEffectAdapter.referenceBy.current,
-                    placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path);
+                var layerIDs = collection.pluck(selectedUnlockedLayers, "id"),
+                    layerRef = layerIDs.map(layerEffectAdapter.referenceBy.id).toArray(),
+                    placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path),
+                    options = {
+                        historyStateInfo: {
+                            name: strings.ACTIONS.APPLY_LAYER_STYLE,
+                            target: documentLib.referenceBy.id(currentDocument.id)
+                        }
+                    };
 
-                return descriptor.playObject(placeObj);
+                return layerActionsUtil.playSimpleLayerActions(currentDocument, selectedUnlockedLayers,
+                    placeObj, false, options);
             })
             .then(function () {
                 // FIXME: This can be more optimistic
@@ -853,9 +864,9 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument(),
             selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
-            textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); });
+            textLayers = selectedLayers.filter(function (l) { return l.isTextLayer() && !l.locked; });
 
-        if (!currentDocument || textLayers.isEmpty()) {
+        if (textLayers.isEmpty()) {
             return Promise.resolve();
         }
         
@@ -866,16 +877,21 @@ define(function (require, exports) {
             return Promise.resolve();
         }
         
-        // To make textLayerAdapter.applyTextStyle apply text color correctly, styleData.color must be an array.
-        if (styleData.color && !(styleData.color instanceof Array)) {
-            styleData.color = [styleData.color];
+        if (styleData.color instanceof Array) {
+            styleData.color = styleData.color[0];
         }
 
         var textLayerIDs = collection.pluck(textLayers, "id"),
             layerRef = textLayerIDs.map(textLayerAdapter.referenceBy.id).toArray(),
-            applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData);
+            applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.APPLY_TEXT_STYLE,
+                    target: documentLib.referenceBy.id(currentDocument.id)
+                }
+            };
 
-        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, true)
+        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, false, options)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetLayers, currentDocument, textLayers);

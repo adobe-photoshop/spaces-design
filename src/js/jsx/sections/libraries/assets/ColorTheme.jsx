@@ -27,7 +27,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        classnames = require("classnames"),
         tinycolor = require("tinycolor");
 
     var ColorModel = require("js/models/color");
@@ -41,8 +40,12 @@ define(function (require, exports, module) {
          * Apply color to the selected layers.
          *
          * @private
+         * @param {object} colorData
+         * @param {SyntheticEvent} event
          */
-        _handleApply: function (colorData) {
+        _handleApply: function (colorData, event) {
+            event.stopPropagation();
+
             var color = new ColorModel({ r: colorData.value.r, g: colorData.value.g, b: colorData.value.b });
 
             this.getFlux().actions.libraries.applyColor(color);
@@ -62,23 +65,17 @@ define(function (require, exports, module) {
                              onClick={this._handleApply.bind(this, colorData)}/>);
             }.bind(this));
 
-            var classNames = classnames({
-                "libraries__asset": true,
-                "libraries__asset-colortheme": true,
-                "libraries__asset-selected": this.props.selected
-            });
-
             return (
-                <div className={classNames} key={element.id}>
+                <AssetSection
+                    element={this.props.element}
+                    onSelect={this.props.onSelect}
+                    selected={this.props.selected}
+                    title={element.displayName}
+                    classNames="libraries__asset-colortheme">
                     <div className="libraries__asset__preview libraries__asset__preview-colortheme">
                         {colorSwatchComponents}
                     </div>
-                    <AssetSection
-                        element={this.props.element}
-                        onSelect={this.props.onSelect}
-                        selected={this.props.selected}
-                        title={element.displayName}/>
-                </div>
+                </AssetSection>
             );
         }
     });

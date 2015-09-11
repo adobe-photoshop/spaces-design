@@ -26,8 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        classnames = require("classnames");
+        FluxMixin = Fluxxor.FluxMixin(React);
 
     var strings = require("i18n!nls/strings");
 
@@ -41,32 +40,30 @@ define(function (require, exports, module) {
          * Apply the layer style to the selected layers
          *
          * @private
+         * @param {SyntheticEvent} event
          */
-        _handleApply: function () {
+        _handleApply: function (event) {
+            event.stopPropagation();
+
             this.getFlux().actions.libraries.applyLayerStyle(this.props.element);
         },
 
         render: function () {
             var element = this.props.element;
 
-            var classNames = classnames("libraries__asset", {
-                "libraries__asset-selected": this.props.selected
-            });
-
             return (
-                <div className={classNames}
-                     key={element.id}
-                     title={strings.LIBRARIES.CLICK_TO_APPLY}>
+                <AssetSection
+                    element={this.props.element}
+                    onSelect={this.props.onSelect}
+                    selected={this.props.selected}
+                    title={element.displayName}
+                    key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-layer-style"
-                         onClick={this._handleApply}>
+                         onClick={this._handleApply}
+                         title={strings.LIBRARIES.CLICK_TO_APPLY}>
                         <AssetPreviewImage element={this.props.element}/>
                     </div>
-                    <AssetSection
-                        element={this.props.element}
-                        onSelect={this.props.onSelect}
-                        selected={this.props.selected}
-                        title={element.displayName}/>
-                </div>
+                </AssetSection>
             );
         }
     });

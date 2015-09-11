@@ -76,7 +76,8 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             // Library's modified time reflects itself and its elements, so there is no need to check its element's 
             // modified time.
-            return this._libraryLastModified !== nextProps.library.modified ||
+            return this.props.library !== nextProps.library ||
+                this._libraryLastModified !== nextProps.library.modified ||
                 !_.isEqual(this.state, nextState);
         },
         
@@ -186,6 +187,15 @@ define(function (require, exports, module) {
 
             return elements;
         },
+        
+        /**
+         * Handle click on list background.
+         * 
+         * @private
+         */
+        _handleClick: function () {
+            this.setState({ selectedElement: null });
+        },
 
         render: function () {
             var library = this.props.library;
@@ -220,7 +230,8 @@ define(function (require, exports, module) {
             });
 
             return (
-                <div className={classNames}>
+                <div className={classNames}
+                     onClick={this._handleClick}>
                     {colorAssets}
                     {colorThemeAssets}
                     {charStyleAssets}

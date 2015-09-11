@@ -27,7 +27,6 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        classnames = require("classnames"),
         tinycolor = require("tinycolor"),
         _ = require("lodash");
 
@@ -49,8 +48,11 @@ define(function (require, exports, module) {
          * Apply the text style to the selected layers
          *
          * @private
+         * @param {SyntheticEvent} event
          */
-        _handleApply: function () {
+        _handleApply: function (event) {
+            event.stopPropagation();
+            
             this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
         },
         
@@ -84,21 +86,20 @@ define(function (require, exports, module) {
                 fontColorHex = tinycolor(color.value).toHexString().toUpperCase();
             }
 
-            var fontSizeAndColorStr = _.remove([fontSizeStr, fontColorHex], null).join(", ");
-
-            var classNames = classnames("libraries__asset", {
-                "assets__graphic__dragging": this.props.isDragging,
-                "libraries__asset-selected": this.props.selected
-            });
-
-            var displayName = element.displayName !== "" ? element.displayName : font.name + " " + font.style,
+            var fontSizeAndColorStr = _.remove([fontSizeStr, fontColorHex], null).join(", "),
+                displayName = element.displayName || (font.name + " " + font.style),
                 colorPreview = this.state.hasPreview && fontColorHex && (<div
                     style={{ backgroundColor: fontColorHex }}
                     className="libraries__asset__preview-character-style__color-swatch"/>);
 
             return (
-                <div className={classNames}
-                     key={element.id}>
+                <AssetSection
+                    element={this.props.element}
+                    onSelect={this.props.onSelect}
+                    selected={this.props.selected}
+                    title={displayName}
+                    subTitle={fontSizeAndColorStr}
+                    key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-character-style"
                          title={strings.LIBRARIES.CLICK_TO_APPLY}
                          onClick={this._handleApply}>
@@ -107,14 +108,7 @@ define(function (require, exports, module) {
                             onComplete={this._handlePreviewCompleted}/>
                         {colorPreview}
                     </div>
-
-                    <AssetSection
-                        element={this.props.element}
-                        onSelect={this.props.onSelect}
-                        selected={this.props.selected}
-                        title={displayName}
-                        subTitle={fontSizeAndColorStr}/>
-                </div>
+                </AssetSection>
             );
         }
     });
