@@ -170,9 +170,18 @@ define(function (require, exports, module) {
             var exportActions = this.getFlux().actions.export,
                 document = this.state.document;
 
-            this.setState({ fresh: false });
+            this.setState({
+                fresh: false,
+                exportDisabled: true
+            });
 
-            exportActions.exportLayerAssetsDebounced(document);
+            exportActions.exportLayerAssets(document)
+                .bind(this)
+                .then(function () {
+                    this.setState({
+                        exportDisabled: false
+                    });
+                });
         },
 
         /**
@@ -301,7 +310,7 @@ define(function (require, exports, module) {
                         </Button>
                         <div className="exports-panel__button-group__separator"></div>
                         <Button
-                            disabled={serviceBusy}
+                            disabled={this.state.exportDisabled || serviceBusy}
                             onClick={this._exportAllAssets}>
                             {exportButton}
                         </Button>
