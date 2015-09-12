@@ -892,7 +892,7 @@ define(function (require, exports, module) {
                 descriptor = descriptors[i],
                 layerIndex = descriptor.itemIndex - 1,
                 isNewSelected = selected && i + 1 === layerIDs.length,
-                newLayer = Layer.fromDescriptor(document, descriptor, isNewSelected);
+                newLayer = Layer.fromDescriptor(document, descriptor, isNewSelected, true);
 
             if (i === 0 && replace) {
                 // Replace the single selected layer (derived above)
@@ -962,7 +962,7 @@ define(function (require, exports, module) {
             descriptors.forEach(function (descriptor) {
                 var i = descriptor.itemIndex,
                     previousLayer = this.byIndex(i),
-                    nextLayer = Layer.fromDescriptor(document, descriptor, previousLayer.selected);
+                    nextLayer = Layer.fromDescriptor(document, descriptor, previousLayer.selected, true);
 
                 // update layers map
                 layers.delete(previousLayer.id);

@@ -169,7 +169,17 @@ define(function (require, exports, module) {
 
             this._openDocuments[nextDocument.id] = nextDocument;
 
-            if (!suppressChange) {
+            if (suppressChange) {
+                return;
+            }
+
+            // If some selected layer remains uninitialized, a new document will
+            // come along shortly. Wait until then to trigger the change event.
+            var initialized = nextDocument.layers.selected.every(function (layer) {
+                return layer.initialized;
+            });
+
+            if (initialized) {
                 this.emit("change");
             }
         },
