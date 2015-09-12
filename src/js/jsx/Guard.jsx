@@ -27,6 +27,10 @@ define(function (require, exports, module) {
     var React = require("react"),
         classnames = require("classnames");
 
+    var os = require("adapter/os");
+
+    var synchronization = require("js/util/synchronization");
+
     /**
      * @const
      * @type {Array.<string>} Input events to block when the component becomes inactive.
@@ -50,6 +54,14 @@ define(function (require, exports, module) {
         "paste",
         "selectionchange"
     ];
+
+    /**
+     * Debounced version of os.resetCursor to prevent very quick cursor changes.
+     *
+     * @private
+     * @type {function}
+     */
+    var _resetCursorDebounced = synchronization.debounce(os.resetCursor, os, 100);
 
     var Guard = React.createClass({
 
@@ -109,6 +121,13 @@ define(function (require, exports, module) {
                 this._enableInput();
             } else if (this.props.disabled && !nextProps.disabled) {
                 this._disableInput();
+            }
+        },
+
+        componentDidUpdate: function (prevProps) {
+            if (prevProps.disabled !== this.props.disabled) {
+                // The cursor doesn't automatically reset until moved
+                _resetCursorDebounced();
             }
         },
 
