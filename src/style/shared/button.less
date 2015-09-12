@@ -205,15 +205,16 @@ button {
         position: absolute;
         top: 0;
         left: 0;
-        background-color: @warm-gray;
+        background: transparent;
+        border: .25rem solid @warm-gray;
         border-radius: .3rem;
         &:after {
             content: '';
             width: 0.7rem;
             height: 0.4rem;
             position: absolute;
-            top: 0.3rem;
-            left: 0.3rem;
+            top: 0.1rem;
+            left: 0rem;
             border: 0.3rem solid @bg-alt;
             border-top: none;
             border-right: none;
@@ -227,6 +228,9 @@ button {
     }
     input[type=checkbox] {
         visibility: hidden;
+        &:checked + label {
+            background-color: @warm-gray;
+        }
         &:checked + label:after {
           opacity: 1;
         } 
@@ -235,9 +239,10 @@ button {
 
 .button-checkbox__mixed {
     label {
+        background-color: @warm-gray;
         &:after {
-            top: 0.2rem;
-            left: 0.4rem;
+            top: 0rem;
+            left: 0.2rem;
             border-left: none;
             opacity: 1;
             transform: rotate(0);
