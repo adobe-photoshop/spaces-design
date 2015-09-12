@@ -124,6 +124,15 @@ module.exports = function (grunt) {
                 newlineMaximum: 1
             }
         },
+        lesslint: {
+            src: ["src/style/**/main.less"],
+            options: {
+                imports: ["src/style/**/*.less"],
+                csslint: {
+                    csslintrc: ".csslintrc"
+                }
+            }
+        },
 
         clean: ["./build"],
         copy: {
@@ -155,6 +164,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-jsdoc");
     grunt.loadNpmTasks("grunt-jsonlint");
     grunt.loadNpmTasks("grunt-lintspaces");
+    grunt.loadNpmTasks("grunt-lesslint");
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");

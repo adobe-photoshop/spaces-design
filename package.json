@@ -25,6 +25,7 @@
     "grunt-jsdoc": "^0.6.8",
     "grunt-jsonlint": "^1.0.4",
     "grunt-jsxhint": "^0.6.0",
+    "grunt-lesslint": "^1.4.0",
     "grunt-lintspaces": "^0.7.0",
     "jscs-jsdoc": "shaoshing/jscs-jsdoc#7fbf64b",
     "jscs-trailing-whitespace-in-source": "0.0.1",
