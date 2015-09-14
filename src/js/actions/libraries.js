@@ -169,7 +169,7 @@ define(function (require, exports) {
         var representations = element.representations;
 
         for (var i = 0; i < representations.length; i++) {
-            if (!_PLACEABLE_GRAPHIC_REPRESENTATION_TYPES.has(representations[i].type)) {
+            if (_PLACEABLE_GRAPHIC_REPRESENTATION_TYPES.has(representations[i].type)) {
                 return representations[i];
             }
         }
