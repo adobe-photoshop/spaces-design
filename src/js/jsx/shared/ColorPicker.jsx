@@ -439,7 +439,7 @@ define(function (require, exports, module) {
                 format: "rgb"
             };
         },
-        
+
         /**
          * Selects the content of the input on focus.
          * 
@@ -509,6 +509,27 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Computes the label string for current color with the active format
+         * 
+         * If the format is name, but color is not nameable, falls back to 
+         * RGB string, otherwise uses the current format
+         *
+         * @param {Color} color
+         * @return {string}
+         */
+        _computeLabel: function (color) {
+            if (this.state.format === "name") {
+                if (color.toName()) {
+                    return color.toName();
+                } else {
+                    return color.toRgbString();
+                }
+            } else {
+                return color.toString(this.state.format);
+            }
+        },
+
+        /**
          * Begin the edit of the TextInput
          */
         focus: function () {
@@ -522,7 +543,7 @@ define(function (require, exports, module) {
                     width: "100%",
                     backgroundColor: colortiny ? colortiny.toRgbString() : "transparent"
                 },
-                label = colortiny.toString(this.state.format);
+                label = this._computeLabel(colortiny);
                 
             return (
                 <div
