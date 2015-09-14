@@ -496,7 +496,9 @@ define(function (require, exports, module) {
                 .bind(this)
                 .then(function (hitLayerIDs) {
                     return hitLayerIDs.findLast(function (id) {
-                        return !this.state.document.layers.byID(id).isArtboard;
+                        var layer = this.state.document.layers.byID(id);
+
+                        return layer && !layer.isArtboard;
                     }, this);
                 })
                 .then(function (topID) {
