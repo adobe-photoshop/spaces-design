@@ -36,7 +36,6 @@ define(function (require, exports, module) {
     var ExportList = require("jsx!js/jsx/sections/export/ExportList"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings"),
         ExportAsset = require("js/models/exportasset"),
@@ -214,13 +213,11 @@ define(function (require, exports, module) {
                     supportedLayers = undefined;
                 }
 
-                containerContents = containerContents || this.props.visible && (
-                    <div>
-                        <ExportList {...this.props}
-                            documentExports={this.state.documentExports}
-                            layers={supportedLayers}
-                            onFocus={this._handleFocus}/>
-                    </div>
+                containerContents = containerContents || (
+                    <ExportList {...this.props}
+                        documentExports={this.state.documentExports}
+                        layers={supportedLayers}
+                        onFocus={this._handleFocus}/>
                 );
             }
 
@@ -254,7 +251,6 @@ define(function (require, exports, module) {
                                 <SVGIcon
                                     CSSID={exportState.serviceBusy ? "loader" : "export"} />
                             </Button>
-                            <Gutter />
                             <Button
                                 className="button-plus"
                                 disabled={disabled}
@@ -265,7 +261,6 @@ define(function (require, exports, module) {
                                     viewbox="0 0 16 16"
                                     CSSID="add-new" />
                             </Button>
-                            <Gutter />
                             <Button
                                 className="button-iOS"
                                 disabled={disabled}
@@ -276,7 +271,6 @@ define(function (require, exports, module) {
                                     viewbox="0 0 24 16"
                                     CSSID="iOS" />
                             </Button>
-                            <Gutter />
                             <Button
                                 className="button-xdpi"
                                 disabled={disabled}

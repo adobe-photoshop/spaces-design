@@ -47,7 +47,7 @@ define(function (require, exports, module) {
             var onlyTextLayers = this.props.document.layers.selected.every(function (layer) {
                 return layer.kind === layer.layerKinds.TEXT;
             });
-            
+
             if (onlyTextLayers) {
                 return null;
             }

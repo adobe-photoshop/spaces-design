@@ -52,7 +52,6 @@ define(function (require, exports, module) {
                         <div className="formline column-24 formline__padded-first-child">
                             <div className="control-group">
                                 <Size document={this.props.document} />
-                                
                             </div>
                             <div className="control-group">
                                 <div className="control-group reference-mark">
