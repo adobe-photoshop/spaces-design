@@ -85,6 +85,12 @@ define(function (require, exports, module) {
          * @type {Immutable.Map.<number, EditStatus>}
          */
         _editStatusByDocumentID: null,
+        
+        /**
+         * Store the last locally created element.
+         * @type {AdobeLibraryElement}
+         */
+        _lastLocallyCreatedElement: null,
 
         initialize: function () {
             this.bindActions(
@@ -124,6 +130,7 @@ define(function (require, exports, module) {
             this._serviceConnected = false;
             this._isSyncing = false;
             this._editStatusByDocumentID = null;
+            this._createdNewGraphicLocally = false;
         },
 
         /** @ignore */
@@ -229,8 +236,8 @@ define(function (require, exports, module) {
          *
          * @private
          */
-        _handleElementCreated: function () {
-            // Update is already reflected in _libraries. No further action required.
+        _handleElementCreated: function (payload) {
+            this._lastLocallyCreatedElement = payload.element;
             this.emit("change");
         },
 
@@ -509,6 +516,15 @@ define(function (require, exports, module) {
                     
                 return documentName.indexOf(status.elementID) !== -1;
             }.bind(this));
+        },
+        
+        /**
+         * Return the last locally created element.
+         * 
+         * @return {?AdobeLibraryElement}
+         */
+        getLastLocallyCreatedElement: function () {
+            return this._lastLocallyCreatedElement;
         },
         
         /**

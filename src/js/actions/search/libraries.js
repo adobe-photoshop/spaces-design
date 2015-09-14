@@ -29,7 +29,8 @@ define(function (require, exports) {
     var events = require("js/events"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
-        tinycolor = require("tinycolor");
+        tinycolor = require("tinycolor"),
+        libraryActions = require("js/actions/libraries");
 
     /**
      * Map from element IDs to corresponding element and type
@@ -72,8 +73,16 @@ define(function (require, exports) {
                 
                 if (categoryKey) {
                     // If there is no current document, don't add anything but graphics
-                    if (!currentDocument && categoryKey !== "GRAPHIC") {
-                        return;
+                    if (!currentDocument) {
+                        if (categoryKey !== "GRAPHIC") {
+                            return;
+                        }
+                        
+                        var representation = element.getPrimaryRepresentation();
+                        if (!representation ||
+                            !libraryActions.EDITABLE_GRAPHIC_REPRESENTATION_TYPES.hasas(representation.type)) {
+                            return;
+                        }
                     }
 
                     if (categoryKey === "CHARACTERSTYLE" && !title) {

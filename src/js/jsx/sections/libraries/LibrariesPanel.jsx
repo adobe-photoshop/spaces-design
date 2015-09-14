@@ -53,7 +53,8 @@ define(function (require, exports, module) {
                 isSyncing: libraryStore.isSyncing(),
                 isDropTarget: isDropTarget,
                 isValidDropTarget: dndState.hasValidDropTarget,
-                selectedLibrary: libraryStore.getCurrentLibrary()
+                selectedLibrary: libraryStore.getCurrentLibrary(),
+                lastLocallyCreatedElement: libraryStore.getLastLocallyCreatedElement()
             };
         },
 
@@ -116,6 +117,7 @@ define(function (require, exports, module) {
                 containerContents = (
                 <Library
                     addElement={this._handleAddElement}
+                    lastLocallyCreatedElement={this.state.lastLocallyCreatedElement}
                     library={currentLibrary} />
                 );
             } else {

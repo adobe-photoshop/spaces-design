@@ -27,11 +27,16 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        _ = require("lodash");
+        
+    var libraryActions = require("js/actions/libraries");
         
     var Draggable = require("jsx!js/jsx/shared/Draggable"),
         AssetSection = require("jsx!./AssetSection"),
         AssetPreviewImage = require("jsx!./AssetPreviewImage");
+        
+    var _REPRESENTATION_TO_EXTENSION_MAP = _.invert(libraryActions.EXTENSION_TO_REPRESENTATION_MAP);
 
     var Graphic = React.createClass({
         mixins: [FluxMixin],
@@ -99,7 +104,10 @@ define(function (require, exports, module) {
 
         render: function () {
             var element = this.props.element,
-                dragPreview = this._renderDragPreview();
+                dragPreview = this._renderDragPreview(),
+                representation = element.getPrimaryRepresentation(),
+                extension = representation && _REPRESENTATION_TO_EXTENSION_MAP[representation.type],
+                title = !extension ? element.displayName : (element.displayName + " - " + extension.toUpperCase());
 
             var classNames = classnames({
                 "assets__graphic__dragging": this.props.isDragging
@@ -110,7 +118,8 @@ define(function (require, exports, module) {
                     element={this.props.element}
                     onSelect={this.props.onSelect}
                     selected={this.props.selected}
-                    title={element.displayName}
+                    displayName={element.displayName}
+                    title={title}
                     className={classNames}
                     key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-graphic"

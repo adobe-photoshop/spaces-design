@@ -70,7 +70,7 @@ define(function (require, exports, module) {
                     element={this.props.element}
                     onSelect={this.props.onSelect}
                     selected={this.props.selected}
-                    title={element.displayName}
+                    displayName={element.displayName}
                     classNames="libraries__asset-colortheme">
                     <div className="libraries__asset__preview libraries__asset__preview-colortheme">
                         {colorSwatchComponents}

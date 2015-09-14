@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        tinycolor = require("tinycolor");
+        _ = require("lodash");
 
     var strings = require("i18n!nls/strings"),
         ColorModel = require("js/models/color");
@@ -36,25 +36,33 @@ define(function (require, exports, module) {
 
     var Color = React.createClass({
         mixins: [FluxMixin],
-
-        componentWillMount: function () {
-            var element = this.props.element,
-                representation = element.getPrimaryRepresentation(),
-                color = representation.getValue("color", "data"),
-                colorString = this._getStringColorValue(color),
-                hexValue = tinycolor(color.value).toHexString().toUpperCase();
-
-            this.setState({
-                colorData: color,
-                colorString: colorString,
-                hexValue: hexValue
-            });
+    
+        /**
+         * Find color asset's RGB representation and then return instance of Color model.
+         *
+         * @private
+         * @return {ColorModel}
+         */
+        _getColor: function () {
+            var reps = this.props.element.representations,
+                colors = reps.map(function (r) { return r.getValue("color", "data"); }),
+                // Color Asset is guaranteed to have a RGB representation.
+                rgb = _.find(colors, { "mode": "RGB" });
+            
+            return new ColorModel({ r: rgb.value.r, g: rgb.value.g, b: rgb.value.b });
         },
 
-        // Grabbed from CC-libraries-panel
-        /** @ignore */
-        _getStringColorValue: function (color) {
-            var result;
+        /**
+         * Return string value of color asset's primary representation.
+         *
+         * @private
+         * @return {string}
+         */
+        _getPrimaryColorStringValue: function () {
+            var representation = this.props.element.getPrimaryRepresentation(),
+                color = representation.getValue("color", "data"),
+                result;
+            
             if (color) {
                 if (color.mode === "CMYK") {
                     result = "C" + Math.round(color.value.c) +
@@ -77,6 +85,7 @@ define(function (require, exports, module) {
                     result = "G" + Math.round(color.value);
                 }
             }
+            
             return result;
         },
 
@@ -89,25 +98,25 @@ define(function (require, exports, module) {
         _handleApply: function (event) {
             event.stopPropagation();
 
-            var colorData = this.state.colorData,
-                color = new ColorModel({ r: colorData.value.r, g: colorData.value.g, b: colorData.value.b });
-
-            this.getFlux().actions.libraries.applyColor(color);
+            this.getFlux().actions.libraries.applyColor(this._getColor());
         },
 
         render: function () {
             var element = this.props.element,
-                displayName = element.displayName !== "" ? element.displayName : this.state.hexValue;
+                title = this._getPrimaryColorStringValue(),
+                hexValue = this._getColor().toTinyColor().toHexString().toUpperCase(),
+                displayName = element.displayName || hexValue;
 
             return (
                  <AssetSection
                     element={this.props.element}
                     onSelect={this.props.onSelect}
                     selected={this.props.selected}
-                    title={displayName}
+                    displayName={displayName}
+                    title={title}
                     key={element.id}>
                     <div className="libraries__asset__preview"
-                         style={{ background: this.state.hexValue }}
+                         style={{ background: hexValue }}
                          title={strings.LIBRARIES.CLICK_TO_APPLY}
                          onClick={this._handleApply}/>
                 </AssetSection>
