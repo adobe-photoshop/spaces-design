@@ -286,7 +286,6 @@ define(function (require, exports, module) {
                 <div className={swatchClassSet}>
                     <div
                         ref="swatch"
-                        tabIndex="0"
                         className="color-input__swatch__background"
                         onFocus={this._handleSwatchFocus}
                         onKeyDown={this._handleKeyDown}
