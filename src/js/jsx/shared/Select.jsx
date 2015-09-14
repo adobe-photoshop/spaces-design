@@ -179,20 +179,20 @@ define(function (require, exports, module) {
             // binary search for the position
             var size = options.size,
                 low = 0,
-                high = size,
-                middle = Math.floor(high / 2),
+                high = size - 1,
+                middle,
                 value;
 
-            while (low <= middle && middle < high) {
+            while (low <= high) {
+                middle = low + Math.floor((high - low) / 2);
                 value = options.get(middle).id;
-                if (value < key) {
-                    low = middle;
-                    middle += Math.floor((high - middle) / 2);
-                } else if (value > key) {
-                    high = middle;
-                    middle = low + Math.floor((middle - low) / 2);
-                } else {
+            
+                if (value === key) {
                     return middle;
+                } else if (value < key) {
+                    low = middle + 1;
+                } else {
+                    high = middle - 1;
                 }
             }
 
