@@ -132,6 +132,10 @@ input[type="text"].face__name {
 .face:hover {
     background-color: @list-hover-color;
     z-index: 99;
+    
+    input{
+        color: @item-hover;   
+    }
 }
 
 .layer-list__dragging .face:hover {
@@ -187,7 +191,7 @@ input[type="text"].face__name {
 
 .face__select_immediate input[type="text"].face__name:focus,
 input[type="text"].face__name:focus {
-    background-color:@list-select-child-color;
+    border-bottom: solid @hairline @focus-highlight;
     color: @item;
     -webkit-user-select: text;
 }
