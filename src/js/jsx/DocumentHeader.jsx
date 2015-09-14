@@ -31,8 +31,11 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var os = require("adapter/os");
-    
-    var DocumentHeaderTab = require("jsx!js/jsx/DocumentHeaderTab");
+
+    var DocumentHeaderTab = require("jsx!js/jsx/DocumentHeaderTab"),
+        Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        strings = require("i18n!nls/strings");
 
     var DocumentHeader = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("application", "document")],
@@ -112,7 +115,7 @@ define(function (require, exports, module) {
             
             window.addEventListener("resize", this._handleWindowResize);
         },
-        
+
         componentWillUnmount: function () {
             os.removeListener("displayConfigurationChanged", this._updatePanelSizes);
             window.removeEventListener("resize", this._handleWindowResize);
@@ -130,7 +133,7 @@ define(function (require, exports, module) {
                 headerWidth: React.findDOMNode(this).clientWidth
             });
         },
-        
+
         /** @ignore */
         _handleTabClick: function (documentID) {
             var selectedDoc = this.getFlux().store("document").getDocument(documentID);
@@ -139,15 +142,24 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Opens the export dialog 
+         */
+        _openExportPanel: function () {
+            this.getFlux().actions.export.openExportPanel();
+        },
+
         render: function () {
             var documentStore = this.getFlux().store("document"),
                 document = this.state.document,
                 smallTab = this.state.headerWidth / this.state.documentIDs.size < 175;
             // Above: This number tunes when tabs should be shifted to small tabs
 
+            var exportDisabled = !document || document.unsupported;
+
             var documentTabs = this.state.documentIDs.map(function (docID) {
                 var doc = documentStore.getDocument(docID);
-                
+
                 if (doc) {
                     return (
                         <DocumentHeaderTab
@@ -166,6 +178,18 @@ define(function (require, exports, module) {
                 <div className="document-container">
                     <div className="document-header" ref="tabContainer">
                             {documentTabs}
+                    </div>
+                    <div className="export-header">
+                        <div className="export-header-buttons">
+                            <Button
+                                className="button-plus button-simple"
+                                title={strings.TOOLTIPS.EXPORT_DIALOG}
+                                disabled={exportDisabled}
+                                onClick={this._openExportPanel}>
+                                <SVGIcon
+                                    CSSID="extract-all" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
             );

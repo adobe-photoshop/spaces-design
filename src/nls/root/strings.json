@@ -244,7 +244,8 @@
         "EXPORT_ADD_ASSET": "Add export asset",
         "EXPORT_REMOVE_ASSET": "Remove asset configuration",
         "EXPORT_IOS_PRESETS": "Add 3 iOS assets + SVG",
-        "EXPORT_HDPI_PRESETS": "Add 6 HDPI assets + SVG"
+        "EXPORT_HDPI_PRESETS": "Add 6 HDPI assets + SVG",
+        "EXPORT_DIALOG": "Export..."
     },
     "LAYER_KIND": {
         "0": "Any Layer",
