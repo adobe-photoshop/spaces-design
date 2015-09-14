@@ -259,7 +259,7 @@ define(function (require, exports, module) {
             var panelClassnames = classnames("exports-panel__container");
 
             var exportButton = serviceBusy ?
-                (<SVGIcon CSSID="loader" viewbox="0 0 16 16" />)
+                (<SVGIcon CSSID="loader" viewbox="0 0 16 16" iconPath="" />)
                 : strings.EXPORT.BUTTON_EXPORT;
 
             return (
