@@ -136,7 +136,6 @@ define(function (require, exports) {
      * Query Photoshop for the curent window transform and emit a
      * TRANSFORM_UPDATED event with that value.
      *
-     * @private
      * @return {Promise}
      */
     var updateTransform = function () {
@@ -207,7 +206,6 @@ define(function (require, exports) {
     /**
      * Directly emit a TRANSFORM_UPDATED event with the given value.
      *
-     * @private
      * @return {Promise}
      */
     var setTransform = function (transformObject) {
@@ -236,7 +234,6 @@ define(function (require, exports) {
     /**
      * Parse the panel size information and dispatch the PANELS_RESIZED ui event
      *
-     * @private
      * @param {{toolbarWidth: number=, panelWidth: number=, headerHeight: number=}} sizes
      * @return {Promise}
      */
@@ -296,7 +293,6 @@ define(function (require, exports) {
     /**
      * Updates the center offsets being sent to PS
      *
-     * @private
      * @param {number} toolbarWidth
      * @return {Promise}
      */
@@ -504,7 +500,6 @@ define(function (require, exports) {
     /**
      * Register event listeners for UI change events, and initialize the UI.
      *
-     * @private
      * @param {boolean} reset Indicates whether this is being called as part of a reset
      * @return {Promise}
      */
@@ -563,9 +558,21 @@ define(function (require, exports) {
     beforeStartup.modal = true;
 
     /**
+     * Initialize the window transform, but only after documents have been
+     * initialized because otherwise updateTransform aborts early.
+     *
+     * @return {Promise}
+     */
+    var afterStartup = function () {
+        return this.transfer(updateTransform);
+    };
+    afterStartup.reads = [];
+    afterStartup.writes = [];
+    afterStartup.transfers = [updateTransform];
+
+    /**
      * Remove event handlers.
      *
-     * @private
      * @return {Promise}
      */
     var onReset = function () {
@@ -595,6 +602,7 @@ define(function (require, exports) {
     exports.zoom = zoom;
 
     exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 
     // This module must have a higher priority than the tool action module.
