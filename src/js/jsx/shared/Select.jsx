@@ -180,7 +180,7 @@ define(function (require, exports, module) {
             var size = options.size,
                 low = 0,
                 high = size - 1,
-                middle = Math.floor(high / 2),
+                middle,
                 value;
 
             while (low <= high) {
