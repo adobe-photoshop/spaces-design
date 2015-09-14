@@ -249,7 +249,8 @@ define(function (require, exports, module) {
                                 onClick={this._exportAssetsClickHandler}
                                 onDoubleClick={this._blockInput}>
                                 <SVGIcon
-                                    CSSID={exportState.serviceBusy ? "loader" : "export"} />
+                                    CSSID={exportState.serviceBusy ? "loader" : "export"}
+                                    iconPath={exportState.serviceBusy ? "" : null} />
                             </Button>
                             <Button
                                 className="button-plus"
