@@ -62,6 +62,7 @@
     color: @bg-alt;
     overflow-y: auto;
     input[type="text"] {
+        font-size: @text-medium;
         color: @item-active;
         border-radius: 0;
         border: none;
@@ -91,8 +92,8 @@
 .color-picker__stroke,
 .color-picker__shadow {
     left: 0rem;
-    width: 30.6rem;
-    height: 29.8rem;
+    width: 30.2rem;
+    height: 30.4rem;
     max-height: 36rem;
     display: flex;
     flex-direction: column;
@@ -102,11 +103,11 @@
         content: "";
         position: absolute;
         top: -0.7rem;
-        left: 3.2rem;
+        left: 1.6rem;
         width: 1.6rem;
         height: 1.6rem;
         background: @bg-border;
-        box-shadow: -0.2rem -0.2rem 0 0rem @underlines;
+        box-shadow: (@hairline*-1.5) (@hairline*-1.5) 0 0 @underlines;
         border-top-left-radius: .2rem;
         transform: rotate(45deg);
         -webkit-clip-path: polygon(0% 0%, 2.7rem 0%, 0% 2.7rem);
@@ -146,11 +147,10 @@
 .color-picker-map {
     position: absolute;
     top: 5.6rem;
-    left: 4.8rem;
-    height: 16rem;
-    width: 17.6rem;
+    left: 5.6rem;
+    height: 17rem;
+    width: 15.8rem;
     user-select: none;
-    //overflow: hidden;
 
     &.color-picker-map__active {
         cursor: none;
@@ -175,15 +175,15 @@
         background: none;
         border-radius: 100%;
         border: .2rem solid @black;
-        box-shadow: 0 0 0 .2rem rgba(0,0,0,.12),0 0 0.4rem rgba(0,0,0,.12) inset;
+        //box-shadow: 0 0 0 .2rem rgba(0,0,0,.12),0 0 0.4rem rgba(0,0,0,.12) inset;
     }
 
     .color-picker-map__background {
         top: 0;
         left: 0;
         position: absolute;
-        height: 100%;
-        width: 100%;
+        height: 17rem;
+        width: 16.2rem;
         border-radius: 0.4rem;
     }
 
@@ -196,7 +196,10 @@
         left: 0;
         bottom: 0;
         right: 0;
+        height: 17rem;
+        width: 16.2rem;
         border-radius: 0.4rem;
+        box-shadow:0 0 0 @hairline @bg-border;
     }
 
     .color-picker-map__background:after {
@@ -218,21 +221,21 @@
     height: auto;
     .formline {
         width: 7rem;
-        height: 2.4rem;
+        height: 2.8rem;
         padding: 0 .2rem;
         &:nth-child(3){
-            margin-bottom: 2.5rem;
+            margin-bottom: 1rem;
         }
     }
     label {
-        font-size: 1.1rem;
+        font-size: @text-medium;
         display: inline-block;
         width: 1rem;
         text-align: right;
         margin-right:1rem;
     }
     input[type="text"] {
-        font-size: 1.1rem;
+        font-size: @text-medium;
         display: inline-block;
         width: 3.2rem;
     }
@@ -249,6 +252,13 @@
     left: 1.6rem;
     width: 28.2rem;
     height: 2.4rem;
+    
+    input{
+        vertical-align: top;
+        height: 2.4rem;
+        width: 16.2rem;
+    }
+    
     .color-picker__colortype__thumb {
         display: inline-block;
         width: 2.4rem;
@@ -260,9 +270,11 @@
             background: url(../img/ico-color-picker-no-color.svg) no-repeat;
         }
     }
+    
     .column-1{
         display: inline-block;
     }
+    
     .number-input__clean.column-11.number-input,
     .number-input__dirty.column-11.number-input {
         font-size: 1.4rem;
@@ -282,13 +294,14 @@
 .color-picker-slider {
     position: absolute;
     user-select: none;
+    -webkit-backface-visibility: hidden;
 
     &.color-picker-slider__vertical {
         top: 5.6rem;
         bottom: 0;
         left: 1.6rem;
         width: 2.4rem;
-        height: 16rem;
+        height: 17rem;
         
         .color-picker-slider__track,
         .color-picker-slider__track-overlay {
@@ -330,6 +343,7 @@
     .color-picker-slider__track,
     .color-picker-slider__track-overlay {    
         border-radius: 0.4rem;
+        box-shadow:0 0 0 @hairline @bg-border;
         &:before {
             content: "";
             position: absolute;
@@ -358,19 +372,19 @@
 // Label for Color picker opacity slider 
 .color-picker .slider_label {
     position: absolute;
-    top: 23.1rem;
+    top: 23.7rem;
     left: 1.6rem;
-    width: 27.4rem;
+    width: 26.8rem;
     display: flex;
     justify-content: space-between;
     label {
-        font-size: 1.1rem;
+        font-size: @text-medium;
         display: inline-block;
         vertical-align: baseline;
         line-height: 1.8rem;
     }
     input[type='text'] {
-        font-size: 1.1rem;
+        font-size: @text-medium;
         width: 3.4rem;
         display: inline-block;
     }
@@ -380,44 +394,6 @@
     .color-picker-slider__pointer {
         background: darken(whitesmoke, 20%);
     }
-}
-
-// Fix for rounding errors with rems on Retina that makes weird circles
-@base-slider-size: 1.2;
-.pointer-size(@pointer-size){
-    width: round(@base-slider-size * @pointer-size);
-    height: round(@base-slider-size * @pointer-size);
-    border-radius: round(@base-slider-size * @pointer-size);
-}
-
-@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 801px) and (max-device-width: 1280px) {
-  .color-picker-slider .color-picker-slider__pointer {
-      .pointer-size(8px);
-  }
-}
-
-@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1281px) and (max-device-width: 1440px) {
-  .color-picker-slider .color-picker-slider__pointer {
-      .pointer-size(8px);
-  }
-}
-
-@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1441px) and (max-device-width: 1680px) {
-  .color-picker-slider .color-picker-slider__pointer {
-      .pointer-size(9px);
-  }
-}
-
-@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1681px) and (max-device-width: 2560px) {
-  .color-picker-slider .color-picker-slider__pointer {
-      .pointer-size(10px);
-  }
-}
-
-@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) {
-  .color-picker-slider .color-picker-slider__pointer {
-      .pointer-size(11px);
-  }
 }
 
 .color-picker__hue-slider {
@@ -465,8 +441,9 @@
     position: absolute;
     left: 1.6rem;
     right: 1.6rem;
-    top: 25.8rem;
+    top: 26.4rem;
     height: 2.4rem;
+    border-radius: .4rem;
     .color-picker-slider__horizontal > .color-picker-slider__track,
     .color-picker-slider__vertical > .color-picker-slider__track {
         .background-checkerboard(16);
