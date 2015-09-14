@@ -36,7 +36,10 @@
         "SET_TYPE_LEADING": "文字の行送りを設定",
         "SET_TYPE_TRACKING": "文字トラッキングを設定",
         "SET_TYPE_ALIGNMENT": "文字の整列を設定",
-        "UNGROUP_LAYERS": "レイヤーをグループ解除"
+        "UNGROUP_LAYERS": "レイヤーをグループ解除",
+        "MODIFY_EXPORT_ASSETS": "更新された書き出しアセット設定",
+        "APPLY_TEXT_STYLE": "テキストスタイルを適用",
+        "APPLY_LAYER_STYLE": "レイヤースタイルを適用"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -197,6 +200,7 @@
         "SET_LAYER_VISIBILITY": "レイヤーの表示を設定",
         "LOCK_LAYER": "レイヤーをロック",
         "LAYER_COUNT": "選択されているレイヤーの数 / レイヤーの総数",
+        "ADD_EFFECT": "レイヤー効果を追加",
         "TOGGLE_DROP_SHADOW": "ドロップシャドウを切り替える",
         "DELETE_DROP_SHADOW": "ドロップシャドウを削除",
         "SET_DROP_SHADOW_COLOR": "ドロップシャドウのカラーを設定",
@@ -338,6 +342,7 @@
         "DROP_SHADOW": {
             "TITLE": "ドロップシャドウ",
             "ADD": "ドロップシャドウを追加",
+            "TITLE_SINGLE": "ドロップシャドウ",
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "ぼかし",
@@ -347,6 +352,7 @@
         "INNER_SHADOW": {
             "TITLE": "シャドウ (内側)",
             "ADD": "シャドウ (内側) を追加",
+            "TITLE_SINGLE": "シャドウ (内側)",
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "ぼかし",
@@ -381,8 +387,8 @@
         "TITLE_SUFFIX": "接尾辞",
         "TITLE_SETTINGS": "設定",
         "EXPORT_DOCUMENT_FILENAME": "ドキュメント",
-        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "能_[8448087] No supported layers selected",
-        "NO_ASSETS": "能_[8448086] No exports configured"
+        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "サポートされているレイヤーが選択されていません",
+        "NO_ASSETS": "書き出しが設定されていません"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",
