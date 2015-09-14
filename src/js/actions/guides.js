@@ -434,6 +434,8 @@ define(function (require, exports) {
         descriptor.removeListener("set", _guideSetHandler);
         descriptor.removeListener("delete", _guideDeleteHandler);
 
+        _currentGuidePolicyID = null;
+
         return Promise.resolve();
     };
     onReset.reads = [];
