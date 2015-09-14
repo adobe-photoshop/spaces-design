@@ -80,7 +80,7 @@ define(function (require, exports) {
                         
                         var representation = element.getPrimaryRepresentation();
                         if (!representation ||
-                            !libraryActions.EDITABLE_GRAPHIC_REPRESENTATION_TYPES.hasas(representation.type)) {
+                            !libraryActions.EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type)) {
                             return;
                         }
                     }
