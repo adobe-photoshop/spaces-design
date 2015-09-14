@@ -176,7 +176,7 @@ define(function (require, exports, module) {
             var isSyncing = payload.isSyncing,
                 libraryNumberChanged = payload.libraryNumberChanged;
             
-            log.debug("[CC Lib] handle sync, isSyncing:", isSyncing, ", libraryNumberChanged:", libraryNumberChanged);
+            log.debug("[CC Lib] handle sync, isSyncing: %s, libraryNumberChanged: %s", isSyncing, libraryNumberChanged);
             
             this._isSyncing = isSyncing;
             

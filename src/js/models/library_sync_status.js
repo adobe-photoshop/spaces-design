@@ -73,11 +73,13 @@ define(function (require, exports, module) {
        
         // Check for new libraries created from other source and their sync progress. 
         newLibraries.forEach(function (data) {
-            log.debug("[CC Lib] new library", data.progress);
-            
-            if (data.progress !== 100) {
+            if (typeof data.progress === "number" && data.progress !== 100) {
+                log.debug("[CC Lib] syncing new library \"%s\": %s", data.id, data.progress);
+                
                 this._syncingLibraryIDs.add(data.id);
-            } else {
+            } else if (this._syncingLibraryIDs.has(data.id)) {
+                log.debug("[CC Lib] synced new library \"%s\"", data.id);
+                
                 this._syncingLibraryIDs.delete(data.id);
             }
         }, this);
@@ -88,11 +90,11 @@ define(function (require, exports, module) {
             
             // Whenever a library is syncing, its "syncState" will have a string value (e.g. downloading or uploading).
             if (!library.syncState && isLibrarySyncing) {
-                log.debug("[CC Lib] done library sync [", library.name, "]");
+                log.debug("[CC Lib] synced \"%s\"", library.name);
                 
                 this._syncingLibraryIDs.delete(library.id);
             } else if (library.syncState && !isLibrarySyncing) {
-                log.debug("[CC Lib] on library sync [", library.name, "]", library.syncState, library.syncProgress);
+                log.debug("[CC Lib] syncing \"%s\": %s, %s", library.name, library.syncState, library.syncProgress);
                 
                 this._syncingLibraryIDs.add(library.id);
             }
