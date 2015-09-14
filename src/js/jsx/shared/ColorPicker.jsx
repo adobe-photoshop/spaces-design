@@ -434,6 +434,12 @@ define(function (require, exports, module) {
     * @constructor
     */
     var ColorType = React.createClass({
+        getInitialState: function () {
+            return {
+                format: "rgb"
+            };
+        },
+
         /**
          * Selects the content of the input on focus.
          * 
@@ -503,6 +509,27 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Computes the label string for current color with the active format
+         * 
+         * If the format is name, but color is not nameable, falls back to 
+         * RGB string, otherwise uses the current format
+         *
+         * @param {Color} color
+         * @return {string}
+         */
+        _computeLabel: function (color) {
+            if (this.state.format === "name") {
+                if (color.toName()) {
+                    return color.toName();
+                } else {
+                    return color.toRgbString();
+                }
+            } else {
+                return color.toString(this.state.format);
+            }
+        },
+
+        /**
          * Begin the edit of the TextInput
          */
         focus: function () {
@@ -515,7 +542,8 @@ define(function (require, exports, module) {
                     height: "100%",
                     width: "100%",
                     backgroundColor: colortiny ? colortiny.toRgbString() : "transparent"
-                };
+                },
+                label = this._computeLabel(colortiny);
                 
             return (
                 <div
@@ -533,7 +561,7 @@ define(function (require, exports, module) {
                         ref="input"
                         live={this.props.editable}
                         editable={this.props.editable}
-                        value={this.props.label}
+                        value={label}
                         singleClick={true}
                         onKeyDown={this._handleKeyDown}
                         onChange={this._handleInputChanged}
