@@ -503,8 +503,7 @@ define(function (require, exports, module) {
                 var typeStyle = {
                     fontFamily: familyName || "helvetica",
                     fontStyle: this._getCSSFontStyle(styleTitle) || "regular",
-                    fontWeight: this._getCSSFontWeight(styleTitle) || 400,
-                    fontSize: Math.min(collection.uniformValue(sizes) || 24, 50)
+                    fontWeight: this._getCSSFontWeight(styleTitle) || 400
                 };
 
                 if (colorTiny) {
