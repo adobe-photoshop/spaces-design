@@ -25,8 +25,9 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        strings = require("i18n!nls/strings");
-    
+        strings = require("i18n!nls/strings"),
+        classnames = require("classnames");
+
     var TitleHeader = React.createClass({
         mixins: [React.addons.PureRenderMixin],
         propTypes: {
@@ -38,6 +39,8 @@ define(function (require, exports, module) {
         render: function () {
             var workingTitle = this.props.title;
 
+            var className = classnames("section-title", this.props.className);
+
             if (this.props.onDoubleClick && !this.props.disabled) {
                 if (this.props.visible) {
                     workingTitle += strings.TOOLTIPS.SECTION_COLLAPSE;
@@ -48,7 +51,7 @@ define(function (require, exports, module) {
 
             return (
                 <header className="section-header" onDoubleClick={this.props.onDoubleClick}>
-                    <div className="section-title" title={workingTitle}>
+                    <div className={className} title={workingTitle}>
                         <h2>
                             {this.props.title}
                         </h2>

@@ -22,12 +22,13 @@
  */
 
 .exports-panel__dialog {
-    background-color: @bg-app;
+    background-color: @bg-panel;
+    border: @hairline solid @bg-border;
     color:@item-active;
     line-height: normal;
-    width: 66rem;
-    max-height: 66rem; //this is important for use with dialog.showModa()
-    height: 66rem;
+    width: 67rem;
+    max-height: 67rem; //this is important for use with dialog.showModa()
+    height: 67rem;
     border-radius: 2rem;
     overflow: hidden;
     font-size: 1.5rem;
@@ -41,6 +42,12 @@
     margin-right: 5rem;
     width: 56rem;
     font-size: 1.5rem;
+
+    & .section-header {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-left: 0rem;
+    }
 }
 
 .exports-panel__two-column {
@@ -51,17 +58,34 @@
     .layout-gutter {
         flex-grow: 0;
     }
+
+    &:first-child {
+        width: 50%;
+    }
+
 }
 
 .exports-panel__asset-list__container {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    text-overflow: ellipsis;
 }
 
 .exports-panel__asset-list__quick-selection {
     display: flex;
     flex-direction: row;
+    color: @item;
+    font-size: @text-large;
+    align-items: center;
+
+    & div {
+        text-align:center;
+    }
+}
+
+.checkbox-label {
+    opacity: .9;
 }
 
 .exports-panel__asset-list__list {
@@ -69,12 +93,15 @@
     flex-direction: column;
     flex-grow: 1;
     max-height: 51rem;
-    overflow-y: auto;
+    overflow-y: hidden;
     border: @hairline solid @color-subsection-rule;
     border-left: none;
     border-right: none;
     margin: 1rem 0;
     padding: 1rem 0;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 40rem;
 }
 
 .exports-panel__layer-wrapper {
@@ -85,22 +112,35 @@
 }
 
 .exports-panel__layer-icon {
-    margin-top: 0.2rem;
+    margin-top: 0.5rem;
     svg {
-        width: 3rem;
-        height: 3rem;
-        fill:  @color-subsection-rule;
+        width: 2.5rem;
+        height: 2.5rem;
+        fill:  @item-active;
         stroke: none;
     }
 }
 
-.exports-panel__layer {}
+.exports-panel__layer-info {
+    width: 19rem;
+    overflow:hidden;
+}
 
 .exports-panel__layer__name {
-    font-size: 1.5rem;
+    font-size: @text-large;
     display: flex;
     flex-wrap: nowrap;
     align-items: baseline;
+    color: @item;
+    width: 18rem;
+    text-overflow: ellipsis;
+
+    & span {
+        text-overflow: ellipsis;
+        width:100%;
+        white-space: nowrap;
+        overflow: hidden;
+    }
 }
 
 .exports-panel__layer__prefix {
@@ -110,8 +150,15 @@
 }
 
 .exports-panel__layer-assets {
-    font-size: 1.3rem;
+    font-size: @text-medium;
+    font-color: @item-inactive;
     display: flex;
+    width: 100%;
+
+    & span {
+        text-overflow: ellipsis;
+        width:100%;
+    }
 }
 
 .exports-panel__layer-asset {
@@ -147,14 +194,14 @@
 }
 
 .exports-panel__button-group .button-simple {
-    margin: 0.5rem;
-    padding: 1rem;
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     justify-content: center;
     opacity: 0.9;
+    margin-top: -0.25rem;
 
     &:hover {
         opacity: 1;
+        color: white;
     }
 
     svg {
