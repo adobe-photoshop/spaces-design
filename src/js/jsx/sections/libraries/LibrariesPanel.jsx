@@ -160,7 +160,7 @@ define(function (require, exports, module) {
                 "section": true,
                 "section__collapsed": !this.props.visible,
                 "libraries_no-drop": this.state.isDropTarget && !this.state.selectedLibrary
-            });
+            }, this.props.className);
 
             var librariesContent = this._renderLibrariesContent(),
                 dropOverlay;

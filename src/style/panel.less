@@ -42,10 +42,6 @@
 .panel-set {
     height: 100%;
     max-height: 100%;
-    display: none;
-}
-
-.panel-set__active{
     display: flex;
 }
 
@@ -173,7 +169,7 @@
 }
 
 .section {
-    display: flex;
+    display: none;
     flex-direction: column;
     flex-wrap: nowrap;
     border-bottom: 2*@hairline solid @bg-border;
@@ -184,6 +180,10 @@
 
 .section__hidden {
     display: none;
+}
+
+.section__active {
+    display: flex;
 }
 
 .section.section__collapsed {

@@ -28,10 +28,8 @@ define(function (require, exports, module) {
         classnames = require("classnames");
 
     var PanelColumn = React.createClass({
-
         shouldComponentUpdate: function (nextProps) {
-            // The document is inactive
-            if (!nextProps.current) {
+            if (!this.props.visible && !nextProps.visible) {
                 return false;
             }
 
