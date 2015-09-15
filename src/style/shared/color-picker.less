@@ -146,10 +146,10 @@
 
 .color-picker-map {
     position: absolute;
-    top: 5.6rem;
-    left: 5.6rem;
+    top: 5.9rem;
+    left: 5.3rem;
     height: 17rem;
-    width: 15.8rem;
+    width: 16.2rem;
     user-select: none;
 
     &.color-picker-map__active {
@@ -175,12 +175,12 @@
         background: none;
         border-radius: 100%;
         border: .2rem solid @black;
-        //box-shadow: 0 0 0 .2rem rgba(0,0,0,.12),0 0 0.4rem rgba(0,0,0,.12) inset;
+        box-shadow: 0 0 0 .2rem rgba(0,0,0,.12),0 0 0.4rem rgba(0,0,0,.12) inset;
     }
 
     .color-picker-map__background {
-        top: 0;
-        left: 0;
+        top: -.3rem;
+        left: .3rem;
         position: absolute;
         height: 17rem;
         width: 16.2rem;
@@ -297,19 +297,17 @@
     -webkit-backface-visibility: hidden;
 
     &.color-picker-slider__vertical {
-        top: 5.6rem;
-        bottom: 0;
-        left: 1.6rem;
         width: 2.4rem;
         height: 17rem;
         
         .color-picker-slider__track,
         .color-picker-slider__track-overlay {
             position: absolute;
-            top: 0;
+            top: -0.8rem;
             bottom: 0;
             left: 0;
             width: 2.4rem;
+            height: 17rem;
             margin-left: 0;
         }
         .color-picker-slider__pointer {
@@ -322,15 +320,16 @@
         left: 0;
         right: 0;
         height: 2.4rem;
-        width: 100%;
+        width: 26.8rem;
         
         .color-picker-slider__track,
         .color-picker-slider__track-overlay {
             position: absolute;
-            left: 0;
+            left: -0.4rem;
             right: 0;
             top: 0;
             height: 2.4rem;
+            width: 26.8rem;
             margin-top: 0rem;
         }
         .color-picker-slider__pointer {
@@ -398,9 +397,9 @@
 
 .color-picker__hue-slider {
     position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
+    top: 6.4rem;
+    bottom: 0;
+    left: 1.6rem;
     width: 1.6rem;
     transform: rotate(0deg);
 
@@ -439,10 +438,11 @@
 
 .color-picker__transparency-slider {
     position: absolute;
-    left: 1.6rem;
+    left: 2rem;
     right: 1.6rem;
     top: 26.4rem;
     height: 2.4rem;
+    width: 26.8rem;
     border-radius: .4rem;
     .color-picker-slider__horizontal > .color-picker-slider__track,
     .color-picker-slider__vertical > .color-picker-slider__track {
