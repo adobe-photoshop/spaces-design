@@ -200,8 +200,15 @@ define(function (require, exports) {
             horizontal = orientation === "horizontal",
             position = horizontal ? canvasXY.y : canvasXY.x,
             topAncestors = doc.layers.selectedTopAncestors,
-            artboardGuide = topAncestors.size === 1 && topAncestors.first().isArtboard,
-            createObj = documentLib.insertGuide(docRef, orientation, position, artboardGuide);
+            artboardGuide = topAncestors.size === 1 && topAncestors.first().isArtboard;
+
+        if (artboardGuide) {
+            var layer = topAncestors.first();
+
+            position -= horizontal ? layer.bounds.top : layer.bounds.left;
+        }
+        
+        var createObj = documentLib.insertGuide(docRef, orientation, position, artboardGuide);
 
         return descriptor.playObject(createObj)
             .then(function () {
