@@ -73,16 +73,24 @@ define(function (require, exports, module) {
                     );
                 }, this);
 
-            return (
-                <section className="recent-files section section__active">
-                    <TitleHeader title={strings.NO_DOC.RECENT_FILES_TITLE} />
-                    <div className="section-container">
-                        <ul className="link-list__list">
-                            {recentFilelinks}
-                        </ul>
-                    </div>
-                </section>
-            );
+            if (recentFilesLimited.isEmpty()) {
+                return (
+                    <section className="recent-files section section__active">
+                        <TitleHeader title={strings.NO_DOC.RECENT_FILES_TITLE} />
+                    </section>
+               );
+            } else {
+                return (
+                    <section className="recent-files section section__active">
+                        <TitleHeader title={strings.NO_DOC.RECENT_FILES_TITLE} />
+                        <div className="section-container">
+                            <ul className="link-list__list">
+                                {recentFilelinks}
+                            </ul>
+                        </div>
+                    </section>
+                );
+            }
         }
     });
 
