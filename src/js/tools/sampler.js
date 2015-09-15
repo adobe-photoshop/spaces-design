@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         util = require("adapter/util");
 
     var events = require("js/events"),
+        system = require("js/util/system"),
         Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy,
@@ -92,13 +93,16 @@ define(function (require, exports, module) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
             styleStore = flux.store("style"),
-            currentDocument = applicationStore.getCurrentDocument();
+            currentDocument = applicationStore.getCurrentDocument(),
+            hudKey = event.shiftKey && (system.isMac ? event.metaKey : event.ctrlKey);
         
         if (!currentDocument) {
             return;
         }
 
-        if (styleStore.getHUDStyles() !== null) {
+        if (hudKey) {
+            flux.actions.sampler.showHUD(currentDocument, _currentMouseX, _currentMouseY);
+        } else if (styleStore.getHUDStyles() !== null) {
             flux.actions.sampler.hideHUD();
         } else {
             flux.actions.sampler.click(currentDocument, event.pageX, event.pageY, event.shiftKey);
@@ -111,14 +115,8 @@ define(function (require, exports, module) {
      * @param {CustomEvent} event
      */
     SamplerTool.prototype.onKeyDown = function (event) {
-        var flux = this.getFlux(),
-            applicationStore = flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
-            
-        if (event.detail.keyChar === " ") {
-            flux.actions.sampler.showHUD(currentDocument, _currentMouseX, _currentMouseY);
-        } else if (event.detail.keyCode === OS.eventKeyCode.ESCAPE) {
-            flux.actions.sampler.hideHUD();
+        if (event.detail.keyCode === OS.eventKeyCode.ESCAPE) {
+            this.getFlux().actions.sampler.hideHUD();
         }
     };
 
