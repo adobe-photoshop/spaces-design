@@ -36,7 +36,10 @@
         "SET_TYPE_LEADING": "Définir l'interligne du texte",
         "SET_TYPE_TRACKING": "Définir l'approche du texte",
         "SET_TYPE_ALIGNMENT": "Définir l'alignement du texte",
-        "UNGROUP_LAYERS": "Dissocier les calques"
+        "UNGROUP_LAYERS": "Dissocier les calques",
+        "MODIFY_EXPORT_ASSETS": "Configurations d'exportation de fichier mises à jour",
+        "APPLY_TEXT_STYLE": "Appliquer le style de texte",
+        "APPLY_LAYER_STYLE": "Appliquer le style de calque"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -125,7 +128,7 @@
     "TITLE_PAGES": "Calques",
     "TITLE_STYLE": "Style",
     "TITLE_EFFECTS": "Effets",
-    "TITLE_APPEARANCE": "[8448088] é_Appearance",
+    "TITLE_APPEARANCE": "Aspect",
     "TITLE_EXPORT": "Exportation",
     "TITLE_LIBRARIES": "Bibliothèques",
     "NO_DOC": {
@@ -197,6 +200,7 @@
         "SET_LAYER_VISIBILITY": "Définir la visibilité des calques",
         "LOCK_LAYER": "Verrouiller le calque",
         "LAYER_COUNT": "Calques sélectionnés sur le total des calques",
+        "ADD_EFFECT": "Ajouter un effet de calque",
         "TOGGLE_DROP_SHADOW": "Activer/Désactiver l'ombre portée",
         "DELETE_DROP_SHADOW": "Supprimer l'ombre portée",
         "SET_DROP_SHADOW_COLOR": "Définir la couleur de l'ombre portée",
@@ -338,6 +342,7 @@
         "DROP_SHADOW": {
             "TITLE": "Ombres portées",
             "ADD": "Ombre portée",
+            "TITLE_SINGLE": "Ombre portée",
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "Flou",
@@ -347,6 +352,7 @@
         "INNER_SHADOW": {
             "TITLE": "Ombres internes",
             "ADD": "Ajouter une ombre interne",
+            "TITLE_SINGLE": "Ombre interne",
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "Flou",
@@ -381,8 +387,8 @@
         "TITLE_SUFFIX": "Suffixe ",
         "TITLE_SETTINGS": "Settings",
         "EXPORT_DOCUMENT_FILENAME": "document",
-        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "[8448087] é_No supported layers selected",
-        "NO_ASSETS": "[8448086] é_No exports configured"
+        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "Aucun calque pris en charge sélectionné",
+        "NO_ASSETS": "Aucune exportation configurée"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",

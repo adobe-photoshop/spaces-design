@@ -36,7 +36,10 @@
         "SET_TYPE_LEADING": "Zeilenabstand für Schrift festlegen",
         "SET_TYPE_TRACKING": "Schriftlaufweite festlegen",
         "SET_TYPE_ALIGNMENT": "Schriftausrichtung festlegen",
-        "UNGROUP_LAYERS": "Gruppierung von Ebenen aufheben"
+        "UNGROUP_LAYERS": "Gruppierung von Ebenen aufheben",
+        "MODIFY_EXPORT_ASSETS": "Aktualisierte Export-Asset-Konfigurationen",
+        "APPLY_TEXT_STYLE": "Textformat anwenden",
+        "APPLY_LAYER_STYLE": "Ebenenstil anwenden"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -125,7 +128,7 @@
     "TITLE_PAGES": "Ebenen",
     "TITLE_STYLE": "Stil",
     "TITLE_EFFECTS": "Effekte",
-    "TITLE_APPEARANCE": "[8448088] ü_Appearance",
+    "TITLE_APPEARANCE": "Aussehen",
     "TITLE_EXPORT": "Exportieren",
     "TITLE_LIBRARIES": "Bibliotheken",
     "NO_DOC": {
@@ -197,6 +200,7 @@
         "SET_LAYER_VISIBILITY": "Ebenensichtbarkeit festlegen",
         "LOCK_LAYER": "Ebene sperren",
         "LAYER_COUNT": "Ausgewählte Ebenen von Gesamtebenen",
+        "ADD_EFFECT": "Ebeneneffekt hinzufügen",
         "TOGGLE_DROP_SHADOW": "Schlagschatten ein/aus",
         "DELETE_DROP_SHADOW": "Schlagschatten löschen",
         "SET_DROP_SHADOW_COLOR": "Schlagschattenfarbe festlegen",
@@ -338,6 +342,7 @@
         "DROP_SHADOW": {
             "TITLE": "Schlagschatten",
             "ADD": "Schlagschatten",
+            "TITLE_SINGLE": "Schlagschatten",
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "Unschärfe",
@@ -347,6 +352,7 @@
         "INNER_SHADOW": {
             "TITLE": "Schatten nach innen",
             "ADD": "Schatten nach innen hinzufügen",
+            "TITLE_SINGLE": "Schatten nach innen",
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "Unschärfe",
@@ -381,8 +387,8 @@
         "TITLE_SUFFIX": "Suffix",
         "TITLE_SETTINGS": "Einstellungen",
         "EXPORT_DOCUMENT_FILENAME": "Dokument",
-        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "[8448087] ü_No supported layers selected",
-        "NO_ASSETS": "[8448086] ü_No exports configured"
+        "ONLY_UNSUPPORTED_LAYERS_SELECTED": "Keine unterstützten Ebenen ausgewählt",
+        "NO_ASSETS": "Keine Exporte konfiguriert"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",
