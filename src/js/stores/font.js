@@ -144,7 +144,8 @@ define(function (require, exports, module) {
             var obj = {},
                 textStyle = layer.text.characterStyle,
                 psName = textStyle.postScriptName,
-                fontObj = this._postScriptMap.get(psName, null);
+                fontObj = this._postScriptMap.get(psName, null),
+                paragraphStyle = layer.text.paragraphStyle;
                 
             // If it's mixed, or there is no fontObj, we skip adding these values to the type object
             // adbeFont, fontFamily, fontStyle, fontWeight
@@ -224,6 +225,10 @@ define(function (require, exports, module) {
                 };
             } else {
                 obj.adbeAutoLeading = true;
+            }
+
+            if (paragraphStyle) {
+                obj.textAlignment = paragraphStyle.alignment;
             }
 
             return obj;

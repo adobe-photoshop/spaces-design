@@ -567,11 +567,19 @@ define(function (require, exports) {
 
         var layerIDs = collection.pluck(targetLayers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
-            applyObj = textLayerLib.applyTextStyle(layerRefs, style);
+            applyObj = textLayerLib.applyTextStyle(layerRefs, style),
+            modal = this.flux.store("tool").getModalToolState(),
+            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.APPLY_TEXT_STYLE,
+                modal, options && options.coalesce, options);
 
+        if (style.textAlignment) {
+            var alignObj = textLayerLib.setAlignment(layerRefs, style.textAlignment);
+
+            applyObj = [applyObj, alignObj];
+        }
         this.dispatchAsync(events.style.HIDE_HUD);
         
-        return layerActionsUtil.playSimpleLayerActions(document, targetLayers, applyObj, true, options)
+        return layerActionsUtil.playSimpleLayerActions(document, targetLayers, applyObj, true, typeOptions)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
