@@ -230,10 +230,21 @@
 }
 
 .layer-exports__workflow-buttons .button-simple {
+
     &__disabled, &__disabled:hover {
         svg {
             fill: @item-disabled;
         }
+    }
+}
+
+.layer-exports__workflow-buttons .button-simple.button {
+    &-plus {
+        margin-left: 1rem;
+    } 
+
+    &-iOS, &-xdpi {
+        margin-left: .5rem;
     }
 }
 
