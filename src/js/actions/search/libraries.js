@@ -88,7 +88,7 @@ define(function (require, exports) {
                     if (categoryKey === "CHARACTERSTYLE" && !title) {
                         var charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
                             font = charStyle.adbeFont,
-                            fontString = font.name + " " + font.style,
+                            fontString = font.family + " " + font.style,
 
                             fontSize = charStyle.fontSize,
                             fontSizeString = fontSize.value + fontSize.type,

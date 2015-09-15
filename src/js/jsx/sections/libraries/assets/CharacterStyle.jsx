@@ -87,7 +87,7 @@ define(function (require, exports, module) {
             }
 
             var fontSizeAndColorStr = _.remove([fontSizeStr, fontColorHex], null).join(", "),
-                fontInfo = font.name + " " + font.style,
+                fontInfo = font.family + " " + font.style,
                 displayName = element.displayName || fontInfo,
                 colorPreview = this.state.hasPreview && fontColorHex && (<div
                     style={{ backgroundColor: fontColorHex }}
