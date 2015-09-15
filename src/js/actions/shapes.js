@@ -274,7 +274,6 @@ define(function (require, exports) {
                 eventName,
                 options.coalesce);
 
-            
             if (!color && options.enabled) {
                 // If color is not supplied, we use existing color from our model
                 var actions = layers.map(function (layer) {

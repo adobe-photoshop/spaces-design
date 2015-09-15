@@ -198,7 +198,6 @@ define(function (require, exports, module) {
         getVectorMaskPolicyID: function () {
             return this._vectorMaskPolicyID;
         },
-        
 
         /**
          * @private

@@ -64,7 +64,6 @@ define(function (require, exports) {
     handleDeletedLayer.reads = [locks.JS_APP, locks.JS_DOC];
     handleDeletedLayer.writes = [];
     handleDeletedLayer.transfers = [layerActions.removeLayers, documentActions.updateDocument];
-    
 
     /**
      * Handle the toolModalStateChanged event, when it indicates a type tool

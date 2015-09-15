@@ -997,7 +997,6 @@ define(function (require, exports) {
                 documentID: documentID,
                 path: event.in._path
             });
-            
 
             if (!saveAs) {
                 return;

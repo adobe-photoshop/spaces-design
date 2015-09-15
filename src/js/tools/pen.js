@@ -65,8 +65,7 @@ define(function (require, exports, module) {
                 .then(function () {
                     return descriptor.playObject(optionsObj);
                 });
-           
-       
+
         if (this.vectorMode) {
             var selectVectorMask = descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
             return Promise.join(setPromise, selectVectorMask);
