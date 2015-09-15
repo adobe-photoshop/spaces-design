@@ -246,14 +246,22 @@
     flex-shrink: 1;
 }
 
+.effects.section__active {
+    min-height: 24rem;
+}
+
+.effects.section__collapsed {
+    min-height: 4.8rem;
+}
+
 .appearance, 
 .type, 
 .effects, 
 .export {
     .section-container {
         padding: 0 @properties-padding;
-    }  
-} 
+    }
+}
 
 .libraries .section-container {
     padding: 0 @properties-padding;
@@ -294,7 +302,7 @@
 
     &.section__collapsed {
         min-height: 0;
-    }    
+    }
 }
 
 .generate-columns(@panel-column-width);
@@ -355,7 +363,7 @@
         border-top-left-radius: .2rem;
         transform: rotate(45deg);
         -webkit-clip-path: polygon(0% 0%, 2.7rem 0%, 0% 2.7rem);
-    }    
+    }
 }
 
 .popover-list__item {
