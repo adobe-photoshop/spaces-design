@@ -61,12 +61,7 @@ define(function (require, exports, module) {
                         return;
                     }
 
-                    var flux = this.getFlux();
-                    if (!flux.store("tool").getModalToolState()) {
-                        return;
-                    }
-
-                    return flux.actions.policy.addKeyboardPolicies(keyboardPolicyList)
+                    return this.getFlux().actions.policy.addKeyboardPolicies(keyboardPolicyList)
                         .bind(this)
                         .then(function (policy) {
                             _keyboardPolicy = policy;
@@ -90,7 +85,7 @@ define(function (require, exports, module) {
                 .bind(this)
                 .then(function () {
                     if (keyboardPolicy) {
-                        return this.getFlux().actions.policy.removeKeyboardPolicies(keyboardPolicy);
+                        return this.getFlux().actions.policy.removeKeyboardPolicies(keyboardPolicy, true);
                     }
                 })
                 .catch(function (err) {
