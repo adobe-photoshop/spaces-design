@@ -500,7 +500,10 @@
         "INTRO_BODY": "Use Libraries to organize, access, and share your assets across desktop and mobile.",
         "INTRO_LINK_TITLE": "Learn how to use Libraries",
         "INTRO_URL": "https://helpx.adobe.com/creative-cloud/help/libraries.html",
-        "NO_CONNECTION": "To use Creative Cloud Libraries, please sign in to Creative Cloud."
+        "NO_CONNECTION": "To use Creative Cloud Libraries, please sign in to Creative Cloud.",
+        "LEADING": "Leading: %s",
+        "LEADING_AUTO": "Auto",
+        "TRACKING": "Tracking: %s"
     },
     "ERR": {
         "UNRECOVERABLE": "Design Space has encountered an unrecoverable error."

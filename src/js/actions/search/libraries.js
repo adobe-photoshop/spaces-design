@@ -29,8 +29,8 @@ define(function (require, exports) {
     var events = require("js/events"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
-        tinycolor = require("tinycolor"),
-        libraryActions = require("js/actions/libraries");
+        libraryActions = require("js/actions/libraries"),
+        librariesUtil = require("js/util/libraries");
 
     /**
      * Map from element IDs to corresponding element and type
@@ -85,19 +85,12 @@ define(function (require, exports) {
                         }
                     }
 
-                    if (categoryKey === "CHARACTERSTYLE" && !title) {
-                        var charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
-                            font = charStyle.adbeFont,
-                            fontString = font.family + " " + font.style,
-
-                            fontSize = charStyle.fontSize,
-                            fontSizeString = fontSize.value + fontSize.type,
-
-                            fontColor = charStyle.color && charStyle.color[0],
-                            fontColorString = fontColor ?
-                                ", " + tinycolor(fontColor.value).toHexString().toUpperCase() : "";
-
-                        title = fontString + ", " + fontSizeString + fontColorString;
+                    if (categoryKey === "CHARACTERSTYLE") {
+                        if (!title) {
+                            title = librariesUtil.formatCharStyle(element, ["fontFamily", "fontStyle"], " ");
+                        }
+                        
+                        title = title + " - " + librariesUtil.formatCharStyle(element, ["color", "fontSize"], ", ");
                     }
 
                     _idMap[id] = { asset: element, type: categoryKey };
