@@ -52,6 +52,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         PureRenderMixin = React.addons.PureRenderMixin,
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
         tinycolor = require("tinycolor"),
         Immutable = require("immutable"),
         classnames = require("classnames"),
@@ -81,6 +83,14 @@ define(function (require, exports, module) {
         v: 0,
         a: 1
     });
+
+    /**
+     * Preference key for color format in ColorType
+     *
+     * @const
+     * @type {String}
+     */
+    var COLOR_PICKER_FORMAT = "colorPickerFormat";
 
     /**
      * Mixin for drag-and-drop functionality. Clients should call _startUpdates
@@ -434,10 +444,27 @@ define(function (require, exports, module) {
     * @constructor
     */
     var ColorType = React.createClass({
+        mixins: [FluxMixin],
+        
         getInitialState: function () {
             return {
                 format: "rgb"
             };
+        },
+
+        componentWillMount: function () {
+            var preferences = this.getFlux().store("preferences").getState(),
+                formatPref = preferences.get(COLOR_PICKER_FORMAT, "rgb");
+
+            if (formatPref !== this.state.format) {
+                this.setState({
+                    format: formatPref
+                });
+            }
+        },
+
+        componentWillUnmount: function () {
+            this.getFlux().actions.preferences.setPreference(COLOR_PICKER_FORMAT, this.state.format);
         },
 
         /**
