@@ -361,7 +361,7 @@
         },
         "CLEAR_GUIDES": {
             "$action": "guides.clearGuides",
-            "$enable-rule": "supported-document"
+            "$enable-rule": "supported-document,have-guides"
         }
     },
     "WINDOW": {
