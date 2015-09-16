@@ -86,7 +86,8 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps) {
-            if (this.props.disabled !== nextProps.disabled) {
+            if (this.props.disabled !== nextProps.disabled ||
+                this.props.active !== nextProps.active) {
                 return true;
             }
 
@@ -194,6 +195,7 @@ define(function (require, exports, module) {
             var sectionClasses = classnames({
                 "effects": true,
                 "section": true,
+                "section__active": this.props.active,
                 "section__collapsed": !this.props.visible,
                 "section__sibling-collapsed": !this.props.visibleSibling
             });

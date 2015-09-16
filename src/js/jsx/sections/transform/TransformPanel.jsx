@@ -36,7 +36,21 @@ define(function (require, exports, module) {
         Flip = require("jsx!./Flip");
 
     var TransformPanel = React.createClass({
+        shouldComponentUpdate: function (nextProps) {
+            if (!this.props.active && !nextProps.active) {
+                return false;
+            }
+            
+            return true;
+        },
+        
         render: function () {
+            var sectionClasses = classnames({
+                "transform": true,
+                "section": true,
+                "section__active": this.props.active
+            });
+            
             var positionRotateClasses = classnames("formline",
                 "formline__bottom-align",
                 "formline__space-between",
@@ -44,7 +58,7 @@ define(function (require, exports, module) {
                 "formline__padded-first-child");
             
             return (
-                <section className="transform section">
+                <section className={sectionClasses}>
                     <header className="section-header">
                         <AlignDistribute document={this.props.document} />
                     </header>

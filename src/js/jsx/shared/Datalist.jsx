@@ -693,6 +693,7 @@ define(function (require, exports, module) {
                         placeholderText={this.props.placeholderText}
                         neverSelectAll={this.props.neverSelectAllInput}
                         onFocus={this._handleInputFocus}
+                        onBlur={this._handleInputBlur}
                         onKeyDown={this._handleInputKeyDown}
                         onChange={this._handleInputChange}
                         onDOMChange={this._handleInputDOMChange}

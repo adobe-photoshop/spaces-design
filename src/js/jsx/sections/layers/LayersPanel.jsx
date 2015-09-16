@@ -125,7 +125,8 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            if (this.props.disabled !== nextProps.disabled) {
+            if (this.props.disabled !== nextProps.disabled ||
+                this.props.active !== nextProps.active) {
                 return true;
             }
 
@@ -149,7 +150,8 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            return this.state.dragTargets !== nextState.dragTargets ||
+            return this.props.active !== nextProps.active ||
+                this.state.dragTargets !== nextState.dragTargets ||
                 this.state.dropTarget !== nextState.dropTarget ||
                 this.state.dragPosition !== nextState.dragPosition ||
                 !Immutable.is(_getFaces(this.props), _getFaces(nextProps));
@@ -603,6 +605,7 @@ define(function (require, exports, module) {
             var sectionClasses = classnames({
                 "layers": true,
                 "section": true,
+                "section__active": this.props.active,
                 "section__collapsed": !this.props.visible
             });
 

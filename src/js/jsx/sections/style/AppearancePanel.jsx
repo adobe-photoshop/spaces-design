@@ -79,11 +79,9 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps) {
-            if (this.props.disabled !== nextProps.disabled) {
-                return true;
-            }
-
-            if (nextProps.hidden !== this.props.hidden) {
+            if (this.props.disabled !== nextProps.disabled ||
+                this.props.active !== nextProps.active ||
+                this.props.hidden !== nextProps.hidden) {
                 return true;
             }
             
@@ -158,6 +156,7 @@ define(function (require, exports, module) {
             var sectionClasses = classnames({
                 "section": true,
                 "appearance": true,
+                "section__active": this.props.active,
                 "section__sibling-collapsed": !this.props.visibleSibling,
                 "section__collapsed": !this.props.visible
             });
