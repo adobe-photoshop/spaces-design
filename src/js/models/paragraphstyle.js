@@ -36,7 +36,8 @@ define(function (require, exports, module) {
      */
     var _paragraphStylePrototype = {
         /*
-         * @type {string} Either "left", "center", "right" or "justifyAll"
+         * @type {string} Either "left", "center", "right", "justifyAll",
+         *  "justifyLeft", "justifyRight", or "justifyCenter".
          */
         alignment: "left"
     };
@@ -63,15 +64,8 @@ define(function (require, exports, module) {
 
         if (paragraphStyle.hasOwnProperty("align")) {
             var alignment = paragraphStyle.align._value;
-            switch (alignment) {
-            case "left":
-            case "center":
-            case "right":
-            case "justifyAll":
+            if (alignment) {
                 model.alignment = alignment;
-                break;
-            default:
-                throw new Error("Unexpected paragraph alignment value: " + alignment);
             }
         }
 
