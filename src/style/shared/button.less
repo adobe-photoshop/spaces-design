@@ -195,26 +195,27 @@ button {
 }
 
 .button-checkbox {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.3rem;
+    height: 1.3rem;
     position: relative;
     label {
-        width: 1.5rem;
-        height: 1.5rem;
+        width: 1.3rem;
+        height: 1.3rem;
         cursor: pointer;
         position: absolute;
         top: 0;
         left: 0;
-        background-color: @warm-gray;
-        border-radius: .3rem;
+        background: transparent;
+        border: .21rem solid @warm-gray;
+        border-radius: .21rem;
         &:after {
             content: '';
             width: 0.7rem;
-            height: 0.4rem;
+            height: 0.3rem;
             position: absolute;
-            top: 0.3rem;
-            left: 0.3rem;
-            border: 0.3rem solid @bg-alt;
+            top: 0.1rem;
+            left: 0rem;
+            border: 0.2rem solid @bg-alt;
             border-top: none;
             border-right: none;
             background: transparent;
@@ -227,6 +228,9 @@ button {
     }
     input[type=checkbox] {
         visibility: hidden;
+        &:checked + label {
+            background-color: @warm-gray;
+        }
         &:checked + label:after {
           opacity: 1;
         } 
@@ -235,12 +239,46 @@ button {
 
 .button-checkbox__mixed {
     label {
+        background-color: @warm-gray;
         &:after {
-            top: 0.2rem;
-            left: 0.4rem;
+            top: 0.1rem;
+            left: 0.1rem;
             border-left: none;
             opacity: 1;
             transform: rotate(0);
         }
     }
+}
+
+// Fixing for Retina
+@media (-webkit-min-device-pixel-ratio: 2) {
+    .button-checkbox {
+        width: 11px;
+        height: 11px;
+
+        label {
+            width: 11px;
+            height: 11px;
+            &:after {
+                content: '';
+                width: 0.7rem;
+                height: 0.3rem;
+                border-width: 2px;
+                position: absolute;
+                top: 2px;
+                left: 0px;
+            }
+        }
+    }
+
+    .button-checkbox__mixed {
+        label {
+            &:after {
+                top: 2px;
+                left: 1px;
+                width: 7px;
+            }
+        }
+    }
+
 }
