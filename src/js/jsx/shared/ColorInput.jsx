@@ -34,7 +34,8 @@ define(function (require, exports, module) {
 
     var os = require("adapter/os");
 
-    var Dialog = require("jsx!js/jsx/shared/Dialog"),
+    var Focusable = require("js/jsx/mixin/Focusable"),
+        Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         Color = require("js/models/color"),
         strings = require("i18n!nls/strings"),
@@ -51,6 +52,60 @@ define(function (require, exports, module) {
         { key: os.eventKeyCode.ENTER, modifiers: null },
         { key: os.eventKeyCode.TAB, modifiers: null }
     ];
+
+    var ColorSwatch = React.createClass({
+        mixins: [FluxMixin, Focusable],
+
+        /**
+         * On escape, release focus and blur the swatch.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleKeyDown: function (event) {
+            var key = event.key;
+
+            switch (key) {
+                case "Escape":
+                    this.releaseFocus()
+                        .bind(this)
+                        .then(function () {
+                            React.findDOMNode(this).blur();
+                        });
+                    break;
+            }
+
+            this.props.onKeyDown(event);
+        },
+
+        render: function () {
+            return (
+                <div
+                    tabIndex="0"
+                    className="color-input__swatch__background"
+                    onFocus={this.props.onFocus}
+                    onKeyDown={this._handleKeyDown}
+                    onClick={this.props.onClick}>
+                    <div
+                        title={this.props.title}
+                        className="color-input__swatch__color">
+                        {this.props.overlay}
+                    </div>
+                </div>
+            );
+        },
+
+        /**
+         * Focus the color swatch
+         */
+        focus: function () {
+            this.acquireFocus()
+                .bind(this)
+                .then(function () {
+                    React.findDOMNode(this).focus();
+                });
+        }
+    });
 
     var ColorInput = React.createClass({
         mixins: [FluxMixin],
@@ -212,7 +267,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleDialogClose: function () {
-            React.findDOMNode(this.refs.swatch).focus();
+            this.refs.swatch.focus();
         },
 
         /**
@@ -282,20 +337,17 @@ define(function (require, exports, module) {
             // swatch
             swatchClassSet = classnames(swatchClassProps);
 
+            var overlay = this.props.swatchOverlay(colorTiny);
+
             return (
                 <div className={swatchClassSet}>
-                    <div
+                    <ColorSwatch
                         ref="swatch"
-                        className="color-input__swatch__background"
+                        title={this.props.title}
+                        overlay={overlay}
                         onFocus={this._handleSwatchFocus}
                         onKeyDown={this._handleKeyDown}
-                        onClick={this._handleSwatchClick}>
-                        <div
-                            title={this.props.title}
-                            className="color-input__swatch__color">
-                            {this.props.swatchOverlay(colorTiny)}
-                        </div>
-                    </div>
+                        onClick={this._handleSwatchClick} />
                     <Dialog
                         ref="dialog"
                         id={this._getID()}
