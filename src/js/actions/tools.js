@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
+    var Promise = require("bluebird"),
+        _ = require("lodash");
 
     var descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
@@ -363,6 +364,41 @@ define(function (require, exports) {
         shortcuts.addShortcut, shortcuts.removeShortcut];
 
     /**
+     * If currently selected layer is not valid for pen tool, will reset to
+     * superselect tool
+     *
+     * @return {Promise}
+     */
+    var resetPenTool = function () {
+        var toolStore = this.flux.store("tool"),
+            appStore = this.flux.store("application"),
+            currentDocument = appStore.getCurrentDocument(),
+            currentTool = toolStore.getCurrentTool();
+
+        if (!currentDocument || !currentTool || currentTool.id !== "pen") {
+            return Promise.resolve();
+        }
+
+        // If there is keyOriginShapeBBox defined (rectangle/ellipse layer)
+        // or keyShapeInvalidated defined (completed path layer)
+        // pen tool is not valid in new selection, so we reset to default tool
+        return descriptor.getProperty("layer", "keyOriginType")
+            .bind(this)
+            .then(function (origin) {
+                if (_.isArray(origin) && origin.length > 0 &&
+                    origin[0].hasOwnProperty("keyOriginShapeBBox") ||
+                    origin[0].hasOwnProperty("keyShapeInvalidated")) {
+                    var defaultTool = toolStore.getDefaultTool();
+                
+                    return this.transfer(selectTool, defaultTool);
+                }
+            });
+    };
+    resetPenTool.reads = [locks.JS_APP, locks.JS_TOOL, locks.PS_DOC];
+    resetPenTool.writes = [];
+    resetPenTool.transfers = [selectTool];
+
+    /**
      * Initialize the current tool based on the current native tool
      *
      * @return {Promise.<Tool>} Resolves to current tool name
@@ -513,6 +549,7 @@ define(function (require, exports) {
 
     exports.installShapeDefaults = installShapeDefaults;
     exports.resetBorderPolicies = resetBorderPolicies;
+    exports.resetPenTool = resetPenTool;
     exports.select = selectTool;
     exports.initTool = initTool;
     exports.changeModalState = changeModalState;
