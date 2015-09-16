@@ -804,7 +804,7 @@ define(function (require, exports) {
                     existingLayerIDs = currentDocument.layers.index.toArray(),
                     newLayerIDs = _.difference(nextLayerIDs, existingLayerIDs).reverse();
 
-                return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true);
+                return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true, false);
             });
     };
     createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
