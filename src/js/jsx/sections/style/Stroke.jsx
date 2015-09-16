@@ -186,7 +186,7 @@ define(function (require, exports, module) {
         _downsampleStrokes: function (strokes) {
             var colors = strokes.map(function (stroke) {
                     if (!stroke) {
-                        return null;
+                        return Color.DEFAULT;
                     }
                     if (stroke.type === contentLayerLib.contentTypes.SOLID_COLOR) {
                         return stroke.color;
