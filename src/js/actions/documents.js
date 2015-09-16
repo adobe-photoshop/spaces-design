@@ -162,10 +162,7 @@ define(function (require, exports) {
      * @return {Promise.<{document: object, layers: Array.<object>}>}
      */
     var _getLayersForDocument = function (doc) {
-        var startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-            numberOfLayers = (doc.hasBackgroundLayer ? doc.numberOfLayers + 1 : doc.numberOfLayers);
-
-        return layerActions._getLayersForDocument(doc, startIndex, numberOfLayers)
+        return layerActions._getLayersForDocument(doc)
             .then(function (layers) {
                 return {
                     document: doc,
