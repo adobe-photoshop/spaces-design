@@ -74,37 +74,62 @@ define(function (require, exports) {
         "itemIndex",
         "background",
         "boundsNoEffects",
-        "opacity",
-        "layerFXVisible",
         "mode"
     ];
 
     /**
-     * Properties to be included if present when requesting
-     * layer descriptors from Photoshop.
+     * Basic optional properties to request of layer descriptors from Photoshop.
+     * When initializing documents, these are the only properties requested for
+     * non-selected layers.
      * 
      * @private
      * @type {Array.<string>} 
      */
     var _optionalLayerProperties = [
-        "adjustment",
-        "AGMStrokeStyleInfo",
-        "textKey",
         "boundingBox",
         "layerKind",
-        "keyOriginType",
-        "fillEnabled",
-        "fillOpacity",
-        "layerEffects",
-        "proportionalScaling",
         "artboard",
         "artboardEnabled",
-        "pathBounds",
         "smartObject",
-        "globalAngle",
         "layerSectionExpanded",
         "vectorMaskEnabled"
     ];
+
+    /**
+     * Inessential optional properties to request of layer descriptors from Photoshop.
+     * When initializing documents, these properties are NOT requested for non-selected
+     * layers.
+     *
+     * @private
+     * @type {Array.<string>}
+     */
+    var _lazyLayerProperties = [
+        "layerID", // redundant but useful for matching results
+        "globalAngle",
+        "pathBounds",
+        "proportionalScaling",
+        "adjustment",
+        "AGMStrokeStyleInfo",
+        "textKey",
+        "fillEnabled",
+        "fillOpacity",
+        "keyOriginType",
+        "layerEffects",
+        "layerFXVisible", // the following are required but this is not enforced
+        "opacity"
+    ];
+
+    /**
+     * All optional properties to request of layer descriptors from Photoshop.
+     * When resetting any layer(s), these properties are requested. This is the
+     * union of _optionalLayerProperties and _lazyLayerProperties.
+     *
+     * @private
+     * @type {Array.<string>}
+     */
+    var _allOptionalLayerProperties = _lazyLayerProperties
+        .slice(1)
+        .concat(_optionalLayerProperties);
 
     /**
      * Get layer descriptors for the given layer references. Only the
@@ -117,7 +142,7 @@ define(function (require, exports) {
      */
     var _getLayersByRef = function (references) {
         var layerPropertiesPromise = descriptor.batchMultiGetProperties(references, _layerProperties),
-            optionalPropertiesPromise = descriptor.batchMultiGetProperties(references, _optionalLayerProperties,
+            optionalPropertiesPromise = descriptor.batchMultiGetProperties(references, _allOptionalLayerProperties,
                 { continueOnError: true });
 
         return Promise.join(layerPropertiesPromise, optionalPropertiesPromise,
@@ -132,17 +157,19 @@ define(function (require, exports) {
      * reasons.
      * 
      * @private
-     * @param {object} docRef A document reference
+     * @param {object} doc A document descriptor
      * @param {number} startIndex
      * @param {number} numberOfLayers
      * @return {Promise.<Array.<object>>}
      */
-    var _getLayersForDocumentRef = function (docRef, startIndex, numberOfLayers) {
-        var rangeOpts = {
-            range: "layer",
-            index: startIndex,
-            count: -1
-        };
+    var _getLayersForDocument = function (doc, startIndex, numberOfLayers) {
+        var documentID = doc.documentID,
+            docRef = documentLib.referenceBy.id(documentID),
+            rangeOpts = {
+                range: "layer",
+                index: startIndex,
+                count: -1
+            };
 
         var requiredPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _layerProperties, {
             failOnMissingProperty: true
@@ -150,6 +177,18 @@ define(function (require, exports) {
 
         var optionalPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _optionalLayerProperties, {
             failOnMissingProperty: false
+        });
+
+        var targetLayers = doc.targetLayers || [],
+            targetRefs = targetLayers.map(function (target) {
+                return [
+                    documentLib.referenceBy.id(documentID),
+                    layerLib.referenceBy.index(target._index + 1)
+                ];
+            });
+
+        var lazyPropertiesPromise = descriptor.batchMultiGetProperties(targetRefs, _lazyLayerProperties, {
+            continueOnError: true
         });
 
         // Fetch extension data by a range of layer indexes.
@@ -182,6 +221,19 @@ define(function (require, exports) {
                     .zipWith(extension, _.merge)
                     .reverse()
                     .value();
+            })
+            .tap(function (properties) {
+                var propertiesByID = _.indexBy(properties, "layerID");
+                return lazyPropertiesPromise.each(function (lazyProperties) {
+                    if (!lazyProperties) {
+                        // A background will not have a layer ID
+                        return;
+                    }
+                    
+                    var lazyLayerID = lazyProperties.layerID;
+
+                    _.merge(propertiesByID[lazyLayerID], lazyProperties);
+                });
             });
     };
 
@@ -658,6 +710,28 @@ define(function (require, exports) {
     revealLayers.transfers = [setGroupExpansion];
 
     /**
+     * Initialize the uninitialized subset of the given layers by loading their lazy properties.
+     *
+     * @param {Document} document
+     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec
+     * @return {Promise}
+     */
+    var initializeLayers = function (document, layerSpec) {
+        if (layerSpec instanceof Layer) {
+            layerSpec = Immutable.List.of(layerSpec);
+        }
+
+        var uninitializedLayers = layerSpec.filterNot(function (layer) {
+            return layer.initialized;
+        });
+
+        return this.transfer(resetLayers, document, uninitializedLayers, true);
+    };
+    initializeLayers.reads = [];
+    initializeLayers.writes = [];
+    initializeLayers.transfers = [resetLayers];
+
+    /**
      * Selects the given layer with given modifiers
      *
      * @param {Document} document Owner document
@@ -688,7 +762,11 @@ define(function (require, exports) {
             
         if (!modifier || modifier === "select") {
             payload.selectedIDs = collection.pluck(layerSpec, "id");
-            dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload);
+            dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
+                .bind(this)
+                .then(function () {
+                    this.transfer(initializeLayers, document, layerSpec);
+                });
             revealPromise = this.transfer(revealLayers, document, layerSpec);
         } else {
             dispatchPromise = Promise.resolve();
@@ -707,20 +785,32 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     if (modifier && modifier !== "select") {
-                        var resetPromise = this.transfer(resetSelection, document),
-                            revealPromise = this.transfer(revealLayers, document, layerSpec);
+                        var revealPromise = this.transfer(revealLayers, document, layerSpec),
+                            resetPromise = this.transfer(resetSelection, document)
+                                .bind(this)
+                                .then(function () {
+                                    var nextDocument = this.flux.store("document").getDocument(document.id),
+                                        selected = nextDocument.layers.selected;
+
+                                    return this.transfer(initializeLayers, nextDocument, selected);
+                                });
 
                         return Promise.join(resetPromise, revealPromise);
                     }
-                }).then(function () {
-                    return this.transfer(tools.resetBorderPolicies);
                 });
 
-        return Promise.join(dispatchPromise, selectPromise, revealPromise);
+        var modelUpdatePromise = Promise.join(dispatchPromise, selectPromise)
+            .bind(this)
+            .then(function () {
+                // Wait for the model to e updated with the new selected layers
+                return this.transfer(tools.resetBorderPolicies);
+            });
+
+        return Promise.join(modelUpdatePromise, revealPromise);
     };
     select.reads = [];
     select.writes = [locks.PS_DOC, locks.JS_DOC];
-    select.transfers = [revealLayers, resetSelection, tools.resetBorderPolicies];
+    select.transfers = [revealLayers, resetSelection, tools.resetBorderPolicies, initializeLayers];
     select.post = [_verifyLayerSelection];
 
     /**
@@ -2030,6 +2120,7 @@ define(function (require, exports) {
     exports.setBlendMode = setBlendMode;
     exports.addLayers = addLayers;
     exports.resetSelection = resetSelection;
+    exports.initializeLayers = initializeLayers;
     exports.resetLayers = resetLayers;
     exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetBounds = resetBounds;
@@ -2047,7 +2138,7 @@ define(function (require, exports) {
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 
-    exports._getLayersForDocumentRef = _getLayersForDocumentRef;
+    exports._getLayersForDocument = _getLayersForDocument;
     exports._verifyLayerSelection = _verifyLayerSelection;
     exports._verifyLayerIndex = _verifyLayerIndex;
     exports._getLayerIDsForDocumentID = _getLayerIDsForDocumentID;

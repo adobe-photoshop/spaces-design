@@ -225,7 +225,15 @@ define(function (require, exports, module) {
          * Should this layer be included in the "export all" process?
          * @type {boolean}
          */
-        exportEnabled: false
+        exportEnabled: false,
+
+        /**
+         * Indicates whether or not the lazy properties have yet been loaded
+         * into this layer.
+         *
+         * @type {boolean}
+         */
+        initialized: false
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -429,7 +437,8 @@ define(function (require, exports, module) {
             isArtboard: !!isArtboard,
             bounds: isArtboard ? new Bounds(boundsDescriptor) : null,
             isLinked: false,
-            vectorMaskEnabled: false
+            vectorMaskEnabled: false,
+            initialized: true
         });
     };
 
@@ -439,9 +448,10 @@ define(function (require, exports, module) {
      * @param {object|Immutable.Record} document Document descriptor or Document model
      * @param {object} layerDescriptor
      * @param {boolean} selected Whether or not this layer is currently selected
+     * @param {boolean=} initialized
      * @return {Layer}
      */
-    Layer.fromDescriptor = function (document, layerDescriptor, selected) {
+    Layer.fromDescriptor = function (document, layerDescriptor, selected, initialized) {
         var id = layerDescriptor.layerID,
             documentID,
             resolution;
@@ -478,7 +488,9 @@ define(function (require, exports, module) {
             isArtboard: layerDescriptor.artboardEnabled,
             vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
             exportEnabled: layerDescriptor.exportEnabled,
-            isLinked: _extractIsLinked(layerDescriptor)
+            isLinked: _extractIsLinked(layerDescriptor),
+            initialized: initialized || selected
+            // if not explicitly marked as initialized, then it is initialized iff it is selected
         };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
@@ -516,7 +528,8 @@ define(function (require, exports, module) {
                 isArtboard: layerDescriptor.artboardEnabled,
                 vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
                 exportEnabled: layerDescriptor.exportEnabled,
-                isLinked: _extractIsLinked(layerDescriptor)
+                isLinked: _extractIsLinked(layerDescriptor),
+                initialized: true
             };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
