@@ -154,6 +154,9 @@ define(function (require, exports, module) {
             "supported-document":
                 (document !== null) &&
                 !document.unsupported,
+            "have-guides":
+                (document !== null) &&
+                !document.guides.isEmpty(),
             "export-enabled":
                 (document !== null) && exportEnabled,
             "psd-document":
