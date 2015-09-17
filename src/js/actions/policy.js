@@ -254,6 +254,7 @@ define(function (require, exports) {
     };
     disablePolicies.reads = [];
     disablePolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+    disablePolicies.modal = true;
 
     /**
      * Re-enabled cached keyboard policies
@@ -285,6 +286,7 @@ define(function (require, exports) {
     };
     reenablePolicies.reads = [];
     reenablePolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+    reenablePolicies.modal = true;
 
     /**
      * Set the default keyboard propagation policy.
