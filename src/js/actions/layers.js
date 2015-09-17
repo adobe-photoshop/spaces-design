@@ -158,12 +158,11 @@ define(function (require, exports) {
      * 
      * @private
      * @param {object} doc A document descriptor
-     * @param {number} startIndex
-     * @param {number} numberOfLayers
      * @return {Promise.<Array.<object>>}
      */
-    var _getLayersForDocument = function (doc, startIndex, numberOfLayers) {
+    var _getLayersForDocument = function (doc) {
         var documentID = doc.documentID,
+            startIndex = doc.hasBackgroundLayer ? 0 : 1,
             docRef = documentLib.referenceBy.id(documentID),
             rangeOpts = {
                 range: "layer",
@@ -183,7 +182,7 @@ define(function (require, exports) {
             targetRefs = targetLayers.map(function (target) {
                 return [
                     documentLib.referenceBy.id(documentID),
-                    layerLib.referenceBy.index(target._index + 1)
+                    layerLib.referenceBy.index(startIndex + target._index)
                 ];
             });
 
@@ -196,6 +195,7 @@ define(function (require, exports) {
         // the photoshop action will fail.
         // And it is safe to ignore ALL bg layers because we don't use extension data on them
         var nameSpace = global.EXTENSION_DATA_NAMESPACE,
+            numberOfLayers = doc.hasBackgroundLayer ? doc.numberOfLayers + 1 : doc.numberOfLayers,
             indexRange = _.range(1, startIndex + numberOfLayers),
             extensionPlayObjects = indexRange.map(function (i) {
                 var layerRef = layerLib.referenceBy.index(i);
@@ -1289,6 +1289,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setOpacity = function (document, layers, opacity, coalesce) {
+        layers = layers.filterNot(function (layer) {
+            return layer.isBackground;
+        });
+
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
@@ -1459,6 +1463,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setBlendMode = function (document, layers, mode) {
+        layers = layers.filterNot(function (layer) {
+            return layer.isBackground;
+        });
+
         var documentRef = documentLib.referenceBy.id(document.id),
             layerIDs = collection.pluck(layers, "id"),
             layerRef = layerIDs

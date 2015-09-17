@@ -67,13 +67,16 @@ define(function (require, exports, module) {
                 modes = collection.pluck(layers, "blendMode"),
                 allGroups = layers.every(function (layer) {
                     return layer.kind === layer.layerKinds.GROUP;
+                }),
+                disabled = this.props.disabled || layers.every(function (layer) {
+                    return layer.isBackground;
                 });
 
             var listID = "blendmodes-" + this.props.id + this.props.containerType + "-" + this.props.document.id;
 
             return (
                 <BlendMode
-                    disabled={this.props.disabled}
+                    disabled={disabled}
                     listID={listID}
                     modes={modes}
                     handleChange={this._handleChange}
