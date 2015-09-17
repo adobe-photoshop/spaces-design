@@ -874,7 +874,7 @@ define(function (require, exports, module) {
                 var selectedLayers = document.layers.selected;
                 replaceLayer = selectedLayers && selectedLayers.size === 1 && selectedLayers.first();
             }
-            
+
             // The selected layer should be empty and a non-background layer unless replace is explicitly provided true
             replace = replaceLayer &&
                 (replace ||
