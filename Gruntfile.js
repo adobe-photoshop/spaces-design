@@ -126,8 +126,8 @@ module.exports = function (grunt) {
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
         "requirejs": {
-            de: getRequireOptions("de"),
             en: getRequireOptions("en"),
+            de: getRequireOptions("de"),
             fr: getRequireOptions("fr"),
             ja: getRequireOptions("ja")
         },
