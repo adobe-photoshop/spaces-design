@@ -177,7 +177,7 @@ define(function (require, exports) {
                 }
             ),
             // Used for distort/skew transformations
-            noOutsetCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+            noOutsetCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 distortModifier,
                 {
@@ -187,7 +187,7 @@ define(function (require, exports) {
                     height: psSelectionHeight + inset * 2
                 }
             ),
-            outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+            outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 {},
                 {
