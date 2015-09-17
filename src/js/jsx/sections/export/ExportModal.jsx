@@ -54,7 +54,7 @@ define(function (require, exports, module) {
                     position={Dialog.POSITION_METHODS.CENTER}
                     dismissOnCanvasClick={true}
                     dismissOnWindowClick={true}
-                    dismissOnWindowResize={false}
+                    dismissOnWindowResize={true}
                     dismissOnKeys={ [{ key: os.eventKeyCode.ESCAPE, modifiers: null }] }
                     className={"exports-panel__dialog"} >
 

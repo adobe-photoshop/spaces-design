@@ -24,8 +24,23 @@
 define(function (require, exports) {
     "use strict";
 
+    var Promise = require("bluebird");
+
+    var adapterUI = require("adapter/ps/ui"),
+        adapterOS = require("adapter/os");
+
     var events = require("../events"),
-        locks = require("js/locks");
+        policy = require("./policy"),
+        locks = require("js/locks"),
+        EventPolicy = require("js/models/eventpolicy"),
+        PointerEventPolicy = EventPolicy.PointerEventPolicy;
+
+    /**
+     * Never propagate policy ID of each open dialog
+     *
+     * @type {{string: number}}
+     */
+    var _policyMap = {};
 
     /**
      * Open a dialog with a given ID and optional dismissal policy.
@@ -38,14 +53,23 @@ define(function (require, exports) {
      */
     var openDialog = function (id, dismissalPolicy) {
         var payload = {
-            id: id,
-            dismissalPolicy: dismissalPolicy
-        };
+                id: id,
+                dismissalPolicy: dismissalPolicy
+            },
+            neverPropagatePolicy = new PointerEventPolicy(
+                adapterUI.policyAction.NEVER_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN
+            ),
+            dispatchPromise = this.dispatchAsync(events.dialog.OPEN_DIALOG, payload),
+            policyPromise = this.transfer(policy.addPointerPolicies, [neverPropagatePolicy]);
 
-        return this.dispatchAsync(events.dialog.OPEN_DIALOG, payload);
+        return Promise.join(dispatchPromise, policyPromise, function (dispatchResult, policyResult) {
+            _policyMap[id] = policyResult;
+        });
     };
     openDialog.reads = [];
     openDialog.writes = [locks.JS_DIALOG];
+    openDialog.transfers = [policy.addPointerPolicies];
     openDialog.modal = true;
 
     /**
@@ -57,13 +81,18 @@ define(function (require, exports) {
      */
     var closeDialog = function (id) {
         var payload = {
-            id: id
-        };
+                id: id
+            },
+            dispatchPromise = this.dispatchAsync(events.dialog.CLOSE_DIALOG, payload),
+            activePolicy = _policyMap[id],
+            policyPromise = activePolicy ?
+                this.transfer(policy.removePointerPolicies, activePolicy, true) : Promise.resolve();
 
-        return this.dispatchAsync(events.dialog.CLOSE_DIALOG, payload);
+        return Promise.join(dispatchPromise, policyPromise);
     };
     closeDialog.reads = [];
     closeDialog.writes = [locks.JS_DIALOG];
+    closeDialog.transfers = [policy.removePointerPolicies];
     closeDialog.modal = true;
 
     /**
@@ -79,7 +108,22 @@ define(function (require, exports) {
     closeAllDialogs.writes = [locks.JS_DIALOG];
     closeAllDialogs.modal = true;
 
+    /**
+     * Clears the policy ID map on reset
+     *
+     * @return {Promise}
+     */
+    var onReset = function () {
+        _policyMap = {};
+
+        return Promise.resolve();
+    };
+    onReset.reads = [];
+    onReset.writes = [];
+
     exports.openDialog = openDialog;
     exports.closeDialog = closeDialog;
     exports.closeAllDialogs = closeAllDialogs;
+
+    exports.onReset = onReset;
 });
