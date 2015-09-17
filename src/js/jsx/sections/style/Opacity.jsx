@@ -37,7 +37,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
-                return collection.pluck(props.layers, "opacity");
+                return collection.pluckAll(props.layers, ["id", "opacity"]);
             };
 
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
@@ -55,7 +55,11 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var opacities = collection.pluck(this.props.layers, "opacity");
+            var opacities = collection.pluck(this.props.layers, "opacity"),
+                disabled = this.props.disabled || this.props.layers.every(function (layer) {
+                    return layer.isBackground;
+                });
+
             return (
                 <NumberInput
                     value={opacities}
@@ -63,7 +67,7 @@ define(function (require, exports, module) {
                     onFocus={this.props.onFocus}
                     min={0}
                     max={100}
-                    disabled={this.props.disabled}
+                    disabled={disabled}
                     size="column-4" />
             );
         }

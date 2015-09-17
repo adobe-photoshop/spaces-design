@@ -1289,6 +1289,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setOpacity = function (document, layers, opacity, coalesce) {
+        layers = layers.filterNot(function (layer) {
+            return layer.isBackground;
+        });
+
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
@@ -1459,6 +1463,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setBlendMode = function (document, layers, mode) {
+        layers = layers.filterNot(function (layer) {
+            return layer.isBackground;
+        });
+
         var documentRef = documentLib.referenceBy.id(document.id),
             layerIDs = collection.pluck(layers, "id"),
             layerRef = layerIDs
