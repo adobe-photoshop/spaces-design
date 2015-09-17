@@ -56,6 +56,14 @@ define(function (require, exports, module) {
     var ColorSwatch = React.createClass({
         mixins: [FluxMixin, Focusable],
 
+        propTypes: {
+            onKeyDown: React.PropTypes.func.isRequired,
+            onFocus: React.PropTypes.func.isRequired,
+            onClick: React.PropTypes.func.isRequired,
+            title: React.PropTypes.string.isRequired,
+            overlay: React.PropTypes.element
+        },
+
         /**
          * On escape, release focus and blur the swatch.
          *
