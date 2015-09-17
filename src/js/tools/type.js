@@ -176,16 +176,6 @@ define(function (require, exports, module) {
             descriptor.addListener("deleteTextLayer", _layerDeletedHandler);
 
             _toolModalStateChangedHandler = function (event) {
-                if (event.tool.ID === "txBx" && event.state._value === "enter" &&
-                    event.kind._value === "tool") {
-                    this.flux.actions.policy.disablePolicies();
-                }
-
-                if (event.tool.ID === "txBx" && event.state._value === "exit" &&
-                    event.kind._value === "tool") {
-                    this.flux.actions.policy.reenablePolicies();
-                }
-
                 if (event.kind._value === "tool" && event.tool.ID === "txBx" &&
                     event.state._value === "exit" && event.reason._value === "cancel") {
                     // If there was a deleteTextLayer event, we've already updated the model.
