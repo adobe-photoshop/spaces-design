@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames"),
+        Immutable = require("immutable"),
         _ = require("lodash");
 
     var Button = require("jsx!js/jsx/shared/Button"),
@@ -164,7 +165,7 @@ define(function (require, exports, module) {
          * Export all assets for layers that have been enabled for export (via the checkboxes)
          * @private
          */
-        _exportAllAssets: function () {
+        _exportAllAssets: function (prefixMap) {
             var exportActions = this.getFlux().actions.export,
                 document = this.state.document;
 
@@ -173,7 +174,7 @@ define(function (require, exports, module) {
                 exportDisabled: true
             });
 
-            exportActions.exportLayerAssets(document)
+            exportActions.exportLayerAssets(document, undefined, prefixMap)
                 .bind(this)
                 .then(function () {
                     this.setState({
@@ -231,12 +232,21 @@ define(function (require, exports, module) {
             var artboards = documentExports.getLayersWithExports(document, true),
                 artboardsFiltered = document.layers.filterExportable(artboards),
                 artboardsSorted = gridSort(artboardsFiltered),
-                nonABLayers = documentExports.getLayersWithExports(document, false);
+                nonABLayers = documentExports.getLayersWithExports(document, false),
+                nonABLayersFiltered = document.layers.filterExportable(nonABLayers),
+                prefixMap;
+
+            // Generate prefixes
+            if (useArtboardPrefix) {
+                prefixMap = Immutable.Map(artboardsSorted.map(function (layer, index) {
+                    return [layer.id, exportStore.getExportPrefix(layer, index)];
+                }));
+            }
 
             // Helper to generate a LayerExportsItem component
-            var layerExportComponent = function (layer, index) {
+            var layerExportComponent = function (layer) {
                 var layerExports = layerExportsMap.get(layer.id),
-                    prefix = exportStore.getExportPrefix(layer, index);
+                    prefix = prefixMap && prefixMap.get(layer.id);
 
                 return (
                     <LayerExportsItem
@@ -250,9 +260,9 @@ define(function (require, exports, module) {
             };
 
             var allArtboardsExportComponents = artboardsSorted.map(layerExportComponent),
-                allNonABLayerExportComponents = nonABLayers.reverse().map(layerExportComponent),
+                allNonABLayerExportComponents = nonABLayersFiltered.reverse().map(layerExportComponent),
                 allArtboardsExportEnabled = collection.pluck(artboardsSorted, "exportEnabled"),
-                allNonABLayersExportEnabled = collection.pluck(nonABLayers, "exportEnabled");
+                allNonABLayersExportEnabled = collection.pluck(nonABLayersFiltered, "exportEnabled");
 
             var panelClassnames = classnames("exports-panel__container");
 
@@ -281,7 +291,7 @@ define(function (require, exports, module) {
                                         className="control-group__vertical"
                                         checked={useArtboardPrefix}
                                         onChange={this._setUseArtboardPrefix} />
-                                    Use Prefix
+                                    {strings.EXPORT.USE_PREFIX}
                             </div>
                             <div className="exports-panel__asset-list__list">
                                 {allArtboardsExportComponents}
@@ -308,7 +318,7 @@ define(function (require, exports, module) {
                             <div className="exports-panel__button-group">
                                 <Button
                                     disabled={this.state.exportDisabled || serviceBusy}
-                                    onClick={this._exportAllAssets}>
+                                    onClick={this._exportAllAssets.bind(this, prefixMap)}>
                                     {exportButton}
                                 </Button>
                             </div>

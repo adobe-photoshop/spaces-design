@@ -388,7 +388,8 @@
         "TITLE_SETTINGS": "Settings",
         "EXPORT_DOCUMENT_FILENAME": "document",
         "ONLY_UNSUPPORTED_LAYERS_SELECTED": "No supported layers selected",
-        "NO_ASSETS": "No exports configured"
+        "NO_ASSETS": "No exports configured",
+        "USE_PREFIX": "Use Prefix"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",
