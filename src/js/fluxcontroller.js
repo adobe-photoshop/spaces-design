@@ -671,7 +671,11 @@ define(function (require, exports, module) {
             return Promise.reject(new Error("The flux instance is already running"));
         }
 
-        var beforeStartupPromise = this._invokeActionMethods("beforeStartup");
+        var beforeStartupPromise = ps.endModalToolState(true)
+            .bind(this)
+            .then(function () {
+                return this._invokeActionMethods("beforeStartup");
+            });
 
         beforeStartupPromise
             .bind(this)
@@ -742,8 +746,11 @@ define(function (require, exports, module) {
         // Dispatch an event that all stores should listen to to clear their state
         flux.dispatch.call(flux, events.RESET);
 
-        return this._invokeActionMethods("onReset")
+        return ps.endModalToolState(true)
             .bind(this)
+            .then(function () {
+                return this._invokeActionMethods("onReset");
+            })
             .then(this._invokeActionMethods.bind(this, "beforeStartup", true))
             .then(function (results) {
                 this.emit("unlock");
