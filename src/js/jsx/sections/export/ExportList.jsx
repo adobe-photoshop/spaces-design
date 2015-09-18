@@ -179,7 +179,7 @@ define(function (require, exports, module) {
                             size="column-8" />
                     </div>
                     <Button
-                        className="layer-exports__delete-button control-group__vertical"
+                        className="control-group__vertical button-toggle"
                         title={strings.TOOLTIPS.EXPORT_REMOVE_ASSET}
                         onClick={this._handleDeleteClick}>
                         <SVGIcon CSSID="delete" />
