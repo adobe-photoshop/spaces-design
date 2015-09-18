@@ -790,7 +790,8 @@ define(function (require, exports) {
      */
     var handlePlaceEvent = function (event) {
         var applicationStore = this.flux.store("application"),
-            document = applicationStore.getCurrentDocument();
+            document = applicationStore.getCurrentDocument(),
+            replace = false;
 
         if (!document) {
             var error = new Error("Place event received without a current document");
@@ -803,10 +804,10 @@ define(function (require, exports) {
         }
 
         if (document.layers.byID(layerID)) {
-            return Promise.resolve();
+            replace = true;
         }
 
-        return this.transfer(layerActions.addLayers, document, layerID);
+        return this.transfer(layerActions.addLayers, document, layerID, true, replace);
     };
     handlePlaceEvent.reads = [locks.JS_APP];
     handlePlaceEvent.writes = [];
