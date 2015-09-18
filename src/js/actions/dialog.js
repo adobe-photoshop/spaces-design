@@ -60,11 +60,16 @@ define(function (require, exports) {
                 adapterUI.policyAction.NEVER_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN
             ),
+            isModal = this.flux.store("dialog").isModalDialog(id),
             dispatchPromise = this.dispatchAsync(events.dialog.OPEN_DIALOG, payload),
-            policyPromise = this.transfer(policy.addPointerPolicies, [neverPropagatePolicy]);
+            policyPromise = isModal ?
+                this.transfer(policy.addPointerPolicies, [neverPropagatePolicy]) :
+                Promise.resolve();
 
         return Promise.join(dispatchPromise, policyPromise, function (dispatchResult, policyResult) {
-            _policyMap[id] = policyResult;
+            if (isModal) {
+                _policyMap[id] = policyResult;
+            }
         });
     };
     openDialog.reads = [];

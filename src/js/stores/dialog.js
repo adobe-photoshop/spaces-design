@@ -34,6 +34,18 @@ define(function (require, exports, module) {
 
     var DialogStore = Fluxxor.createStore({
         /**
+         * List of the modal dialog IDs
+         *
+         * @const
+         * @type {Array}
+         */
+        _modalDialogIDs: Immutable.Set([
+            "first-launch-dialog",
+            "keyboard-shortcut-dialog",
+            "exports-panel-dialog"
+        ]),
+
+        /**
          * The set of open Dialog IDs
          * 
          * @private
@@ -82,9 +94,9 @@ define(function (require, exports, module) {
         getState: function () {
             return {
                 openDialogs: this._openDialogs,
-                appIsModal: this._openDialogs.contains("first-launch-dialog") ||
-                            this._openDialogs.contains("keyboard-shortcut-dialog") ||
-                            this._openDialogs.contains("exports-panel-dialog"),
+                appIsModal: this._openDialogs.some(function (id) {
+                    return this._modalDialogIDs.has(id);
+                }, this),
                 appIsInputModal: this._openDialogs.contains("search-bar-dialog")
             };
         },
@@ -119,6 +131,15 @@ define(function (require, exports, module) {
             var kinds = collection.pluck(currentDocument.layers.selected, "kind");
 
             return collection.uniformValue(kinds);
+        },
+
+        /**
+         * Returns true if the given dialog ID is one of the modal dialogs
+         * @param {string} id Dialog ID
+         * @return {boolean}
+         */
+        isModalDialog: function (id) {
+            return this._modalDialogIDs.has(id);
         },
 
         /**
