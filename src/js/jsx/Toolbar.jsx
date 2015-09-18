@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
-    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon");
+    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
+        Zoom = require("jsx!js/jsx/Zoom");
 
     var Toolbar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "application", "preferences")],
@@ -161,6 +162,7 @@ define(function (require, exports, module) {
                     <ul>
                         {tools}
                     </ul>
+                        <Zoom />
                 </div>
             );
         },

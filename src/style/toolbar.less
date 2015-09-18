@@ -55,6 +55,36 @@
             display: flex;
         }        
     }
+    .zoom{
+        position: absolute;
+        bottom: 1.3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: @toolbar-button-size;
+        flex-wrap: wrap;
+        
+        .button-simple.toolbar__zoom {
+            display: flex;
+            align-self: flex-start;
+            svg {
+                width: 1.6rem;
+                height: 1.6rem;
+                fill: @item-inactive;
+            }
+        }
+        
+        input[type="text"] {
+            display: flex;
+            align-self: flex-end;
+            width: @toolbar-button-size;
+            text-align: center;
+            font-size: @text-medium;
+            color: @item-inactive;
+            border:none;
+            cursor: default;
+        }
+    }
 }
 
 .toolbar li .button-simple:first-child {
