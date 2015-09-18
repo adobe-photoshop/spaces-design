@@ -145,9 +145,19 @@ define(function (require, exports) {
             optionalPropertiesPromise = descriptor.batchMultiGetProperties(references, _allOptionalLayerProperties,
                 { continueOnError: true });
 
-        return Promise.join(layerPropertiesPromise, optionalPropertiesPromise,
-            function (required, optional) {
-                return _.zipWith(required, optional, _.merge);
+        var nameSpace = global.EXTENSION_DATA_NAMESPACE,
+            extensionPlayObjects = references.map(function (ref) {
+                return layerLib.getExtensionData(ref[0], ref[1], nameSpace);
+            }),
+            extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
+                .map(function (extensionData) {
+                    var extensionDataRoot = extensionData[nameSpace];
+                    return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
+                });
+
+        return Promise.join(layerPropertiesPromise, optionalPropertiesPromise, extensionPromise,
+            function (required, optional, extension) {
+                return _.zipWith(required, optional, extension, _.merge);
             });
     };
 
