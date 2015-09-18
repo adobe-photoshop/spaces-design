@@ -466,6 +466,17 @@ define(function (require, exports, module) {
             return prevID;
         },
 
+        /**
+         * Prevent the default event action to ensure that the related input does
+         * not blur before the click has been processed.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleMouseDown: function (event) {
+            event.preventDefault();
+        },
+
         render: function () {
             var selectedKey = this.state.selected,
                 options = this._getOptions(),
@@ -506,6 +517,7 @@ define(function (require, exports, module) {
             return (
                 <ul {...this.props}
                     className="select"
+                    onMouseDown={this._handleMouseDown}
                     onClick={this._handleClick}
                     onMouseMove={this._handleMouseMove}>
                     {children}

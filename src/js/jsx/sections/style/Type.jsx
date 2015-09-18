@@ -49,20 +49,12 @@ define(function (require, exports, module) {
         mixins: [FluxMixin, StoreWatchMixin("font", "tool")],
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            var getTexts = function (document) {
+            var getProperties = function (document) {
                 if (!document) {
                     return null;
                 }
 
-                return collection.pluck(document.layers.selected, "text");
-            };
-
-            var getOpacities = function (document) {
-                if (!document) {
-                    return null;
-                }
-
-                return collection.pluck(document.layers.selected, "opacity");
+                return collection.pluckAll(document.layers.selected, ["text", "opacity", "blendMode"]);
             };
 
             if (this.state.opaque !== nextState.opaque) {
@@ -71,8 +63,7 @@ define(function (require, exports, module) {
 
             return !Immutable.is(this.state.postScriptMap, nextState.postScriptMap) ||
                 !Immutable.is(this.state.typefaces, nextState.typefaces) ||
-                !Immutable.is(getTexts(this.props.document), getTexts(nextProps.document)) ||
-                !Immutable.is(getOpacities(this.props.document), getOpacities(nextProps.document));
+                !Immutable.is(getProperties(this.props.document), getProperties(nextProps.document));
         },
 
         getStateFromFlux: function () {

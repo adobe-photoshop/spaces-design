@@ -289,6 +289,7 @@ define(function (require, exports, module) {
 
             return (<div className="libraries__bar__top__content">
                 <Datalist
+                    ref="list"
                     list={listID}
                     className="dialog-libraries"
                     options={listOptions}
@@ -296,6 +297,7 @@ define(function (require, exports, module) {
                     live={false}
                     autoSelect={false}
                     onChange={this._handleChangeLibrary}
+                    releaseOnBlur={true}
                     defaultSelected={selectedLibraryID}
                     disabled={this.props.disabled} />
                 <SplitButtonList className="libraries__split-button-list">

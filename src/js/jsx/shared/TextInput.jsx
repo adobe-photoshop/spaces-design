@@ -178,20 +178,27 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Resets the text field to its last committed value.
-         *
-         * @private
-         * @param {SyntheticEvent} event
+         * Finish editing the text in put and release focus.
          */
-        _reset: function (event) {
+        finish: function () {
             this.setState({
                 value: this.props.value,
                 editing: false,
                 selectDisabled: false
             });
 
-            event.stopPropagation();
             this._releaseFocus();
+        },
+
+        /**
+         * Resets the text field to its last committed value.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _reset: function (event) {
+            event.stopPropagation();
+            this.finish();
         },
 
         /**
