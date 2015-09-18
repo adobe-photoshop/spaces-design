@@ -315,6 +315,13 @@ define(function (require, exports) {
      * @return {{x: number, y: number, z: number}}
      */
     var _calculatePanZoom = function (bounds, offset, zoom, factor) {
+        var incrementsLen = ZOOM_INCREMENTS.length;
+        if (zoom < ZOOM_INCREMENTS[0]) {
+            zoom = ZOOM_INCREMENTS[0];
+        } else if (zoom > ZOOM_INCREMENTS[incrementsLen - 1]) {
+            zoom = ZOOM_INCREMENTS[incrementsLen - 1];
+        }
+
         return {
             x: zoom * bounds.xCenter / factor + (offset.right - offset.left) / 2,
             y: zoom * bounds.yCenter / factor + (offset.bottom - offset.top) / 2,
