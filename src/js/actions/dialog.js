@@ -36,7 +36,8 @@ define(function (require, exports) {
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
     /**
-     * Never propagate policy ID of each open dialog
+     * Never propagate policy ID of each open dialog,
+     * which is active while the dialog is open, applies only to modal dialogs
      *
      * @type {{string: number}}
      */
@@ -56,21 +57,23 @@ define(function (require, exports) {
                 id: id,
                 dismissalPolicy: dismissalPolicy
             },
-            neverPropagatePolicy = new PointerEventPolicy(
-                adapterUI.policyAction.NEVER_PROPAGATE,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN
-            ),
             isModal = this.flux.store("dialog").isModalDialog(id),
             dispatchPromise = this.dispatchAsync(events.dialog.OPEN_DIALOG, payload),
-            policyPromise = isModal ?
-                this.transfer(policy.addPointerPolicies, [neverPropagatePolicy]) :
-                Promise.resolve();
+            policyPromise = Promise.resolve();
 
-        return Promise.join(dispatchPromise, policyPromise, function (dispatchResult, policyResult) {
-            if (isModal) {
-                _policyMap[id] = policyResult;
-            }
-        });
+        if (isModal) {
+            var neverPropagatePolicy = new PointerEventPolicy(
+                adapterUI.policyAction.NEVER_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN
+            );
+            
+            policyPromise = this.transfer(policy.addPointerPolicies, [neverPropagatePolicy])
+                .then(function (policyID) {
+                    _policyMap[id] = policyID;
+                });
+        }
+                
+        return Promise.join(dispatchPromise, policyPromise);
     };
     openDialog.reads = [];
     openDialog.writes = [locks.JS_DIALOG];
