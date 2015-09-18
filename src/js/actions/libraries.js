@@ -586,12 +586,16 @@ define(function (require, exports) {
                 // preview whenever the file is saved
                 
                 var previewSetting = {
-                    path: tempPreviewPath,
-                    width: RENDITION_GRAPHIC_SIZE,
-                    height: RENDITION_GRAPHIC_SIZE
-                };
+                        path: tempPreviewPath,
+                        width: RENDITION_GRAPHIC_SIZE,
+                        height: RENDITION_GRAPHIC_SIZE
+                    },
+                    openSettings = {
+                        externalPreview: previewSetting,
+                        forceMRU: false
+                    };
                 
-                return this.transfer(documentActions.open, tempFilePath, { externalPreview: previewSetting });
+                return this.transfer(documentActions.open, tempFilePath, openSettings);
             })
             .then(function () {
                 var documentID = this.flux.stores.application.getCurrentDocumentID(),
