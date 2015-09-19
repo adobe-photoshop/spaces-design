@@ -65,7 +65,9 @@ define(function (require, exports, module) {
             // IDs of items that, when selected, won't close the dialog
             dontCloseDialogIDs: React.PropTypes.arrayOf(React.PropTypes.string),
             // SVG class for an icon to show next to the Text Input
-            filterIcon: React.PropTypes.string
+            filterIcon: React.PropTypes.string,
+            // Release keyboard focus when the text input is blurred.
+            releaseOnBlur: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
@@ -205,6 +207,11 @@ define(function (require, exports, module) {
             if (!this.props.live && this.state.id) {
                 this.props.onChange(this.state.id);
             }
+
+            if (this.props.releaseOnBlur) {
+                // Blur the text input and release focus.
+                this.refs.textInput.finish();
+            }
         },
 
         /**
@@ -225,8 +232,6 @@ define(function (require, exports, module) {
                     }
                     return;
                 case "Tab":
-                    this._handleInputClick(event);
-                    event.preventDefault();
                     return;
                 case "Enter":
                 case "Return":
@@ -318,7 +323,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Deactivates the datalist when the select menu is closed.
+         * Deactivates the datalist when the select menu is clicked.
          *
          * @private
          * @param {SyntheticEvent} event
@@ -345,9 +350,15 @@ define(function (require, exports, module) {
             }
         },
 
-        /** @ignore */
+        /**
+         * Deactivates the datalist when the select menu is closed.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {string} action Either "apply" or "cancel"
+         */
         _handleSelectClose: function (event, action) {
-            if (this.props.autoSelect) {
+            if (this.props.autoSelect || action === "apply") {
                 this._handleSelectClick(event, action);
             }
         },
