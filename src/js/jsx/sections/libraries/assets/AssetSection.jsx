@@ -190,7 +190,8 @@ define(function (require, exports, module) {
                     </SplitButtonList>
                 );
             } else {
-                var subTitle = this.props.subTitle && (<div className="libraries__asset__subtitle">
+                var subTitle = this.props.subTitle &&
+                    (<div className="libraries__asset__subtitle" title={this.props.title}>
                         {this.props.subTitle}
                     </div>);
 

@@ -26,11 +26,10 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        tinycolor = require("tinycolor"),
-        _ = require("lodash");
+        FluxMixin = Fluxxor.FluxMixin(React);
 
-    var strings = require("i18n!nls/strings");
+    var strings = require("i18n!nls/strings"),
+        librariesUtil = require("js/util/libraries");
 
     var AssetSection = require("jsx!./AssetSection"),
         AssetPreviewImage = require("jsx!./AssetPreviewImage");
@@ -77,18 +76,11 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var fontSize = charStyle.fontSize,
-                fontSizeStr = fontSize ? Math.ceil(fontSize.value * 10) / 10 + fontSize.type : null,
-                fontColorHex = null;
-
-            if (charStyle.color) {
-                var color = charStyle.color instanceof Array ? charStyle.color[0] : charStyle.color;
-                fontColorHex = tinycolor(color.value).toHexString().toUpperCase();
-            }
-
-            var fontSizeAndColorStr = _.remove([fontSizeStr, fontColorHex], null).join(", "),
-                fontInfo = font.family + " " + font.style,
-                displayName = element.displayName || fontInfo,
+            var displayName = element.displayName ||
+                    librariesUtil.formatCharStyle(element, ["fontFamily", "fontStyle"], " "),
+                subtitle = librariesUtil.formatCharStyle(element, ["color", "fontSize", "leading", "tracking"], ", "),
+                color = librariesUtil.getCharStyleColor(element),
+                fontColorHex = color && color.toHexString(),
                 colorPreview = this.state.hasPreview && fontColorHex && (<div
                     style={{ backgroundColor: fontColorHex }}
                     className="libraries__asset__preview-character-style__color-swatch"/>);
@@ -99,8 +91,8 @@ define(function (require, exports, module) {
                     onSelect={this.props.onSelect}
                     selected={this.props.selected}
                     displayName={displayName}
-                    title={fontInfo}
-                    subTitle={fontSizeAndColorStr}
+                    title={subtitle}
+                    subTitle={subtitle}
                     key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-character-style"
                          title={strings.LIBRARIES.CLICK_TO_APPLY}
