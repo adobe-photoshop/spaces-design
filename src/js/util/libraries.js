@@ -81,7 +81,7 @@ define(function (require, exports) {
                     var leading;
                     
                     if (style.adbeAutoLeading) {
-                        leading = strings.LIBRARIS.LEADING_AUTO;
+                        leading = strings.LIBRARIES.LEADING_AUTO;
                     } else if (style.lineHeight && style.lineHeight.value) {
                         leading = (Math.round(style.lineHeight.value * 100) / 100) + style.lineHeight.type;
                     }
