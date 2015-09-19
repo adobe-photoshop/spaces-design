@@ -111,7 +111,7 @@ define(function (require, exports, module) {
                 events.libraries.OPEN_GRAPHIC_FOR_EDIT, this._handleOpenGraphicForEdit,
                 events.libraries.UPDATING_GRAPHIC_CONTENT, this._handleUpdatingGraphicContent,
                 events.libraries.UPDATED_GRAPHIC_CONTENT, this._handleUpdatedGraphicContent,
-                events.libraries.CLOSED_GRAPHIC_DOCUMENT, this._handleClosedGraphicDocument,
+                events.document.CLOSE_DOCUMENT, this._handleClosedGraphicDocument,
                 events.libraries.DELETED_GRAPHIC_TEMP_FILES, this._handleDeletedGraphicTempFiles
             );
 

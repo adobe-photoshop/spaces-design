@@ -178,7 +178,6 @@ define(function (require, exports, module) {
             OPEN_GRAPHIC_FOR_EDIT: "libraryOpenGraphicForEdit",
             UPDATING_GRAPHIC_CONTENT: "libraryUpdatingGraphicContent",
             UPDATED_GRAPHIC_CONTENT: "libraryUpdatedGraphicContent",
-            CLOSED_GRAPHIC_DOCUMENT: "libraryClosedGraphicDocument",
             DELETED_GRAPHIC_TEMP_FILES: "libraryDeletedGraphicTempFiles",
             LIBRARY_CREATED: "libraryCreated",
             LIBRARY_REMOVED: "libraryRemoved",

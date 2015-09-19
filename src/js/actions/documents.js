@@ -397,9 +397,10 @@ define(function (require, exports) {
      *
      * @private
      * @param {!number} documentID
+     * @param {boolean} isDocumentSaved - true if the user chooses save in the close-document modal dialog.
      * @return {Promise}
      */
-    var disposeDocument = function (documentID) {
+    var disposeDocument = function (documentID, isDocumentSaved) {
         return _getSelectedDocumentID()
             .bind(this)
             .then(function (currentDocumentID) {
@@ -414,7 +415,8 @@ define(function (require, exports) {
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform),
-                    deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles, documentID),
+                    deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles,
+                        documentID, isDocumentSaved),
                     policyPromise = this.transfer(toolActions.resetBorderPolicies);
 
                 return Promise.join(resetLinkedPromise,
@@ -608,8 +610,10 @@ define(function (require, exports) {
             .then(function () {
                 return descriptor.playObject(closeObj, playOptions);
             })
-            .then(function () {
-                return this.transfer(disposeDocument, document.id);
+            .then(function (result) {
+                var isDocumentSaved = result.saving && result.saving._value === "yes";
+                
+                return this.transfer(disposeDocument, document.id, isDocumentSaved);
             }, function () {
                 // the play command fails if the user cancels the close dialog
             });

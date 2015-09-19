@@ -698,13 +698,18 @@ define(function (require, exports) {
      * Delete graphic asset's temp document and preview files.
      *
      * @param {number} documentID
+     * @param {boolean} isDocumentSaved - true if the user choose to save the document before close.
      */
-    var deleteGraphicTempFiles = function (documentID) {
+    var deleteGraphicTempFiles = function (documentID, isDocumentSaved) {
         var libraryStore = this.flux.stores.library,
             editStatus = libraryStore.getEditStatus().get(documentID);
             
-        if (!editStatus) {
+        if (!editStatus || editStatus.isUpdatingContent) {
             return Promise.resolve();
+        }
+
+        if (isDocumentSaved) {
+            return this.transfer(updateGraphicContent, documentID);
         }
         
         var tempFiles = [editStatus.documentPath, editStatus.previewPath];
@@ -720,7 +725,8 @@ define(function (require, exports) {
     };
     deleteGraphicTempFiles.reads = [];
     deleteGraphicTempFiles.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    deleteGraphicTempFiles.transfers = [exportActions.deleteFiles, preferencesActions.setPreference];
+    deleteGraphicTempFiles.transfers = [exportActions.deleteFiles, preferencesActions.setPreference,
+        updateGraphicContent];
 
     /**
      * Removes asset from the library it belongs to.
