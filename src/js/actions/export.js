@@ -176,7 +176,7 @@ define(function (require, exports) {
             fileName = baseName + asset.suffix,
             _layers = layer ? Immutable.List.of(layer) : null;
 
-        fileName = prefix ? prefix + fileName : fileName;
+        fileName = prefix ? prefix + "-" + fileName : fileName;
 
         return _exportService.exportAsset(document, layer, asset, fileName, baseDir)
             .bind(this)
@@ -666,9 +666,10 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>=} layers Optional.  If not supplied export all exportEnabled layers
+     * @param {Immutable.Map.<number, string>=} prefixMap Optional map of layerID > asset prefix
      * @return {Promise} Resolves when all assets have been exported, or if canceled via the file chooser
      */
-    var exportLayerAssets = function (document, layers) {
+    var exportLayerAssets = function (document, layers, prefixMap) {
         if (_activeExports) {
             Promise.reject(new Error("Can not export assets while another batch job in progress"));
         }
@@ -683,7 +684,6 @@ define(function (require, exports) {
 
         var documentID = document.id,
             documentExports = this.flux.stores.export.getDocumentExports(documentID, true),
-            exportStore = this.flux.stores.export,
             layersList,
             quickAddPromise;
 
@@ -722,8 +722,8 @@ define(function (require, exports) {
                 var documentExports = this.flux.stores.export.getDocumentExports(documentID, true);
 
                 // Iterate over the layers, find the associated export assets, and export them
-                var exportList = layersList.flatMap(function (layer, index) {
-                    var prefix = exportStore.getExportPrefix(layer, index);
+                var exportList = layersList.flatMap(function (layer) {
+                    var prefix = prefixMap && prefixMap.get(layer.id);
 
                     return documentExports.getLayerExports(layer.id)
                         .map(function (asset, index) {

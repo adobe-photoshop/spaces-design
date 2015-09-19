@@ -157,6 +157,8 @@ define(function (require, exports, module) {
         getExportPrefix: function (layer, index) {
             if (this._state.useArtboardPrefix && layer.isArtboard) {
                 return _.padLeft(index + 1, 3, "0");
+            } else {
+                return null;
             }
         },
 
