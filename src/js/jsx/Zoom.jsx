@@ -24,18 +24,48 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        FluxMixin = Fluxxor.FluxMixin(React);
+
+    var NumberInput = require("jsx!js/jsx/shared/NumberInput");
 
     var Zoom = React.createClass({
+        mixins: [FluxMixin, StoreWatchMixin("ui")],
+
+        getStateFromFlux: function () {
+            var uiState = this.getFlux().store("ui").getState();
+
+            return {
+                zoom: uiState.zoomFactor * 100
+            };
+        },
+
+        /**
+         * Handle the change of zoom input, the actions will take care
+         * of making sure the zoom is at an acceptable range
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         * @param {number} zoom
+         */
+        _handleZoomChange: function (event, zoom) {
+            var payload = {
+                zoom: zoom / 100
+            };
+
+            this.getFlux().actions.ui.zoom(payload);
+        },
+
         render: function () {
             return (
                 <div className="zoom">
-                    <input
-                        type="text"
-                        ref="input"
-                        placeholder=""
-                        value="9999%">
-                    </input>
+                    <NumberInput
+                        suffix="%"
+                        value={this.state.zoom}
+                        onChange={this._handleZoomChange}
+                    />
                 </div>
             );
         }

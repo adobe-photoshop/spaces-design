@@ -162,7 +162,7 @@ define(function (require, exports, module) {
                     <ul>
                         {tools}
                     </ul>
-                        <Zoom />
+                    <Zoom />
                 </div>
             );
         },

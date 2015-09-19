@@ -62,7 +62,8 @@ define(function (require, exports, module) {
             min: React.PropTypes.number,
             max: React.PropTypes.number,
             precision: React.PropTypes.number,
-            disabled: React.PropTypes.bool
+            disabled: React.PropTypes.bool,
+            suffix: React.PropTypes.string
         },
 
         getDefaultProps: function () {
@@ -74,7 +75,8 @@ define(function (require, exports, module) {
                 max: Number.POSITIVE_INFINITY,
                 onChange: _.identity,
                 precision: 1,
-                disabled: false
+                disabled: false,
+                suffix: ""
             };
         },
 
@@ -173,9 +175,9 @@ define(function (require, exports, module) {
 
             switch (typeof value) {
             case "number":
-                return String(mathjs.round(value, this.props.precision));
+                return String(mathjs.round(value, this.props.precision)) + this.props.suffix;
             case "string":
-                return value;
+                return value + this.props.suffix;
             default:
                 return "";
             }
