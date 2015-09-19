@@ -36,7 +36,7 @@ define(function (require, exports, module) {
     var mathUtil = require("js/util/math");
 
     var GuidesOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("document", "tool", "application", "ui")],
+        mixins: [FluxMixin, StoreWatchMixin("dialog", "document", "tool", "application", "ui")],
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
@@ -65,12 +65,13 @@ define(function (require, exports, module) {
                 modalState = toolStore.getModalToolState(),
                 uiState = uiStore.getState(),
                 currentTool = toolStore.getCurrentTool(),
-                currentDocument = applicationStore.getCurrentDocument();
+                currentDocument = applicationStore.getCurrentDocument(),
+                appIsModal = flux.store("dialog").getState().appIsModal;
 
             return {
                 document: currentDocument,
                 tool: currentTool,
-                modalState: modalState,
+                modalState: modalState || appIsModal,
                 uiState: uiState
             };
         },

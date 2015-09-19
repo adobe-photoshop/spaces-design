@@ -37,7 +37,7 @@ define(function (require, exports, module) {
         Droppable = require("jsx!js/jsx/shared/Droppable");
     
     var Scrim = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "ui", "application", "preferences", "draganddrop")],
+        mixins: [FluxMixin, StoreWatchMixin("dialog", "tool", "ui", "application", "preferences", "draganddrop")],
 
         /**
          * Dispatches (synthetic) click events from the scrim to the currently
@@ -177,6 +177,7 @@ define(function (require, exports, module) {
                 policyFrames = preferenceStore.getState().get("policyFramesEnabled"),
                 document = applicationStore.getCurrentDocument(),
                 dndState = flux.store("draganddrop").getState(),
+                appIsModal = flux.store("dialog").getState().appIsModal,
                 dragTargets = dndState.dragTargets,
                 isDropTarget = dndState.dropTarget && dndState.dropTarget.key === DroppableScrim.DROPPABLE_KEY;
 
@@ -189,7 +190,8 @@ define(function (require, exports, module) {
                 activeDocumentInitialized: applicationState.activeDocumentInitialized,
                 recentFilesInitialized: applicationState.recentFilesInitialized,
                 isDragging: !!dragTargets,
-                isDropTarget: isDropTarget
+                isDropTarget: isDropTarget,
+                appIsModal: appIsModal
             };
         },
 
@@ -274,7 +276,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var document = this.state.document,
-                disabled = document && document.unsupported,
+                disabled = this.state.appIsModal || document && document.unsupported,
                 toolOverlay = this._renderToolOverlay(),
                 policyOverlay = this.state.policyFrames ? (<PolicyOverlay/>) : null;
             
