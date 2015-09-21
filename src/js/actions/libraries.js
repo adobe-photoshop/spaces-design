@@ -783,7 +783,8 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function (policyID) {
                         var docRef = docAdapter.referenceBy.id(currentDocument.id),
-                            placeObj = libraryAdapter.placeElement(docRef, element, path, location);
+                            placeObj = libraryAdapter.placeElement(docRef, element, path, location),
+                            hasAlt = this.flux.stores.modifier.getState().alt;
 
                         // This command is played "asynchronously", which means that Photoshop will
                         // allow CEF to run while the command is being played (i.e., while in the
@@ -793,28 +794,35 @@ define(function (require, exports) {
                         // So, although the command does not resolve until the placement has finished,
                         // it does resolve before the layer model has been updated because the event
                         // has not yet been received. For more details see issue #2177.
-                        return descriptor.playObject(placeObj, { synchronous: false })
+                        var placeElementPromise = descriptor.playObject(placeObj, { synchronous: false })
                             .bind(this)
                             .finally(function () {
                                 return this.transfer(policyActions.removeKeyboardPolicies, policyID, true);
                             });
+                            
+                        // Dropping graphic asset with ALT/OPT modifier will expand the asset (instead of adding 
+                        // CLSO layer) and result in creating multiple layers in Photoshop. Unlike regualr drop 
+                        // event (without modifier), this will not trigger the "placeEvent" handler, so we need 
+                        // to get the new layer IDs through the difference between the previous layer IDs and the
+                        // next layer IDs.
+                        //
+                        // FIXME: we should instead get IDs back from Photoshop when layers are placed with modifier, 
+                        //        so we don't have to get all the layer IDs.
+                        if (hasAlt) {
+                            placeElementPromise = placeElementPromise.then(function () {
+                                return this.transfer(layerActions._getLayerIDsForDocumentID, currentDocument.id);
+                            })
+                            .then(function (nextDocumentIDS) {
+                                var nextLayerIDs = nextDocumentIDS.layerIDs,
+                                    existingLayerIDs = currentDocument.layers.index.toArray(),
+                                    newLayerIDs = _.difference(nextLayerIDs, existingLayerIDs).reverse();
+
+                                return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true, false);
+                            });
+                        }
+                        
+                        return placeElementPromise;
                     });
-            })
-            .then(function () {
-                return this.transfer(layerActions._getLayerIDsForDocumentID, currentDocument.id);
-            })
-            .then(function (nextDocumentIDS) {
-                // Expanded graphic asset (by holding OPT/ALT) will result in creating multiple new layer IDs.
-                // We can get these new IDs by calculating the difference between the next and existing layer IDs.
-                //
-                // FIXME: we should instead get IDs back from Photoshop when layers are placed so we don't have
-                //        to get all the layer IDs.
-
-                var nextLayerIDs = nextDocumentIDS.layerIDs,
-                    existingLayerIDs = currentDocument.layers.index.toArray(),
-                    newLayerIDs = _.difference(nextLayerIDs, existingLayerIDs).reverse();
-
-                return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true, false);
             });
     };
     createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
