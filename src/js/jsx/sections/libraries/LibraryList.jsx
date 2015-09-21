@@ -241,11 +241,12 @@ define(function (require, exports, module) {
             collaborationMapBody[_REGULAR_LIBRARY] = strings.LIBRARIES.DELETE_LIBRARY_CONFIRM;
 
             var selectedLibrary = this.props.selected,
-                title = strings.LIBRARIES.DELETE_LIBRARY.replace("%s", selectedLibrary.name),
                 body = collaborationMapBody[selectedLibrary.collaboration].replace("%s", selectedLibrary.name),
                 cancelBtn = strings.LIBRARIES.BTN_CANCEL,
-                confirmBtn = selectedLibrary.collaboration === _INCOMING_LIBRARY ?
-                    strings.LIBRARIES.BTN_LEAVE : strings.LIBRARIES.BTN_DELETE;
+                isIncomingLibrary = selectedLibrary.collaboration === _INCOMING_LIBRARY,
+                confirmBtn = isIncomingLibrary ? strings.LIBRARIES.BTN_LEAVE : strings.LIBRARIES.BTN_DELETE,
+                title = (isIncomingLibrary ? strings.LIBRARIES.LEAVE_LIBRARY : strings.LIBRARIES.DELETE_LIBRARY)
+                    .replace("%s", selectedLibrary.name);
 
             return (<LibraryDialog
                 title={title}
