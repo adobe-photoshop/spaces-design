@@ -43,7 +43,7 @@
         display: flex;
     }
     
-    li, .toolbar__backToPs.button-simple{
+    li, .zoom{
         display: none;
     }
     
@@ -51,14 +51,13 @@
         height: auto;
         color: @bg-alt;
 
-        li, .toolbar__backToPs.button-simple{
+        li, .zoom{
             display: flex;
         }        
     }
     .zoom{
         position: absolute;
         bottom: 1.3rem;
-        display: flex;
         align-items: center;
         justify-content: center;
         width: @toolbar-button-size;
@@ -73,16 +72,10 @@
                 fill: @item-inactive;
             }
         }
-        
-        input[type="text"] {
-            display: flex;
-            align-self: flex-end;
+        .number-input {
             width: @toolbar-button-size;
             text-align: center;
             font-size: @text-medium;
-            color: @item-inactive;
-            border:none;
-            cursor: default;
         }
     }
 }
