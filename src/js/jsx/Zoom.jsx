@@ -77,6 +77,10 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            if (this.state.zoom === 0) {
+                return null;
+            }
+            
             return (
                 <div className="zoom">
                     <NumberInput
