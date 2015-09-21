@@ -505,11 +505,12 @@ define(function (require, exports) {
     addAsset.transfers = [];
 
     /**
-     * Add a default document to the layer specified by layerID, if it doesn't already have any assets
+     * Add a default export asset to the layer specified by layerID, if it doesn't already have any assets.
+     * If no layerID is supplied, add to the first artboard if it exists.
      * Does not create a history state
      *
      * @param {number} documentID
-     * @param {number} layerID
+     * @param {number=} layerID
      */
     var addDefaultAsset = function (documentID, layerID) {
         var documentExports = this.flux.stores.export.getDocumentExports(documentID, true),
@@ -519,11 +520,20 @@ define(function (require, exports) {
             return Promise.reject(new Error("Can not find document " + documentID + " to addDefaultAsset"));
         }
 
-        var layer = document.layers.byID(layerID),
-            layerExports = documentExports.getLayerExports(layerID);
+        var layer = layerID ? document.layers.byID(layerID) : document.layers.artboards.first(),
+            layerExports = layer && documentExports.getLayerExports(layer.id);
 
-        if (!layerExports || layerExports.isEmpty()) {
-            return this.transfer(updateExportAsset, document, Immutable.List.of(layer), 0, {}, true);
+        if (layer && (!layerExports || layerExports.isEmpty())) {
+            var payload = {
+                    documentID: documentID,
+                    layerIDs: Immutable.List.of(layer.id),
+                    exportEnabled: true
+                };
+            return this.dispatchAsync(events.document.history.amendment.LAYER_EXPORT_ENABLED_CHANGED, payload)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(updateExportAsset, document, Immutable.List.of(layer), 0, {}, true);
+                });
         } else {
             return Promise.resolve();
         }
@@ -562,6 +572,9 @@ define(function (require, exports) {
 
     /**
      * Sets the exportEnabled flag for a given layer or layers
+     *
+     * For any layer without assets, create a default asset on the fly when exportEnabled is true
+     *
      * @private
      * @param {Document} document Owner document
      * @param {Layer|Immutable.List.<Layer>} layers Either a Layer reference or array of Layers
@@ -569,68 +582,51 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setLayerExportEnabled = function (document, layers, exportEnabled) {
-        var layerIDs = Immutable.List.isList(layers) ?
-                collection.pluck(layers, "id") :
-                Immutable.List.of(layers.id);
+        var _layers = Immutable.List.isList(layers) ?
+                layers :
+                Immutable.List.of(layers);
 
-        var payload = {
-                documentID: document.id,
-                layerIDs: layerIDs,
-                exportEnabled: exportEnabled
-            };
+        var layersWithoutExports,
+            quickAddPromise;
 
-        return this.dispatchAsync(events.document.history.amendment.LAYER_EXPORT_ENABLED_CHANGED, payload)
-            .bind(this)
-            .then(function () {
-                return _syncExportMetadata.call(this, document.id, layerIDs, true);
-            });
+        // If enabling layers, determine if any them need a default asset created
+        if (exportEnabled) {
+            var documentExports = this.flux.stores.export.getDocumentExports(document.id);
+
+            layersWithoutExports = documentExports.filterLayersWithoutExports(_layers);
+            if (layersWithoutExports.size > 0) {
+                quickAddPromise = this.transfer(addAsset, document, documentExports, layersWithoutExports);
+            } else {
+                quickAddPromise = Promise.resolve();
+            }
+        } else {
+            quickAddPromise = Promise.resolve();
+        }
+
+        if (!layersWithoutExports || _layers.size > layersWithoutExports.size) {
+            var layerIDs = collection.pluck(_layers, "id"),
+                payload = {
+                    documentID: document.id,
+                    layerIDs: layerIDs,
+                    exportEnabled: exportEnabled
+                };
+
+            return quickAddPromise
+                .bind(this)
+                .then(function () {
+                    return this.dispatchAsync(events.document.history.amendment.LAYER_EXPORT_ENABLED_CHANGED, payload);
+                })
+                .then(function () {
+                    return _syncExportMetadata.call(this, document.id, layerIDs, true);
+                });
+        } else {
+            // Special case: enabling layers, and ALL of them got default assets enabled
+            return quickAddPromise;
+        }
     };
     setLayerExportEnabled.reads = [];
     setLayerExportEnabled.writes = [locks.JS_DOC, locks.PS_DOC];
-
-    /**
-     * Sets the exportEnabled flag for all artboards
-     * @private
-     * @param {Document} document Owner document
-     * @param {boolean=} exportEnabled
-     * @return {Promise}
-     */
-    var setAllArtboardsExportEnabled = function (document, exportEnabled) {
-        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
-
-        if (!documentExports) {
-            return Promise.resolve();
-        }
-
-        var layersWithExports = documentExports.getLayersWithExports(document, true);
-
-        return this.transfer(setLayerExportEnabled, document, layersWithExports, exportEnabled);
-    };
-    setAllArtboardsExportEnabled.reads = [locks.JS_EXPORT];
-    setAllArtboardsExportEnabled.writes = [];
-    setAllArtboardsExportEnabled.transfers = [setLayerExportEnabled];
-
-    /**
-     * Sets the exportEnabled flag for all layers that have at least one configured asset
-     * @private
-     * @param {Document} document Owner document
-     * @param {boolean=} exportEnabled
-     * @return {Promise}
-     */
-    var setAllNonABLayersExportEnabled = function (document, exportEnabled) {
-        var documentExports = this.flux.stores.export.getDocumentExports(document.id);
-
-        if (!documentExports) {
-            return Promise.resolve();
-        }
-
-        var layersWithExports = documentExports.getLayersWithExports(document, false);
-
-        return this.transfer(setLayerExportEnabled, document, layersWithExports, exportEnabled);
-    };
-    setAllNonABLayersExportEnabled.reads = [locks.JS_EXPORT];
-    setAllNonABLayersExportEnabled.writes = [];
-    setAllNonABLayersExportEnabled.transfers = [setLayerExportEnabled];
+    setLayerExportEnabled.transfers = [addAsset];
 
     /**
      * Prompt the user to choose a folder by opening an OS dialog.
@@ -969,8 +965,6 @@ define(function (require, exports) {
     exports.addDefaultAsset = addDefaultAsset;
     exports.deleteExportAsset = deleteExportAsset;
     exports.setLayerExportEnabled = setLayerExportEnabled;
-    exports.setAllArtboardsExportEnabled = setAllArtboardsExportEnabled;
-    exports.setAllNonABLayersExportEnabled = setAllNonABLayersExportEnabled;
     exports.promptForFolder = promptForFolder;
     exports.exportLayerAssets = exportLayerAssets;
     exports.exportDocumentAssets = exportDocumentAssets;
