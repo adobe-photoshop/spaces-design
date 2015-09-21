@@ -38,6 +38,7 @@ define(function (require, exports) {
         guides = require("./guides"),
         locks = require("js/locks"),
         policy = require("./policy"),
+        ui = require("./ui"),
         shortcuts = require("./shortcuts"),
         system = require("js/util/system"),
         EventPolicy = require("js/models/eventpolicy"),
@@ -414,6 +415,42 @@ define(function (require, exports) {
     changeModalState.modal = true;
 
     /**
+     * Async handler for the toolModalStateChanged event.
+     *
+     * @param {object} event
+     * @return {Promise}
+     */
+    var handleToolModalStateChanged = function (event) {
+        var modalState = (event.state._value === "enter"),
+            changeStatePromise = this.transfer(changeModalState, modalState),
+            policyPromise;
+
+        // Suspend policies during type tool modal states
+        if (event.kind._value === "tool" && event.tool.ID === "txBx") {
+            if (modalState) {
+                policyPromise = this.transfer(policy.suspendPolicies);
+            } else {
+                policyPromise = this.transfer(policy.restorePolicies);
+            }
+        } else {
+            policyPromise = Promise.resolve();
+        }
+
+        // During artboard transforms, PS switches to artboard tool, so switch back to superselect
+        var cloakPromise;
+        if (event.kind._value === "mouse" && event.tool && event.tool.ID === "ArtT") {
+            cloakPromise = this.transfer(ui.cloak);
+        }
+
+        return Promise.join(changeStatePromise, policyPromise, cloakPromise);
+    };
+    handleToolModalStateChanged.reads = [];
+    handleToolModalStateChanged.writes = [];
+    handleToolModalStateChanged.transfers = [policy.suspendPolicies, policy.restorePolicies,
+        changeModalState, "ui.cloak"];
+    handleToolModalStateChanged.modal = true;
+
+    /**
      * Event handler initialized in beforeStartup.
      *
      * @private
@@ -433,16 +470,7 @@ define(function (require, exports) {
             tools = toolStore.getAllTools();
 
         // Listen for modal tool state entry/exit events
-        _toolModalStateChangedHandler = function (event) {
-            var modalState = (event.state._value === "enter");
-
-            this.flux.actions.tools.changeModalState(modalState);
-
-            // During artboard transforms, PS switches to artboard tool, so switch back to superselect
-            if (event.kind._value === "mouse" && event.tool && event.tool.ID === "ArtT") {
-                this.flux.actions.ui.cloak();
-            }
-        }.bind(this);
+        _toolModalStateChangedHandler = this.flux.actions.tools.handleToolModalStateChanged.bind(this);
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         // Setup tool activation keyboard shortcuts
@@ -515,6 +543,7 @@ define(function (require, exports) {
     exports.resetBorderPolicies = resetBorderPolicies;
     exports.select = selectTool;
     exports.initTool = initTool;
+    exports.handleToolModalStateChanged = handleToolModalStateChanged;
     exports.changeModalState = changeModalState;
 
     exports.beforeStartup = beforeStartup;

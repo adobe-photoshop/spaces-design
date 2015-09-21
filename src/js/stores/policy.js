@@ -89,12 +89,14 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Reset the policy set of the given kind
+         * Reset the policy set of the given kind. The next policy set's counter
+         * will start where the previous one left off.
          *
          * @param {string} kind
          */
         clearPolicies: function (kind) {
-            this._policySets[kind] = new EventPolicySet();
+            var counter = this._policySets[kind].getNextPolicyID();
+            this._policySets[kind] = new EventPolicySet(counter);
         },
 
         /**

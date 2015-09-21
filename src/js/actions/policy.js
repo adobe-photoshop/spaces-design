@@ -92,9 +92,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _addPolicies = function (kind, policies) {
-        if (_cachedPolicyState) {
-            return Promise.reject(new Error("Trying to add new policies but a cached state exists"));
-        }
         var policyStore = this.flux.store("policy"),
             policyListID = policyStore.addPolicyList(kind, policies);
 
@@ -112,10 +109,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _removePolicies = function (kind, id, commit) {
-        if (_cachedPolicyState) {
-            var msg = "Trying to remove keyboard policies but a cached state exists: " + id;
-            return Promise.reject(new Error(msg));
-        }
         var policyStore = this.flux.store("policy");
 
         if (policyStore.removePolicyList(kind, id)) {
@@ -210,11 +203,11 @@ define(function (require, exports) {
     removePointerPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
 
     /**
-     * Temporarily disable all policies, caching the previous state
+     * Temporarily suspend all policies, caching the previous state
      *
      * @return {Promise}
      */
-    var disablePolicies = function () {
+    var suspendPolicies = function () {
         if (_cachedPolicyState) {
             return Promise.reject(new Error("Can not disable keyboard policies if a cached state exists"));
         }
@@ -226,67 +219,84 @@ define(function (require, exports) {
             pointerPolicies: policyStore.getPolicies(PolicyStore.eventKind.POINTER)
         };
 
-        return adapterUI.getKeyboardPropagationMode()
-            .bind(this)
-            .then(function (mode) {
-                _cachedPolicyState.keyboardMode = mode;
-                return adapterUI.getPointerPropagationMode();
-            })
-            .then(function (mode) {
-                _cachedPolicyState.pointerMode = mode;
-                policyStore.clearPolicies(PolicyStore.eventKind.KEYBOARD);
-                policyStore.clearPolicies(PolicyStore.eventKind.POINTER);
-                return Promise.join(
-                    _syncPolicies.call(this, PolicyStore.eventKind.KEYBOARD),
-                    _syncPolicies.call(this, PolicyStore.eventKind.POINTER));
-            })
-            .then(function () {
-                return Promise.join(
-                    adapterUI.setKeyboardPropagationMode(
-                        { defaultMode: adapterUI.keyboardPropagationMode.FOCUS_PROPAGATE }),
-                    adapterUI.setPointerPropagationMode(
-                        { defaultMode: adapterUI.pointerPropagationMode.ALPHA_PROPAGATE }));
-            })
+        policyStore.clearPolicies(PolicyStore.eventKind.KEYBOARD);
+        policyStore.clearPolicies(PolicyStore.eventKind.POINTER);
+
+        var setKeyboardModePromise = adapterUI.getKeyboardPropagationMode()
+            .then(function (keyboardMode) {
+                _cachedPolicyState.keyboardMode = keyboardMode;
+
+                return adapterUI.setKeyboardPropagationMode(
+                    { defaultMode: adapterUI.keyboardPropagationMode.FOCUS_PROPAGATE });
+            });
+
+        var setPointerModePromise = adapterUI.getPointerPropagationMode()
+            .then(function (pointerMode) {
+                _cachedPolicyState.pointerMode = pointerMode;
+
+                return adapterUI.setPointerPropagationMode(
+                        { defaultMode: adapterUI.pointerPropagationMode.ALPHA_PROPAGATE });
+            });
+
+        var syncKeyboardPoliciesPromise = _syncPolicies.call(this, PolicyStore.eventKind.KEYBOARD),
+            syncPointerPoliciesPromise = _syncPolicies.call(this, PolicyStore.eventKind.POINTER);
+
+        return Promise.join(
+                setKeyboardModePromise,
+                setPointerModePromise,
+                syncKeyboardPoliciesPromise,
+                syncPointerPoliciesPromise
+            )
             .catch(function (err) {
                 _cachedPolicyState = null;
                 throw err;
             });
     };
-    disablePolicies.reads = [];
-    disablePolicies.writes = [locks.PS_APP, locks.JS_POLICY];
-    disablePolicies.modal = true;
+    suspendPolicies.reads = [];
+    suspendPolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+    suspendPolicies.modal = true;
 
     /**
-     * Re-enabled cached keyboard policies
+     * Restore suspended keyboard policies
      *
      * @return {Promise}
      */
-    var reenablePolicies = function () {
+    var restorePolicies = function () {
         if (!_cachedPolicyState) {
             return Promise.reject(new Error("Can not re-renable keyboard policies, no previously cached state"));
         }
 
-        var policyStore = this.flux.store("policy");
+        var policyStore = this.flux.store("policy"),
+            currentKeyboardPolicies = policyStore.getPolicies(PolicyStore.eventKind.KEYBOARD),
+            currentPointerPolicies = policyStore.getPolicies(PolicyStore.eventKind.POINTER),
+            nextKeyboardPolicies = _cachedPolicyState.keyboardPolicies.append(currentKeyboardPolicies),
+            nextPointerPolicies = _cachedPolicyState.pointerPolicies.append(currentPointerPolicies);
 
-        policyStore.setPolicies(PolicyStore.eventKind.KEYBOARD, _cachedPolicyState.keyboardPolicies);
-        policyStore.setPolicies(PolicyStore.eventKind.POINTER, _cachedPolicyState.pointerPolicies);
+        policyStore.setPolicies(PolicyStore.eventKind.KEYBOARD, nextKeyboardPolicies);
+        policyStore.setPolicies(PolicyStore.eventKind.POINTER, nextPointerPolicies);
+
+        var resetKeyboardModePromise = adapterUI.setKeyboardPropagationMode({
+                defaultMode: _cachedPolicyState.keyboardMode
+            }),
+            resetPointerModePromise = adapterUI.setPointerPropagationMode({
+                defaultMode: _cachedPolicyState.pointerMode
+            }),
+            resetKeyboardPoliciesPromise = _syncPolicies.call(this, PolicyStore.eventKind.KEYBOARD),
+            resetPointerPoliciesPromise = _syncPolicies.call(this, PolicyStore.eventKind.POINTER);
 
         return Promise.join(
-                adapterUI.setKeyboardPropagationMode({ defaultMode: _cachedPolicyState.keyboardMode }),
-                adapterUI.setPointerPropagationMode({ defaultMode: _cachedPolicyState.pointerMode }))
-            .bind(this)
-            .then(function () {
-                return Promise.join(
-                    _syncPolicies.call(this, PolicyStore.eventKind.KEYBOARD),
-                    _syncPolicies.call(this, PolicyStore.eventKind.POINTER));
-            })
+                resetKeyboardModePromise,
+                resetPointerModePromise,
+                resetKeyboardPoliciesPromise,
+                resetPointerPoliciesPromise
+            )
             .finally(function () {
                 _cachedPolicyState = null;
             });
     };
-    reenablePolicies.reads = [];
-    reenablePolicies.writes = [locks.PS_APP, locks.JS_POLICY];
-    reenablePolicies.modal = true;
+    restorePolicies.reads = [];
+    restorePolicies.writes = [locks.PS_APP, locks.JS_POLICY];
+    restorePolicies.modal = true;
 
     /**
      * Set the default keyboard propagation policy.
@@ -310,7 +320,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onReset = function () {
-        reenablePolicies = null;
+        _cachedPolicyState = null;
 
         return Promise.resolve();
     };
@@ -322,8 +332,8 @@ define(function (require, exports) {
     exports.removeKeyboardPolicies = removeKeyboardPolicies;
     exports.addPointerPolicies = addPointerPolicies;
     exports.removePointerPolicies = removePointerPolicies;
-    exports.disablePolicies = disablePolicies;
-    exports.reenablePolicies = reenablePolicies;
+    exports.suspendPolicies = suspendPolicies;
+    exports.restorePolicies = restorePolicies;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;

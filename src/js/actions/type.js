@@ -521,11 +521,18 @@ define(function (require, exports) {
             properties: properties
         };
 
-        return this.dispatchAsync(events.document.TYPE_PROPERTIES_CHANGED, payload);
+        // The selection change may not yet have completed before the first
+        // updateTextProperties event arrives. Hence, we ensure that the text
+        // layer is initialized before proceeding.
+        return this.transfer(layerActions.initializeLayers, document, layers)
+            .bind(this)
+            .then(function () {
+                this.dispatch(events.document.TYPE_PROPERTIES_CHANGED, payload);
+            });
     };
     updateProperties.reads = [];
     updateProperties.writes = [locks.JS_DOC];
-    updateProperties.transfers = [];
+    updateProperties.transfers = [layerActions.initializeLayers];
     updateProperties.modal = true;
 
     /**

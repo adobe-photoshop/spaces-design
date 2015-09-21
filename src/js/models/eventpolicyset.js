@@ -24,17 +24,19 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var math = require("js/util/math"),
-        _ = require("lodash");
+    var _ = require("lodash");
+
+    var math = require("js/util/math");
 
     /**
      * Manages a set of event policy lists.
      * 
      * @constructor
+     * @param {number=} counter
      */
-    var EventPolicySet = function () {
+    var EventPolicySet = function (counter) {
         this._policyLists = {};
-        this._policyListCounter = 0;
+        this._policyListCounter = counter || 0;
     };
 
     /**
@@ -101,6 +103,32 @@ define(function (require, exports, module) {
                 return result;
             }.bind(this), [])
             .value();
+    };
+
+    /**
+     * Peek to get the next policy ID.
+     *
+     * @return {number}
+     */
+    EventPolicySet.prototype.getNextPolicyID = function () {
+        return this._policyListCounter;
+    };
+
+    /**
+     * Create a new EventPolicySet that is derived from this and a derived EventPolicySet.
+     *
+     * @param {EventPolicySet} policySet
+     * @return {EventPolicySet}
+     */
+    EventPolicySet.prototype.append = function (policySet) {
+        if (policySet._policyListCounter < this._policyListCounter) {
+            throw new Error("Only newer event policy sets may be appended to older event event policy sets.");
+        }
+
+        var clone = new EventPolicySet(policySet._policyListCounter);
+        clone._policyLists = _.merge({}, this._policyLists, policySet._policyLists);
+
+        return clone;
     };
 
     module.exports = EventPolicySet;

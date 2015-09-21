@@ -171,7 +171,7 @@ define(function (require, exports) {
     };
     updateTransform.reads = [locks.PS_APP, locks.JS_APP];
     updateTransform.writes = [locks.JS_UI];
-    updateTransform.transfers = [tools.resetBorderPolicies];
+    updateTransform.transfers = ["tools.resetBorderPolicies"];
 
     /**
      * Using the center offsets, creates a cloaking rectangle on the canvas outside panels
@@ -228,7 +228,7 @@ define(function (require, exports) {
     };
     setTransform.reads = [locks.PS_APP];
     setTransform.writes = [locks.JS_UI];
-    setTransform.transfers = [tools.resetBorderPolicies];
+    setTransform.transfers = ["tools.resetBorderPolicies"];
     setTransform.modal = true;
 
     /**
