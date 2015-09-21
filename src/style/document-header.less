@@ -59,11 +59,44 @@
 .document-header {
     height: @toolbar-button-size;
     line-height: @toolbar-button-size;
-    max-width: 100%;
-    width: 100%;
+    flex-grow: 10;
     position: relative;
     overflow: hidden;
     display: flex;
+}
+
+.export-header {
+    height: @toolbar-button-size;
+    line-height: @toolbar-button-size;
+    max-width: 5rem;
+    width: 5rem;
+    display: flex;
+    flex-grow: 1;
+}
+
+.export-header-buttons { 
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.export-header-buttons .button-simple.button-plus {
+    margin-right: 2rem;
+
+    & svg:hover {
+        fill: @item;
+    }
+
+    &.button-simple__disabled svg{
+        fill: @item-disabled;
+
+        &:hover {
+            fill: @item-disabled;
+        }
+    }
 }
 
 .document-container {
