@@ -457,7 +457,8 @@ define(function (require, exports, module) {
      */
     MenuBar.prototype.updatePreferenceBasedMenuItems = function (preferences) {
         var updatedMenu = this.updateSubmenuItems("WINDOW", {
-            "TOGGLE_TOOLBAR": { "checked": (preferences.get("toolbarPinned", true) ? 1 : 0) }
+            "TOGGLE_TOOLBAR": { "checked": (preferences.get("toolbarPinned", true) ? 1 : 0) },
+            "TOGGLE_SINGLE_COLUMN_MODE": { "checked": (preferences.get("singleColumnModeEnabled", false) ? 1 : 0) }
         });
 
         if (global.debug) {

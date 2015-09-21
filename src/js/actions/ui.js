@@ -134,6 +134,23 @@ define(function (require, exports) {
     togglePinnedToolbar.transfers = [preferences.setPreference];
 
     /**
+    * Toggle small screen mode
+    *
+    * @return {Promise}
+    */
+    var toggleSingleColumnMode = function () {
+        var preferenceState = this.flux.store("preferences").getState(),
+            singleColumnModeEnabled = preferenceState.get("singleColumnModeEnabled", false);
+
+        var newsingleColumnModeEnabled = !singleColumnModeEnabled;
+
+        return this.transfer(preferences.setPreference, "singleColumnModeEnabled", newsingleColumnModeEnabled);
+    };
+    toggleSingleColumnMode.reads = [];
+    toggleSingleColumnMode.writes = [locks.JS_PREF];
+    toggleSingleColumnMode.transfers = [preferences.setPreference];
+
+    /**
      * Query Photoshop for the curent window transform and emit a
      * TRANSFORM_UPDATED event with that value.
      *
@@ -593,6 +610,7 @@ define(function (require, exports) {
     exports.enableTooltips = enableTooltips;
     exports.disableTooltips = disableTooltips;
     exports.togglePinnedToolbar = togglePinnedToolbar;
+    exports.toggleSingleColumnMode = toggleSingleColumnMode;
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
     exports.setOverlayCloaking = setOverlayCloaking;
