@@ -129,7 +129,7 @@ define(function (require, exports, module) {
             this._selectedLibraryID = null;
             this._serviceConnected = false;
             this._isSyncing = false;
-            this._editStatusByDocumentID = null;
+            this._editStatusByDocumentID = new Immutable.Map();
             this._createdNewGraphicLocally = false;
         },
 
@@ -314,6 +314,10 @@ define(function (require, exports, module) {
         _handleUpdatingGraphicContent: function (payload) {
             var documentID = payload.documentID,
                 editStatus = this._editStatusByDocumentID.get(documentID);
+                
+            if (!editStatus) {
+                return;
+            }
             
             editStatus.isUpdatingContent = true;
         },
@@ -328,6 +332,10 @@ define(function (require, exports, module) {
         _handleUpdatedGraphicContent: function (payload) {
             var documentID = payload.documentID,
                 editStatus = this._editStatusByDocumentID.get(documentID);
+                
+            if (!editStatus) {
+                return;
+            }
             
             editStatus.isUpdatingContent = false;
         },

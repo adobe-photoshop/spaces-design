@@ -221,7 +221,16 @@ define(function (require, exports, module) {
     FluxController.prototype._initActionLocks = function () {
         var actionDependencies = new Map();
 
-        var _resolveDependencies = function (action) {
+        var _resolveDependencies = function (action, stack) {
+            stack = stack || new Set();
+            
+            // Check the stack to prevent circular dependency between actions (e.g. A -> B -> C -> A).
+            if (stack.has(action)) {
+                return new Set();
+            }
+            
+            stack.add(action);
+            
             // Map from an action to the set of all unsynchonrized actions to
             // which it may transfer, including via sub-action transfers.
             var dependencies = actionDependencies.get(action);
@@ -242,7 +251,7 @@ define(function (require, exports, module) {
                         }
                         
                         // Resolve child dependencies before proceeding
-                        _resolveDependencies(dependency).forEach(dependencies.add, dependencies);
+                        _resolveDependencies(dependency, stack).forEach(dependencies.add, dependencies);
                     }, this);
                 }
 
@@ -260,6 +269,8 @@ define(function (require, exports, module) {
                 this._transitiveReads.set(action, _.uniq(reads));
                 this._transitiveWrites.set(action, _.uniq(writes));
             }
+            
+            stack.delete(action);
 
             return dependencies;
         }.bind(this);

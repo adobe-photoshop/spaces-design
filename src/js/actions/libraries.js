@@ -687,12 +687,13 @@ define(function (require, exports) {
             })
             .then(function () {
                 if (editStatus.isDocumentClosed) {
-                    return this.tansfer(deleteGraphicTempFiles, documentID);
+                    return this.transfer(deleteGraphicTempFiles, documentID);
                 }
             });
     };
     updateGraphicContent.reads = [];
     updateGraphicContent.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    updateGraphicContent.transfers = ["libraries.deleteGraphicTempFiles"];
     
     /**
      * Delete graphic asset's temp document and preview files.
