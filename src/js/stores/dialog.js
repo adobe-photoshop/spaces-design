@@ -203,7 +203,7 @@ define(function (require, exports, module) {
                 }
             } else {
                 // merge the new policy, if it was provided
-                newState = this._registeredDialogs.get(id).merge(newState);
+                newState = this._registeredDialogs.get(id).mergeDeep(newState);
             }
 
             if (newState.getIn(["policy", "documentChange"])) {
