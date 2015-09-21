@@ -34,11 +34,39 @@
     padding-left: 2rem;
     padding-right: 2rem;
     color: @item-inactive;
+    position: relative;
+    
+    .button-simple.doc-tab-close{
+        display: none;
+        position: absolute;
+        right: 0.4rem;
+        top: 1.8rem;
+        width: 1.2rem;
+        height: 1.2rem;
+        background: @item-hover;
+        border-radius: 50%;
+        
+        svg {
+            position: absolute;
+            fill: @bg-panel;
+            top: -0.3rem;
+            left: -0.3rem;
+            width: 1.8rem;
+            height: 1.8rem;
+        }
+    }
 }
 
 .document-title:hover {
     flex-shrink: 0;
     color: @item-hover;
+    .doc-tab-close{
+        display: block;
+        
+        svg {
+            fill: @bg-panel;
+        }
+    }
 }
 
 .document-title__current {
@@ -48,6 +76,10 @@
 
 .document-title__current:hover {
     color: @item;
+}
+
+.button-simple.doc-tab-close:hover {
+    background: @item;
 }
 
 .document-title__small {    

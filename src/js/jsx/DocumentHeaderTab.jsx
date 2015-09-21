@@ -30,7 +30,9 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
         
-    var strings = require("i18n!nls/strings");
+    var strings = require("i18n!nls/strings"),
+        Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
     var DocumentHeaderTab = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool")],
@@ -85,6 +87,12 @@ define(function (require, exports, module) {
                     {this.props.dirty ? "*" : ""}
                     {this.props.name}
                     {warning}
+                    <Button
+                        className="doc-tab-close">
+                        <SVGIcon
+                            viewbox="0 0 18 16"
+                            CSSID="close" />
+                    </Button>
                 </div>
             );
         }
