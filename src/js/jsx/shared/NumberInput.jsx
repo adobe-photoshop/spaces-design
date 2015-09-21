@@ -137,8 +137,9 @@ define(function (require, exports, module) {
 
             var value;
             try {
+                var trimValue = _.trimRight(rawValue, this.props.suffix);
                 /*jslint evil: true */
-                value = mathjs.eval(rawValue);
+                value = mathjs.eval(trimValue);
                 /*jslint evil: false */
                 
                 // Run it through our simple parser to get rid of complex and big numbers

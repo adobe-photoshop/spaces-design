@@ -42,6 +42,10 @@ define(function (require, exports, module) {
             };
         },
 
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return (this.state.zoom !== nextState.zoom);
+        },
+
         /**
          * Handle the change of zoom input, the actions will take care
          * of making sure the zoom is at an acceptable range
@@ -58,13 +62,30 @@ define(function (require, exports, module) {
             this.getFlux().actions.ui.zoom(payload);
         },
 
+        /**
+         * If tab key is pressed, we don't want focus to go to some other bar/panel
+         * so we blur this element and send focus back to PS
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleKeyDown: function (event) {
+            if (event.key === "Tab") {
+                React.findDOMNode(this.refs.input).blur();
+                event.preventDefault();
+            }
+        },
+
         render: function () {
             return (
                 <div className="zoom">
                     <NumberInput
+                        tabIndex="-1"
+                        ref="input"
                         suffix="%"
                         value={this.state.zoom}
                         onChange={this._handleZoomChange}
+                        onKeyDown={this._handleKeyDown}
                     />
                 </div>
             );
