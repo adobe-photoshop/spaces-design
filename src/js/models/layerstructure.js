@@ -426,7 +426,7 @@ define(function (require, exports, module) {
          */
         "selectedNormalized": function () {
             // For each layer, remove all it's descendants from the group
-            var selected = this.selected;
+            var selected = this.selected.toSet();
             return selected.filterNot(function (layer) {
                 return this.strictAncestors(layer)
                     .some(function (ancestor) {
