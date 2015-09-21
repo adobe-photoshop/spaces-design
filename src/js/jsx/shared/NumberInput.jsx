@@ -35,7 +35,6 @@ define(function (require, exports, module) {
     var Focusable = require("../mixin/Focusable"),
         math = require("js/util/math"),
         collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings"),
         headlights = require("js/util/headlights");
 
     var NumberInput = React.createClass({
@@ -166,7 +165,7 @@ define(function (require, exports, module) {
                     value = collection.uniformValue(value);
 
                     if (value === null) {
-                        return strings.TRANSFORM.MIXED;
+                        return "--";
                     }
                 }
             }

@@ -29,39 +29,63 @@
     margin-top: 0.7rem;
 }
 
-.color-input .stroke__preview {
-    width: 50%;
-    height: 50%;
-    left: 25%;
-    background-color: @bg-panel;
-    border-radius: 0.2rem;
+.color-input {    
+    .stroke__preview,
+    .type__preview,
+    .fill__preview {
+        z-index: 10;
+    }
+
+    .stroke__preview {
+        width: 50%;
+        height: 50%;
+        background-color: @bg-panel;
+        border-radius: 0.2rem;
+    }
+        
+    .type__preview {
+        line-height: normal;
+        color: black;
+        font-size: 2rem;        
+    }
+    
 }
 
-.color-input .type__preview {
-    line-height: normal;
-    font-size: 2rem;
+.vector-fill .color-input__swatch__background-hide {
+    background: none;
 }
 
-.color-input .stroke__background {
-  //.background-checkerboard();
-}
-
-.color-input__swatch__background {
+.color-input__swatch__background,
+.color-input__swatch__background.color-input__disabled {
     background-color: @item;
     display: flex;
     flex-grow: 0;
     flex-shrink: 0;
-    border-radius: 0.2rem;
-    .background-checkerboard();
+    border-radius: 0.5rem;
+    .background-checkerboard(25);
     overflow: hidden;
+    position: relative;
+
     &:focus {
         box-shadow: 0 0 0 0.2rem @focus-highlight;
     }
 }
 
+.color-input__disabled {
+    opacity: 0.4;
+    
+    .color-input__mixednone {
+        display: none
+    }
+    
+    .fill__preview {
+        display: none;
+    }
+}
+
 .color-input__swatch__color {
-    width: 3rem;
-    height: 3rem;
+    width: 3.2rem;
+    height: 3.2rem;
     display: flex;
     align-items: center;
     flex-grow: 0;
@@ -79,8 +103,10 @@
 }
 
 .color-input__empty {
-    height: 3.7rem; 
-    width: 4rem;
+    width: 3.2rem;
+    height: 3.2rem;    
+    margin-right: 1rem;
+    margin-top: 0.7rem;
 }
 
 .color-widget {
@@ -99,8 +125,17 @@
     background: @transparent-black;
 }
 
-.color-input__mixed .color-input__swatch__color {
-    background: @transparent-black;
-    background-size: 10px 10px;
-    background-image: repeating-linear-gradient(180deg, @locked-black, @locked-black 1px, transparent 1px, transparent 3.5px);
+.color-input__mixednone {
+    width: 6rem;
+    height: 6rem;
+    left: 0.4rem;
+    top: 0.8rem;    
+    position: absolute;
+    transform: rotate(45deg);
+}
+
+.color-input__mixed {    
+    .color-input__mixednone {    
+        border: 4*@hairline solid @color-mixed;
+    }
 }

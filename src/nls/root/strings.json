@@ -290,7 +290,7 @@
         "H": "H",
         "RADIUS": "Radius",
         "ROTATE": "Rotate",
-        "MIXED": "mixed"
+        "MIXED": "Mixed"
     },
     "STYLE": {
         "BLEND": {
@@ -370,7 +370,8 @@
             "ALIGN": "Align",
             "AUTO_LEADING": "auto",
             "MISSING": "missing",
-            "MIXED": "mixed"
+            "MIXED": "Mixed Fonts",
+            "MIXED_STYLE": "Mixed Font Styles"
         },
         "VECTOR": {
             "TITLE": "Vector",

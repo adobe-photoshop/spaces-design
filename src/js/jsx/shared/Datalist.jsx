@@ -690,7 +690,9 @@ define(function (require, exports, module) {
             });
 
             return (
-                <div className={dropDownClasses}>
+                <div
+                    className={dropDownClasses}
+                    disabled={this.props.disabled}>
                     {svg}
                     {hiddenTI}
                     <TextInput

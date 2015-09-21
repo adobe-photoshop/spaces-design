@@ -40,7 +40,8 @@
     border-bottom: none;
 }
 
-.drop-down {
+.drop-down,
+.drop-down[disabled]:hover {
     background: url(../img/ico-drop-down-black.svg) no-repeat right;
     background-size: 1rem;
     border-bottom: @hairline solid transparent;
@@ -75,6 +76,10 @@
             }
             
             border-bottom: @hairline solid @item-active;            
+        }
+        
+        &[disabled]:hover {
+            border-bottom: @hairline solid @underlines;            
         }
     }
 }

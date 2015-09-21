@@ -181,7 +181,7 @@ define(function (require, exports, module) {
                 heights = collection.pluck(boundsShown, "height");
 
             return (
-                <div className="formline">
+                <div className="control-group__horizontal">
                     <Label
                         title={strings.TOOLTIPS.SET_WIDTH}
                         className="label__medium__left-aligned"

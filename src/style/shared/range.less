@@ -55,6 +55,9 @@ input[type=range]:hover::-webkit-slider-runnable-track, {
 input[type=range]:active::-webkit-slider-runnable-track, {
     background: @focus-highlight;
 }
+input[type=range]:disabled::-webkit-slider-runnable-track, {
+    background: @underlines;
+}
 
 input[type="range"]::-webkit-slider-thumb {
     .size(1rem);
@@ -72,4 +75,8 @@ input[type="range"]:hover::-webkit-slider-thumb {
 }
 input[type="range"]:active::-webkit-slider-thumb {
     border: @hairline solid @focus-highlight;
+}
+
+input[type="range"]:disabled::-webkit-slider-thumb {
+    border-color: @underlines;
 }
