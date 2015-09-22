@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        tinycolor = require("tinycolor");
+        tinycolor = require("tinycolor"),
+        _ = require("lodash");
 
     var ColorModel = require("js/models/color");
 
@@ -50,14 +51,32 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.libraries.applyColor(color);
         },
+        
+        /**
+         * Return color swatches of a color theme asset. If the colors has more than one mode, colors with RGB mode 
+         * will be picked as default colors.
+         * 
+         * @return {Array.<object>} 
+         */
+        _getRGBColorSwatches: function () {
+            var colorSwatches = this.props.element.getPrimaryRepresentation().getValue("colortheme", "data").swatches;
+            
+            return colorSwatches.map(function (colors) {
+                if (colors.length === 1) {
+                    return colors[0];
+                }
+                
+                // Each color is guarateed to have a RGB representation.
+                return _.find(colors, { mode: "RGB" });
+            });
+        },
 
         render: function () {
             var element = this.props.element,
-                colorSwatches = element.getPrimaryRepresentation().getValue("colortheme", "data").swatches;
+                colorSwatches = this._getRGBColorSwatches();
 
-            var colorSwatchComponents = colorSwatches.map(function (colors, index) {
-                var colorData = colors[0],
-                    colorHex = tinycolor(colorData.value).toHexString().toUpperCase();
+            var colorSwatchComponents = colorSwatches.map(function (colorData, index) {
+                var colorHex = tinycolor(colorData.value).toHexString().toUpperCase();
 
                 return (<div key={index}
                              style={{ background: colorHex }}

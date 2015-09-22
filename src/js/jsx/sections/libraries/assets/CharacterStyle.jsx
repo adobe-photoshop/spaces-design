@@ -69,16 +69,10 @@ define(function (require, exports, module) {
 
         render: function () {
             var element = this.props.element,
-                charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
-                font = charStyle.adbeFont;
-
-            if (!font) {
-                return null;
-            }
-
-            var displayName = element.displayName ||
+                displayName = element.displayName ||
                     librariesUtil.formatCharStyle(element, ["fontFamily", "fontStyle"], " "),
-                subtitle = librariesUtil.formatCharStyle(element, ["color", "fontSize", "leading", "tracking"], ", "),
+                subtitle = librariesUtil.formatCharStyle(element,
+                    ["fontFamily", "fontStyle", "color", "fontSize", "leading", "tracking"], ", "),
                 color = librariesUtil.getCharStyleColor(element),
                 fontColorHex = color && color.toHexString(),
                 colorPreview = this.state.hasPreview && fontColorHex && (<div

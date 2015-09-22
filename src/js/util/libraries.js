@@ -28,7 +28,8 @@ define(function (require, exports) {
     var tinycolor = require("tinycolor"),
         _ = require("lodash");
         
-    var strings = require("i18n!nls/strings");
+    var strings = require("i18n!nls/strings"),
+        librariesAction = require("js/actions/libraries");
         
     /**
      * Return character style's color object.
@@ -37,16 +38,38 @@ define(function (require, exports) {
      * @return {?TinyColor}
      */
     var getCharStyleColor = function (element) {
-        var charStyle = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
+        var charStyle = getCharStyleData(element),
             color;
             
-        if (charStyle.color) {
-            var colorData = charStyle.color instanceof Array ? charStyle.color[0] : charStyle.color;
-            
-            color = tinycolor(colorData.value);
+        if (charStyle && charStyle.color) {
+            color = tinycolor(charStyle.color.value);
         }
         
         return color;
+    };
+    
+    /**
+     * Return the style data of a character style asset. If the style data has more than one color mode, color with RGB
+     * mode will be picked as default color.
+     * 
+     * @param  {AdobeLibraryComposite} element
+     * @return {?object}
+     */
+    var getCharStyleData = function (element) {
+        var representation = _.find(element.representations, { type: librariesAction.REP_CHARACTERSTYLE_TYPE }),
+            style = representation && representation.getValue("characterstyle", "data");
+        
+        if (!style) {
+            return null;
+        }
+        
+        if (style.color instanceof Array) {
+            // Don't overwrite the element's internal data.
+            style = _.clone(style);
+            style.color = _.find(style.color, { mode: "RGB" });
+        }
+        
+        return style;
     };
     
     /**
@@ -58,8 +81,8 @@ define(function (require, exports) {
      * @return {String}
      */
     var formatCharStyle = function (element, attrs, separator) {
-        var style = element.getPrimaryRepresentation().getValue("characterstyle", "data"),
-            font = style.adbeFont;
+        var style = getCharStyleData(element),
+            font = style && style.adbeFont;
         
         var strs = attrs.map(function (attr) {
             switch (attr) {
@@ -71,7 +94,7 @@ define(function (require, exports) {
                     return font ? font.family : null;
                 
                 case "fontSize":
-                    var fontSize = style.fontSize;
+                    var fontSize = style && style.fontSize;
                     return fontSize ? Math.ceil(fontSize.value * 10) / 10 + fontSize.type : null;
 
                 case "fontStyle":
@@ -80,9 +103,9 @@ define(function (require, exports) {
                 case "leading":
                     var leading;
                     
-                    if (style.adbeAutoLeading) {
+                    if (style && style.adbeAutoLeading) {
                         leading = strings.LIBRARIES.LEADING_AUTO;
-                    } else if (style.lineHeight && style.lineHeight.value) {
+                    } else if (style && style.lineHeight && style.lineHeight.value) {
                         leading = (Math.round(style.lineHeight.value * 100) / 100) + style.lineHeight.type;
                     }
                     
@@ -91,9 +114,9 @@ define(function (require, exports) {
                 case "tracking":
                     var tracking;
                     
-                    if (style.adbeTracking) {
+                    if (style && style.adbeTracking) {
                         tracking = style.adbeTracking;
-                    } else if (style.letterSpacing) {
+                    } else if (style && style.letterSpacing) {
                         tracking = style.letterSpacing.value * 1000;
                     }
                     
@@ -107,4 +130,5 @@ define(function (require, exports) {
 
     exports.formatCharStyle = formatCharStyle;
     exports.getCharStyleColor = getCharStyleColor;
+    exports.getCharStyleData = getCharStyleData;
 });
