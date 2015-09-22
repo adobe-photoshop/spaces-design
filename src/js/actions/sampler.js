@@ -344,6 +344,7 @@ define(function (require, exports) {
      */
     var click = function (doc, x, y, secondary) {
         var uiStore = this.flux.store("ui"),
+            docStore = this.flux.store("document"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
         
@@ -356,11 +357,19 @@ define(function (require, exports) {
                     }),
                     topLayer = clickedLeafLayers.last();
 
-                if (secondary) {
-                    return _sampleLayerSecondary.call(this, doc, topLayer);
-                } else {
-                    return _sampleLayerPrimary.call(this, doc, topLayer, x, y);
-                }
+                return this.transfer(layerActions.initializeLayers, doc, topLayer)
+                    .bind(this)
+                    .then(function () {
+                        // If the layer is unitialized, we need to get the updated model
+                        var sourceDoc = docStore.getDocument(doc.id),
+                            sourceLayer = sourceDoc.layers.byID(topLayer.id);
+                        
+                        if (secondary) {
+                            return _sampleLayerSecondary.call(this, sourceDoc, sourceLayer);
+                        } else {
+                            return _sampleLayerPrimary.call(this, sourceDoc, sourceLayer, x, y);
+                        }
+                    });
             });
     };
     click.reads = [locks.PS_DOC, locks.JS_UI];
@@ -368,7 +377,8 @@ define(function (require, exports) {
     click.transfers = [
         layerFXActions.duplicateLayerEffects,
         shapeActions.setFillColor,
-        typeActions.setColor, applyColor
+        typeActions.setColor, applyColor,
+        layerActions.initializeLayers
     ];
 
     /**
@@ -382,6 +392,7 @@ define(function (require, exports) {
      */
     var showHUD = function (doc, x, y) {
         var uiStore = this.flux.store("ui"),
+            docStore = this.flux.store("document"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
 
@@ -396,11 +407,19 @@ define(function (require, exports) {
                     selected = layerTree.selected;
 
                 // If we're trying to sample the only selected layer, surely it's a no-op
-                if (selected.size === 1 && selected.first() === topLayer) {
+                if (!topLayer || selected.size === 1 && selected.first() === topLayer) {
                     return [];
                 }
 
-                return _calculateSampleTypes.call(this, doc, topLayer, x, y);
+                return this.transfer(layerActions.initializeLayers, doc, topLayer)
+                    .bind(this)
+                    .then(function () {
+                        // If the layer is unitialized, we need to get the updated model
+                        var sourceDoc = docStore.getDocument(doc.id),
+                            sourceLayer = sourceDoc.layers.byID(topLayer.id);
+                        
+                        return _calculateSampleTypes.call(this, sourceDoc, sourceLayer, x, y);
+                    });
             })
             .then(function (sampleTypes) {
                 if (sampleTypes.length > 0) {
@@ -417,6 +436,7 @@ define(function (require, exports) {
     };
     showHUD.reads = [locks.PS_DOC, locks.JS_UI];
     showHUD.writes = [locks.JS_UI];
+    showHUD.transfers = [layerActions.initializeLayers];
 
     /**
      * Emits an event to hide sampler HUD
