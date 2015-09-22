@@ -1465,6 +1465,130 @@ define(function (require, exports) {
     reorderLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
+     * Reorders all the given layers in the document to the top of the z-order
+     *
+     * @param {Document=} document Default is current document
+     * @param {Immutable.Iterable.<Layer>=} layers Default is selected layers
+     * @return {Promise}
+     */
+    var bringToFront = function (document, layers) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (document && layers === undefined) {
+            layers = document.layers.selectedNormalized;
+        }
+
+        if (!document || !layers) {
+            return Promise.resolve();
+        }
+
+        var layerIDs = collection.pluck(layers, "id"),
+            targetIndex = document.layers.all.size;
+
+        return this.transfer(reorderLayers, document, layerIDs, targetIndex);
+    };
+    bringToFront.reads = [];
+    bringToFront.writes = [];
+    bringToFront.transfers = [reorderLayers];
+    bringToFront.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
+     * Reorders all the given layers in the document, so they're one above the top-most one
+     *
+     * @param {Document=} document Default is current document
+     * @param {Immutable.Iterable.<Layer>=} layers Default is selected layers
+     * @return {Promise}
+     */
+    var bringForward = function (document, layers) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (document && layers === undefined) {
+            layers = document.layers.selectedNormalized;
+        }
+
+        if (!document || !layers) {
+            return Promise.resolve();
+        }
+
+        var layerIDs = collection.pluck(layers, "id"),
+            layerIndices = layers.map(document.layers.indexOf, document.layers),
+            targetIndex = Math.min(layerIndices.max() + 1, document.layers.all.size);
+
+        return this.transfer(reorderLayers, document, layerIDs, targetIndex);
+    };
+    bringForward.reads = [];
+    bringForward.writes = [];
+    bringForward.transfers = [reorderLayers];
+    bringForward.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
+     * Reorders all the given layers in the document, so they're one below the bottom-most one
+     *
+     * @param {Document=} document Default is current document
+     * @param {Immutable.Iterable.<Layer>=} layers Default is selected layers
+     * @return {Promise}
+     */
+    var sendBackward = function (document, layers) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (document && layers === undefined) {
+            layers = document.layers.selectedNormalized;
+        }
+
+        if (!document || !layers) {
+            return Promise.resolve();
+        }
+        // PS doesn't like it if we try to move a group into itself, so we
+        // get all the child layers, and find the lowest index one.
+        var layerIDs = collection.pluck(layers, "id"),
+            allLayers = layers.flatMap(document.layers.descendants, document.layers),
+            layerIndices = allLayers.map(document.layers.indexOf, document.layers),
+            targetIndex = Math.max(layerIndices.min() - 2, 0);
+
+        return this.transfer(reorderLayers, document, layerIDs, targetIndex);
+    };
+    sendBackward.reads = [];
+    sendBackward.writes = [];
+    sendBackward.transfers = [reorderLayers];
+    sendBackward.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
+     * Reorders all the given layers in the document to the bottom in z-order
+     *
+     * @param {Document=} document Default is current document
+     * @param {Immutable.Iterable.<Layer>=} layers Default is selected layers
+     * @return {Promise}
+     */
+    var sendToBack = function (document, layers) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (document && layers === undefined) {
+            layers = document.layers.selectedNormalized;
+        }
+
+        if (!document || !layers) {
+            return Promise.resolve();
+        }
+
+        var layerIDs = collection.pluck(layers, "id"),
+            targetIndex = 0;
+
+        return this.transfer(reorderLayers, document, layerIDs, targetIndex);
+    };
+    sendToBack.reads = [];
+    sendToBack.writes = [];
+    sendToBack.transfers = [reorderLayers];
+    sendToBack.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
      * Set the blend mode of the given layers.
      *
      * @param {Document} document
@@ -2135,6 +2259,10 @@ define(function (require, exports) {
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
+    exports.bringToFront = bringToFront;
+    exports.bringForward = bringForward;
+    exports.sendBackward = sendBackward;
+    exports.sendToBack = sendToBack;
     exports.setBlendMode = setBlendMode;
     exports.addLayers = addLayers;
     exports.resetSelection = resetSelection;

@@ -36,7 +36,11 @@
             "LOCK_LAYER": "l",
             "UNLOCK_LAYER": "l",
             "GROUP_LAYERS": "g",
-            "UNGROUP_LAYERS": "g"
+            "UNGROUP_LAYERS": "g",
+            "BRING_TO_FRONT": "]",
+            "BRING_FORWARD": "]",
+            "SEND_BACKWARD": "[",
+            "SEND_TO_BACK": "["
         },
         "VIEW": {
             "ZOOM_IN": "+",

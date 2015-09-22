@@ -426,11 +426,11 @@ define(function (require, exports, module) {
          */
         "selectedNormalized": function () {
             // For each layer, remove all it's descendants from the group
-            var selected = this.selected.toSet();
-            return selected.filterNot(function (layer) {
+            var selectedSet = this.selected.toSet();
+            return this.selected.filterNot(function (layer) {
                 return this.strictAncestors(layer)
                     .some(function (ancestor) {
-                        return selected.contains(ancestor);
+                        return selectedSet.contains(ancestor);
                     });
             }, this);
         },

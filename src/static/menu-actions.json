@@ -298,6 +298,22 @@
                 "$action": "transform.alignBottom",
                 "$enable-rule": "layers-selected-2+,no-background,no-nesting"
             }
+        },
+        "BRING_TO_FRONT": {
+            "$action": "layers.bringToFront",
+            "$enable-rule": "layer-selected,no-background"
+        },
+        "BRING_FORWARD": {
+            "$action": "layers.bringForward",
+            "$enable-rule": "layer-selected,no-background"
+        },
+        "SEND_BACKWARD": {
+            "$action": "layers.sendBackward",
+            "$enable-rule": "layer-selected,no-background"
+        },
+        "SEND_TO_BACK": {
+            "$action": "layers.sendToBack",
+            "$enable-rule": "layer-selected,no-background"
         }
     },
     "VIEW": {

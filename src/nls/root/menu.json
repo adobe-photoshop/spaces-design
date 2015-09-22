@@ -176,7 +176,11 @@
         "LOCK_LAYER": "Lock",
         "UNLOCK_LAYER": "Unlock",
         "GROUP_LAYERS": "Group",
-        "UNGROUP_LAYERS": "Ungroup"
+        "UNGROUP_LAYERS": "Ungroup",
+        "BRING_FORWARD": "Bring Forward",
+        "BRING_TO_FRONT": "Bring to Front",
+        "SEND_BACKWARD": "Send Backward",
+        "SEND_TO_BACK": "Send to Back"
     },
     "VIEW": {
         "$MENU": "View",
