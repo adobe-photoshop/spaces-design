@@ -74,7 +74,7 @@
         },
         "EXPORT_UTILITY": {
             "$action": "export.openExportPanel",
-            "$enable-rule": "export-enabled"
+            "$enable-rule": "supported-document,export-enabled"
         },
         "REVERT": {
             "$action": "history.revertCurrentDocument",
@@ -175,7 +175,7 @@
         },
         "SEARCH": {
             "$action": "search.toggleSearchBar",
-            "$enable-rule": "always-except-modal"
+            "$enable-rule": "supported-document,always-except-modal"
         }
     },
     "LAYER": {

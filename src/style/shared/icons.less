@@ -133,6 +133,12 @@
             height: 1.6rem;
             fill: @item-active;
         }
+        
+        &__disabled, &__disabled:hover {
+            svg {
+                fill: @item-disabled;
+            }
+        }
     }
     &.button-iOS,
     &.button-xdpi {

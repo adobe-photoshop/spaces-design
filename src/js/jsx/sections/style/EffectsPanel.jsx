@@ -200,10 +200,15 @@ define(function (require, exports, module) {
                 "section__sibling-collapsed": !this.props.visibleSibling
             });
 
-            var copyStyleDisabled = !(this.props.document && this.props.document.layers.selected.size === 1),
-                pasteStyleDisabled = !(this.state.clipboard &&
+            var addStyleDisabled = this.props.disabled,
+                copyStyleDisabled = this.props.disabled || !(this.props.document &&
+                    this.props.document.layers.selected.size === 1),
+                pasteStyleDisabled = this.props.disabled || !(this.state.clipboard &&
                     this.props.document &&
                     this.props.document.layers.selected.size > 0),
+                addStyleClasses = classnames("button-plus style-button", {
+                    "button-plus__disabled": addStyleDisabled
+                }),
                 copyStyleClasses = classnames({
                     "style-button": true,
                     "style-button__disabled": copyStyleDisabled
@@ -235,8 +240,9 @@ define(function (require, exports, module) {
                         onDoubleClick={this.props.onVisibilityToggle}>
                         <div className="style-workflow-buttons">
                             <Button
-                                className="button-plus style-button"
+                                className={addStyleClasses}
                                 title={strings.TOOLTIPS.ADD_EFFECT}
+                                disabled={addStyleDisabled}
                                 onClick={this._toggleEffectPopover}>
                                 <SVGIcon
                                     CSSID="add-new" />
