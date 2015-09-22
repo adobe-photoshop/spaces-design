@@ -48,6 +48,10 @@ define(function (require, exports, module) {
     var PenTool = function () {
         Tool.call(this, "pen", "Pen", "penTool");
 
+        var toolOptions = {
+            "$AAdd": true // Automatically creates a new layer if the current path is closed
+        };
+
         var selectHandler = function () {
             var deleteFn = function (event) {
                 event.stopPropagation();
@@ -60,11 +64,14 @@ define(function (require, exports, module) {
             
             // Reset the mode of the pen tool to "shape"
             var resetObj = toolLib.resetShapeTool(),
+                optionsObj = toolLib.setToolOptions("penTool", toolOptions),
                 backspacePromise = this.transfer(shortcuts.addShortcut,
                     OS.eventKeyCode.BACKSPACE, {}, deleteFn, "penBackspace", true),
                 deletePromise = this.transfer(shortcuts.addShortcut,
                     OS.eventKeyCode.DELETE, {}, deleteFn, "penDelete", true),
-                resetPromise = descriptor.playObject(resetObj);
+                resetPromise = descriptor.playObject(resetObj).then(function () {
+                    return descriptor.playObject(optionsObj);
+                });
 
             // Disable target path suppression
             var disableSuppressionPromise = UI.setSuppressTargetPaths(false);
