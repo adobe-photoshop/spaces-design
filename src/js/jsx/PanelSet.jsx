@@ -47,7 +47,8 @@ define(function (require, exports, module) {
         LayersPanel = require("jsx!./sections/layers/LayersPanel"),
         LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
         collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
 
     var PanelSet = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("application", "document")],
@@ -96,6 +97,7 @@ define(function (require, exports, module) {
          * Update the sizes of the panels.
          *
          * @private
+         * @return {Promise}
          */
         _updatePanelSizes: function () {
             var node = React.findDOMNode(this.refs.panelSet),
@@ -121,18 +123,26 @@ define(function (require, exports, module) {
                 columnCount = 1;
             }
 
-            this.getFlux().actions.ui.updatePanelSizes({
+            return this.getFlux().actions.ui.updatePanelSizes({
                 panelWidth: panelWidth,
                 columnCount: columnCount
             });
         },
 
+        /**
+         * Debounced version of _updatePanelSizes
+         *
+         * @private
+         */
+        _updatePanelSizesDebounced: null,
+
         componentDidMount: function () {
-            os.addListener("displayConfigurationChanged", this._updatePanelSizes);
+            this._updatePanelSizesDebounced = synchronization.debounce(this._updatePanelSizes, this, 500);
+            os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
         },
 
         componentWillUnmount: function () {
-            os.removeListener("displayConfigurationChanged", this._updatePanelSizes);
+            os.removeListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
         },
 
         componentDidUpdate: function (prevProps, prevState) {

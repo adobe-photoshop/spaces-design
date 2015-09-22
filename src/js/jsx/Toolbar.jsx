@@ -30,8 +30,11 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
+    var os = require("adapter/os");
+
     var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
-        Zoom = require("jsx!js/jsx/Zoom");
+        Zoom = require("jsx!js/jsx/Zoom"),
+        synchronization = require("js/util/synchronization");
 
     var Toolbar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "application", "preferences")],
@@ -95,7 +98,13 @@ define(function (require, exports, module) {
 
         // On startup, we want to make sure center offsets take pinned toolbar
         componentDidMount: function () {
+            this._updateToolbarWidthDebounced = synchronization.debounce(this._updateToolbarWidth, this, 500);
+            os.addListener("displayConfigurationChanged", this._updateToolbarWidthDebounced);
             this._updateToolbarWidth();
+        },
+
+        componentWillUnmount: function () {
+            os.removeListener("displayConfigurationChanged", this._updateToolbarWidthDebounced);
         },
 
         componentWillUpdate: function (nextProps, nextState) {
@@ -238,13 +247,21 @@ define(function (require, exports, module) {
          * Updates the toolbar panel width.
          *
          * @private
+         * @return {Promise}
          */
         _updateToolbarWidth: function () {
             var flux = this.getFlux(),
                 newWidth = this.getToolbarWidth();
 
-            flux.actions.ui.updateToolbarWidth(newWidth);
-        }
+            return flux.actions.ui.updateToolbarWidth(newWidth);
+        },
+
+        /**
+         * Debounced version of _updateToolbarWidth
+         *
+         * @private
+         */
+        _updateToolbarWidthDebounced: null
     });
     
     module.exports = Toolbar;

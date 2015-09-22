@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        d3 = require("d3");
+        d3 = require("d3"),
+        _ = require("lodash");
 
     var OS = require("adapter/os");
 
@@ -77,7 +78,7 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            return !Immutable.is(this.state.uiState, nextState.uiState) ||
+            return !_.isEqual(this.state.uiState, nextState.uiState) ||
                 !Immutable.is(this.state.document, nextState.document) ||
                 this.state.tool !== nextState.tool ||
                 this.state.modalState !== nextState.modalState;
