@@ -91,6 +91,7 @@
         },
         "CREATE_CLIPPING_MASK": "Créer un masque d'écrêtage",
         "CREATE_ARTBOARD": "Créer un nouveau plan de travail",
+        "DUPLICATE": "Dupliquer la sélection",
         "NEW_ARTBOARD_FROM_TEMPLATE": {
             "$MENU": "Nouveau plan de travail",
             "IPHONE_6_PLUS": "iPhone 6+",

@@ -297,6 +297,18 @@
                     "separator": true
                 },
                 {
+                    "id": "DUPLICATE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "control": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
                     "id": "CREATE_ARTBOARD",
                     "shortcut": {
                         "keyChar": true,

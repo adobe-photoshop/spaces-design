@@ -91,6 +91,7 @@
         },
         "CREATE_CLIPPING_MASK": "Schnittmaske erstellen",
         "CREATE_ARTBOARD": "Neue Zeichenfläche erstellen",
+        "DUPLICATE": "Auswahl duplizieren",
         "NEW_ARTBOARD_FROM_TEMPLATE": {
             "$MENU": "Neue Zeichenfläche",
             "IPHONE_6_PLUS": "iPhone 6+",

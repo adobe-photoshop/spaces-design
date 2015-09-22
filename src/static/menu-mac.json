@@ -333,6 +333,18 @@
                     "separator": true
                 },
                 {
+                    "id": "DUPLICATE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
                     "id": "CREATE_ARTBOARD",
                     "shortcut": {
                         "keyChar": true,

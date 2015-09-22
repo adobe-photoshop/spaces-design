@@ -31,7 +31,8 @@
             "SEARCH": "f"
         },
         "LAYER": {
-            "CREATE_ARTBOARD": "b"
+            "CREATE_ARTBOARD": "b",
+            "DUPLICATE": "j"
         },
         "ARRANGE": {
             "FLIP_HORIZONTAL": "/",

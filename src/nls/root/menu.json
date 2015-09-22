@@ -91,6 +91,7 @@
         },
         "CREATE_CLIPPING_MASK": "Create Clipping Mask",
         "CREATE_ARTBOARD": "Create New Artboard",
+        "DUPLICATE": "Duplicate Selection",
         "NEW_ARTBOARD_FROM_TEMPLATE": {
             "$MENU": "New Artboard",
             "IPHONE_6_PLUS": "iPhone 6+",

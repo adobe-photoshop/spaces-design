@@ -1918,12 +1918,26 @@ define(function (require, exports) {
     /**
      * Copy into the given document a set of layers, possibly from another document.
      *
-     * @param {Document} document
-     * @param {Document} fromDocument
-     * @param {Immutable.Iterable.<Layer>} fromLayers
+     * @param {Document=} document
+     * @param {Document=} fromDocument
+     * @param {Immutable.Iterable.<Layer>=} fromLayers
      * @return {Promise}
      */
     var duplicate = function (document, fromDocument, fromLayers) {
+        var applicationStore = this.flux.store("application");
+            
+        if (document === undefined) {
+            document = applicationStore.getCurrentDocument();
+        }
+
+        if (fromDocument === undefined) {
+            fromDocument = applicationStore.getCurrentDocument();
+        }
+
+        if (fromLayers === undefined) {
+            fromLayers = fromDocument.layers.selected;
+        }
+        
         if (fromLayers.isEmpty()) {
             return Promise.resolve();
         }

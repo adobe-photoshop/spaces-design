@@ -223,6 +223,10 @@
                 "$enable-rule": "layers-selected-all-shapes"
             }
         },
+        "DUPLICATE": {
+            "$action": "layers.duplicate",
+            "$enable-rule": "have-document,layer-selected"
+        },
         "CREATE_ARTBOARD": {
             "$action": "layers.createArtboard",
             "$enable-rule": "supported-document"
