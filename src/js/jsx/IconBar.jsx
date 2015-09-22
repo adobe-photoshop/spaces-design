@@ -33,7 +33,8 @@ define(function (require, exports, module) {
 
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        menu = require("i18n!nls/menu");
+        menu = require("i18n!nls/menu"),
+        synchronization = require("js/util/synchronization");
 
     var PanelSet = React.createClass({
         mixins: [FluxMixin],
@@ -42,6 +43,7 @@ define(function (require, exports, module) {
          * Update the sizes of the panels.
          *
          * @private
+         * @return {Promise}
          */
         _updatePanelSizes: function () {
             var node = React.findDOMNode(this),
@@ -53,18 +55,26 @@ define(function (require, exports, module) {
                 iconBarWidth = 0;
             }
 
-            this.getFlux().actions.ui.updatePanelSizes({
+            return this.getFlux().actions.ui.updatePanelSizes({
                 iconBarWidth: iconBarWidth
             });
         },
 
+        /**
+         * Debounced version of _updatePanelSizes
+         *
+         * @private
+         */
+        _updatePanelSizesDebounced: null,
+
         componentDidMount: function () {
-            os.addListener("displayConfigurationChanged", this._updatePanelSizes);
+            this._updatePanelSizesDebounced = synchronization.debounce(this._updatePanelSizes, this, 500);
+            os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
             this._updatePanelSizes();
         },
 
         componentWillUnmount: function () {
-            os.removeListener("displayConfigurationChanged", this._updatePanelSizes);
+            os.removeListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
         },
 
         render: function () {

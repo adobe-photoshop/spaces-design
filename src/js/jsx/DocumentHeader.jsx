@@ -35,7 +35,8 @@ define(function (require, exports, module) {
     var DocumentHeaderTab = require("jsx!js/jsx/DocumentHeaderTab"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
 
     var DocumentHeader = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("application", "document")],
@@ -65,6 +66,7 @@ define(function (require, exports, module) {
          * Update the sizes of the panels.
          *
          * @private
+         * @return {Promise}
          */
         _updatePanelSizes: function () {
             var node = React.findDOMNode(this.refs.tabContainer),
@@ -76,10 +78,17 @@ define(function (require, exports, module) {
                 headerHeight = 0;
             }
 
-            this.getFlux().actions.ui.updatePanelSizes({
+            return this.getFlux().actions.ui.updatePanelSizes({
                 headerHeight: headerHeight
             });
         },
+
+        /**
+         * Debounced version of _updatePanelSizes
+         *
+         * @private
+         */
+        _updatePanelSizesDebounced: null,
 
         /** @ignore */
         _updateTabContainerScroll: function () {
@@ -110,14 +119,15 @@ define(function (require, exports, module) {
                 headerWidth: React.findDOMNode(this).clientWidth
             });
 
-            os.addListener("displayConfigurationChanged", this._updatePanelSizes);
+            this._updatePanelSizesDebounced = synchronization.debounce(this._updatePanelSizes, this, 500);
+            os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
             this._updatePanelSizes();
             
             window.addEventListener("resize", this._handleWindowResize);
         },
 
         componentWillUnmount: function () {
-            os.removeListener("displayConfigurationChanged", this._updatePanelSizes);
+            os.removeListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
             window.removeEventListener("resize", this._handleWindowResize);
         },
 
