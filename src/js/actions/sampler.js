@@ -355,8 +355,14 @@ define(function (require, exports) {
                     clickedLeafLayers = layerTree.leaves.filter(function (layer) {
                         return hitLayerMap.has(layer.id);
                     }),
-                    topLayer = clickedLeafLayers.last();
+                    topLayer = clickedLeafLayers.last(),
+                    selected = layerTree.selected;
 
+                // If we're trying to sample the only selected layer, surely it's a no-op
+                if (!topLayer || selected.size === 1 && selected.first() === topLayer) {
+                    return Promise.resolve();
+                }
+                
                 return this.transfer(layerActions.initializeLayers, doc, topLayer)
                     .bind(this)
                     .then(function () {
