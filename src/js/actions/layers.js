@@ -1239,6 +1239,30 @@ define(function (require, exports) {
     setVisibility.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
+     * Used by the show/hide menu items, targets the active document active layers
+     *
+     * @param {boolean} visible
+     * @returns {Promise}
+     */
+    var setVisibilitySelectedInCurrentDocument = function (visible) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var showPromises = currentDocument.layers.selected.map(function (layer) {
+            return this.transfer(setVisibility, currentDocument, layer, visible);
+        }, this).toArray();
+
+        return Promise.all(showPromises);
+    };
+    setVisibilitySelectedInCurrentDocument.reads = [locks.JS_DOC, locks.PS_DOC];
+    setVisibilitySelectedInCurrentDocument.writes = [];
+    setVisibilitySelectedInCurrentDocument.transfers = [setVisibility];
+
+    /**
      * Unlocks the background layer of the document
      * FIXME: Does not care about the document reference
      *
@@ -2254,6 +2278,7 @@ define(function (require, exports) {
     exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
     exports.ungroupSelected = ungroupSelected;
     exports.setVisibility = setVisibility;
+    exports.setVisibilitySelectedInCurrentDocument = setVisibilitySelectedInCurrentDocument;
     exports.setLocking = setLocking;
     exports.setOpacity = setOpacity;
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;

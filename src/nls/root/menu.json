@@ -175,6 +175,8 @@
         "SWAP_POSITION": "Swap Position",
         "LOCK_LAYER": "Lock",
         "UNLOCK_LAYER": "Unlock",
+        "SHOW_LAYER": "Show",
+        "HIDE_LAYER": "Hide",
         "GROUP_LAYERS": "Group",
         "UNGROUP_LAYERS": "Ungroup",
         "BRING_FORWARD": "Bring Forward",

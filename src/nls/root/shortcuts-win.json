@@ -33,6 +33,8 @@
             "FLIP_HORIZONTAL": "/",
             "FLIP_VERTICAL": "/",
             "SWAP_POSITION": "/",
+            "SHOW_LAYER": ",",
+            "HIDE_LAYER": ",",
             "LOCK_LAYER": "l",
             "UNLOCK_LAYER": "l",
             "GROUP_LAYERS": "g",

@@ -427,6 +427,28 @@
                     "separator": true
                 },
                 {
+                    "id": "SHOW_LAYER",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "HIDE_LAYER",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
                     "id": "LOCK_LAYER",
                     "shortcut": {
                         "keyChar": true,

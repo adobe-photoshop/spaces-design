@@ -233,6 +233,16 @@
     },
     "ARRANGE": {
         "$enable-rule": "always",
+        "SHOW_LAYER": {
+            "$action": "layers.setVisibilitySelectedInCurrentDocument",
+            "$enable-rule": "layer-selected",
+            "$payload": true
+        },
+        "HIDE_LAYER": {
+            "$action": "layers.setVisibilitySelectedInCurrentDocument",
+            "$enable-rule": "layer-selected",
+            "$payload": false
+        },
         "LOCK_LAYER": {
             "$action": "layers.lockSelectedInCurrentDocument",
             "$enable-rule": "layer-selected"
