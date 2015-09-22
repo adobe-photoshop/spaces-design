@@ -43,7 +43,7 @@
         display: flex;
     }
     
-    li, .toolbar__backToPs.button-simple{
+    li, .zoom{
         display: none;
     }
     
@@ -51,9 +51,32 @@
         height: auto;
         color: @bg-alt;
 
-        li, .toolbar__backToPs.button-simple{
+        li, .zoom{
             display: flex;
         }        
+    }
+    .zoom{
+        position: absolute;
+        bottom: 1.3rem;
+        align-items: center;
+        justify-content: center;
+        width: @toolbar-button-size;
+        flex-wrap: wrap;
+        
+        .button-simple.toolbar__zoom {
+            display: flex;
+            align-self: flex-start;
+            svg {
+                width: 1.6rem;
+                height: 1.6rem;
+                fill: @item-inactive;
+            }
+        }
+        .number-input {
+            width: @toolbar-button-size;
+            text-align: center;
+            font-size: @text-medium;
+        }
     }
 }
 

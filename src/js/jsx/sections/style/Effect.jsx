@@ -107,7 +107,7 @@ define(function (require, exports) {
          *
          * @private
          * @param {SyntheticEvent} event
-         * @param {x} x new shadow x coordinate
+         * @param {number} x new shadow x coordinate
          */
         _xChanged: function (event, x) {
             var minValidX = x,
@@ -142,7 +142,7 @@ define(function (require, exports) {
          *
          * @private
          * @param {SyntheticEvent} event
-         * @param {y} y new shadow y coordinate
+         * @param {number} y new shadow y coordinate
          */
         _yChanged: function (event, y) {
             var minValidY = y,
@@ -177,7 +177,7 @@ define(function (require, exports) {
          *
          * @private
          * @param {SyntheticEvent} event
-         * @param {blur} blur new shadow blur value in pixels
+         * @param {number} blur new shadow blur value in pixels
          */
         _blurChanged: function (event, blur) {
             this.getFlux().actions.layerEffects
@@ -193,7 +193,7 @@ define(function (require, exports) {
          *
          * @private
          * @param {SyntheticEvent} event
-         * @param {spread} spread new shadow spread value in pixels
+         * @param {number} spread new shadow spread value in pixels
          */
         _spreadChanged: function (event, spread) {
             this.getFlux().actions.layerEffects
