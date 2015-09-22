@@ -141,23 +141,25 @@ define(function (require, exports, module) {
          * @return {Array.<ReactComponent>}
          */
         _buildNav: function () {
-            if (!(this.props.useContinueOnFirstSlide && this.state.index === 0)) {
-                return this.props.items.map(function (item, idx) {
+            return this.props.items.map(function (item, idx) {
                     var classSet = classnames({
                         "current": idx === this.state.index,
                         "dot": true
                     });
-                
-                    return (
-                        <a
-                            key={"link" + idx}
-                            className={classSet}
-                            onClick={this._gotoItem.bind(this, idx, this.state.index)}>
-                            <span />
-                        </a>
-                    );
+
+                    if (idx !== 0) {
+                        return (
+                            <a
+                                key={"link" + idx}
+                                className={classSet}
+                                onClick={this._gotoItem.bind(this, idx, this.state.index)}>
+                                <SVGIcon
+                                        CSSID={strings.FIRST_LAUNCH.SLIDES[idx].ICON} />
+                                <h3>{strings.FIRST_LAUNCH.SLIDES[idx].TITLE}</h3>
+                            </a>
+                        );
+                    }
                 }, this);
-            }
         },
         
         /**
@@ -172,24 +174,6 @@ define(function (require, exports, module) {
                         className="carousel__slide-button__continue"
                         onClick={this._gotoItem.bind(this, 1, 0)}>
                         {strings.FIRST_LAUNCH.CONTINUE}
-                    </a>
-                );
-            } else if (this.state.index < this.props.items.length - 1) {
-                return (
-                    <a
-                        className="carousel__slide-button__next"
-                        onClick={this._gotoItem.bind(this, this.state.index + 1, this.state.index)}>
-                        <SVGIcon
-                            viewBox="0 0 6 10"
-                            CSSID="carousel-right"/>
-                    </a>
-                );
-            } else if (this.props.useDismissOnLastSlide) {
-                return (
-                    <a
-                        className="carousel__slide-button__started"
-                        onClick={this.props.dismissDialog}>
-                        {strings.FIRST_LAUNCH.GET_STARTED}
                     </a>
                 );
             }

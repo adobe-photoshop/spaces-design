@@ -30,7 +30,7 @@
     width: @first-launch-width;
     max-height: 66rem; //this is important for use with dialog.showModa()
     height:66rem;
-    border-radius: 2rem;
+    border-radius: 0.8rem;
     overflow: hidden;
 }
 
@@ -113,18 +113,29 @@
 }
 
 .carousel__slide__full {
-    padding-left: 16rem;
-    padding-right: 16rem;
-    padding-top: 16rem;
+    padding-left: 0rem;
+    padding-right: 0rem;
+    padding-top: 6rem;
+    height: 100%;
+    text-align: center;
+    position: relative;
     
     h1 {
-        margin-bottom: 1rem;
-        font-size: 3.5rem;
+        padding-top: 6rem;
+        font-size: 3.2rem;
+        padding-bottom: 14.2rem;
     }
     
     h2 {
-        margin-bottom: 2rem;
         font-size: 2.4rem;
+        line-height: 3.2rem;
+        font-weight: lighter;
+    }
+    
+    h3 {
+        font-size: 1.8rem;
+        line-height: 3.2rem;
+        font-weight: lighter;
     }
     
     p {
@@ -132,11 +143,21 @@
         line-height: 2.5rem;
         margin-bottom: 1.5rem;
     }
+    
+    img {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    img.no-scale {
+        width: auto;
+        position: relative;
+    }
 }
 
 .carousel__slide__head {
     height: 43.7rem;
-    background-color: #141414;
  
     &.links {
         display: flex;
@@ -156,9 +177,9 @@
 }
 
 .carousel__slide__body {
-    padding-top: 4rem;
-    padding-left: 10rem;
-    padding-right: 10rem;
+    padding-top: 6rem;
+    padding-left: 6rem;
+    padding-right: 6rem;
     text-align: center;
     
     h1 {
@@ -179,51 +200,70 @@
 .carousel__nav {
     position: absolute;
     width: 100%;
-    bottom: 2.5rem;
+    bottom: 4.5rem;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: row;
+    padding-top: 3.6rem;
+    border-top: @underlines solid @hairline;
     
     .dot {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 1.6rem;
-        height: 1.6rem;
-        
-        // Using px because rems create a strange rendering issue
-        span {
+        flex-wrap: wrap;
+        width: 10rem;
+        height: 7.2rem;
+        svg {
             display: block;
-            width: 7px;
-            height: 7px;
-            border-radius: 7px;
-            background-color: @bg-alt;
+            fill: @icon-disabled;
+            width: 10rem;
+            height: 3.6rem;
+            align-self: flex-start;
         }
         
-        &.current {
-            span {
-                background-color: @item-active;
+
+        h3 {
+            font-size: @text-large;
+            color: @item-disabled;
+            align-self: flex-end;
+        }
+
+        &.current, &.current:hover {
+            svg {
+                fill: @focus-highlight;
+            }
+            h3 {
+                color: @focus-highlight;
+            }
+        }
+        &:hover {
+            h3 {
+                color: @item-inactive;
+            }
+            svg {
+                fill: @icon-inactive;
             }
         }
     }
 }
 
-.carousel__slide__head__list {
+.carousel__slide__head__list, .carousel__slide__three__list {
     width: 50%;
     float: left;
-    padding-left: 6rem;
-    padding-right: 6rem;
-    padding-top: 6rem;
+    padding-top: 16rem;
+    padding-left: 0rem;
+    padding-right: 0rem;
     
     h3 {
-        font-size: 1.8rem;
-        margin-bottom: 1rem;
+        font-size: @text-large;
+        margin-bottom: 3.2rem;
     }
     
     p {
         color: @warm-gray;
-        font-size: 1.5rem;
+        font-size: @text-medium;
         height: 9rem;
     }
     
@@ -232,13 +272,23 @@
         text-decoration: underline;
     }
 }
+.carousel__slide__three__list {
+    width: 33.3%;
 
-@carousel-button-radius: 2.5rem;
+    svg {
+        fill: @icon-active;
+        width: 100%;
+        height: 3.6rem;
+        margin-bottom: 2.4rem;
+    }
+}
+
+@carousel-button-radius: 3.2rem;
 
 .carousel__slide-button__continue {
     position: absolute;
     display: block;
-    top: -12rem;
+    bottom: 16rem;
     left: 50%;
     transform: translateX(-50%);
     padding-left: 2rem;
@@ -246,8 +296,14 @@
     border: @hairline solid @item-active;
     border-radius: @carousel-button-radius;
     font-size: 1.5rem;
-    line-height: 2.5rem;
+    font-weight: 900;
+    line-height: @carousel-button-radius;
     cursor: pointer;
+    
+    &:hover {
+        color: @item-hover;
+        border: @hairline solid @item-hover;
+    }
 }
 
 .carousel__slide-button__next, 
@@ -255,11 +311,11 @@
 .carousel__slide-button__started {
     position: absolute;
     border-radius: @carousel-button-radius;
-    border: @hairline solid @bg-alt;
-    bottom: -0.8rem;
+    border: @hairline solid @underlines;
+    top: -49.2rem;
     cursor: pointer;
     &:hover {
-        border-color: @item-active;
+        border-color: @item-hover;
     }
 }
 
@@ -269,22 +325,37 @@
     padding-right: @carousel-button-radius/2;
     border-color: @item-active;
     font-size: 1.5rem;
-    line-height: 2.5rem;
+    line-height: @carousel-button-radius;
 }
 
 .carousel__slide-button__next, 
 .carousel__slide-button__prev {
-    width: 2.8rem;
-    height: 2.8rem;
+    width: @carousel-button-radius;
+    height: @carousel-button-radius;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+        width: 1rem;
+        height: 1rem;
+        fill: @icon-inactive;
+        stroke: none;
+    }
+
+    &:hover svg {
+        fill: @icon-active;
+        stroke: none;
+    }
 }
 
 .carousel__slide-button__prev {
-    left: 2.2rem;
+    left: 1.6rem;
 }
 
 .carousel__slide-button__next,
 .carousel__slide-button__started {
-    right: 2.2rem;
+    right: 1.6rem;
 }
 
 .carousel__slide__block {

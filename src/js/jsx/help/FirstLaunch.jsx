@@ -31,7 +31,8 @@ define(function (require, exports, module) {
 
     var Carousel = require("jsx!js/jsx/shared/Carousel"),
         strings = require("i18n!nls/strings"),
-        ui = require("js/util/ui");
+        ui = require("js/util/ui"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
         
     var FirstLaunch = React.createClass({
         mixins: [FluxMixin],
@@ -64,110 +65,73 @@ define(function (require, exports, module) {
         render: function () {
             var psDesignTwitterURL = "https://www.adobe.com/go/designspace-twitter",
                 psForumURL = "https://www.adobe.com/go/designspace-forum",
-                psHelpURL = "https://www.adobe.com/go/designspace-help.html",
                 githubURL = "https://www.adobe.com/go/designspace-github",
                 firstLaunchCarouselItems = [
                 (<div className="carousel__slide__full">
                     <h1>{strings.FIRST_LAUNCH.SLIDES[0].HEADLINE}</h1>
-                    <h2>{strings.FIRST_LAUNCH.SLIDES[0].SUBHEAD}</h2>
-                    <p>{strings.FIRST_LAUNCH.SLIDES[0].BODY_FIRST}</p>
-                    <p>{strings.FIRST_LAUNCH.SLIDES[0].BODY_SECOND}</p>
+                    <img src="img/first_launch/img_slide_ds.png"/>
+                    <h3>{strings.FIRST_LAUNCH.SLIDES[0].BODY_FIRST}</h3>
+                    <h3>{strings.FIRST_LAUNCH.SLIDES[0].BODY_SECOND}</h3>
+                </div>),
+                (<div className="carousel__slide__full">
+                    <img src="img/first_launch/img_slide_toolset.gif"/>
+                    <h2>{strings.FIRST_LAUNCH.SLIDES[1].HEADLINE}</h2>
+                </div>),
+                (<div className="carousel__slide__full">
+                    <img src="img/first_launch/img_slide_search.png"/>
+                    <h2>{strings.FIRST_LAUNCH.SLIDES[2].HEADLINE_FIRST}</h2>
+                    <h2>{strings.FIRST_LAUNCH.SLIDES[2].HEADLINE_SECOND}</h2>
+                </div>),
+                (<div className="carousel__slide__full">
+                    <img src="img/first_launch/img_slide_sampler.png"/>
+                    <h2>{strings.FIRST_LAUNCH.SLIDES[3].HEADLINE_FIRST}</h2>
+                    <h2>{strings.FIRST_LAUNCH.SLIDES[3].HEADLINE_SECOND}</h2>
+                </div>),
+                (<div className="carousel__slide__full">
+                    <img src="img/first_launch/img_slide_artboards.gif"/>
+                    <h2>{strings.FIRST_LAUNCH.SLIDES[4].HEADLINE}</h2>
+                </div>),
+                (<div className="carousel__slide__full">
+                    <img src="img/first_launch/img_slide_swap.gif"/>
+                    <h2>{strings.FIRST_LAUNCH.SLIDES[5].HEADLINE}</h2>
+                </div>),
+                (<div className="carousel__slide__full">
+                    <img src="img/first_launch/img_slide_switching.gif"/>
+                    <h2>{strings.FIRST_LAUNCH.SLIDES[6].HEADLINE}</h2>
                 </div>),
                 (<div className="carousel__slide">
-                    <div className="carousel__slide__head">
-                        <img src="img/first_launch/slide_2_head.png"/>
-                    </div>
                     <div className="carousel__slide__body">
-                        <h2>{strings.FIRST_LAUNCH.SLIDES[1].HEADLINE}</h2>
-                        <p>{strings.FIRST_LAUNCH.SLIDES[1].BODY}</p>
-                    </div>
-                </div>),
-                (<div className="carousel__slide">
-                    <div className="carousel__slide__head">
-                        <ul className="carousel__slide__head__list">
-                            <li>
-                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SELECT.TITLE}</h3>
-                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SELECT.BODY}</p>
-                            </li>
-                            <li>
-                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_VECTOR.TITLE}</h3>
-                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_VECTOR.BODY}</p>
-                            </li>
-                            <li>
-                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_MATH.TITLE}</h3>
-                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_MATH.BODY}</p>
-                            </li>
-                        </ul>
-                        <ul className="carousel__slide__head__list">
-                            <li>
-                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_ARTBOARD.TITLE}</h3>
-                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_ARTBOARD.BODY}</p>
-                            </li>
-                            <li>
-                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SWAP.TITLE}</h3>
-                                <p>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_SWAP.BODY}</p>
-                            </li>
-                            <li>
-                                <h3>{strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.TITLE}</h3>
-                                <p>
-                                    {strings.FIRST_LAUNCH.SLIDES[2].FEATURE_OS.BODY}
-                                    <a onClick={ui.openURL.bind(null, githubURL)}>Github</a>.
-                                </p>
-                            </li>
-                        </ul>
-                    </div>
-                    <div className="carousel__slide__body">
-                        <h2>{strings.FIRST_LAUNCH.SLIDES[2].HEADLINE}</h2>
-                        <p>{strings.FIRST_LAUNCH.SLIDES[2].BODY}</p>
-                    </div>
-                </div>),
-                (<div className="carousel__slide">
-                    <div className="carousel__slide__head">
-                        <video autoPlay="autoPlay" loop="loop" >
-                            <source src="img/first_launch/getting-started-animation.ogg" type="video/ogg"/>
-                        </video>
-                    </div>
-                    <div className="carousel__slide__body">
-                        <h2>{strings.FIRST_LAUNCH.SLIDES[3].HEADLINE}</h2>
-                        <p>{strings.FIRST_LAUNCH.SLIDES[3].BODY}</p>
-                    </div>
-                </div>),
-                (<div className="carousel__slide">
-                    <div className="carousel__slide__head links">
-                        <div className="carousel__slide__block">
-                            <a
-                                className="carousel__slide__block-link"
-                                onClick={ui.openURL.bind(null, psDesignTwitterURL)}>
-                                <div className="block-link__image">
-                                    <img src="img/first_launch/twitter.svg" />
-                                </div>
-                                <p className="block-link__body">@psdesign</p>
-                            </a>
-                        </div>
-                        <div className="carousel__slide__block">
-                            <a
-                                className="carousel__slide__block-link"
-                                onClick={ui.openURL.bind(null, psForumURL)}>
-                                <div className="block-link__image">
-                                    <img src="img/first_launch/ps_logo.svg" />
-                                </div>
-                                <p className="block-link__body">Forum</p>
-                            </a>
-                        </div>
-                        <div className="carousel__slide__block">
-                            <a
-                                className="carousel__slide__block-link"
-                                onClick={ui.openURL.bind(null, psHelpURL)}>
-                                <div className="block-link__image">
-                                    <img src="img/first_launch/help.png" />
-                                </div>
-                                <p className="block-link__body">Help</p>
-                            </a>
-                        </div>
-                    </div>
-                    <div className="carousel__slide__body">
-                        <h2>{strings.FIRST_LAUNCH.SLIDES[4].HEADLINE}</h2>
-                        <p>{strings.FIRST_LAUNCH.SLIDES[4].BODY}</p>
+                        <h1>{strings.FIRST_LAUNCH.SLIDES[7].HEADLINE}</h1>
+                            <ul className="carousel__slide__three__list">
+                                <li>
+                                    <div
+                                        onClick={ui.openURL.bind(null, psDesignTwitterURL)}>
+                                        <SVGIcon
+                                            CSSID="bird"/>
+                                        <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_FIRST}</h2>
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul className="carousel__slide__three__list">
+                                <li>
+                                    <div
+                                        onClick={ui.openURL.bind(null, psForumURL)}>
+                                        <SVGIcon
+                                            CSSID="github"/>
+                                        <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_SECOND}</h2>
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul className="carousel__slide__three__list">
+                                <li>
+                                    <div
+                                        onClick={ui.openURL.bind(null, githubURL)}>
+                                        <SVGIcon
+                                            CSSID="workspace"/>
+                                        <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_THIRD}</h2>
+                                    </div>
+                                </li>
+                            </ul>
                     </div>
                 </div>)
             ];
