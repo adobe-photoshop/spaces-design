@@ -106,7 +106,12 @@ define(function (require, exports, module) {
         render: function () {
             // If there are no vector layers, hide the component
             if (!this.props.forceDisabledDisplay && (!this.props.fill || this.props.layers.isEmpty())) {
-                return (<div className="color-input color-input__swatch__color color-input__empty"></div>);
+                return (
+                    <div className="color-input color-input__swatch__color color-input__empty">
+                        <div
+                            className="fill__preview__disabled"/>
+                    </div>
+                );
             }
 
             var fillOverlay = function (colorTiny) {

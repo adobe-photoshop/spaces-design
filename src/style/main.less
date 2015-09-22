@@ -140,13 +140,16 @@ hr {
 
 textarea,
 input[type="text"] {
-    background: none;
+    background-color: transparent;
     color: @item-active;
-    border: @hairline solid @color-clear;
+    border-top: none;
+    border-left: none;
+    border-bottom: solid @hairline transparent;
+    border-right: none;
+    border-radius: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
-    border-radius: .2rem;
 }
 
 textarea:hover,
@@ -160,11 +163,21 @@ input[type="text"]:hover {
 .type,
 .export {
     input[type="text"] {
+        height: 2rem;
         border-bottom: @hairline solid @underlines;
         
         &:hover {
-            border-bottom: @hairline solid @item-active;            
+            border-bottom: @hairline solid @item-inactive;            
         }
+        &:hover:disabled, &:disabled{
+            color: @item-disabled;
+            border-bottom-color: @underlines-disabled;
+        }
+        &:focus{
+            color: @item;
+            border-bottom-color: @focus-highlight;
+        }
+        
     }
 }
 

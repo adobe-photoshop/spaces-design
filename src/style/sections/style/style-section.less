@@ -51,23 +51,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.25rem;
-
+    width: @style-button-size;
+    height: @style-button-size;
+    
     svg {
         width: @style-button-size;
         height: @style-button-size;
-        fill: @item-active;
+        fill: @icon-active;
         stroke: none;
     }
     &:hover {
         svg {
-            fill: @item-hover;
+            fill: @icon-hover;
             stroke: none;
         }
     }
     &__disabled, &__disabled:hover {
         svg {
-            fill: @item-disabled;
+            fill: @icon-disabled;
         }
     }
 }

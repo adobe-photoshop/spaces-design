@@ -42,19 +42,18 @@
         height: 1.6rem;
         padding-bottom: 0.2rem;
         border-bottom: @hairline solid transparent;
-        fill: @item-active;
+        fill: @icon-active;
         stroke: none;
         color: @warm-gray;
     }
     &:hover {
         svg {
-            fill: @item-hover;
+            fill: @icon-hover;
             stroke: none;
         }
     }
 }
-
-.tool-selected svg, .tool-selected:hover svg {
+.tool-selected.button-simple svg, .tool-selected.button-simple:hover svg {
     fill: @focus-highlight;
     stroke: none;
 }
@@ -64,12 +63,12 @@
     bottom: 0;
     width: 5rem;
     svg {
-        fill: @item-active;
+        fill: @icon-active;
     }
 }
 
 .panel__hide svg {
-    fill: @item-active;
+    fill: @icon-active;
     height: 0.8rem;
 }
 
@@ -108,7 +107,7 @@
     svg {
         width: 1.6rem;
         height: 2.4rem;
-        fill: @item-active;
+        fill: @icon-active;
         stroke: none;
         color: @warm-gray;
     }
@@ -121,31 +120,42 @@
 }
 
 .button-simple{
+    svg {
+        width: 1.6rem;
+        height: 1.6rem;
+        fill: @icon-active;
+    }
+    
+    &:hover svg {
+        fill: @icon-hover;
+    }
+    
+    &__disabled, &__disabled:hover, &:disabled svg {
+        svg {
+            fill: @icon-disabled;
+        }
+    }
+    
     &.button-plus {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 1.5rem;
-        height: 1.5rem;
-
-        svg {
-            width: 1.6rem;
-            height: 1.6rem;
-            fill: @item-active;
-        }
     }
-    &.button-iOS,
-    &.button-xdpi {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    &.button-iOS {   
         width: 2.4rem;
         height: 1.6rem;
-
+        
         svg {
             width: 2.4rem;
             height: 1.6rem;
-            fill: @item-active;
+        }
+    }
+    &.button-xdpi {   
+        width: 2.8rem;
+        height: 1.6rem;
+        svg {
+            width: 2.8rem;
+            height: 1.6rem;
         }
     }
 }
@@ -167,7 +177,7 @@
     .button-toggle[data-selected="true"], &:hover .button-toggle {
         svg {
             display: block;
-            fill: @item-active;
+            fill: @icon-active;
             stroke: none;
         }
     }
@@ -177,7 +187,7 @@
     .button-toggle,
     &:hover .button-toggle{
         svg {
-            fill: @item-hover;
+            fill: @icon-hover;
             stroke: none;
             display: block;
         }
@@ -187,10 +197,56 @@
 .face.face__not-visible:hover .button-toggle,
 .face.face__not-visible .button-toggle {
     svg {
-        fill: @item-hover;
+        fill: @icon-hover;
         opacity: @label-hidden-opacity;
         stroke: none;
         display: block;
+    }
+}
+
+.fill-list__fill,
+.stroke-list__stroke,
+.shadow-list__shadow {
+
+    .button-toggle {
+        svg {
+            display: none;
+        }
+    }
+
+    .button-toggle[data-selected="false"] {
+        svg {
+            display: block;
+            fill: @icon-active;
+            stroke: none;
+        }
+    }
+
+    &:hover .button-toggle:not([data-selected="false"]) {
+        opacity: 0.5;
+
+        svg {
+            display: block;
+            fill: @icon-active;
+            stroke: none;
+        }
+    }
+
+    .button-toggle[data-selected="true"] {
+        svg {
+            display: none;
+            fill: @bg-alt;
+            stroke: none;
+            color: @warm-gray;
+        }
+    }
+
+    .button-toggle.layer-delete {
+        svg {
+            stroke-width: 40px;
+            stroke: none;
+            transform: scale(2);
+        }
     }
 }
 
@@ -216,7 +272,7 @@
     svg {
         width: 1.8rem;
         height: 2.4rem;
-        fill: @item-disabled;
+        fill: @icon-disabled;
         stroke: none;
 
     }
@@ -224,7 +280,7 @@
 
 .face[data-kind="7"] .face__kind {
     svg {
-        fill: @item-active;
+        fill: @icon-active;
     }
 }
 
@@ -235,7 +291,7 @@
     &.face[data-kind="7"] .face__kind {
       svg {
           opacity: @label-hidden-opacity;
-          fill: @item-active;
+          fill: @icon-active;
           stroke: none;
       }
     }
@@ -244,14 +300,14 @@
 // applies to the selected item
 .face__select_immediate .face__kind, .face__select_immediate:hover .face__kind {
   svg {
-      fill: @item-hover;
+      fill: @icon-hover;
       stroke: none;
   }
 }
 
 .face__select_immediate.face[data-kind="7"] .face__kind {
     svg {
-        fill: @item-hover;
+        fill: @icon-hover;
         stroke: none;
     }
 }
@@ -270,7 +326,7 @@
     }
 
     &:hover svg {
-        fill: @item-active;
+        fill: @icon-active;
         stroke: none;
     }
 }

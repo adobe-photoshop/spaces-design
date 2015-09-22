@@ -32,7 +32,7 @@
     cursor: default;
     overflow: hidden;
     flex-shrink: 0;
-    height: @toolbar-button-size;
+    height: @toolbar-button-size - 0.2rem;
     font-weight: bold;
     font-size: @text-wee;
     text-transform: uppercase;
@@ -46,7 +46,7 @@
 .sub-header h3 {
     text-transform: uppercase;
     font-size: @text-small;
-    color: @item-disabled;
+    color: @item-inactive;
     flex-shrink: 0;
     white-space: nowrap;
 }
@@ -73,11 +73,6 @@
     justify-content: space-between;
     align-items: center;
     opacity: .8;
-}
-
-.artboard-presets .section-header,
-.recent-files .section-header {
-    margin-bottom: -0.5rem;
 }
 
 .recent-files .section-title {

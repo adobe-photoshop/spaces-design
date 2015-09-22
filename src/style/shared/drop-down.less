@@ -23,18 +23,20 @@
 
 .drop-down input {
     font-size: @text-medium;
+    background: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='#cecece' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>") no-repeat right @bg-panel; 
+    background-size: 1rem;
+    border-bottom: @hairline solid transparent;
     outline: none;
 }
 
-.drop-down input:focus {
-    background: url(../img/ico-drop-down-black.svg) no-repeat right @bg-panel;
+.drop-down input:hover {
+    background: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='#e1e1e1' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>") no-repeat right @bg-panel;
     background-size: 1rem;
-    color: @item;
-    border-bottom: none;
+    color: @item-hover;
 }
 
-.drop-down input:focus:hover {
-    background: url(../img/ico-drop-down-highlight.svg) no-repeat right @bg-panel;
+.drop-down input:focus, .drop-down input:focus:hover {
+    background: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='#1b8be9' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>") no-repeat right @bg-panel;
     background-size: 1rem;
     color: @item;
     border-bottom: none;
@@ -45,17 +47,22 @@
     background: url(../img/ico-drop-down-black.svg) no-repeat right;
     background-size: 1rem;
     border-bottom: @hairline solid transparent;
-
+    
     svg {
-        fill: @item-active;
+        fill: @item;
     }
 }
 
-.drop-down:hover {
-    background: url(../img/ico-drop-down-hover.svg) no-repeat right;
+.drop-down input:disabled {
+    background: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='#848484' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>") no-repeat right @bg-panel;
     background-size: 1rem;
-    border-bottom: @hairline solid @item-active;
-    color: @item-hover;
+    color: @item-disabled;
+}
+
+.drop-down {
+    svg {
+        fill: @icon-active;
+    }
 }
 
 .appearance,
@@ -63,19 +70,16 @@
 .effects,
 .export {
     .drop-down {
-        border-bottom: @hairline solid @underlines;
         
         input[type="text"] {
-            border-bottom: none;
+            border-bottom: @hairline solid @underlines;
         }
         
         &:hover {
             
             input[type="text"] {
-                border-bottom: none;
+                border-bottom: @hairline solid @item-inactive;
             }
-            
-            border-bottom: @hairline solid @item-active;            
         }
         
         &[disabled]:hover {

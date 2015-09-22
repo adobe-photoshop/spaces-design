@@ -233,7 +233,8 @@ define(function (require, exports, module) {
                         visible={this.props.visible}
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>
-                        <div className="style-workflow-buttons">
+                        <div className="workflow-buttons"
+                            onDoubleClick={this._blockInput}>
                             <Button
                                 className="button-plus style-button"
                                 title={strings.TOOLTIPS.ADD_EFFECT}
@@ -245,7 +246,6 @@ define(function (require, exports, module) {
                                 className={copyStyleClasses}
                                 title={strings.STYLE.COPY}
                                 disabled={copyStyleDisabled}
-                                onDoubleClick={this._blockInput}
                                 onClick={this._handleStyleCopy}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
@@ -255,7 +255,6 @@ define(function (require, exports, module) {
                                 className={pasteStyleClasses}
                                 title={strings.STYLE.PASTE}
                                 disabled={pasteStyleDisabled}
-                                onDoubleClick={this._blockInput}
                                 onClick={this._handleStylePaste}>
                                 <SVGIcon
                                     viewbox="0 0 24 24"
