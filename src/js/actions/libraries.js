@@ -45,6 +45,7 @@ define(function (require, exports) {
         log = require("js/util/log"),
         layerActionsUtil = require("js/util/layeractions"),
         collection = require("js/util/collection"),
+        librariesUtil = require("js/util/libraries"),
         layerActions = require("./layers"),
         exportActions = require("./export"),
         documentActions = require("./documents"),
@@ -90,14 +91,13 @@ define(function (require, exports) {
     /**
      * List of element representation types.
      *
-     * @private
      * @type {string}
      */
-    var _REP_CHARACTERSTYLE_TYPE = "application/vnd.adobe.characterstyle+json",
-        _REP_LAYERSTYLE_TYPE = "application/vnd.adobe.layerstyle",
-        _REP_COLOR_TYPE = "application/vnd.adobe.color+json",
-        _REP_PNG_TYPE = "image/png",
-        _REP_PHOTOSHOP_TYPE = "image/vnd.adobe.photoshop";
+    var REP_CHARACTERSTYLE_TYPE = "application/vnd.adobe.characterstyle+json",
+        REP_LAYERSTYLE_TYPE = "application/vnd.adobe.layerstyle",
+        REP_COLOR_TYPE = "application/vnd.adobe.color+json",
+        REP_PNG_TYPE = "image/png",
+        REP_PHOTOSHOP_TYPE = "image/vnd.adobe.photoshop";
 
     /**
      * List of acceptable image representations that PS can place as
@@ -128,7 +128,7 @@ define(function (require, exports) {
      * @type {Set}
      */
     var EDITABLE_GRAPHIC_REPRESENTATION_TYPES = new Set([
-        _REP_PHOTOSHOP_TYPE
+        REP_PHOTOSHOP_TYPE
     ]);
     
     /**
@@ -233,7 +233,7 @@ define(function (require, exports) {
         }
 
         var firstLayer = currentLayers.last(), // currentLayers are in reversed order
-            representationType = _REP_PHOTOSHOP_TYPE,
+            representationType = REP_PHOTOSHOP_TYPE,
             newElement;
 
         // However, if the layer is a smart object, and is owned by some other app, we need to change representation
@@ -371,8 +371,8 @@ define(function (require, exports) {
                 
                 newElement = currentLibrary.createElement("", ELEMENT_CHARACTERSTYLE_TYPE);
                 
-                var representation = newElement.createRepresentation(_REP_CHARACTERSTYLE_TYPE, "primary"),
-                    imageRepresentation = newElement.createRepresentation(_REP_PNG_TYPE, "rendition");
+                var representation = newElement.createRepresentation(REP_CHARACTERSTYLE_TYPE, "primary"),
+                    imageRepresentation = newElement.createRepresentation(REP_PNG_TYPE, "rendition");
                     
                 // Where magic happens
                 representation.setValue("characterstyle", "data", typeData);
@@ -441,12 +441,12 @@ define(function (require, exports) {
                 newElement = currentLibrary.createElement(currentLayer.name, ELEMENT_LAYERSTYLE_TYPE);
 
                 return Promise.fromNode(function (done) {
-                        var representation = newElement.createRepresentation(_REP_LAYERSTYLE_TYPE, "primary");
+                        var representation = newElement.createRepresentation(REP_LAYERSTYLE_TYPE, "primary");
                         representation.updateContentFromPath(stylePath, false, done);
                     })
                     .then(function () {
                         return Promise.fromNode(function (done) {
-                            var rendition = newElement.createRepresentation(_REP_PNG_TYPE, "rendition");
+                            var rendition = newElement.createRepresentation(REP_PNG_TYPE, "rendition");
                             rendition.updateContentFromPath(tempPreviewPath, false, done);
                         });
                     })
@@ -482,7 +482,7 @@ define(function (require, exports) {
 
         // Create the color asset
         var newElement = currentLibrary.createElement("", ELEMENT_COLOR_TYPE),
-            representation = newElement.createRepresentation(_REP_COLOR_TYPE, "primary");
+            representation = newElement.createRepresentation(REP_COLOR_TYPE, "primary");
 
         var colorData = {
             "mode": "RGB",
@@ -670,7 +670,7 @@ define(function (require, exports) {
         }
         
         return Promise.fromNode(function (done) {
-                var newRepresentation = element.createRepresentation(_REP_PHOTOSHOP_TYPE, "primary");
+                var newRepresentation = element.createRepresentation(REP_PHOTOSHOP_TYPE, "primary");
                     
                 // TODO should check and limit file size to 1024MB
                 newRepresentation.updateContentFromPath(editStatus.documentPath, done);
@@ -897,15 +897,10 @@ define(function (require, exports) {
             return Promise.resolve();
         }
         
-        var representation = element.getPrimaryRepresentation(),
-            styleData = representation.getValue("characterstyle", "data");
+        var styleData = librariesUtil.getCharStyleData(element);
         
-        if (!styleData.adbeFont) {
+        if (!styleData || !styleData.adbeFont) {
             return Promise.resolve();
-        }
-        
-        if (styleData.color instanceof Array) {
-            styleData.color = styleData.color[0];
         }
 
         var textLayerIDs = collection.pluck(textLayers, "id"),
@@ -1186,6 +1181,11 @@ define(function (require, exports) {
     exports.ELEMENT_COLORTHEME_TYPE = ELEMENT_COLORTHEME_TYPE;
     exports.EXTENSION_TO_REPRESENTATION_MAP = EXTENSION_TO_REPRESENTATION_MAP;
     exports.EDITABLE_GRAPHIC_REPRESENTATION_TYPES = EDITABLE_GRAPHIC_REPRESENTATION_TYPES;
+    exports.REP_CHARACTERSTYLE_TYPE = REP_CHARACTERSTYLE_TYPE;
+    exports.REP_LAYERSTYLE_TYPE = REP_LAYERSTYLE_TYPE;
+    exports.REP_COLOR_TYPE = REP_COLOR_TYPE;
+    exports.REP_PNG_TYPE = REP_PNG_TYPE;
+    exports.REP_PHOTOSHOP_TYPE = REP_PHOTOSHOP_TYPE;
 
     exports.selectLibrary = selectLibrary;
     exports.createLibrary = createLibrary;
