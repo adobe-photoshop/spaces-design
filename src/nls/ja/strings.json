@@ -244,7 +244,8 @@
         "EXPORT_ADD_ASSET": "書き出しアセットを追加",
         "EXPORT_REMOVE_ASSET": "アセット設定を削除",
         "EXPORT_IOS_PRESETS": "3 個の iOS アセット + SVG を追加",
-        "EXPORT_HDPI_PRESETS": "6 個の HDPI アセット + SVG を追加"
+        "EXPORT_HDPI_PRESETS": "6 個の HDPI アセット + SVG を追加",
+        "EXPORT_DIALOG": "書き出し..."
     },
     "LAYER_KIND": {
         "0": "すべてのレイヤー",
@@ -369,7 +370,8 @@
             "ALIGN": "整列",
             "AUTO_LEADING": "自動",
             "MISSING": "不明",
-            "MIXED": "混在"
+            "MIXED": "能_[8414081] Mixed Fonts",
+            "MIXED_STYLE": "能_[8458438] Mixed Font Styles"
         },
         "VECTOR": {
             "TITLE": "ベクトル",
@@ -388,7 +390,8 @@
         "TITLE_SETTINGS": "設定",
         "EXPORT_DOCUMENT_FILENAME": "ドキュメント",
         "ONLY_UNSUPPORTED_LAYERS_SELECTED": "サポートされているレイヤーが選択されていません",
-        "NO_ASSETS": "書き出しが設定されていません"
+        "NO_ASSETS": "書き出しが設定されていません",
+        "USE_PREFIX": "能_[8453800] Use Prefix"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",
@@ -474,13 +477,13 @@
     },
     "LIBRARIES": {
         "CREATE_LIBRARY": "新規ライブラリを作成",
-        "RENAME_LIBRARY": "名前を変更「%s」",
-        "DELETE_LIBRARY": "削除「%s」",
+        "RENAME_LIBRARY": "能_[8414013] Rename Library",
+        "DELETE_LIBRARY": "能_[8414021] Delete Library",
         "DELETE_LIBRARY_CONFIRM": "「%s」を削除しますか？",
         "DELETE_SHARED_LIBRARY_CONFIRM": "このライブラリは削除すると、共同作業者がアクセスできなくなります。「%s」を削除しますか？",
-        "LEAVE_LIBRARY": "終了「%s」",
+        "LEAVE_LIBRARY": "能_[8414016] Leave Library",
         "LEAVE_LIBRARY_CONFIRM": "「%s」を終了しますか？",
-        "DELETE_ASSET": "削除「%s」",
+        "DELETE_ASSET": "能_[8414024] Delete Asset",
         "DELETE_ASSET_CONFIRM": "「%s」を削除しますか？",
         "GRAPHICS": "グラフィック",
         "COLORS": "カラー",
@@ -500,7 +503,10 @@
         "INTRO_BODY": "デスクトップとモバイルの間でアセットの整理、アクセス、共有を行うには、ライブラリを使用します。",
         "INTRO_LINK_TITLE": "ライブラリの使用方法を表示",
         "INTRO_URL": "https://helpx.adobe.com/jp/creative-cloud/help/libraries.html",
-        "NO_CONNECTION": "Creative Cloud Libraries を使用するには、Creative Cloud にサインインしてください。"
+        "NO_CONNECTION": "Creative Cloud Libraries を使用するには、Creative Cloud にサインインしてください。",
+        "LEADING": "能_[8453802] Leading: %s",
+        "LEADING_AUTO": "能_[8453803] Auto",
+        "TRACKING": "能_[8453801] Tracking: %s"
     },
     "ERR": {
         "UNRECOVERABLE": "Design Space で回復できないエラーが発生しました。"

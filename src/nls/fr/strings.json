@@ -244,7 +244,8 @@
         "EXPORT_ADD_ASSET": "Ajouter un fichier exporté",
         "EXPORT_REMOVE_ASSET": "Supprimer la configuration d'un fichier",
         "EXPORT_IOS_PRESETS": "Ajouter 3 fichiers iOS + SVG",
-        "EXPORT_HDPI_PRESETS": "Ajouter 6 fichiers HDPI + SVG"
+        "EXPORT_HDPI_PRESETS": "Ajouter 6 fichiers HDPI + SVG",
+        "EXPORT_DIALOG": "Exporter..."
     },
     "LAYER_KIND": {
         "0": "Tout calque",
@@ -289,7 +290,7 @@
         "H": "H",
         "RADIUS": "Rayon",
         "ROTATE": "Rotation",
-        "MIXED": "mixte"
+        "MIXED": "Mixte"
     },
     "STYLE": {
         "BLEND": {
@@ -369,7 +370,8 @@
             "ALIGN": "Aligner",
             "AUTO_LEADING": "automatique",
             "MISSING": "manquant",
-            "MIXED": "mixte"
+            "MIXED": "[8414081] é_Mixed Fonts",
+            "MIXED_STYLE": "[8458438] é_Mixed Font Styles"
         },
         "VECTOR": {
             "TITLE": "Vecteur",
@@ -388,7 +390,8 @@
         "TITLE_SETTINGS": "Settings",
         "EXPORT_DOCUMENT_FILENAME": "document",
         "ONLY_UNSUPPORTED_LAYERS_SELECTED": "Aucun calque pris en charge sélectionné",
-        "NO_ASSETS": "Aucune exportation configurée"
+        "NO_ASSETS": "Aucune exportation configurée",
+        "USE_PREFIX": "Utiliser un préfixe"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",
@@ -474,13 +477,13 @@
     },
     "LIBRARIES": {
         "CREATE_LIBRARY": "Créer une bibliothèque",
-        "RENAME_LIBRARY": "Renommer \\\"%s\\\"",
-        "DELETE_LIBRARY": "Supprimer \\\"%s\\\"",
+        "RENAME_LIBRARY": "[8414013] é_Rename Library",
+        "DELETE_LIBRARY": "[8414021] é_Delete Library",
         "DELETE_LIBRARY_CONFIRM": "Voulez-vous vraiment supprimer \\\"%s\\\" ?",
         "DELETE_SHARED_LIBRARY_CONFIRM": "Si vous supprimez cette bibliothèque, vos collaborateurs n'y auront plus accès. Voulez-vous vraiment supprimer \\\"%s\\\" ?",
-        "LEAVE_LIBRARY": "Fermer \\\"%s\\\"",
+        "LEAVE_LIBRARY": "[8414016] é_Leave Library",
         "LEAVE_LIBRARY_CONFIRM": "Voulez-vous vraiment fermer \\\"%s\\\" ?",
-        "DELETE_ASSET": "Supprimer \\\"%s\\\"",
+        "DELETE_ASSET": "[8414024] é_Delete Asset",
         "DELETE_ASSET_CONFIRM": "Voulez-vous vraiment supprimer \\\"%s\\\" ?",
         "GRAPHICS": "Graphiques",
         "COLORS": "Couleurs",
@@ -500,7 +503,10 @@
         "INTRO_BODY": "Utilisez les bibliothèques pour organiser et partager vos fichiers et y accéder sur différents postes de travail et terminaux mobiles.",
         "INTRO_LINK_TITLE": "Découvrez comment utiliser les bibliothèques",
         "INTRO_URL": "https://helpx.adobe.com/creative-cloud/help/libraries.html",
-        "NO_CONNECTION": "Pour utiliser les bibliothèques Creative Cloud, connectez-vous à Creative Cloud."
+        "NO_CONNECTION": "Pour utiliser les bibliothèques Creative Cloud, connectez-vous à Creative Cloud.",
+        "LEADING": "Interlignage : %s",
+        "LEADING_AUTO": "Auto",
+        "TRACKING": "Approche : %s"
     },
     "ERR": {
         "UNRECOVERABLE": "Une erreur irrécupérable s'est produite dans l'espace de conception."
