@@ -33,6 +33,7 @@ define(function (require, exports) {
         selectionLib = require("adapter/lib/selection");
 
     var guideActions = require("./guides"),
+        exportActions = require("./export"),
         historyActions = require("./history"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
@@ -493,7 +494,8 @@ define(function (require, exports) {
      */
     var createNew = function (payload) {
         var preset,
-            presetPromise;
+            presetPromise,
+            documentID;
 
         if (payload && payload.hasOwnProperty("preset")) {
             // If a preset is explicitly supplied, save it in the preferences as the last-used preset
@@ -523,15 +525,20 @@ define(function (require, exports) {
                     createPromise = descriptor.playObject(playObject)
                         .bind(this)
                         .then(function (result) {
+                            documentID = result.documentID;
                             return this.transfer(allocateDocument, result.documentID);
                         });
 
                 return Promise.join(createPromise, presetPromise);
+            })
+            .then(function () {
+                return this.transfer(exportActions.addDefaultAsset, documentID);
             });
     };
     createNew.reads = [locks.JS_PREF];
     createNew.writes = [locks.PS_DOC, locks.PS_APP];
-    createNew.transfers = [preferencesActions.setPreference, allocateDocument, ui.setOverlayOffsetsForFirstDocument];
+    createNew.transfers = [preferencesActions.setPreference, allocateDocument,
+        ui.setOverlayOffsetsForFirstDocument, exportActions.addDefaultAsset];
     createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
     /**

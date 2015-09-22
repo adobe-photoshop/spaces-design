@@ -186,21 +186,12 @@ define(function (require, exports, module) {
         /**
          * Export all assets for layers that have been enabled for export (via the checkboxes)
          * @private
+         * @param {Immutable.List.<Layer>} layers enable these layers
          * @param {SyntheticEvent} event
          * @param {boolean} enabled
          */
-        _setAllNonABLayersExportEnabled: function (event, enabled) {
-            this.getFlux().actions.export.setAllNonABLayersExportEnabled(this.state.document, enabled);
-        },
-
-        /**
-         * Export all assets for layers that have been enabled for export (via the checkboxes)
-         * @private
-         * @param {SyntheticEvent} event
-         * @param {boolean} enabled
-         */
-        _setAllArtboardsExportEnabled: function (event, enabled) {
-            this.getFlux().actions.export.setAllArtboardsExportEnabled(this.state.document, enabled);
+        _setLayersExportEnabled: function (layers, event, enabled) {
+            this.getFlux().actions.export.setLayerExportEnabled(this.state.document, layers, enabled);
         },
 
         /**
@@ -229,7 +220,7 @@ define(function (require, exports, module) {
 
             // Iterate over all configured assets, build the individual components,
             // and separate into separate lists (artboards vs. non-artboards)
-            var artboards = documentExports.getLayersWithExports(document, true),
+            var artboards = document.layers.artboards,
                 artboardsFiltered = document.layers.filterExportable(artboards),
                 artboardsSorted = gridSort(artboardsFiltered),
                 nonABLayers = documentExports.getLayersWithExports(document, false),
@@ -245,7 +236,7 @@ define(function (require, exports, module) {
 
             // Helper to generate a LayerExportsItem component
             var layerExportComponent = function (layer) {
-                var layerExports = layerExportsMap.get(layer.id),
+                var layerExports = layerExportsMap.get(layer.id) || Immutable.List(),
                     prefix = prefixMap && prefixMap.get(layer.id);
 
                 return (
@@ -281,7 +272,7 @@ define(function (require, exports, module) {
                                 <div className="column-2 control-group__vertical" >
                                     <CheckBox
                                         checked={allArtboardsExportEnabled}
-                                        onChange={this._setAllArtboardsExportEnabled} />
+                                        onChange={this._setLayersExportEnabled.bind(this, artboardsSorted)} />
                                 </div>
                                 <div className="checkbox-label">
                                     {strings.EXPORT.EXPORT_LIST_ALL_ARTBOARDS}
@@ -306,7 +297,7 @@ define(function (require, exports, module) {
                                 <div className="column-2 control-group__vertical" >
                                     <CheckBox
                                         checked={allNonABLayersExportEnabled}
-                                        onChange={this._setAllNonABLayersExportEnabled} />
+                                        onChange={this._setLayersExportEnabled.bind(this, nonABLayersFiltered)} />
                                 </div>
                                 {strings.EXPORT.EXPORT_LIST_ALL_ASSETS}
                             </div>
