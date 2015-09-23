@@ -42,6 +42,11 @@ define(function (require, exports, module) {
         _CLEAR_PATH = 106;
 
     /**
+     * Handler for pathComponentSelectionChanged events
+     */
+    var _pathSelectionhandler;
+
+    /**
      * Updates current document because we may have changed bounds in Photoshop
      * @private
      */
@@ -51,6 +56,9 @@ define(function (require, exports, module) {
         var targetPathsPromise = UI.setSuppressTargetPaths(true),
             backspacePromise = this.transfer(shortcuts.removeShortcut, "vectorBackspace"),
             deletePromise = this.transfer(shortcuts.removeShortcut, "vectorDelete");
+
+        descriptor.removeListener("pathComponentSelectionChanged", _pathSelectionhandler);
+        _pathSelectionhandler = null;
 
         return Promise.join(targetPathsPromise, backspacePromise, deletePromise)
             .bind(this)
@@ -74,6 +82,15 @@ define(function (require, exports, module) {
                     // Silence the errors here
                 });
         };
+
+        _pathSelectionhandler = function (event) {
+            if (event.pathID && event.pathID.length === 0) {
+                var toolStore = this.flux.store("tool");
+
+                this.flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+            }
+        }.bind(this);
+        descriptor.addListener("pathComponentSelectionChanged", _pathSelectionhandler);
         
         var optionsPromise = descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false)),
             suppressionPromise = UI.setSuppressTargetPaths(false),
