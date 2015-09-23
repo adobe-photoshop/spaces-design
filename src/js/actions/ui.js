@@ -326,6 +326,7 @@ define(function (require, exports) {
             x: zoom * bounds.xCenter / factor + (offset.right - offset.left) / 2,
             y: zoom * bounds.yCenter / factor + (offset.bottom - offset.top) / 2,
             z: zoom,
+            resize: true,
             animate: false
         };
     };
@@ -427,12 +428,7 @@ define(function (require, exports) {
             uiState = uiStore.getState(),
             document = this.flux.store("application").getCurrentDocument(),
             zoom = payload.zoom,
-            bounds = document.layers.selectedAreaBounds,
-            panZoomDescriptor = {
-                animate: false,
-                resize: true,
-                z: zoom
-            };
+            bounds = document.layers.selectedAreaBounds;
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
@@ -452,11 +448,8 @@ define(function (require, exports) {
 
         var factor = window.devicePixelRatio,
             offsets = uiState.centerOffsets,
-            panDescriptor = _calculatePanZoom(bounds, offsets, zoom, factor);
+            panZoomDescriptor = _calculatePanZoom(bounds, offsets, zoom, factor);
 
-        panZoomDescriptor.x = panDescriptor.x;
-        panZoomDescriptor.y = panDescriptor.y;
-    
         return descriptor.play("setPanZoom", panZoomDescriptor)
             .bind(this)
             .then(function () {

@@ -311,6 +311,11 @@ define(function (require, exports, module) {
                 break;
             case "ArrowUp":
             case "ArrowDown":
+                if (this.props.step === 0) {
+                    event.preventDefault();
+                    break;
+                }
+                
                 nextValue = this._extractValue(event.target.value);
                 if (nextValue === null) {
                     this._reset(event);
