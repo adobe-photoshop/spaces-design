@@ -636,7 +636,7 @@ define(function (require, exports) {
      * @return {Promise.<?string>} Promise of a File Path of the chosen folder
      */
     var promptForFolder = function () {
-        return this.transfer(policyActions.suspendPolicies)
+        return this.transfer(policyActions.suspendAllPolicies)
             .bind(this)
             .then(
                 function () {
@@ -647,12 +647,12 @@ define(function (require, exports) {
                 }
             )
             .finally(function () {
-                return this.transfer(policyActions.restorePolicies);
+                return this.transfer(policyActions.restoreAllPolicies);
             });
     };
     promptForFolder.reads = [];
     promptForFolder.writes = locks.ALL_LOCKS;
-    promptForFolder.transfers = [policyActions.suspendPolicies, policyActions.restorePolicies];
+    promptForFolder.transfers = [policyActions.suspendAllPolicies, policyActions.restoreAllPolicies];
 
     /**
      * Export all layer assets for the given document for which export has been enabled (layer.exportEnabled)

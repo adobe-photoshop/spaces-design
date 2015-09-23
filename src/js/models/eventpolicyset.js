@@ -106,6 +106,16 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Whether the event policy set has the given policy list ID.
+     *
+     * @param {number} id
+     * @return {boolean}
+     */
+    EventPolicySet.prototype.has = function (id) {
+        return !!this._policyLists[id];
+    };
+
+    /**
      * Peek to get the next policy ID.
      *
      * @return {number}

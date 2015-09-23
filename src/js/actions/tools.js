@@ -428,9 +428,9 @@ define(function (require, exports) {
         // Suspend policies during type tool modal states
         if (event.kind._value === "tool" && event.tool.ID === "txBx") {
             if (modalState) {
-                policyPromise = this.transfer(policy.suspendPolicies);
+                policyPromise = this.transfer(policy.suspendAllPolicies);
             } else {
-                policyPromise = this.transfer(policy.restorePolicies);
+                policyPromise = this.transfer(policy.restoreAllPolicies);
             }
         } else {
             policyPromise = Promise.resolve();
@@ -446,7 +446,7 @@ define(function (require, exports) {
     };
     handleToolModalStateChanged.reads = [];
     handleToolModalStateChanged.writes = [];
-    handleToolModalStateChanged.transfers = [policy.suspendPolicies, policy.restorePolicies,
+    handleToolModalStateChanged.transfers = [policy.suspendAllPolicies, policy.restoreAllPolicies,
         changeModalState, "ui.cloak"];
     handleToolModalStateChanged.modal = true;
 
