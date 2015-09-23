@@ -85,11 +85,14 @@ define(function (require, exports, module) {
                 <div className="zoom">
                     <NumberInput
                         tabIndex="-1"
+                        min={5}
+                        max={3200}
                         ref="input"
                         suffix="%"
                         value={this.state.zoom}
                         onChange={this._handleZoomChange}
                         onKeyDown={this._handleKeyDown}
+                        step={0}
                     />
                 </div>
             );
