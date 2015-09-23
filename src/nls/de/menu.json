@@ -176,8 +176,11 @@
         "SWAP_POSITION": "Position tauschen",
         "LOCK_LAYER": "Fixieren",
         "UNLOCK_LAYER": "Lösen",
+        "SHOW_LAYER": "[8463867] ü_Show",
+        "HIDE_LAYER": "[8463868] ü_Hide",
         "GROUP_LAYERS": "Gruppe",
-        "UNGROUP_LAYERS": "Gruppierung aufheben"
+        "UNGROUP_LAYERS": "Gruppierung aufheben",
+        "BRING_TO_FRONT": "In den Vordergrund"
     },
     "VIEW": {
         "$MENU": "Ansicht",

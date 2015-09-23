@@ -176,8 +176,11 @@
         "SWAP_POSITION": "位置の入れ替え",
         "LOCK_LAYER": "ロック",
         "UNLOCK_LAYER": "ロック解除",
+        "SHOW_LAYER": "能_[8463867] Show",
+        "HIDE_LAYER": "隠す",
         "GROUP_LAYERS": "グループ",
-        "UNGROUP_LAYERS": "グループ解除"
+        "UNGROUP_LAYERS": "グループ解除",
+        "BRING_TO_FRONT": "最前面へ"
     },
     "VIEW": {
         "$MENU": "表示",
