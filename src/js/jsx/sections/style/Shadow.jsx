@@ -233,7 +233,7 @@ define(function (require, exports) {
          *
          */
         _handleDelete: function () {
-            this.getFlux().actions.layerEffects.deleteShadow(
+            this.getFlux().actions.layerEffects.deleteEffect(
                 this.props.document, this.props.layers, this.props.index, this.props.type);
         },
 
@@ -271,8 +271,8 @@ define(function (require, exports) {
         render: function () {
             var downsample = this._downsampleShadows(this.props.shadows),
                 shadowClasses = classnames({
-                    "shadow-list__shadow": true,
-                    "shadow-list__shadow__disabled": this.props.readOnly
+                    "effect-list__shadow": true,
+                    "effect-list__shadow__disabled": this.props.readOnly
                 });
 
             var shadowXPositionTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION,
@@ -475,7 +475,7 @@ define(function (require, exports) {
                 }, this).toList();
             } else {
                 shadowsContent = Immutable.List.of((
-                    <div className="shadow-list__list-container__mixed">
+                    <div className="effect-list__list-container__mixed">
                         <i>{strings.STYLE.DROP_SHADOW.MIXED}</i>
                     </div>
                 ));
@@ -486,13 +486,13 @@ define(function (require, exports) {
             }
 
             return (
-                <div className="shadow-list__container ">
+                <div className="effect-list__container ">
                     <header className="section-header section-header__no-padding">
                         <h3 className="section-title">
                             {strings.STYLE.DROP_SHADOW.TITLE}
                         </h3>
                     </header>
-                    <div className="shadow-list__list-container">
+                    <div className="effect-list__list-container">
                         {shadowsContent}
                     </div>
                 </div>
@@ -556,7 +556,7 @@ define(function (require, exports) {
                 }, this).toList();
             } else {
                 shadowsContent = Immutable.List.of((
-                    <div className="shadow-list__list-container__mixed">
+                    <div className="effect-list__list-container__mixed">
                         <i>{strings.STYLE.INNER_SHADOW.MIXED}</i>
                     </div>
                 ));
@@ -567,13 +567,13 @@ define(function (require, exports) {
             }
 
             return (
-                <div className="shadow-list__container">
+                <div className="effect-list__container">
                     <header className="section-header section-header__no-padding">
                         <h3 className="section-title">
                             {strings.STYLE.INNER_SHADOW.TITLE}
                         </h3>
                     </header>
-                    <div className="shadow-list__list-container">
+                    <div className="effect-list__list-container">
                         {shadowsContent}
                     </div>
                 </div>

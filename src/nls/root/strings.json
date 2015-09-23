@@ -203,6 +203,7 @@
         "ADD_EFFECT": "Add Layer Effect",
         "TOGGLE_DROP_SHADOW": "Toggle Drop Shadow",
         "DELETE_DROP_SHADOW": "Delete Drop Shadow",
+        "DELETE_LAYER_EFFECT": "Delete %s",
         "SET_DROP_SHADOW_COLOR": "Set Drop Shadow Color",
         "SET_DROP_SHADOW_PROPS": "Set Drop Shadow Dimensions",
         "SET_DROP_SHADOW_X_POSITION": "Set Drop Shadow X Position",
@@ -358,6 +359,20 @@
             "Y_POSITION": "Y",
             "BLUR": "Blur",
             "SPREAD": "Spread",
+            "MIXED": "Mixed Appearances"
+        },
+        "UNSUPPORTED_EFFECTS": {
+            "TITLE": "Unsupported",
+            "NAMES": {
+                "BEVEL_EMBOSS": "Bevel & Emboss",
+                "CHROME_FX": "Satin",
+                "INNER_GLOW": "Inner Glow",
+                "OUTER_GLOW": "Outer Glow",
+                "PATTERN_FILL": "Pattern Overlay",
+                "FRAME_FX": "Stroke Overlay",
+                "GRADIENT_FILL": "Gradient Overlay",
+                "SOLID_FILL": "Color Overlay"
+            },
             "MIXED": "Mixed Appearances"
         },
         "TYPE": {

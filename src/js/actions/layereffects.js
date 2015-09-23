@@ -78,21 +78,21 @@ define(function (require, exports) {
 
             types.forEach(function (type) {
                 var layerEffectsFromStore = layerFromStore.getLayerEffectsByType(type),
-                    shadowAdapterObject = layerEffectsFromStore
-                        .map(function (shadow) {
-                            return shadow.toAdapterObject();
+                    effectAdapterObject = layerEffectsFromStore
+                        .map(function (effect) {
+                            return effect.toAdapterObject();
                         }).toArray();
 
                 if (layerHasEffects) {
                     layerEffectPlayObjects.push({
                         layer: curLayer,
-                        playObject: layerEffectLib.setExtendedLayerEffect(type, referenceID, shadowAdapterObject)
+                        playObject: layerEffectLib.setExtendedLayerEffect(type, referenceID, effectAdapterObject)
                     });
                 } else {
-                    if (shadowAdapterObject.length > 0) {
+                    if (effectAdapterObject.length > 0) {
                         layerEffectPlayObjects.push({
                             layer: curLayer,
-                            playObject: layerEffectLib.setLayerEffect(type, referenceID, shadowAdapterObject)
+                            playObject: layerEffectLib.setLayerEffect(type, referenceID, effectAdapterObject)
                         });
                         layerHasEffects = true;
                     }
@@ -193,25 +193,25 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
-     * @param {string} type of Shadow
+     * @param {number} effectIndex index of the effect within the layer(s)
+     * @param {string} effectType
      * @return {Promise}
      */
-    var deleteShadow = function (document, layers, shadowIndex, type) {
+    var deleteEffect = function (document, layers, effectIndex, effectType) {
         var payload = {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
-            layerEffectType: type,
-            layerEffectIndex: shadowIndex
+            layerEffectType: effectType,
+            layerEffectIndex: effectIndex
         };
         // Synchronously update the stores
         this.dispatch(events.document.history.optimistic.LAYER_EFFECT_DELETED, payload);
 
         // Then update photoshop
-        return _syncStoreToPs.call(this, document, layers, null, type);
+        return _syncStoreToPs.call(this, document, layers, null, effectType, null);
     };
-    deleteShadow.reads = [locks.PS_DOC, locks.JS_DOC];
-    deleteShadow.writes = [locks.PS_DOC, locks.JS_DOC];
+    deleteEffect.reads = [locks.PS_DOC, locks.JS_DOC];
+    deleteEffect.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the Shadow alpha value for all selected layers. Preserves the opaque color.
@@ -367,13 +367,12 @@ define(function (require, exports) {
             masterEffectIndexMap = {}, // Immutable.Map<String, Immutable.List<Immutable.List<number>>>
             masterEffectPropsMap = {}, // Immutable.Map<String, Immutable.List<Immutable.List<object>>>
             masterEffectTypes = [], // Immutable.List<String>, for keys of above maps
-            sourceEffects = [{
-                type: "innerShadow",
-                effects: source.innerShadows
-            }, {
-                type: "dropShadow",
-                effects: source.dropShadows
-            }];
+            sourceEffects = _.map(source.toObject(), function (effects, effectType) {
+                return {
+                    type: effectType,
+                    effects: effects
+                };
+            });
 
         // For each effectType
         //      For each effect at index i
@@ -448,7 +447,7 @@ define(function (require, exports) {
     exports.setShadowBlendMode = setShadowBlendMode;
     exports.setShadowBlur = setShadowBlur;
     exports.setShadowSpread = setShadowSpread;
-    exports.deleteShadow = deleteShadow;
+    exports.deleteEffect = deleteEffect;
 
     exports.duplicateLayerEffects = duplicateLayerEffects;
 });

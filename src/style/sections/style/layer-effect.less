@@ -32,18 +32,40 @@
     background-color: @item-active;
 }
 
-.shadow-list__shadow {
+.effect-list__shadow {
     margin-bottom: 1rem;
 }
 
-.shadow-list__shadow__disabled {
+.effect-list__shadow__disabled {
     color: @item-disabled;
 }
 
-.shadow-list__list-container__mixed {
+.effect-list__list-container__mixed {
     padding-top: 1rem;
     padding-bottom: 1rem;
     text-align: center;
     color: @item-disabled;
     font-style: italic;
+}
+
+.unsupported-effect-list {
+    &__effect {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4em 0.6em;
+        border: @hairline solid @underlines;
+        margin: 0.4em 0;
+        border-radius: 0.6em;
+        
+        &:hover {
+            border: @hairline solid @item-active;
+            color: @item-active;
+        }
+        
+        &__index {
+            margin-left: 1em;
+            font-style: italic;
+        }
+    }
 }

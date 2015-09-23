@@ -164,7 +164,7 @@ define(function (require, exports, module) {
         _canAddLayerStyle: function () {
             return !this.props.disabled &&
                    this.props.document.layers.selected.size === 1 &&
-                   this.props.document.layers.selected.first().hasLayerEffect();
+                   this.props.document.layers.selected.first().hasLayerEffect;
         },
         
         /**
