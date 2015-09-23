@@ -370,8 +370,8 @@
             "ALIGN": "Ausrichten",
             "AUTO_LEADING": "autom.",
             "MISSING": "fehlt",
-            "MIXED": "[8414081] ü_Mixed Fonts",
-            "MIXED_STYLE": "[8458438] ü_Mixed Font Styles"
+            "MIXED": "Mischschriftarten",
+            "MIXED_STYLE": "Mischschriftschnitte"
         },
         "VECTOR": {
             "TITLE": "Vektor",
@@ -477,13 +477,13 @@
     },
     "LIBRARIES": {
         "CREATE_LIBRARY": "Neue Bibliothek erstellen",
-        "RENAME_LIBRARY": "[8414013] ü_Rename Library",
-        "DELETE_LIBRARY": "[8414021] ü_Delete Library",
+        "RENAME_LIBRARY": "Bibliothek umbenennen",
+        "DELETE_LIBRARY": "Bibliothek löschen",
         "DELETE_LIBRARY_CONFIRM": "Möchten Sie „%s“ wirklich löschen?",
         "DELETE_SHARED_LIBRARY_CONFIRM": "Ihre Mitarbeiter können nicht mehr auf diese Bibliothek zugreifen, wenn Sie sie löschen. Möchten Sie „%s“ wirklich löschen?",
-        "LEAVE_LIBRARY": "[8414016] ü_Leave Library",
+        "LEAVE_LIBRARY": "Bibliothek verlassen",
         "LEAVE_LIBRARY_CONFIRM": "Möchten Sie „%s“ wirklich verlassen?",
-        "DELETE_ASSET": "[8414024] ü_Delete Asset",
+        "DELETE_ASSET": "Asset löschen",
         "DELETE_ASSET_CONFIRM": "Möchten Sie „%s“ wirklich löschen?",
         "GRAPHICS": "Grafiken",
         "COLORS": "Farben",

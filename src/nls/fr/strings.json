@@ -370,8 +370,8 @@
             "ALIGN": "Aligner",
             "AUTO_LEADING": "automatique",
             "MISSING": "manquant",
-            "MIXED": "[8414081] é_Mixed Fonts",
-            "MIXED_STYLE": "[8458438] é_Mixed Font Styles"
+            "MIXED": "Polices mixtes",
+            "MIXED_STYLE": "Styles de police mixtes"
         },
         "VECTOR": {
             "TITLE": "Vecteur",
@@ -477,13 +477,13 @@
     },
     "LIBRARIES": {
         "CREATE_LIBRARY": "Créer une bibliothèque",
-        "RENAME_LIBRARY": "[8414013] é_Rename Library",
-        "DELETE_LIBRARY": "[8414021] é_Delete Library",
+        "RENAME_LIBRARY": "Renommer la bibliothèque",
+        "DELETE_LIBRARY": "Supprimer la bibliothèque",
         "DELETE_LIBRARY_CONFIRM": "Voulez-vous vraiment supprimer \\\"%s\\\" ?",
         "DELETE_SHARED_LIBRARY_CONFIRM": "Si vous supprimez cette bibliothèque, vos collaborateurs n'y auront plus accès. Voulez-vous vraiment supprimer \\\"%s\\\" ?",
-        "LEAVE_LIBRARY": "[8414016] é_Leave Library",
+        "LEAVE_LIBRARY": "Quitter la bibliothèque",
         "LEAVE_LIBRARY_CONFIRM": "Voulez-vous vraiment fermer \\\"%s\\\" ?",
-        "DELETE_ASSET": "[8414024] é_Delete Asset",
+        "DELETE_ASSET": "Suppression une ressource",
         "DELETE_ASSET_CONFIRM": "Voulez-vous vraiment supprimer \\\"%s\\\" ?",
         "GRAPHICS": "Graphiques",
         "COLORS": "Couleurs",

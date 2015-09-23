@@ -176,8 +176,11 @@
         "SWAP_POSITION": "Permuter la position",
         "LOCK_LAYER": "Verrouiller",
         "UNLOCK_LAYER": "Déverrouiller",
+        "SHOW_LAYER": "[8463867] é_Show",
+        "HIDE_LAYER": "Masquer",
         "GROUP_LAYERS": "Groupe",
-        "UNGROUP_LAYERS": "Dissocier"
+        "UNGROUP_LAYERS": "Dissocier",
+        "BRING_TO_FRONT": "Premier plan"
     },
     "VIEW": {
         "$MENU": "Affichage",
