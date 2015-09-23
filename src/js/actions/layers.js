@@ -1258,7 +1258,7 @@ define(function (require, exports) {
 
         return Promise.all(showPromises);
     };
-    setVisibilitySelectedInCurrentDocument.reads = [locks.JS_DOC, locks.PS_DOC];
+    setVisibilitySelectedInCurrentDocument.reads = [locks.JS_DOC];
     setVisibilitySelectedInCurrentDocument.writes = [];
     setVisibilitySelectedInCurrentDocument.transfers = [setVisibility];
 
@@ -1451,12 +1451,13 @@ define(function (require, exports) {
      * @param {Document} document Document for which layers should be reordered
      * @param {number|Immutable.Iterable.<number>} layerSpec Either an ID of single layer that
      *  the selection is based on, or an array of such layer IDs
-     * @param {number} targetIndex Target index where to drop the layers
+     * @param {number|string} target If a number, the target index to move layers to
+     *                               If a string, the reference enum type ("front", "back", "previous", "next")
      *
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      *, or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
      **/
-    var reorderLayers = function (document, layerSpec, targetIndex) {
+    var reorderLayers = function (document, layerSpec, target) {
         if (!Immutable.Iterable.isIterable(layerSpec)) {
             layerSpec = Immutable.List.of(layerSpec);
         }
@@ -1469,23 +1470,33 @@ define(function (require, exports) {
                 .unshift(documentRef)
                 .toArray();
 
-        var targetRef = layerLib.referenceBy.index(targetIndex),
+        var numberRef = (typeof target === "number"),
+            targetRef = numberRef ? layerLib.referenceBy.index(target) : layerLib.referenceBy[target],
             reorderObj = layerLib.reorder(layerRef, targetRef),
             reorderPromise = descriptor.playObject(reorderObj);
       
         return reorderPromise.bind(this)
+            .catch(function (err) {
+                // Ignore reorder errors if target was a string (called by one of the bring/send methods below)
+                // since PS fails if we try to move a layer past the doc bounds
+                // but we use PS enum references so we don't control the location
+                if (numberRef) {
+                    throw (err);
+                }
+            })
             .then(function () {
                 return this.transfer(resetIndex, document, false, false);
             })
             .then(function () {
                 // The selected layers may have changed after the reorder.
                 var nextDocument = this.flux.store("document").getDocument(document.id);
-                this.flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected, true);
+
+                return this.transfer(resetBounds, nextDocument, nextDocument.layers.allSelected, true);
             });
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    reorderLayers.transfers = [resetIndex];
+    reorderLayers.transfers = [resetIndex, resetBounds];
     reorderLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -1508,10 +1519,9 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var layerIDs = collection.pluck(layers, "id"),
-            targetIndex = document.layers.all.size;
+        var layerIDs = collection.pluck(layers, "id");
 
-        return this.transfer(reorderLayers, document, layerIDs, targetIndex);
+        return this.transfer(reorderLayers, document, layerIDs, "front");
     };
     bringToFront.reads = [];
     bringToFront.writes = [];
@@ -1538,11 +1548,9 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var layerIDs = collection.pluck(layers, "id"),
-            layerIndices = layers.map(document.layers.indexOf, document.layers),
-            targetIndex = Math.min(layerIndices.max() + 1, document.layers.all.size);
+        var layerIDs = collection.pluck(layers, "id");
 
-        return this.transfer(reorderLayers, document, layerIDs, targetIndex);
+        return this.transfer(reorderLayers, document, layerIDs, "next");
     };
     bringForward.reads = [];
     bringForward.writes = [];
@@ -1568,14 +1576,10 @@ define(function (require, exports) {
         if (!document || !layers) {
             return Promise.resolve();
         }
-        // PS doesn't like it if we try to move a group into itself, so we
-        // get all the child layers, and find the lowest index one.
-        var layerIDs = collection.pluck(layers, "id"),
-            allLayers = layers.flatMap(document.layers.descendants, document.layers),
-            layerIndices = allLayers.map(document.layers.indexOf, document.layers),
-            targetIndex = Math.max(layerIndices.min() - 2, 0);
-
-        return this.transfer(reorderLayers, document, layerIDs, targetIndex);
+        
+        var layerIDs = collection.pluck(layers, "id");
+            
+        return this.transfer(reorderLayers, document, layerIDs, "previous");
     };
     sendBackward.reads = [];
     sendBackward.writes = [];
@@ -1602,10 +1606,9 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var layerIDs = collection.pluck(layers, "id"),
-            targetIndex = 0;
+        var layerIDs = collection.pluck(layers, "id");
 
-        return this.transfer(reorderLayers, document, layerIDs, targetIndex);
+        return this.transfer(reorderLayers, document, layerIDs, "back");
     };
     sendToBack.reads = [];
     sendToBack.writes = [];
