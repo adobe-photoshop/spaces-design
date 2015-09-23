@@ -180,8 +180,9 @@ define(function (require, exports, module) {
                 "appearance__mixed": !uniformLayerKind && hasSomeTextLayers && hasSomeVectorLayers
             });
 
-            var copyStyleDisabled = !(this.props.document && this.props.document.layers.selected.size === 1),
-                pasteStyleDisabled = !(this.state.clipboard &&
+            var copyStyleDisabled = this.props.disabled || !(this.props.document &&
+                    this.props.document.layers.selected.size === 1),
+                pasteStyleDisabled = this.props.disabled || !(this.state.clipboard &&
                     this.props.document &&
                     this.props.document.layers.selected.size > 0),
                 copyStyleClasses = classnames({

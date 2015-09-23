@@ -278,7 +278,8 @@ define(function (require, exports, module) {
             var document = this.state.document,
                 disabled = this.state.appIsModal || document && document.unsupported,
                 toolOverlay = this._renderToolOverlay(),
-                policyOverlay = this.state.policyFrames ? (<PolicyOverlay/>) : null;
+                policyOverlay = this.state.policyFrames ? (<PolicyOverlay/>) : null,
+                guidesOverlay = !disabled ? (<GuidesOverlay/>) : null;
             
             var classNames = classnames({
                 "scrim": true,
@@ -300,7 +301,7 @@ define(function (require, exports, module) {
                         <g id="overlay" width="100%" height="100%">
                             {policyOverlay}
                             {toolOverlay}
-                            <GuidesOverlay />
+                            {guidesOverlay}
                         </g>
                     </svg>
                 </div>
