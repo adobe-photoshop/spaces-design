@@ -241,6 +241,9 @@ define(function (require, exports) {
         return this.dispatchAsync(events.ui.PANELS_RESIZED, sizes)
             .bind(this)
             .then(function () {
+                return this.transfer(updateTransform);
+            })
+            .then(function () {
                 var centerOffsets = this.flux.store("ui").getState().centerOffsets;
                 return adapterUI.setOverlayOffsets(centerOffsets);
             })
@@ -250,7 +253,7 @@ define(function (require, exports) {
     };
     updatePanelSizes.reads = [];
     updatePanelSizes.writes = [locks.JS_UI, locks.PS_APP];
-    updatePanelSizes.transfers = [setOverlayCloaking];
+    updatePanelSizes.transfers = [setOverlayCloaking, updateTransform];
     updatePanelSizes.modal = true;
 
     /**
