@@ -311,7 +311,7 @@ define(function (require, exports, module) {
                         <div className="exports-panel__button-group">
                             <Button
                                 disabled={this.state.exportDisabled || serviceBusy}
-                                onClick={this._exportAllAssets}>
+                                onClick={this._exportAllAssets.bind(this, prefixMap)}>
                                 {exportButton}
                             </Button>
                         </div>
