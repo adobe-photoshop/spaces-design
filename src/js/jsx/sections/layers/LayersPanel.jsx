@@ -43,6 +43,24 @@ define(function (require, exports, module) {
     var PS_MAX_NEST_DEPTH = 10;
 
     /**
+     * Get the layer depths that correspond to the current document's visible layers.
+     * Used for invalidation
+     *
+     * @private
+     * @param {object} props
+     * @return {?Immutable.Iterable.<number>}
+     */
+    var _getDepths = function (props) {
+        var document = props.document;
+        if (!document) {
+            return null;
+        }
+
+        var layers = document.layers.allVisible;
+        return layers.map(document.layers.depth.bind(document.layers));
+    };
+
+    /**
      * Get the layer faces that correspond to the current document. Used for
      * fast, coarse invalidation.
      *
@@ -154,7 +172,8 @@ define(function (require, exports, module) {
                 this.state.dragTargets !== nextState.dragTargets ||
                 this.state.dropTarget !== nextState.dropTarget ||
                 this.state.dragPosition !== nextState.dragPosition ||
-                !Immutable.is(_getFaces(this.props), _getFaces(nextProps));
+                !Immutable.is(_getFaces(this.props), _getFaces(nextProps)) ||
+                !Immutable.is(_getDepths(this.props), _getDepths(nextProps));
         },
 
         /**

@@ -91,6 +91,7 @@
         },
         "CREATE_CLIPPING_MASK": "Create Clipping Mask",
         "CREATE_ARTBOARD": "Create New Artboard",
+        "DUPLICATE": "Duplicate Selection",
         "NEW_ARTBOARD_FROM_TEMPLATE": {
             "$MENU": "New Artboard",
             "IPHONE_6_PLUS": "iPhone 6+",
@@ -175,8 +176,14 @@
         "SWAP_POSITION": "Swap Position",
         "LOCK_LAYER": "Lock",
         "UNLOCK_LAYER": "Unlock",
+        "SHOW_LAYER": "Show",
+        "HIDE_LAYER": "Hide",
         "GROUP_LAYERS": "Group",
-        "UNGROUP_LAYERS": "Ungroup"
+        "UNGROUP_LAYERS": "Ungroup",
+        "BRING_FORWARD": "Bring Forward",
+        "BRING_TO_FRONT": "Bring to Front",
+        "SEND_BACKWARD": "Send Backward",
+        "SEND_TO_BACK": "Send to Back"
     },
     "VIEW": {
         "$MENU": "View",

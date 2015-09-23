@@ -1239,6 +1239,30 @@ define(function (require, exports) {
     setVisibility.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
+     * Used by the show/hide menu items, targets the active document active layers
+     *
+     * @param {boolean} visible
+     * @returns {Promise}
+     */
+    var setVisibilitySelectedInCurrentDocument = function (visible) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var showPromises = currentDocument.layers.selected.map(function (layer) {
+            return this.transfer(setVisibility, currentDocument, layer, visible);
+        }, this).toArray();
+
+        return Promise.all(showPromises);
+    };
+    setVisibilitySelectedInCurrentDocument.reads = [locks.JS_DOC];
+    setVisibilitySelectedInCurrentDocument.writes = [];
+    setVisibilitySelectedInCurrentDocument.transfers = [setVisibility];
+
+    /**
      * Unlocks the background layer of the document
      * FIXME: Does not care about the document reference
      *
@@ -1427,12 +1451,13 @@ define(function (require, exports) {
      * @param {Document} document Document for which layers should be reordered
      * @param {number|Immutable.Iterable.<number>} layerSpec Either an ID of single layer that
      *  the selection is based on, or an array of such layer IDs
-     * @param {number} targetIndex Target index where to drop the layers
+     * @param {number|string} target If a number, the target index to move layers to
+     *                               If a string, the reference enum type ("front", "back", "previous", "next")
      *
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      *, or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
      **/
-    var reorderLayers = function (document, layerSpec, targetIndex) {
+    var reorderLayers = function (document, layerSpec, target) {
         if (!Immutable.Iterable.isIterable(layerSpec)) {
             layerSpec = Immutable.List.of(layerSpec);
         }
@@ -1445,24 +1470,150 @@ define(function (require, exports) {
                 .unshift(documentRef)
                 .toArray();
 
-        var targetRef = layerLib.referenceBy.index(targetIndex),
+        var numberRef = (typeof target === "number"),
+            targetRef = numberRef ? layerLib.referenceBy.index(target) : layerLib.referenceBy[target],
             reorderObj = layerLib.reorder(layerRef, targetRef),
             reorderPromise = descriptor.playObject(reorderObj);
       
         return reorderPromise.bind(this)
+            .catch(function (err) {
+                // Ignore reorder errors if target was a string (called by one of the bring/send methods below)
+                // since PS fails if we try to move a layer past the doc bounds
+                // but we use PS enum references so we don't control the location
+                if (numberRef) {
+                    throw (err);
+                }
+            })
             .then(function () {
                 return this.transfer(resetIndex, document, false, false);
             })
             .then(function () {
                 // The selected layers may have changed after the reorder.
                 var nextDocument = this.flux.store("document").getDocument(document.id);
-                this.flux.actions.layers.resetBounds(nextDocument, nextDocument.layers.allSelected, true);
+
+                return this.transfer(resetBounds, nextDocument, nextDocument.layers.allSelected, true);
             });
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    reorderLayers.transfers = [resetIndex];
+    reorderLayers.transfers = [resetIndex, resetBounds];
     reorderLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
+     * Reorders all the given layers in the document to the top of the z-order
+     *
+     * @param {Document=} document Default is current document
+     * @param {Immutable.Iterable.<Layer>=} layers Default is selected layers
+     * @return {Promise}
+     */
+    var bringToFront = function (document, layers) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (document && layers === undefined) {
+            layers = document.layers.selectedNormalized;
+        }
+
+        if (!document || !layers) {
+            return Promise.resolve();
+        }
+
+        var layerIDs = collection.pluck(layers, "id");
+
+        return this.transfer(reorderLayers, document, layerIDs, "front");
+    };
+    bringToFront.reads = [];
+    bringToFront.writes = [];
+    bringToFront.transfers = [reorderLayers];
+    bringToFront.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
+     * Reorders all the given layers in the document, so they're one above the top-most one
+     *
+     * @param {Document=} document Default is current document
+     * @param {Immutable.Iterable.<Layer>=} layers Default is selected layers
+     * @return {Promise}
+     */
+    var bringForward = function (document, layers) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (document && layers === undefined) {
+            layers = document.layers.selectedNormalized;
+        }
+
+        if (!document || !layers) {
+            return Promise.resolve();
+        }
+
+        var layerIDs = collection.pluck(layers, "id");
+
+        return this.transfer(reorderLayers, document, layerIDs, "next");
+    };
+    bringForward.reads = [];
+    bringForward.writes = [];
+    bringForward.transfers = [reorderLayers];
+    bringForward.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
+     * Reorders all the given layers in the document, so they're one below the bottom-most one
+     *
+     * @param {Document=} document Default is current document
+     * @param {Immutable.Iterable.<Layer>=} layers Default is selected layers
+     * @return {Promise}
+     */
+    var sendBackward = function (document, layers) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (document && layers === undefined) {
+            layers = document.layers.selectedNormalized;
+        }
+
+        if (!document || !layers) {
+            return Promise.resolve();
+        }
+        
+        var layerIDs = collection.pluck(layers, "id");
+            
+        return this.transfer(reorderLayers, document, layerIDs, "previous");
+    };
+    sendBackward.reads = [];
+    sendBackward.writes = [];
+    sendBackward.transfers = [reorderLayers];
+    sendBackward.post = [_verifyLayerIndex, _verifyLayerSelection];
+
+    /**
+     * Reorders all the given layers in the document to the bottom in z-order
+     *
+     * @param {Document=} document Default is current document
+     * @param {Immutable.Iterable.<Layer>=} layers Default is selected layers
+     * @return {Promise}
+     */
+    var sendToBack = function (document, layers) {
+        if (document === undefined) {
+            document = this.flux.store("application").getCurrentDocument();
+        }
+
+        if (document && layers === undefined) {
+            layers = document.layers.selectedNormalized;
+        }
+
+        if (!document || !layers) {
+            return Promise.resolve();
+        }
+
+        var layerIDs = collection.pluck(layers, "id");
+
+        return this.transfer(reorderLayers, document, layerIDs, "back");
+    };
+    sendToBack.reads = [];
+    sendToBack.writes = [];
+    sendToBack.transfers = [reorderLayers];
+    sendToBack.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
      * Set the blend mode of the given layers.
@@ -1770,12 +1921,26 @@ define(function (require, exports) {
     /**
      * Copy into the given document a set of layers, possibly from another document.
      *
-     * @param {Document} document
-     * @param {Document} fromDocument
-     * @param {Immutable.Iterable.<Layer>} fromLayers
+     * @param {Document=} document
+     * @param {Document=} fromDocument
+     * @param {Immutable.Iterable.<Layer>=} fromLayers
      * @return {Promise}
      */
     var duplicate = function (document, fromDocument, fromLayers) {
+        var applicationStore = this.flux.store("application");
+            
+        if (document === undefined) {
+            document = applicationStore.getCurrentDocument();
+        }
+
+        if (fromDocument === undefined) {
+            fromDocument = applicationStore.getCurrentDocument();
+        }
+
+        if (fromLayers === undefined) {
+            fromLayers = fromDocument.layers.selected;
+        }
+        
         if (fromLayers.isEmpty()) {
             return Promise.resolve();
         }
@@ -2130,11 +2295,16 @@ define(function (require, exports) {
     exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
     exports.ungroupSelected = ungroupSelected;
     exports.setVisibility = setVisibility;
+    exports.setVisibilitySelectedInCurrentDocument = setVisibilitySelectedInCurrentDocument;
     exports.setLocking = setLocking;
     exports.setOpacity = setOpacity;
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
     exports.unlockSelectedInCurrentDocument = unlockSelectedInCurrentDocument;
     exports.reorder = reorderLayers;
+    exports.bringToFront = bringToFront;
+    exports.bringForward = bringForward;
+    exports.sendBackward = sendBackward;
+    exports.sendToBack = sendToBack;
     exports.setBlendMode = setBlendMode;
     exports.addLayers = addLayers;
     exports.resetSelection = resetSelection;

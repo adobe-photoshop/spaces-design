@@ -91,6 +91,7 @@
         },
         "CREATE_CLIPPING_MASK": "クリッピングマスクを作成",
         "CREATE_ARTBOARD": "新規アートボードを作成",
+        "DUPLICATE": "選択範囲を複製",
         "NEW_ARTBOARD_FROM_TEMPLATE": {
             "$MENU": "アートボードを新規作成",
             "IPHONE_6_PLUS": "iPhone 6+",

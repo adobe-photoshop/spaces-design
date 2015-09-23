@@ -333,6 +333,18 @@
                     "separator": true
                 },
                 {
+                    "id": "DUPLICATE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
                     "id": "CREATE_ARTBOARD",
                     "shortcut": {
                         "keyChar": true,
@@ -427,6 +439,28 @@
                     "separator": true
                 },
                 {
+                    "id": "SHOW_LAYER",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "HIDE_LAYER",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true,
+                            "option": true
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
                     "id": "LOCK_LAYER",
                     "shortcut": {
                         "keyChar": true,
@@ -464,7 +498,47 @@
                         "modifiers": {
                             "command": true,
                             "shift": true
-
+                        }
+                    }
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "BRING_TO_FRONT",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
+                        }
+                    }
+                },
+                {
+                    "id": "BRING_FORWARD",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "SEND_BACKWARD",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
+                },
+                {
+                    "id": "SEND_TO_BACK",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true,
+                            "shift": true
                         }
                     }
                 }

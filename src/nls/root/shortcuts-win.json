@@ -27,16 +27,23 @@
             "SEARCH": "f"
         },
         "LAYER": {
-            "CREATE_ARTBOARD": "b"
+            "CREATE_ARTBOARD": "b",
+            "DUPLICATE": "j"
         },
         "ARRANGE": {
             "FLIP_HORIZONTAL": "/",
             "FLIP_VERTICAL": "/",
             "SWAP_POSITION": "/",
+            "SHOW_LAYER": ",",
+            "HIDE_LAYER": ",",
             "LOCK_LAYER": "l",
             "UNLOCK_LAYER": "l",
             "GROUP_LAYERS": "g",
-            "UNGROUP_LAYERS": "g"
+            "UNGROUP_LAYERS": "g",
+            "BRING_TO_FRONT": "]",
+            "BRING_FORWARD": "]",
+            "SEND_BACKWARD": "[",
+            "SEND_TO_BACK": "["
         },
         "VIEW": {
             "ZOOM_IN": "+",

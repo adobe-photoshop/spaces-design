@@ -223,6 +223,10 @@
                 "$enable-rule": "layers-selected-all-shapes"
             }
         },
+        "DUPLICATE": {
+            "$action": "layers.duplicate",
+            "$enable-rule": "have-document,layer-selected"
+        },
         "CREATE_ARTBOARD": {
             "$action": "layers.createArtboard",
             "$enable-rule": "supported-document"
@@ -233,6 +237,16 @@
     },
     "ARRANGE": {
         "$enable-rule": "always",
+        "SHOW_LAYER": {
+            "$action": "layers.setVisibilitySelectedInCurrentDocument",
+            "$enable-rule": "layer-selected",
+            "$payload": true
+        },
+        "HIDE_LAYER": {
+            "$action": "layers.setVisibilitySelectedInCurrentDocument",
+            "$enable-rule": "layer-selected",
+            "$payload": false
+        },
         "LOCK_LAYER": {
             "$action": "layers.lockSelectedInCurrentDocument",
             "$enable-rule": "layer-selected"
@@ -298,6 +312,22 @@
                 "$action": "transform.alignBottom",
                 "$enable-rule": "layers-selected-2+,no-background,no-nesting"
             }
+        },
+        "BRING_TO_FRONT": {
+            "$action": "layers.bringToFront",
+            "$enable-rule": "layer-selected,no-background"
+        },
+        "BRING_FORWARD": {
+            "$action": "layers.bringForward",
+            "$enable-rule": "layer-selected,no-background"
+        },
+        "SEND_BACKWARD": {
+            "$action": "layers.sendBackward",
+            "$enable-rule": "layer-selected,no-background"
+        },
+        "SEND_TO_BACK": {
+            "$action": "layers.sendToBack",
+            "$enable-rule": "layer-selected,no-background"
         }
     },
     "VIEW": {
