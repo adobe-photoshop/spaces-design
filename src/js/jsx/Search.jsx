@@ -30,24 +30,11 @@ define(function (require, exports, module) {
 
     var os = require("adapter/os"),
         Dialog = require("jsx!./shared/Dialog"),
-        SearchBar = require("jsx!./search/SearchBar");
-
-    /**
-     * Unique identifier for the Search Dialog
-     *
-     * @const
-     * @type {string}
-     */
-    var SEARCH_BAR_DIALOG_ID = "search-bar-dialog";
+        SearchBar = require("jsx!./search/SearchBar"),
+        search = require("js/stores/search");
 
     var Search = React.createClass({
         mixins: [FluxMixin],
-
-        componentWillMount: function () {
-            var searchStore = this.getFlux().store("search");
-            searchStore.registerSearch(SEARCH_BAR_DIALOG_ID,
-                ["LIBRARY", "ALL_LAYER", "CURRENT_DOC", "RECENT_DOC", "MENU_COMMAND"]);
-        },
 
         /**
          * Dismiss the Search Bar Dialog.
@@ -57,7 +44,7 @@ define(function (require, exports, module) {
          * @return {Promise}
          */
         _closeSearchBar: function () {
-            return this.getFlux().actions.dialog.closeDialog(SEARCH_BAR_DIALOG_ID);
+            return this.getFlux().actions.dialog.closeDialog(search.SEARCH_BAR_DIALOG_ID);
         },
 
         /**
@@ -80,7 +67,7 @@ define(function (require, exports, module) {
             return (
                 <div>
                     <Dialog
-                        id={SEARCH_BAR_DIALOG_ID}
+                        id={search.SEARCH_BAR_DIALOG_ID}
                         modal
                         position={Dialog.POSITION_METHODS.CENTER}
                         dismissOnCanvasClick={true}
@@ -91,7 +78,7 @@ define(function (require, exports, module) {
                         className={"search-bar__dialog"} >
                         <SearchBar
                             ref="searchBar"
-                            searchID={SEARCH_BAR_DIALOG_ID}
+                            searchID={search.SEARCH_BAR_DIALOG_ID}
                             dismissDialog={this._closeSearchBar}
                             executeOption={this._handleOption}
                             />

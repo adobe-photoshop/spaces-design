@@ -60,6 +60,14 @@ define(function (require, exports, module) {
     var CATEGORIES = strings.SEARCH.CATEGORIES,
         HEADERS = strings.SEARCH.HEADERS;
 
+    /**
+     * Unique identifier for the Search Dialog
+     *
+     * @const
+     * @type {string}
+     */
+    var SEARCH_BAR_DIALOG_ID = "search-bar-dialog";
+
     /*
      * Properties used to make complete search options objects for SearchBar.jsx
      *
@@ -386,6 +394,8 @@ define(function (require, exports, module) {
             return allFilters;
         }
     });
-        
+
+    SearchStore.SEARCH_BAR_DIALOG_ID = SEARCH_BAR_DIALOG_ID;
+
     module.exports = SearchStore;
 });

@@ -175,7 +175,7 @@
         },
         "SEARCH": {
             "$action": "search.toggleSearchBar",
-            "$enable-rule": "supported-document,always-except-modal"
+            "$enable-rule": "not-unsupported-document,always-except-modal"
         }
     },
     "LAYER": {

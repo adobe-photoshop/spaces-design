@@ -154,6 +154,9 @@ define(function (require, exports, module) {
             "supported-document":
                 (document !== null) &&
                 !document.unsupported,
+            "not-unsupported-document":
+                !document ||
+                !document.unsupported,
             "have-guides":
                 (document !== null) &&
                 !document.guides.isEmpty(),
