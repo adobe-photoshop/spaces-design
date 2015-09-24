@@ -25,7 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
         
     var descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
@@ -1013,20 +1014,34 @@ define(function (require, exports) {
             if (event.trackerEndedWithoutBreakingHysteresis) {
                 return Promise.resolve();
             }
-            
-            var appStore = this.flux.store("application"),
-                currentDoc = appStore.getCurrentDocument(),
-                textLayers = currentDoc.layers.allSelected.filter(function (layer) {
-                    // Reset these layers completely because their impliedFontSize may have changed
-                    return layer.kind === layer.layerKinds.TEXT;
-                }),
-                otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
-                }),
-                textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
-                otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers);
 
-            return Promise.join(textLayersPromise, otherLayersPromise);
+            var appStore = this.flux.store("application"),
+                currentDoc = appStore.getCurrentDocument();
+                
+            if (event.newDuplicateSheets) {
+                var duplicateInfo = event.newDuplicateSheets,
+                    newSheetIDlist = duplicateInfo.newSheetIDlist,
+                    toIDs = _.pluck(newSheetIDlist, "newLayerID");
+
+                // TODO: The objects in this array also contain layerID and
+                // newLayerIndex properties which could be used to implement
+                // a somewhat more optimistic copy routine, instead of addLayers
+                // which doesn't know that the layers being added are copies of
+                // existing layers.
+                return this.flux.actions.layers.addLayers(currentDoc, toIDs, true, false);
+            } else {
+                var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
+                        // Reset these layers completely because their impliedFontSize may have changed
+                        return layer.kind === layer.layerKinds.TEXT;
+                    }),
+                    otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
+                        return layer.kind === layer.layerKinds.TEXT;
+                    }),
+                    textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
+                    otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers);
+
+                return Promise.join(textLayersPromise, otherLayersPromise);
+            }
         }, this);
 
         descriptor.addListener("transform", _layerTransformHandler);
