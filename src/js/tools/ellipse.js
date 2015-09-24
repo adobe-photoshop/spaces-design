@@ -43,12 +43,13 @@ define(function (require, exports, module) {
      * @constructor
      */
     var EllipseTool = function () {
-        var resetPromise = descriptor.playObject(toolLib.resetShapeTool()),
+        var resetObj = toolLib.setShapeToolMode(toolLib.toolModes.SHAPE),
             firstLaunch = true;
             
         /** @ignore */
         var selectHandler = function () {
-            var defaultPromise;
+            var defaultPromise,
+                resetPromise = descriptor.playObject(resetObj);
 
             if (firstLaunch) {
                 var fillColor = [217, 217, 217],

@@ -48,7 +48,7 @@ define(function (require, exports, module) {
         };
 
         var toolOptionsObj = toolLib.setToolOptions("moveTool", toolOptions),
-            resetObj = toolLib.resetShapeTool(),
+            resetObj = toolLib.setShapeToolMode(toolLib.toolModes.SHAPE),
             firstLaunch = true;
 
         var selectHandler = function () {
