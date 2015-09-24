@@ -63,7 +63,7 @@ define(function (require, exports, module) {
             };
             
             // Reset the mode of the pen tool to "shape"
-            var resetObj = toolLib.resetShapeTool(),
+            var resetObj = toolLib.setShapeToolMode(toolLib.toolModes.SHAPE),
                 optionsObj = toolLib.setToolOptions("penTool", toolOptions),
                 backspacePromise = this.transfer(shortcuts.addShortcut,
                     OS.eventKeyCode.BACKSPACE, {}, deleteFn, "penBackspace", true),
