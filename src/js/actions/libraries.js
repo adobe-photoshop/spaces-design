@@ -97,7 +97,9 @@ define(function (require, exports) {
         REP_LAYERSTYLE_TYPE = "application/vnd.adobe.layerstyle",
         REP_COLOR_TYPE = "application/vnd.adobe.color+json",
         REP_PNG_TYPE = "image/png",
-        REP_PHOTOSHOP_TYPE = "image/vnd.adobe.photoshop";
+        REP_PHOTOSHOP_TYPE = "image/vnd.adobe.photoshop",
+        // Large Document Format
+        REP_PSB_TYPE = "application/photoshop.large";
 
     /**
      * List of acceptable image representations that PS can place as
@@ -128,7 +130,8 @@ define(function (require, exports) {
      * @type {Set}
      */
     var EDITABLE_GRAPHIC_REPRESENTATION_TYPES = new Set([
-        REP_PHOTOSHOP_TYPE
+        REP_PHOTOSHOP_TYPE,
+        REP_PSB_TYPE
     ]);
     
     /**
@@ -533,10 +536,17 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var openGraphicForEdit = function (element) {
+        if (!element) {
+            // FIXME: we should store the element in its edit status and re-create the element if it is deleted,
+            //        so that users won't lose their change.
+            log.debug("[CC Lib] openGraphicForEdit: element is missing. maybe it is already deleted.");
+            return Promise.resolve();
+        }
+        
         var representation = element.getPrimaryRepresentation();
         
         if (!EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type)) {
-            log.debug("[CC Lib] unsupported graphic type: " + representation.type);
+            log.debug("[CC Lib] openGraphicForEdit: unsupported graphic type: " + representation.type);
             return Promise.resolve();
         }
         
@@ -641,6 +651,7 @@ define(function (require, exports) {
         // Skip if the document's associated element is deleted, but keep the edit status so that
         // the temp files will be deleted when the document is closed.
         if (!element) {
+            log.debug("[CC Lib] updateGraphicContent: element is missing. maybe it is already deleted.");
             return Promise.resolve();
         }
         
@@ -656,7 +667,7 @@ define(function (require, exports) {
             }
         }
         
-        this.dispatch(events.libraries.UPDATING_GRAPHIC_CONTENT, { documentID: documentID });
+        this.dispatch(events.libraries.UPDATING_GRAPHIC_CONTENT, { documentID: documentID, element: element });
 
         library.beginOperation();
         

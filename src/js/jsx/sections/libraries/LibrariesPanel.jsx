@@ -54,7 +54,8 @@ define(function (require, exports, module) {
                 isDropTarget: isDropTarget,
                 isValidDropTarget: dndState.hasValidDropTarget,
                 selectedLibrary: libraryStore.getCurrentLibrary(),
-                lastLocallyCreatedElement: libraryStore.getLastLocallyCreatedElement()
+                lastLocallyCreatedElement: libraryStore.getLastLocallyCreatedElement(),
+                lastLocallyUpdatedGraphic: libraryStore.getLastLocallyUpdatedGraphic()
             };
         },
 
@@ -118,6 +119,7 @@ define(function (require, exports, module) {
                 <Library
                     addElement={this._handleAddElement}
                     lastLocallyCreatedElement={this.state.lastLocallyCreatedElement}
+                    lastLocallyUpdatedGraphic={this.state.lastLocallyUpdatedGraphic}
                     library={currentLibrary} />
                 );
             } else {

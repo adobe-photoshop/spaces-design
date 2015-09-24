@@ -91,6 +91,12 @@ define(function (require, exports, module) {
          * @type {AdobeLibraryElement}
          */
         _lastLocallyCreatedElement: null,
+        
+        /**
+         * Store the last locally updated graphic element.
+         * @type {AdobeLibraryElement}
+         */
+        _lastLocallyUpdatedGraphic: null,
 
         initialize: function () {
             this.bindActions(
@@ -309,7 +315,7 @@ define(function (require, exports, module) {
          * @private
          * @param {object} payload
          * @param {number} payload.documentID 
-         * @param {string} payload.path - document path
+         * @param {AdobeLibraryElement} payload.element
          */
         _handleUpdatingGraphicContent: function (payload) {
             var documentID = payload.documentID,
@@ -320,6 +326,8 @@ define(function (require, exports, module) {
             }
             
             editStatus.isUpdatingContent = true;
+            this._lastLocallyUpdatedGraphic = payload.element;
+            this.emit("change");
         },
 
         /**
@@ -533,6 +541,15 @@ define(function (require, exports, module) {
          */
         getLastLocallyCreatedElement: function () {
             return this._lastLocallyCreatedElement;
+        },
+        
+        /**
+         * Return the last locally updated graphic element.
+         * 
+         * @return {?AdobeLibraryElement}
+         */
+        getLastLocallyUpdatedGraphic: function () {
+            return this._lastLocallyUpdatedGraphic;
         },
         
         /**
