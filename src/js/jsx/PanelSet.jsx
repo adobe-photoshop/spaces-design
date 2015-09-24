@@ -358,7 +358,13 @@ define(function (require, exports, module) {
                 );
             } else {
                 return (
-                    <div ref="panelSet"></div>
+                    <div className="panel-set__container">
+                        <div ref="panelSet"
+                             className="panel-set">
+                            <PanelColumn visible={true} />
+                        </div>
+                        <IconBar />
+                    </div>
                 );
             }
         }
