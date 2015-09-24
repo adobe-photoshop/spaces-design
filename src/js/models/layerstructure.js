@@ -888,7 +888,7 @@ define(function (require, exports, module) {
                 nextIndex = layerStructure.index,
                 descriptor = descriptors[i],
                 layerIndex = descriptor.itemIndex - 1,
-                isNewSelected = selected && i + 1 === layerIDs.length,
+                isNewSelected = selected,
                 newLayer = Layer.fromDescriptor(document, descriptor, isNewSelected, true);
 
             if (i === 0 && replace) {
