@@ -58,12 +58,37 @@ define(function (require, exports, module) {
         _policySets: null,
 
         /**
+         * The current mode, indexed by event kind.
+         *
+         * @private
+         * @param {Object.<string, number>}
+         */
+        _modes: null,
+
+        /**
+         * Policy sets saved by suspension, indexed by event kind.
+         *
+         * @private
+         * @param {Object.<string, EventPolicySet>}
+         */
+        _suspendedPolicySets: null,
+
+        /**
+         * Modes saved by suspension, indexed by event kind.
+         *
+         * @private
+         * @param {Object.<string, EventPolicySet>}
+         */
+        _suspendedModes: null,
+
+        /**
          * Initialize the policy sets
          */
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
-                events.policies.POLICIES_INSTALLED, this._emitChange
+                events.policies.POLICIES_INSTALLED, this._emitChange,
+                events.policies.MODE_CHANGED, this._handleModeChanged
             );
 
             this._handleReset();
@@ -82,39 +107,85 @@ define(function (require, exports, module) {
          * @private
          */
         _handleReset: function () {
-            this._policySets = Object.keys(_eventKind).reduce(function (sets, kind) {
+            var kinds = Object.keys(_eventKind);
+            this._policySets = kinds.reduce(function (sets, kind) {
                 sets[_eventKind[kind]] = new EventPolicySet();
                 return sets;
             }.bind(this), {});
+
+            this._modes = {};
+            this._suspendedPolicySets = {};
+            this._suspendedModes = {};
         },
 
         /**
-         * Reset the policy set of the given kind
+         * Set the current mode for the given event kind.
          *
-         * @param {string} kind
+         * @private
+         * @param {{kind: string, mode: number}} payload
          */
-        clearPolicies: function (kind) {
-            this._policySets[kind] = new EventPolicySet();
+        _handleModeChanged: function (payload) {
+            var kind = payload.kind,
+                mode = payload.mode;
+
+            this._modes[kind] = mode;
+
+            this.emit("change");
         },
 
         /**
-         * Get the entire PolicySet of the given kind
+         * Get the current mode for the given event kind.
          *
          * @param {string} kind
-         * @return {?EventPolicySet}
+         * @return {number}
          */
-        getPolicies: function (kind) {
-            return this._policySets[kind];
+        getMode: function (kind) {
+            return this._modes[kind];
         },
 
         /**
-         * Set PolicySet of the given kind
+         * Whether policies for the given event kind are currently suspended.
          *
          * @param {string} kind
-         * @param {EventPolicySet} policySet
+         * @return {boolean}
          */
-        setPolicies: function (kind, policySet) {
-            this._policySets[kind] = policySet;
+        isSuspended: function (kind) {
+            return this._suspendedPolicySets[kind];
+        },
+
+        /**
+         * Suspend the policies and mode for the given event kind.
+         *
+         * @param {string} kind
+         */
+        suspend: function (kind) {
+            var previousPolicySet = this._policySets[kind],
+                counter = previousPolicySet.getNextPolicyID();
+
+            this._policySets[kind] = new EventPolicySet(counter);
+            this._suspendedPolicySets[kind] = previousPolicySet;
+            this._suspendedModes[kind] = this._modes[kind];
+
+            this.emit("change");
+        },
+
+        /**
+         * Restore the policies and mode for the given event kind.
+         *
+         * @param {string} kind
+         */
+        restore: function (kind) {
+            var suspendedPolicies = this._suspendedPolicySets[kind],
+                suspendedMode = this._suspendedModes[kind];
+            if (!suspendedPolicies) {
+                throw new Error("Policies are not currently suspended");
+            }
+
+            this._modes[kind] = suspendedMode;
+            this._policySets[kind] = suspendedPolicies.append(this._policySets[kind]);
+            delete this._suspendedPolicySets[kind];
+
+            this.emit("change");
         },
 
         /**
@@ -125,7 +196,13 @@ define(function (require, exports, module) {
          * @return {Array.<EventPolicy>}
          */
         removePolicyList: function (kind, id) {
-            return this._policySets[kind].removePolicyList(id);
+            var suspendedPolicySet = this._suspendedPolicySets[kind];
+
+            if (suspendedPolicySet && suspendedPolicySet.has(id)) {
+                return suspendedPolicySet.removePolicyList(id);
+            } else {
+                return this._policySets[kind].removePolicyList(id);
+            }
         },
 
         /**

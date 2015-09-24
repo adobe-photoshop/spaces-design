@@ -190,7 +190,8 @@ define(function (require, exports, module) {
             REGISTER_SEARCH_PROVIDER: "registerSearchProvider"
         },
         policies: {
-            POLICIES_INSTALLED: "policiesInstalled"
+            POLICIES_INSTALLED: "policiesInstalled",
+            MODE_CHANGED: "modeChanged"
         }
     };
 });

@@ -42,6 +42,7 @@ define(function (require, exports) {
     };
     setPreference.reads = [];
     setPreference.writes = [locks.JS_PREF];
+    setPreference.modal = true;
 
     /**
      * Bulk set preferences.
@@ -56,6 +57,7 @@ define(function (require, exports) {
     };
     setPreferences.reads = [];
     setPreferences.writes = [locks.JS_PREF];
+    setPreferences.modal = true;
 
     /**
      * Delete a single preference.
@@ -70,6 +72,7 @@ define(function (require, exports) {
     };
     deletePreference.reads = [];
     deletePreference.writes = [locks.JS_PREF];
+    deletePreference.modal = true;
 
     /**
      * Clear all preferences.
@@ -81,6 +84,7 @@ define(function (require, exports) {
     };
     clearPreferences.reads = [];
     clearPreferences.writes = [locks.JS_PREF];
+    clearPreferences.modal = true;
 
     exports.setPreference = setPreference;
     exports.setPreferences = setPreferences;
