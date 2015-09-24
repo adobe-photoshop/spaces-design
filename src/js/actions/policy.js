@@ -194,10 +194,11 @@ define(function (require, exports) {
     removePointerPolicies.modal = true;
 
     /**
-     * Set the propagation mode for the given policy kind.
+     * Set the propagation mode for the given policy kind. If no mode is supplied,
+     * a default mode will be used.
      *
      * @param {number} kind
-     * @param {number} mode
+     * @param {number=} mode
      * @return {Promise}
      */
     var setMode = function (kind, mode) {
@@ -205,9 +206,15 @@ define(function (require, exports) {
         switch (kind) {
         case PolicyStore.eventKind.KEYBOARD:
             setModeFn = adapterUI.setKeyboardPropagationMode;
+            if (mode === undefined) {
+                mode = adapterUI.keyboardPropagationMode.FOCUS_PROPAGATE;
+            }
             break;
         case PolicyStore.eventKind.POINTER:
             setModeFn = adapterUI.setPointerPropagationMode;
+            if (mode === undefined) {
+                mode = adapterUI.pointerPropagationMode.ALPHA_PROPAGATE;
+            }
             break;
         default:
             return Promise.reject(new Error("Unknown kind:" + kind));
@@ -240,8 +247,7 @@ define(function (require, exports) {
         
         policyStore.suspend(kind);
 
-        var mode = adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
-            setModePromise = this.transfer(setMode, kind, mode),
+        var setModePromise = this.transfer(setMode, kind),
             syncPoliciesPromise = this.transfer(syncPolicies, kind);
 
         return Promise.join(setModePromise, syncPoliciesPromise);
