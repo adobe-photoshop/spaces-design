@@ -605,8 +605,7 @@ define(function (require, exports) {
      *
      * @type {function(event)}
      */
-    var _moveToArtboardListener = null,
-        _newDuplicateSheetsListener = null;
+    var _moveToArtboardListener = null;
 
     /**
      * Selects and starts dragging the layer around
@@ -651,29 +650,11 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function (anySelected) {
                         if (anySelected) {
-                            if (_newDuplicateSheetsListener) {
-                                descriptor.removeListener("newDuplicateSheets", _newDuplicateSheetsListener);
-                            }
-
                             if (_moveToArtboardListener) {
                                 descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
                             }
 
-                            if (copyDrag) {
-                                _newDuplicateSheetsListener = function (event) {
-                                    var newSheetIDlist = event.newSheetIDlist,
-                                        toIDs = _.pluck(newSheetIDlist, "newLayerID");
-
-                                    // TODO: The objects in this array also contain layerID and
-                                    // newLayerIndex properties which could be used to implement
-                                    // a somewhat more optimistic copy routine, instead of addLayers
-                                    // which doesn't know that the layers being added are copies of
-                                    // existing layers.
-                                    this.flux.actions.layers.addLayers(doc, toIDs, true, false);
-                                }.bind(this);
-
-                                descriptor.once("newDuplicateSheets", _newDuplicateSheetsListener);
-                            } else {
+                            if (!copyDrag) {
                                 _moveToArtboardListener = _.once(function () {
                                     this.flux.actions.layers.resetIndex(doc, true, true);
                                 }.bind(this));
