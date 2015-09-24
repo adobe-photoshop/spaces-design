@@ -172,8 +172,9 @@ define(function (require, exports, module) {
                 this._currentMouseY = event.location[1];
                 if (this.state.marqueeEnabled) {
                     this.updateMarqueeRect();
+                } else {
+                    this.updateMouseOverHighlights();
                 }
-                this.updateMouseOverHighlights();
             }
         },
 
