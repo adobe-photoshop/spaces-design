@@ -159,6 +159,13 @@ define(function (require, exports, module) {
                 events.document.history.nonOptimistic.RESET_BOUNDS, this._handleLayersUpdated
             );
 
+            // HACK: Do not reset panel sizes because they should remain constant.
+            this._panelWidth = 0;
+            this._columnCount = 0;
+            this._iconBarWidth = 0;
+            this._headerHeight = 0;
+            this._toolbarWidth = 0;
+
             this._handleReset();
         },
 
@@ -175,12 +182,6 @@ define(function (require, exports, module) {
             this._zoom = null;
             this._transformMatrix = null;
             this._inverseTransformMatrix = null;
-
-            this._panelWidth = 0;
-            this._columnCount = 0;
-            this._iconBarWidth = 0;
-            this._headerHeight = 0;
-            this._toolbarWidth = 0;
         },
         
         /** @ignore */
