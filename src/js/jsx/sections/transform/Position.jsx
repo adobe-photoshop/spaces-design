@@ -67,7 +67,7 @@ define(function (require, exports, module) {
             var document = this.props.document;
             
             this.getFlux().actions.transform
-                .setPositionThrottled(document, document.layers.selected, { x: newX });
+                .setPositionThrottled(document, document.layers.selected, { x: newX }, true);
         },
 
         /**
@@ -81,7 +81,7 @@ define(function (require, exports, module) {
             var document = this.props.document;
             
             this.getFlux().actions.transform
-                .setPositionThrottled(document, document.layers.selected, { y: newY });
+                .setPositionThrottled(document, document.layers.selected, { y: newY }, true);
         },
 
         /**
@@ -118,7 +118,7 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.props.document,
                 layers = document.layers.selected,
-                bounds = document.layers.selectedChildBounds;
+                bounds = document.layers.selectedRelativeChildBounds;
 
             var disabled = this._disabled(document, layers),
                 tops = collection.pluck(bounds, "top"),

@@ -382,5 +382,25 @@ define(function (require, exports, module) {
             this.top < otherBounds.bottom && this.bottom > otherBounds.top;
     };
 
+    /**
+     * Clones this bounds object returning it relative to the position 
+     * of the given bounds' top left value
+     *
+     * @param {Bounds} otherBounds Comparison bounds
+     * @return {Bounds} Updated bounds where location is in relation to otherBounds
+     */
+    Bounds.prototype.relativeTo = function (otherBounds) {
+        var x = otherBounds.left,
+            y = otherBounds.top,
+            model = {
+                left: this.left - x,
+                top: this.top - y,
+                right: this.right - x,
+                bottom: this.bottom - y
+            };
+
+        return this.merge(model);
+    };
+
     module.exports = Bounds;
 });

@@ -290,6 +290,23 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Child encompassing bounds objects for all selected layers,
+         * relative to their owner artboards
+         * @type {Immutable.List.<Bounds>}
+         */
+        "selectedRelativeChildBounds": function () {
+            return this.selected
+                .toSeq()
+                .map(function (layer) {
+                    return this.relativeChildBounds(layer);
+                }, this)
+                .filter(function (bounds) {
+                    return bounds && bounds.area > 0;
+                })
+                .toList();
+        },
+
+        /**
          * Overall bounds of selection
          * @type {Bounds}
          */
@@ -807,6 +824,43 @@ define(function (require, exports, module) {
             case layer.layerKinds.GROUPEND:
                 return null;
             default:
+                return layer.bounds;
+        }
+    }));
+
+    /**
+     * Calculate the child-encompassing bounds of the given layer in relation to it's owner artboard. 
+     * Returns null for end-group layers and otherwise-empty groups. 
+     * If layer is artboard, returns the bounds of it
+     *
+     * @param {Layer} layer
+     * @return {?Bounds}
+     */
+    Object.defineProperty(LayerStructure.prototype, "relativeChildBounds", objUtil.cachedLookupSpec(function (layer) {
+        switch (layer.kind) {
+            case layer.layerKinds.GROUP:
+                if (layer.isArtboard) {
+                    return layer.bounds;
+                }
+
+                var childBounds = this.children(layer)
+                    .map(this.relativeChildBounds, this)
+                    .filter(function (bounds) {
+                        return bounds && bounds.area > 0;
+                    });
+
+                return Bounds.union(childBounds);
+            case layer.layerKinds.GROUPEND:
+                return null;
+            default:
+                var topAncestor = this.topAncestor(layer);
+                
+                if (topAncestor.isArtboard) {
+                    var ancestorBounds = topAncestor.bounds;
+
+                    return layer.bounds.relativeTo(ancestorBounds);
+                }
+
                 return layer.bounds;
         }
     }));

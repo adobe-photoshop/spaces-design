@@ -67,11 +67,14 @@ define(function (require, exports) {
      * @param {Layer} targetLayer
      * @param {{x: number, y: number}} position
      * @param {Array.<{layer: Layer, x: number, y: number}>} moveResults payload for updating each layer's bounds
+     * @param {boolean} relative If true, will use teh artboard relative bounds of the layer
      *
      * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
-    var _getMoveLayerActions = function (document, targetLayer, position, moveResults) {
-        var overallBounds = document.layers.childBounds(targetLayer),
+    var _getMoveLayerActions = function (document, targetLayer, position, moveResults, relative) {
+        var overallBounds = relative ?
+                document.layers.relativeChildBounds(targetLayer) :
+                document.layers.childBounds(targetLayer),
             deltaX = position.hasOwnProperty("x") ? position.x - overallBounds.left : 0,
             deltaY = position.hasOwnProperty("y") ? position.y - overallBounds.top : 0,
             documentRef = documentLib.referenceBy.id(document.id),
@@ -321,7 +324,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var setPosition = function (document, layerSpec, position) {
+    var setPosition = function (document, layerSpec, position, relative) {
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.kind === layer.layerKinds.GROUPEND;
         });
@@ -342,7 +345,8 @@ define(function (require, exports) {
                 return this.transfer(toolActions.resetBorderPolicies);
             }),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
-                var layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
+                var layerActions = _getMoveLayerActions.call(this,
+                        document, layer, position, payload.positions, relative);
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
 
@@ -381,9 +385,9 @@ define(function (require, exports) {
                 positions: []
             },
             layerOneActions = _getMoveLayerActions
-                .call(this, document, layers.get(0), newPositions.get(0), payload.positions),
+                .call(this, document, layers.get(0), newPositions.get(0), payload.positions, false),
             layerTwoActions = _getMoveLayerActions
-                .call(this, document, layers.get(1), newPositions.get(1), payload.positions),
+                .call(this, document, layers.get(1), newPositions.get(1), payload.positions, false),
             translateActions = layerOneActions.concat(layerTwoActions);
                 
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
