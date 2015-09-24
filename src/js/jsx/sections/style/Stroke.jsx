@@ -42,6 +42,14 @@ define(function (require, exports, module) {
         collection = require("js/util/collection");
 
     /**
+     * The maximum stroke size in Photoshop is 288px.
+     *
+     * @const
+     * @type {number}
+     */
+    var PS_MAX_STROKE_SIZE = 288;
+
+    /**
      * Stroke Component displays information of a single stroke for a given layer or 
      * set of layers.
      */
@@ -279,6 +287,7 @@ define(function (require, exports, module) {
                             onChange={this._widthChanged}
                             onFocus={this.props.onFocus}
                             min={0}
+                            max={PS_MAX_STROKE_SIZE}
                             step={1}
                             bigstep={5}
                             disabled={this.props.disabled}
