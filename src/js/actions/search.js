@@ -24,7 +24,11 @@
 define(function (require, exports) {
     "use strict";
 
-    var dialog = require("./dialog");
+    var Promise = require("bluebird");
+
+    var dialog = require("./dialog"),
+        search = require("../stores/search"),
+        locks = require("../locks");
 
     /**
      * The search bar dialog ID
@@ -32,7 +36,7 @@ define(function (require, exports) {
      * @const
      * @type {string} 
      */
-    var ID = "search-bar-dialog";
+    var ID = search.SEARCH_BAR_DIALOG_ID;
 
     /**
      * Open the Search dialog
@@ -48,9 +52,22 @@ define(function (require, exports) {
         }
         return this.transfer(dialog.openDialog, ID);
     };
-    toggleSearchBar.reads = [];
+    toggleSearchBar.reads = [locks.JS_DIALOG];
     toggleSearchBar.writes = [];
     toggleSearchBar.transfers = [dialog.openDialog, dialog.closeDialog];
 
+    var beforeStartup = function () {
+        var searchStore = this.flux.store("search");
+
+        searchStore.registerSearch(ID,
+            ["LIBRARY", "ALL_LAYER", "CURRENT_DOC", "RECENT_DOC", "MENU_COMMAND"]);
+
+        return Promise.resolve();
+    };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [locks.JS_SEARCH];
+    beforeStartup.transfers = [];
+
     exports.toggleSearchBar = toggleSearchBar;
+    exports.beforeStartup = beforeStartup;
 });

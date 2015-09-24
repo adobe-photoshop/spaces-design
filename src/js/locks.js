@@ -52,6 +52,7 @@ define(function (require, exports, module) {
         JS_STYLE: "jsStyle",
         JS_LIBRARIES: "jsLibraries",
         JS_EXPORT: "jsExport",
+        JS_SEARCH: "jsSearch",
         CC_LIBRARIES: "ccLibraries",
         OS_CLIPBOARD: "osClipboard",
         GENERATOR: "generator"
