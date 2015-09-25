@@ -83,6 +83,15 @@ define(function (require, exports) {
     ];
 
     /**
+     * Key for accessing the reference point from preferences storage.
+     *
+     * @const
+     * @private
+     * @type {string}
+     */
+    var REFERENCE_POINT_PREFS_KEY = "referencePoint";
+
+    /**
      * Document properties needed to update the window transform
      *
      * @private
@@ -492,6 +501,27 @@ define(function (require, exports) {
     zoomInOut.transfers = [zoom];
 
     /**
+     * Set the global resize reference point.
+     *
+     * @param {string} referencePoint One of "tl", "tm", "tr", "cl", "cm", "cr", "bl", "bm", "br".
+     * @return {Promise}
+     */
+    var setReferencePoint = function (referencePoint) {
+        var dispatchPromise = this.dispatchAsync(events.ui.REFERENCE_POINT_CHANGED, {
+            referencePoint: referencePoint
+        });
+
+        var preferencesPromise = this.transfer(preferences.setPreference,
+            REFERENCE_POINT_PREFS_KEY, referencePoint);
+
+        return Promise.join(dispatchPromise, preferencesPromise);
+    };
+    setReferencePoint.reads = [];
+    setReferencePoint.writes = [locks.JS_UI];
+    setReferencePoint.transfers = [preferences.setPreference];
+    setReferencePoint.modal = true;
+
+    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
@@ -553,12 +583,18 @@ define(function (require, exports) {
                 return this.flux.actions.ui.zoomInOut({ "zoomIn": true, "preserveFocus": true });
             }.bind(this));
 
-        return Promise.join(osPromise, owlPromise, pathPromise, zoomInShortcutPromise)
+        // Initialize the reference point from preferences
+        var preferences = this.flux.store("preferences"),
+            referencePoint = preferences.get(REFERENCE_POINT_PREFS_KEY, "a"),
+            setReferencePointPromise = this.transfer(setReferencePoint, referencePoint);
+
+        return Promise.join(osPromise, owlPromise, pathPromise, zoomInShortcutPromise,
+                setReferencePointPromise)
             .return(reset);
     };
     beforeStartup.reads = [];
     beforeStartup.writes = [locks.PS_APP];
-    beforeStartup.transfers = [shortcuts.addShortcut];
+    beforeStartup.transfers = [shortcuts.addShortcut, setReferencePoint];
     beforeStartup.modal = true;
 
     /**
@@ -604,6 +640,7 @@ define(function (require, exports) {
     exports.centerOn = centerOn;
     exports.zoomInOut = zoomInOut;
     exports.zoom = zoom;
+    exports.setReferencePoint = setReferencePoint;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
