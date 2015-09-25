@@ -370,8 +370,8 @@
             "ALIGN": "整列",
             "AUTO_LEADING": "自動",
             "MISSING": "不明",
-            "MIXED": "能_[8414081] Mixed Fonts",
-            "MIXED_STYLE": "能_[8458438] Mixed Font Styles"
+            "MIXED": "合成フォント",
+            "MIXED_STYLE": "合成フォントのスタイル"
         },
         "VECTOR": {
             "TITLE": "ベクトル",
@@ -477,13 +477,13 @@
     },
     "LIBRARIES": {
         "CREATE_LIBRARY": "新規ライブラリを作成",
-        "RENAME_LIBRARY": "能_[8414013] Rename Library",
-        "DELETE_LIBRARY": "能_[8414021] Delete Library",
+        "RENAME_LIBRARY": "ライブラリ名を変更",
+        "DELETE_LIBRARY": "ライブラリを削除",
         "DELETE_LIBRARY_CONFIRM": "「%s」を削除しますか？",
         "DELETE_SHARED_LIBRARY_CONFIRM": "このライブラリは削除すると、共同作業者がアクセスできなくなります。「%s」を削除しますか？",
-        "LEAVE_LIBRARY": "能_[8414016] Leave Library",
+        "LEAVE_LIBRARY": "ライブラリを終了",
         "LEAVE_LIBRARY_CONFIRM": "「%s」を終了しますか？",
-        "DELETE_ASSET": "能_[8414024] Delete Asset",
+        "DELETE_ASSET": "アセットを削除",
         "DELETE_ASSET_CONFIRM": "「%s」を削除しますか？",
         "GRAPHICS": "グラフィック",
         "COLORS": "カラー",
