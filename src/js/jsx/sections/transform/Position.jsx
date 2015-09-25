@@ -33,13 +33,23 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        uiUtil = require("js/util/ui");
 
     var MAX_LAYER_POS = 32000,
         MIN_LAYER_POS = -32000;
 
     var Position = React.createClass({
         mixins: [FluxMixin],
+        propTypes: {
+            referencePoint: React.PropTypes.string.isRequired
+        },
+
+        getDefaultProps: function () {
+            return {
+                referencePoint: "lt"
+            };
+        },
 
         shouldComponentUpdate: function (nextProps) {
             var getSelectedChildBounds = function (props) {
@@ -52,35 +62,37 @@ define(function (require, exports, module) {
                 return collection.pluckAll(layers, ["kind", "locked", "isBackground"]);
             };
 
-            return !Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) ||
+            return this.props.referencePoint !== nextProps.referencePoint ||
+                !Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) ||
                 !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
         },
 
         /**
-         * Update the left position of the selected layers.
+         * Update the current X position of the selected layers.
          *
          * @private
          * @param {SyntheticEvent} event
          * @param {number} newX
          */
-        _handleLeftChange: function (event, newX) {
+        _handleXChange: function (event, newX) {
             var document = this.props.document,
                 positionObj = {
                     x: newX,
                     relative: true
                 };
             
-            this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected, positionObj);
+            this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected,
+                positionObj, this.props.referencePoint);
         },
 
         /**
-         * Update the top position of the selected layers.
+         * Update the current Y position of the selected layers.
          *
          * @private
          * @param {SyntheticEvent} event
          * @param {number} newY
          */
-        _handleTopChange: function (event, newY) {
+        _handleYChange: function (event, newY) {
             var document = this.props.document,
                 positionObj = {
                     y: newY,
@@ -88,7 +100,8 @@ define(function (require, exports, module) {
                 };
             
             this.getFlux().actions.transform
-                .setPositionThrottled(document, document.layers.selected, positionObj);
+                .setPositionThrottled(document, document.layers.selected,
+                    positionObj, this.props.referencePoint);
         },
 
         /**
@@ -128,8 +141,9 @@ define(function (require, exports, module) {
                 bounds = document.layers.selectedRelativeChildBounds;
 
             var disabled = this._disabled(document, layers),
-                tops = collection.pluck(bounds, "top"),
-                lefts = collection.pluck(bounds, "left");
+                positionKeys = uiUtil.getPositionKeysByRefPoint(this.props.referencePoint),
+                xValues = collection.pluck(bounds, positionKeys.x),
+                yValues = collection.pluck(bounds, positionKeys.y);
 
             return (
                 <div className="control-group__horizontal">
@@ -141,9 +155,9 @@ define(function (require, exports, module) {
                     </Label>
                     <NumberInput
                         disabled={disabled}
-                        value={lefts}
-                        onChange={this._handleLeftChange}
-                        ref="left"
+                        value={xValues}
+                        onChange={this._handleXChange}
+                        ref="xValue"
                         min={MIN_LAYER_POS}
                         max={MAX_LAYER_POS}
                         size="column-5" />
@@ -157,9 +171,9 @@ define(function (require, exports, module) {
                     </Label>
                     <NumberInput
                         disabled={disabled}
-                        value={tops}
-                        onChange={this._handleTopChange}
-                        ref="top"
+                        value={yValues}
+                        onChange={this._handleYChange}
+                        ref="yValue"
                         min={MIN_LAYER_POS}
                         max={MAX_LAYER_POS}
                         size="column-5" />
