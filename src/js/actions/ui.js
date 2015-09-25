@@ -151,7 +151,7 @@ define(function (require, exports) {
     toggleSingleColumnMode.transfers = [preferences.setPreference];
 
     /**
-     * Query Photoshop for the curent window transform and emit a
+     * Query Photoshop for the current window transform and emit a
      * TRANSFORM_UPDATED event with that value.
      *
      * @return {Promise}

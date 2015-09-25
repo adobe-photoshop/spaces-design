@@ -235,7 +235,17 @@ define(function (require, exports, module) {
             "earlier-history":
                 (document !== null) && hasPreviousHistoryState,
             "later-history":
-                (document !== null) && hasNextHistoryState
+                (document !== null) && hasNextHistoryState,
+            "one-layer-selected-can-have-vector-mask":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                (document.layers.selectedNormalized.size === 1) &&
+                (document.layers.selected.every(function (layer) {
+                    return layer.kind !== layer.layerKinds.VECTOR &&
+                        layer.kind !== layer.layerKinds.BACKGROUND &&
+                        !layer.locked;
+                }))
         };
     };
 

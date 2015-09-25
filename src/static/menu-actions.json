@@ -233,6 +233,10 @@
         },
         "NEW_ARTBOARD_FROM_TEMPLATE": {
             "$enable-rule": "supported-document"
+        },
+        "EDIT_VECTOR_MASK": {
+            "$action": "layers.editVectorMask",
+            "$enable-rule": "one-layer-selected-can-have-vector-mask"
         }
     },
     "ARRANGE": {

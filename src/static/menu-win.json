@@ -320,6 +320,9 @@
                 {
                     "id": "NEW_ARTBOARD_FROM_TEMPLATE",
                     "submenu": []
+                },
+                {
+                    "id": "EDIT_VECTOR_MASK"
                 }
             ]
         },
