@@ -59,11 +59,8 @@ define(function (require, exports, module) {
         var setPromise = descriptor.batchPlayObjects([setObj]);
 
         if (!vectorMode && firstLaunch) {
-            var fillColor = [217, 217, 217],
-                strokeColor = [157, 157, 157];
-
             var defaultPromise = this.transfer(toolActions.installShapeDefaults,
-                "rectangleTool", strokeColor, 2, 100, fillColor);
+                "rectangleTool");
 
             firstLaunch = false;
             return Promise.join(defaultPromise, setPromise);

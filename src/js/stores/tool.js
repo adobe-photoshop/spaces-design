@@ -106,7 +106,7 @@ define(function (require, exports, module) {
                 events.RESET, this._handleReset,
                 events.tool.SELECT_TOOL, this._handleSelectTool,
                 events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange,
-                events.tool.VECTOR_STATE_CHANGE, this._handleVectorStateChange
+                events.tool.VECTOR_MASK_MODE_CHANGE, this._handleVectorMaskModeChange
             );
 
             this._handleReset();
@@ -208,9 +208,9 @@ define(function (require, exports, module) {
        
         /**
          * @private
-         * @param  {{vectorState: boolean}} payload
+         * @param {boolean} payload
          */
-        _handleVectorStateChange: function (payload) {
+        _handleVectorMaskModeChange: function (payload) {
             this._inVectorMode = payload;
 
             this.emit("change");

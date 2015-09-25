@@ -661,7 +661,7 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
-                return this.transfer(toolActions.changeVectorState, false);
+                return this.transfer(toolActions.changeVectorMaskMode, false);
             })
             .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
@@ -681,7 +681,7 @@ define(function (require, exports) {
     selectDocument.writes = [locks.JS_APP];
     selectDocument.transfers = ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
         ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides,
-        toolActions.changeVectorState];
+        toolActions.changeVectorMaskMode];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 

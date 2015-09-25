@@ -74,6 +74,19 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var installShapeDefaults = function (tool, strokeColor, strokeSize, strokeOpacity, fillColor) {
+        if (strokeColor === undefined) {
+            strokeColor = [157, 157, 157];
+        }
+        if (fillColor === undefined) {
+            fillColor = [217, 217, 217];
+        }
+        if (strokeOpacity === undefined) {
+            strokeOpacity = 100;
+        }
+        if (strokeSize === undefined) {
+            strokeSize = 2;
+        }
+
         var document = this.flux.store("application").getCurrentDocument(),
             defaultObj = toolLib.defaultShapeTool(tool, strokeColor, strokeSize, strokeOpacity, fillColor);
             
@@ -341,7 +354,7 @@ define(function (require, exports) {
             })
             .then(function () {
                 if (!nextTool.handleVectorMaskMode) {
-                    return this.dispatch(events.tool.VECTOR_STATE_CHANGE, false);
+                    return this.dispatch(events.tool.VECTOR_MASK_MODE_CHANGE, false);
                 }
                 return Promise.resolve();
             })
@@ -472,59 +485,64 @@ define(function (require, exports) {
         _vectorMaskHandler;
     
     /**
-     * Change the tool's vector mode
-     * This function will both dispatch a vector_state_changed event for the store
+     * Change the tool's vector mask mode
+     * This function will both dispatch a vector_mask_mode_changed event for the store
      * and modify the current tool in order to set its properties to mask mode. 
      * 
-     * @param {boolean} vectorState
+     * @param {boolean} vectorMaskMode
      * @return {Promise}
      */
-    var changeVectorState = function (vectorState) {
+    var changeVectorMaskMode = function (vectorMaskMode) {
         var flux = this.flux,
             toolStore = flux.store("tool"),
             prevVectorMode = toolStore.getVectorMode(),
-            vectorMode = vectorState,
             currentTool = toolStore.getCurrentTool(),
             firstLaunch = false;
 
-        if (prevVectorMode === vectorMode || !currentTool.handleVectorMaskMode) {
+        // entering Vector Mask Mode is only permitted while in a subset of our tools
+        if (prevVectorMode === vectorMaskMode || !currentTool.handleVectorMaskMode) {
             return Promise.resolve();
         }
 
         var appStore = flux.store("application"),
             currentDocument = appStore.getCurrentDocument(),
             currentLayers = currentDocument.layers.selected,
-            currentLayer = currentLayers.first(),
-            initPromise,
-            dispatchPromise;
+            currentLayer = currentLayers.first();
 
+        // vector mask mode requires an avtive layer
         if (!currentLayer) {
             return Promise.resolve();
         }
+
         var nonVectorModeLayer = (currentLayer.kind === currentLayer.layerKinds.BACKGROUND ||
                 currentLayer.kind === currentLayer.layerKinds.VECTOR);
 
-        if (vectorMode && nonVectorModeLayer) {
+        if (vectorMaskMode && nonVectorModeLayer) {
             return Promise.resolve();
         }
+
+        var initPromise,
+            dispatchPromise;
+
         if (!currentLayer.vectorMaskEnabled) {
             initPromise = descriptor.playObject(vectorMaskLib.createRevealAllMask());
             var payload = {
-                documentID: currentDocument.id,
-                layerIDs: Immutable.List.of(currentLayer.id),
-                vectorMaskEnabled: true
-            },
+                    documentID: currentDocument.id,
+                    layerIDs: Immutable.List.of(currentLayer.id),
+                    vectorMaskEnabled: true
+                },
                 dispatchAdd = this.dispatch(events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, payload),
-                dispatchToolMode = this.dispatch(events.tool.VECTOR_STATE_CHANGE, vectorMode);
+                dispatchToolMode = this.dispatch(events.tool.VECTOR_MASK_MODE_CHANGE, vectorMaskMode);
+
             dispatchPromise = Promise.join(dispatchAdd, dispatchToolMode);
         } else {
             initPromise = Promise.resolve();
-            dispatchPromise = this.dispatch(events.tool.VECTOR_STATE_CHANGE, vectorMode);
+            dispatchPromise = this.dispatch(events.tool.VECTOR_MASK_MODE_CHANGE, vectorMaskMode);
         }
 
         var toolMode = toolLib.toolModes.SHAPE;
 
-        if (vectorMode) {
+        if (vectorMaskMode) {
             toolMode = toolLib.toolModes.PATH;
         }
         
@@ -532,17 +550,13 @@ define(function (require, exports) {
             var setObj = toolLib.setShapeToolMode(toolMode),
                 resetPromise = descriptor.batchPlayObjects([setObj]);
 
-            
-            if (!vectorMode && firstLaunch) {
-                var fillColor = [217, 217, 217],
-                    strokeColor = [157, 157, 157];
-
+            if (!vectorMaskMode && firstLaunch) {
                 var defaultPromise = this.transfer(installShapeDefaults,
-                    currentTool.nativeToolName(), strokeColor, 2, 100, fillColor);
+                    currentTool.nativeToolName());
 
                 firstLaunch = false;
                 return Promise.join(initPromise, defaultPromise, resetPromise, dispatchPromise);
-            } else if (!vectorMode) {
+            } else if (!vectorMaskMode) {
                 return Promise.join(initPromise, resetPromise, dispatchPromise);
             } else {
                 return Promise.join(initPromise, resetPromise, dispatchPromise)
@@ -559,7 +573,7 @@ define(function (require, exports) {
                 });
             }
         } else if (currentTool.id === "newSelect" || currentTool.id === "superselectVector") {
-            if (!vectorMode) {
+            if (!vectorMaskMode) {
                 return this.transfer(selectTool, toolStore.getToolByID("newSelect"))
                 .then(function () {
                     return Promise.join(initPromise, dispatchPromise);
@@ -576,21 +590,19 @@ define(function (require, exports) {
                     descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
                         { synchronous: false });
                 })
+                .bind(this)
                 .then(function () {
                     var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
                         OS.eventKind.LEFT_MOUSE_DOWN);
-                    return this.transfer(policy.addPointerPolicies, pointerPolicy);
-                })
-                .catch(function () {
-                    // Silence the errors here
+                    return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
                 });
             }
         }
     };
-    changeVectorState.reads = [];
-    changeVectorState.writes = [locks.JS_TOOL];
-    changeVectorState.modal = true;
-    changeVectorState.transfers = [selectTool];
+    changeVectorMaskMode.reads = [locks.JS_APP, locks.JS_TOOL];
+    changeVectorMaskMode.writes = [locks.JS_TOOL];
+    changeVectorMaskMode.modal = true;
+    changeVectorMaskMode.transfers = [selectTool, policy.addPointerPolicies];
 
     /**
      * Register event listeners for native tool selection change events, register
@@ -643,7 +655,7 @@ define(function (require, exports) {
             var toolStore = this.flux.store("tool"),
                 vectorMode = toolStore.getVectorMode() || false;
             
-            return this.transfer(changeVectorState, !vectorMode);
+            return this.transfer(changeVectorMaskMode, !vectorMode);
         }.bind(this);
 
         var vectorMaskPromise = this.transfer(shortcuts.addShortcut,
@@ -664,7 +676,7 @@ define(function (require, exports) {
     beforeStartup.modal = true;
     beforeStartup.reads = [locks.JS_APP, locks.JS_TOOL];
     beforeStartup.writes = [locks.PS_TOOL];
-    beforeStartup.transfers = [shortcuts.addShortcut, initTool, changeModalState, changeVectorState];
+    beforeStartup.transfers = [shortcuts.addShortcut, initTool, changeModalState, changeVectorMaskMode];
 
     /**
      * Remove event handlers.
@@ -685,7 +697,7 @@ define(function (require, exports) {
     onReset.writes = [];
     onReset.transfers = [shortcuts.removeShortcut];
 
-    exports.changeVectorState = changeVectorState;
+    exports.changeVectorMaskMode = changeVectorMaskMode;
     exports.installShapeDefaults = installShapeDefaults;
     exports.resetBorderPolicies = resetBorderPolicies;
     exports.select = selectTool;

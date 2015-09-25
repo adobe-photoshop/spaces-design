@@ -126,7 +126,7 @@ define(function (require, exports, module) {
         tool: {
             SELECT_TOOL: "selectTool",
             MODAL_STATE_CHANGE: "modalStateChange",
-            VECTOR_STATE_CHANGE: "vectorStateChange"
+            VECTOR_MASK_MODE_CHANGE: "vectorMaskModeChange"
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated",

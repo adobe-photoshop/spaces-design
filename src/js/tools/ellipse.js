@@ -59,16 +59,13 @@ define(function (require, exports, module) {
         var setPromise = descriptor.playObject(setObj);
 
         if (!vectorMode && firstLaunch) {
-            var fillColor = [217, 217, 217],
-                strokeColor = [157, 157, 157];
-
             var defaultPromise = this.transfer(toolActions.installShapeDefaults,
-                "ellipseTool", strokeColor, 2, 100, fillColor);
+                "ellipseTool");
 
             firstLaunch = false;
             return Promise.join(defaultPromise, setPromise);
         } else if (!vectorMode) {
-            return Promise.join(setPromise);
+            return setPromise;
         } else {
             return setPromise
             .then(function () {

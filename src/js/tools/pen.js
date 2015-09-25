@@ -61,7 +61,8 @@ define(function (require, exports, module) {
         };
 
         var optionsObj = toolLib.setToolOptions("penTool", toolOptions),
-            setPromise = descriptor.playObject(toolLib.setShapeToolMode(toolMode)).then(function () {
+            setPromise = descriptor.playObject(toolLib.setShapeToolMode(toolMode))
+                .then(function () {
                     return descriptor.playObject(optionsObj);
                 });
            

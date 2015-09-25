@@ -810,7 +810,7 @@ define(function (require, exports) {
                         return Promise.join(resetPromise, revealPromise);
                     }
                 }).then(function () {
-                    return this.transfer(tools.changeVectorState, false);
+                    return this.transfer(tools.changeVectorMaskMode, false);
                 });
 
         var modelUpdatePromise = Promise.join(dispatchPromise, selectPromise)
@@ -825,7 +825,7 @@ define(function (require, exports) {
     select.reads = [];
     select.writes = [locks.PS_DOC, locks.JS_DOC];
     select.transfers = [revealLayers, resetSelection, tools.resetBorderPolicies,
-        initializeLayers, tools.changeVectorState];
+        initializeLayers, tools.changeVectorMaskMode];
     select.post = [_verifyLayerSelection];
 
     /**
