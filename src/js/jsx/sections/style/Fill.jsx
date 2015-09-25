@@ -30,8 +30,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var Color = require("js/models/color"),
-        ColorInput = require("jsx!js/jsx/shared/ColorInput"),
+    var ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
@@ -168,12 +167,9 @@ define(function (require, exports, module) {
          * @param {boolean} isChecked
          */
         _toggleFillEnabled: function (event, isChecked) {
-            var color = this.props.fill && collection.uniformValue(this.props.fill.colors) || Color.DEFAULT;
-
             this.getFlux().actions.shapes.setFillEnabled(
                 this.props.document,
                 this.props.layers,
-                color,
                 { enabled: isChecked }
             );
         },

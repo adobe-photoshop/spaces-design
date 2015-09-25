@@ -225,15 +225,12 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {Color} color color of the strokes, since photoshop does not provide a way to simply enable a stroke
      * @param {object} options
      * @param {boolean=} options.enabled
      * @return {Promise}
      */
-    var setStrokeEnabled = function (document, layers, color, options) {
-        // TODO is it reasonable to not require a color, but instead to derive it here based on the selected layers?
-        // the only problem with that is having to define a default color here if none can be derived
-        return setStrokeColor.call(this, document, layers, color, options);
+    var setStrokeEnabled = function (document, layers, options) {
+        return setStrokeColor.call(this, document, layers, null, options);
     };
     setStrokeEnabled.reads = [];
     setStrokeEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -247,7 +244,7 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {Color} color
+     * @param {Color?} color
      * @param {object} options
      * @param {boolean=} options.enabled optional enabled flag, default=true.
      *                                  If supplied, causes a resetBounds afterwards
@@ -272,16 +269,12 @@ define(function (require, exports) {
             enabledChanging = true;
         }
 
-        // remove the alpha component based on ignoreAlpha param
-        var psColor = color.toJS();
-        if (options.ignoreAlpha) {
-            delete psColor.a;
-        }
-
-        var layerRef = contentLayerLib.referenceBy.current,
-            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, options.enabled ? psColor : null);
-
         options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE_COLOR);
+
+        var colorPromise,
+            psColor,
+            strokeObj,
+            layerRef = contentLayerLib.referenceBy.current;
 
         if (_allStrokesExist(layers)) {
             // optimistically dispatch the change event    
@@ -292,17 +285,55 @@ define(function (require, exports) {
                 eventName,
                 options.coalesce);
 
-            var colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+            
+            if (!color && options.enabled) {
+                // If color is not supplied, we use existing color from our model
+                var actions = layers.map(function (layer) {
+                    psColor = layer.stroke.color.toJS();
 
+                    if (options.ignoreAlpha) {
+                        delete psColor.a;
+                    }
+
+                    var layerRef = contentLayerLib.referenceBy.id(layer.id),
+                        setStrokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, psColor);
+
+                    return {
+                        layer: layer,
+                        playObject: setStrokeObj
+                    };
+                }, this);
+
+                colorPromise = layerActionsUtil.playLayerActions(document, actions, true, options);
+            } else {
+                // remove the alpha component based on ignoreAlpha param
+                psColor = color ? color.toJS() : null;
+                if (psColor && options.ignoreAlpha) {
+                    delete psColor.a;
+                }
+                
+                strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, options.enabled ? psColor : null);
+                colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+            }
+            
             // after both, if enabled has potentially changed, transfer to resetBounds
             return Promise.join(dispatchPromise,
-                    colorPromise,
-                    function () {
-                        if (enabledChanging) {
-                            return this.transfer(layerActions.resetBounds, document, layers);
-                        }
-                    }.bind(this));
+                colorPromise,
+                function () {
+                    if (enabledChanging) {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }
+                }.bind(this));
         } else {
+            // remove the alpha component based on ignoreAlpha param
+            psColor = color ? color.toJS() : null;
+            
+            if (psColor && options.ignoreAlpha) {
+                delete psColor.a;
+            }
+
+            strokeObj = contentLayerLib.setStrokeFillTypeSolidColor(layerRef, options.enabled ? psColor : null);
+            
             return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
                 .bind(this)
                 .then(function () {
@@ -446,18 +477,17 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {Color} color
      * @param {object} options
      * @param {boolean=} options.enabled
      * @return {Promise}
      */
-    var setFillEnabled = function (document, layers, color, options) {
+    var setFillEnabled = function (document, layers, options) {
         options = _.merge(options, {
             coalesce: false,
             ignoreAlpha: false
         });
 
-        return setFillColor.call(this, document, layers, color, options);
+        return setFillColor.call(this, document, layers, null, options);
     };
     setFillEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
     setFillEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
@@ -483,27 +513,43 @@ define(function (require, exports) {
 
         // dispatch the change event    
         var dispatchPromise = _fillChangeDispatch.call(this,
-            document,
-            layers,
-            { color: color, enabled: options.enabled, ignoreAlpha: options.ignoreAlpha },
-            events.document.history.optimistic.FILL_COLOR_CHANGED,
-            options.coalesce);
+                document,
+                layers,
+                { color: color, enabled: options.enabled, ignoreAlpha: options.ignoreAlpha },
+                events.document.history.optimistic.FILL_COLOR_CHANGED,
+                options.coalesce),
+            colorPromise;
 
-        // build the playObject
-        var contentLayerRef = contentLayerLib.referenceBy.current,
-            layerRef = layerLib.referenceBy.current,
-            fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, options.enabled ? color : null);
-            
         options = _mergeOptions(options, document, strings.ACTIONS.SET_FILL_COLOR);
 
-        // submit to Ps
-        var colorPromise;
-        if (options.enabled && !options.ignoreAlpha) {
-            var fillOpacityObj = layerLib.setFillOpacity(layerRef, color.opacity);
-            colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, [fillColorObj, fillOpacityObj],
-                true, options);
+        if (!color && options.enabled) {
+            // If color is not supplied, we want each layer to use it's own color
+            var actions = layers.map(function (layer) {
+                var layerRef = contentLayerLib.referenceBy.id(layer.id),
+                    setFillObj = contentLayerLib.setShapeFillTypeSolidColor(layerRef, layer.fill.color);
+
+                return {
+                    layer: layer,
+                    playObject: setFillObj
+                };
+            }, this);
+
+            colorPromise = layerActionsUtil.playLayerActions(document, actions, true, options);
         } else {
-            colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, fillColorObj, true, options);
+            // build the playObject
+            var contentLayerRef = contentLayerLib.referenceBy.current,
+                layerRef = layerLib.referenceBy.current,
+                fillColor = options.enabled ? color : null,
+                fillColorObj = contentLayerLib.setShapeFillTypeSolidColor(contentLayerRef, fillColor);
+                
+            // submit to Ps
+            if (options.enabled && !options.ignoreAlpha) {
+                var fillOpacityObj = layerLib.setFillOpacity(layerRef, color.opacity);
+                colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, [fillColorObj, fillOpacityObj],
+                    true, options);
+            } else {
+                colorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, fillColorObj, true, options);
+            }
         }
 
         return Promise.join(dispatchPromise, colorPromise);
