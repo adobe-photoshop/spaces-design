@@ -30,14 +30,24 @@
             "PASTE_LAYER_STYLE": "v",
             "SEARCH": "f"
         },
+        "LAYER": {
+            "CREATE_ARTBOARD": "b",
+            "DUPLICATE": "j"
+        },
         "ARRANGE": {
             "FLIP_HORIZONTAL": "/",
             "FLIP_VERTICAL": "/",
             "SWAP_POSITION": "/",
+            "SHOW_LAYER": ",",
+            "HIDE_LAYER": ",",
             "LOCK_LAYER": "l",
             "UNLOCK_LAYER": "l",
             "GROUP_LAYERS": "g",
-            "UNGROUP_LAYERS": "g"
+            "UNGROUP_LAYERS": "g",
+            "BRING_TO_FRONT": "]",
+            "BRING_FORWARD": "]",
+            "SEND_BACKWARD": "[",
+            "SEND_TO_BACK": "["
         },
         "VIEW": {
             "ZOOM_IN": "+",
@@ -46,8 +56,8 @@
             "ACTUAL_SIZE": "1",
             "ZOOM_TO_SELECTION": "2",
             "CENTER_SELECTION": "3",
-            "TOGGLE_SMART_GUIDES": ",",
-            "TOGGLE_GUIDES": ","
+            "TOGGLE_SMART_GUIDES": ";",
+            "TOGGLE_GUIDES": ";"
         },
         "WINDOW": {
             "NEXT_DOCUMENT": "`",
@@ -55,7 +65,7 @@
         },
         "HELP": {
             "RUN_TESTS": "?",
-            "UPDATE_CURRENT_DOCUMENT": ",",
+            "UPDATE_CURRENT_DOCUMENT": ";",
             "RESET_RECESS": "ESCAPE"
         }
     },
