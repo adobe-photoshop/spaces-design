@@ -33,8 +33,7 @@ define(function (require, exports, module) {
         Radii = require("./radii"),
         Stroke = require("./stroke"),
         Fill = require("./fill"),
-        Shadow = require("./shadow"),
-        LayerEffect = require("./layereffect"),
+        LayerEffect = require("./effects/layereffect"),
         Text = require("./text");
 
     /**
@@ -301,6 +300,22 @@ define(function (require, exports, module) {
         },
         
         /**
+         * Return all color overlays.
+         * @type {Immutable.List<?ColorOverlay>}
+         */
+        colorOverlays: function () {
+            return this.effects.get("colorOverlay");
+        },
+        
+        /**
+         * Return all stroke effects.
+         * @type {Immutable.List<?Stroke>}
+         */
+        strokeEffects: function () {
+            return this.effects.get("stroke");
+        },
+        
+        /**
          * True if the layer has layer effect.
          * @type {boolean}  
          */
@@ -368,20 +383,6 @@ define(function (require, exports, module) {
         var nextEffects = this.effects.set(layerEffectType, layerEffects);
         
         return this.set("effects", nextEffects);
-    };
-
-    /**
-     * Static method to generate the appropriate LayerEffect based on a provided type
-     *
-     * @param {string} layerEffectType
-     * @return {Shadow}  instance of a layer effect such as a Shadow
-     */
-    Layer.newLayerEffectByType = function (layerEffectType) {
-        if (!LayerEffect.TYPES.has(layerEffectType)) {
-            throw new Error("Invalid layer effect type: " + layerEffectType);
-        }
-        
-        return LayerEffect.SHADOW_TYPES.has(layerEffectType) ? new Shadow() : new LayerEffect();
     };
 
     /**

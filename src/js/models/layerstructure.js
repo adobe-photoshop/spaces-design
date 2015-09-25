@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var Immutable = require("immutable");
 
     var Layer = require("./layer"),
-        LayerEffect = require("./layereffect"),
+        LayerEffect = require("./effects/layereffect"),
         LayerNode = require("./layernode"),
         Stroke = require("./stroke"),
         Bounds = require("./bounds"),
@@ -1516,7 +1516,7 @@ define(function (require, exports, module) {
 
             newProps = Immutable.List.isList(layerEffectProperties) ?
                 layerEffectProperties.get(index) : layerEffectProperties;
-            layerEffect = layerEffects.get(_layerEffectIndex) || Layer.newLayerEffectByType(layerEffectType);
+            layerEffect = layerEffects.get(_layerEffectIndex) || LayerEffect.newEffectByType(layerEffectType);
             nextLayerEffect = layerEffect.merge(newProps);
             nextLayer = layer.setLayerEffectByType(layerEffectType, _layerEffectIndex, nextLayerEffect)
                 .set("usedToHaveLayerEffect", true);

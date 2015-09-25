@@ -31,14 +31,17 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         classnames = require("classnames");
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        LayerEffect = require("js/models/effects/layereffect");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),
-        DropShadowList = require("jsx!./Shadow").DropShadowList,
-        InnerShadowList = require("jsx!./Shadow").InnerShadowList,
+        DropShadowList = require("jsx!./ShadowList").DropShadowList,
+        InnerShadowList = require("jsx!./ShadowList").InnerShadowList,
+        ColorOverlayList = require("jsx!./ColorOverlayList"),
+        StrokeList = require("jsx!./StrokeList"),
         UnsupportedEffectList = require("jsx!./UnsupportedEffectList"),
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization");
@@ -163,24 +166,15 @@ define(function (require, exports, module) {
         /**
          * Adds a new effect based on selection from list
          *
-         * @param {string} effectName for new effect to be added        
+         * @param {string} effectType for new effect to be added        
          * @param {Event} event
          */
-        _handleEffectListClick: function (effectName, event) {
+        _handleEffectListClick: function (effectType, event) {
             var dialog = this.refs.dialog,
                 layers = this.props.document.layers.selected;
-                
+
             dialog.toggle(event);
-                
-            switch (effectName) {
-                case "Inner Shadow":
-                    this.getFlux().actions.layerEffects.addShadow(this.props.document, layers, "innerShadow");
-                    break;
-                
-                case "Drop Shadow":
-                    this.getFlux().actions.layerEffects.addShadow(this.props.document, layers, "dropShadow");
-                    break;
-            }
+            this.getFlux().actions.layerEffects.addEffect(this.props.document, layers, effectType);
         },
 
         render: function () {
@@ -201,16 +195,12 @@ define(function (require, exports, module) {
                 "section__sibling-collapsed": !this.props.visibleSibling
             });
 
-            var backgroundLayer = this.props.document &&
-                    this.props.document.layers.selected.some(function (layer) {
-                        return layer.isBackground;
-                    }),
-                addStyleDisabled = this.props.disabled || backgroundLayer,
-                copyStyleDisabled = this.props.disabled || backgroundLayer ||
-                    !(this.props.document && this.props.document.layers.selected.size === 1),
-                pasteStyleDisabled = this.props.disabled || backgroundLayer ||
-                    !(this.state.clipboard && this.props.document &&
-                    this.props.document.layers.selected.size > 0),
+            var selectedLayers = this.props.document ? this.props.document.layers.selected : new Immutable.List(),
+                hasBackgroundLayer = selectedLayers.some(function (l) { return l.isBackground; }),
+                addStyleDisabled = this.props.disabled || hasBackgroundLayer || selectedLayers.size === 0,
+                copyStyleDisabled = this.props.disabled || hasBackgroundLayer || selectedLayers.size !== 1,
+                pasteStyleDisabled = this.props.disabled || hasBackgroundLayer ||
+                    !(this.state.clipboard && selectedLayers.size > 0),
                 addStyleClasses = classnames({
                     "style-button": true,
                     "style-button__disabled": addStyleDisabled
@@ -226,10 +216,18 @@ define(function (require, exports, module) {
 
             var containerContents = this.props.document && this.props.visible && !this.props.disabled && (
                 <div>
-                    <DropShadowList {...this.props}
+                    <StrokeList
+                        document={this.props.document}
+                        layers={this.props.document.layers.selected}
+                        disabled={this.props.disabled}/>
+                    <ColorOverlayList
+                        document={this.props.document}
+                        layers={this.props.document.layers.selected}
+                        disabled={this.props.disabled}/>
+                    <InnerShadowList {...this.props}
                         onFocus={this._handleFocus}
                         max={MAX_EFFECT_COUNT} />
-                    <InnerShadowList {...this.props}
+                    <DropShadowList {...this.props}
                         onFocus={this._handleFocus}
                         max={MAX_EFFECT_COUNT} />
                     <UnsupportedEffectList
@@ -287,12 +285,20 @@ define(function (require, exports, module) {
                         className={"dialog-effects-popover"}>
                         <ul className="popover-list">
                             <li className="popover-list__item"
-                                onClick={this._handleEffectListClick.bind(this, "Drop Shadow")}>
-                                {strings.STYLE.DROP_SHADOW.TITLE_SINGLE}
+                                onClick={this._handleEffectListClick.bind(this, LayerEffect.STROKE)}>
+                                {strings.STYLE.STROKE_EFFECT.TITLE_SINGLE}
                             </li>
                             <li className="popover-list__item"
-                                onClick={this._handleEffectListClick.bind(this, "Inner Shadow")}>
+                                onClick={this._handleEffectListClick.bind(this, LayerEffect.COLOR_OVERLAY)}>
+                                {strings.STYLE.COLOR_OVERLAY.TITLE_SINGLE}
+                            </li>
+                            <li className="popover-list__item"
+                                onClick={this._handleEffectListClick.bind(this, LayerEffect.INNER_SHADOW)}>
                                 {strings.STYLE.INNER_SHADOW.TITLE_SINGLE}
+                            </li>
+                            <li className="popover-list__item"
+                                onClick={this._handleEffectListClick.bind(this, LayerEffect.DROP_SHADOW)}>
+                                {strings.STYLE.DROP_SHADOW.TITLE_SINGLE}
                             </li>
                         </ul>
                     </Dialog>

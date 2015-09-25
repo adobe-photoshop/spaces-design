@@ -30,14 +30,16 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         classnames = require("classnames"),
         _ = require("lodash");
+        
+    var LayerEffect = require("js/models/effects/layereffect"),
+        collection = require("js/util/collection"),
+        strings = require("i18n!nls/strings");
 
     var Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         BlendMode = require("jsx!./BlendMode"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
-        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection");
+        ToggleButton = require("jsx!js/jsx/shared/ToggleButton");
 
     var MIN_SPREAD = 0,
         MAX_SPREAD = 100,
@@ -70,8 +72,8 @@ define(function (require, exports) {
          */
         _colorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setShadowColorThrottled(this.props.document, this.props.layers,
-                    this.props.index, color, coalesce, false, this.props.type);
+                .setColorThrottled(this.props.document, this.props.layers,
+                    this.props.type, this.props.index, color, coalesce, false);
         },
 
         /**
@@ -83,8 +85,8 @@ define(function (require, exports) {
          */
         _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setShadowColorThrottled(this.props.document, this.props.layers,
-                    this.props.index, color, coalesce, true, this.props.type);
+                .setColorThrottled(this.props.document, this.props.layers,
+                    this.props.type, this.props.index, color, coalesce, true);
         },
 
         /**
@@ -96,8 +98,8 @@ define(function (require, exports) {
          */
         _alphaChanged: function (color, coalesce) {
             this.getFlux().actions.layerEffects
-                .setShadowAlphaThrottled(this.props.document, this.props.layers,
-                    this.props.index, color.a, coalesce, this.props.type);
+                .setAlphaThrottled(this.props.document, this.props.layers,
+                    this.props.type, this.props.index, color.a, coalesce);
         },
 
         /**
@@ -210,7 +212,7 @@ define(function (require, exports) {
          */
         _blendModeChanged: function (blendMode) {
             this.getFlux().actions.layerEffects
-                .setShadowBlendModeThrottled(this.props.document,
+                .setBlendModeThrottled(this.props.document,
                     this.props.layers,
                     this.props.index,
                     blendMode,
@@ -220,17 +222,19 @@ define(function (require, exports) {
         /**
          * Handle the change of the Shadow enabled state
          *
+         * @private
          * @param {SyntheticEvent} event
          * @param {boolean} enabled new enabled state
          */
         _enabledChanged: function (event, enabled) {
-            this.getFlux().actions.layerEffects.setShadowEnabled(
+            this.getFlux().actions.layerEffects.setEffectEnabled(
                 this.props.document, this.props.layers, this.props.index, enabled, this.props.type);
         },
 
         /**
          * Handle the deletion of the Shadow
          *
+         * @private
          */
         _handleDelete: function () {
             this.getFlux().actions.layerEffects.deleteEffect(
@@ -259,9 +263,9 @@ define(function (require, exports) {
 
         /** @ignore */
         _stringHelper: function (dropString, innerString) {
-            if (this.props.type === "dropShadow") {
+            if (this.props.type === LayerEffect.DROP_SHADOW) {
                 return dropString;
-            } else if (this.props.type === "innerShadow") {
+            } else if (this.props.type === LayerEffect.INNER_SHADOW) {
                 return innerString;
             } else {
                 return "error";
@@ -300,22 +304,7 @@ define(function (require, exports) {
                     strings.STYLE.INNER_SHADOW.SPREAD);
 
             var type = this.props.type,
-                shadowOverlay = function (colorTiny) {
-                    var fillStyle = {
-                        height: "100%",
-                        width: "100%",
-                        backgroundColor: colorTiny ? colorTiny.toRgbString() : "transparent"
-                    };
-
-                    return (
-                        <div
-                            className="fill__preview"
-                            style={fillStyle}/>
-                    );
-                };
-
-            // Dialog IDs
-            var blendModelistID = "shadow-blendmodes-" + type + this.props.index + "-" + this.props.document.id,
+                blendModelistID = "shadow-blendmodes-" + type + this.props.index + "-" + this.props.document.id,
                 colorInputID = "shadow-" + type + "-" + this.props.index + "-" + this.props.document.id;
 
             return (
@@ -324,7 +313,6 @@ define(function (require, exports) {
                         <div className="control-group control-group__vertical">
                             <ColorInput
                                 id={colorInputID}
-                                className={"shadow"}
                                 context={collection.pluck(this.props.layers, "id")}
                                 title={shadowColorTooltip}
                                 editable={!this.props.readOnly}
@@ -332,9 +320,7 @@ define(function (require, exports) {
                                 onChange={this._colorChanged}
                                 onFocus={this.props.onFocus}
                                 onColorChange={this._opaqueColorChanged}
-                                onAlphaChange={this._alphaChanged}
-                                swatchOverlay={shadowOverlay}>
-                            </ColorInput>
+                                onAlphaChange={this._alphaChanged}/>
                         </div>
                         <div className="column-21 control-group__horizontal__left">
                             <BlendMode
@@ -345,15 +331,26 @@ define(function (require, exports) {
                                 size="column-19"
                                 onChange={this._blendModeChanged} />
                         </div>
-                        <ToggleButton
-                            title={shadowToggleTooltip}
-                            name="toggleShadowEnabled"
-                            buttonType="layer-not-visible"
-                            selected={downsample.enabledFlags}
-                            selectedButtonType={"layer-visible"}
-                            onFocus={this.props.onFocus}
-                            onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
-                            size="column-2" />
+                        <div className="button-toggle-list">
+                            <ToggleButton
+                                title={shadowToggleTooltip}
+                                name="toggleShadowEnabled"
+                                buttonType="layer-not-visible"
+                                selected={downsample.enabledFlags}
+                                selectedButtonType={"layer-visible"}
+                                onFocus={this.props.onFocus}
+                                onClick={!this.props.readOnly ? this._enabledChanged : _.noop}
+                                size="column-2" />
+                            <ToggleButton
+                                title={shadowDeleteTooltip}
+                                name="deleteDropShadowEnabled"
+                                buttonType="delete"
+                                className="delete"
+                                selected={true}
+                                onFocus={this.props.onFocus}
+                                onClick={!this.props.readOnly ? this._handleDelete : _.noop}
+                                size="column-2" />
+                        </div>
                     </div>
                     <div className="formline formline__no-padding">
                         <Label
@@ -406,15 +403,6 @@ define(function (require, exports) {
                                 max={MAX_SPREAD}
                                 size="column-3" />
                         </div>
-                        <ToggleButton
-                            title={shadowDeleteTooltip}
-                            name="deleteDropShadowEnabled"
-                            buttonType="delete"
-                            className="delete"
-                            selected={true}
-                            onFocus={this.props.onFocus}
-                            onClick={!this.props.readOnly ? this._handleDelete : _.noop}
-                            size="column-2" />
                     </div>
                 </div>
             );
@@ -429,15 +417,6 @@ define(function (require, exports) {
 
         propTypes: {
             max: React.PropTypes.number
-        },
-
-        /**
-         * Handle a NEW Drop Shadow
-         *
-         * @private
-         */
-        _addDropShadow: function (layers) {
-            this.getFlux().actions.layerEffects.addShadow(this.props.document, layers, "dropShadow");
         },
 
         render: function () {
@@ -464,13 +443,15 @@ define(function (require, exports) {
                 
                 shadowsContent = shadowGroups.map(function (dropShadows, index) {
                     return (
-                        <Shadow {...this.props}
+                        <Shadow
+                            document={this.props.document}
+                            onFocus={this.props.onFocus}
                             layers={layers}
                             key={index}
                             index={index}
                             readOnly={this.props.disabled}
                             shadows={dropShadows}
-                            type="dropShadow" />
+                            type={LayerEffect.DROP_SHADOW} />
                     );
                 }, this).toList();
             } else {
@@ -510,15 +491,6 @@ define(function (require, exports) {
             max: React.PropTypes.number
         },
 
-        /**
-         * Handle a NEW Drop Shadow
-         *
-         * @private
-         */
-        _addInnerShadow: function (layers) {
-            this.getFlux().actions.layerEffects.addShadow(this.props.document, layers, "innerShadow");
-        },
-
         render: function () {
             var document = this.props.document,
                 layers = document.layers.selected.filter(function (layer) {
@@ -551,7 +523,7 @@ define(function (require, exports) {
                             index={index}
                             readOnly={this.props.disabled}
                             shadows={innerShadows}
-                            type="innerShadow" />
+                            type={LayerEffect.INNER_SHADOW} />
                     );
                 }, this).toList();
             } else {

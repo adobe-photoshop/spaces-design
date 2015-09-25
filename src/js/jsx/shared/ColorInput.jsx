@@ -52,6 +52,20 @@ define(function (require, exports, module) {
         { key: os.eventKeyCode.ENTER, modifiers: null },
         { key: os.eventKeyCode.TAB, modifiers: null }
     ];
+    
+    /**
+     * Default callback to return swatch overlay preview.
+     *
+     * @private
+     * @type {func}
+     */
+    var _DEFAULT_SWATCH_OVERLAY = function (colorTiny) {
+        var fillStyle = {
+            backgroundColor: colorTiny ? colorTiny.toRgbString() : "transparent"
+        };
+
+        return (<div className="fill__preview" style={fillStyle}/>);
+    };
 
     var ColorSwatch = React.createClass({
         mixins: [FluxMixin, Focusable],
@@ -350,7 +364,9 @@ define(function (require, exports, module) {
             // swatch
             swatchClassSet = classnames(swatchClassProps);
 
-            var overlay = this.props.swatchOverlay(colorTiny, !this.props.editable);
+            var swatchOverlayFunc = this.props.swatchOverlay || _DEFAULT_SWATCH_OVERLAY,
+                overlay = swatchOverlayFunc(colorTiny, !this.props.editable),
+                dialogClasses = classnames("color-picker", this.props.className);
 
             return (
                 <div className={swatchClassSet}>
@@ -365,7 +381,7 @@ define(function (require, exports, module) {
                     <Dialog
                         ref="dialog"
                         id={this._getID()}
-                        className={"color-picker__" + this.props.className}
+                        className={dialogClasses}
                         disabled={!this.props.editable}
                         onOpen={this._handleDialogOpen}
                         onClose={this._handleDialogClose}

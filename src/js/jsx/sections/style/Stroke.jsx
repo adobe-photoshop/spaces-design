@@ -182,6 +182,17 @@ define(function (require, exports, module) {
             this.getFlux().actions.shapes
                 .setStrokeColorThrottled(this.props.document, this.state.layers, color, options);
         },
+        
+        /**
+         * Handle the change of the stroke alignment
+         *
+         * @private
+         * @param {string} alignment         
+         */
+        _alignmentChanged: function (alignment) {
+            this.getFlux().actions.shapes
+                .setStrokeAlignmentThrottled(this.props.document, this.props.layers, alignment);
+        },
 
         /**
          * Produce a set of arrays of separate stroke display properties, transformed and ready for the sub-components
@@ -297,7 +308,8 @@ define(function (require, exports, module) {
                             document={this.props.document}
                             layers={this.state.layers}
                             disabled={this.props.disabled}
-                            alignments={stroke.alignments} />
+                            alignments={stroke.alignments}
+                            onChange={this._alignmentChanged} />
                     </div>
                     <div className="control-group__vertical control-group__no-label">
                         {toggleVisibilityButton}
