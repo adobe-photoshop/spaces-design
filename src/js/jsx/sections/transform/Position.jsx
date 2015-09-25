@@ -64,10 +64,13 @@ define(function (require, exports, module) {
          * @param {number} newX
          */
         _handleLeftChange: function (event, newX) {
-            var document = this.props.document;
+            var document = this.props.document,
+                positionObj = {
+                    x: newX,
+                    relative: true
+                };
             
-            this.getFlux().actions.transform
-                .setPositionThrottled(document, document.layers.selected, { x: newX }, true);
+            this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected, positionObj);
         },
 
         /**
@@ -78,10 +81,14 @@ define(function (require, exports, module) {
          * @param {number} newY
          */
         _handleTopChange: function (event, newY) {
-            var document = this.props.document;
+            var document = this.props.document,
+                positionObj = {
+                    y: newY,
+                    relative: true
+                };
             
             this.getFlux().actions.transform
-                .setPositionThrottled(document, document.layers.selected, { y: newY }, true);
+                .setPositionThrottled(document, document.layers.selected, positionObj);
         },
 
         /**

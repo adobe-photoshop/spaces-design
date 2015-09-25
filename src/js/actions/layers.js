@@ -1412,12 +1412,20 @@ define(function (require, exports) {
      * Reset the layer z-index. Assumes that all layers are already in the model,
      * though possibly out of order w.r.t. Photoshop's model.
      *
-     * @param {Document} document Document for which layers should be reordered
+     * @param {Document=} document Document for which layers should be reordered, if undefined, use current document
      * @param {boolean=} suppressHistory if truthy, dispatch a non-history-changing event.
      * @param {boolean=} amendHistory if truthy, update the current state (requires suppressHistory)
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      **/
     var resetIndex = function (document, suppressHistory, amendHistory) {
+        if (typeof document === "undefined") {
+            document = this.flux.store("application").getCurrentDocument();
+
+            if (!document) {
+                return Promise.resolve();
+            }
+        }
+        
         return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
