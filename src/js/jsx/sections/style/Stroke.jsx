@@ -108,7 +108,6 @@ define(function (require, exports, module) {
             this.getFlux().actions.shapes.setStrokeEnabled(
                 this.props.document,
                 this.state.layers,
-                this.state.stroke && this.state.stroke.colors.first() || Color.DEFAULT,
                 { enabled: isChecked }
             );
         },
