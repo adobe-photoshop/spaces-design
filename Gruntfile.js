@@ -108,6 +108,7 @@ module.exports = function (grunt) {
             src: [
                 "*.js",
                 "*.json",
+                "src/**/*.json",
                 "src/**/*.jsx",
                 "src/**/*.js"
             ],
