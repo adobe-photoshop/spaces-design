@@ -193,8 +193,19 @@ define(function (require, exports, module) {
 
         /** @ignore */
         _handleColumnVisibilityToggle: function (columnName) {
-            var nextState = {};
-            nextState[columnName] = !this.state[columnName];
+            var nextState = {},
+                uiStore = this.getFlux().store("ui"),
+                components = uiStore.components,
+                flux = this.getFlux(),
+                modifierStore = flux.store("modifier"),
+                modifierState = modifierStore.getState();
+                
+            if (modifierState.command) {
+                nextState[components.LAYERS_LIBRARY_COL] = !this.state[components.LAYERS_LIBRARY_COL];
+                nextState[components.PROPERTIES_COL] = !this.state[components.PROPERTIES_COL];
+            } else {
+                nextState[columnName] = !this.state[columnName];
+            }
 
             this.getFlux().actions.preferences.setPreferences(nextState);
             this.setState(nextState);
