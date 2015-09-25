@@ -141,10 +141,7 @@ define(function (require, exports) {
                 // If source has no effects, it clears out target
                 result.push({
                     type: "layerEffects",
-                    value: {
-                        innerShadows: source.innerShadows,
-                        dropShadows: source.dropShadows
-                    }
+                    value: source.effects
                 });
 
                 // If source is a smart object, and all targets are smart object
@@ -497,10 +494,7 @@ define(function (require, exports) {
         
         var payload = {
             style: {
-                effects: {
-                    innerShadows: source.innerShadows,
-                    dropShadows: source.dropShadows
-                },
+                effects: source.effects,
                 fillColor: fillColor,
                 stroke: stroke,
                 typeStyle: typeStyle

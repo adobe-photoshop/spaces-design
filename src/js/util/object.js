@@ -97,13 +97,12 @@ define(function (require, exports) {
                 // https://github.com/facebook/immutable-js/issues/257
                 if (this.wasAltered()) {
                     delete this[privatePropName];
-                    return getter.apply(this, arguments);
-                } else {
-                    if (!this.hasOwnProperty(privatePropName)) {
-                        this[privatePropName] = getter.apply(this, arguments);
-                    }
-                    return this[privatePropName];
                 }
+                
+                if (!this.hasOwnProperty(privatePropName)) {
+                    this[privatePropName] = getter.apply(this, arguments);
+                }
+                return this[privatePropName];
             }
         };
 

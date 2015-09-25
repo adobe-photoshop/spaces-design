@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     var Immutable = require("immutable");
 
     var Layer = require("./layer"),
+        LayerEffect = require("./layereffect"),
         LayerNode = require("./layernode"),
         Stroke = require("./stroke"),
         Bounds = require("./bounds"),
@@ -1403,7 +1404,7 @@ define(function (require, exports, module) {
     LayerStructure.prototype.setLayerEffectProperties = function (layerIDs,
         layerEffectIndex, layerEffectType, layerEffectProperties) {
         // validate layerEffectType
-        if (!Layer.layerEffectTypes.has(layerEffectType)) {
+        if (!LayerEffect.TYPES.has(layerEffectType)) {
             throw new Error("Invalid layerEffectType supplied");
         }
 
@@ -1444,7 +1445,7 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.deleteLayerEffectProperties = function (layerIDs, deletedIndex, layerEffectType) {
-        if (!Layer.layerEffectTypes.has(layerEffectType)) {
+        if (!LayerEffect.TYPES.has(layerEffectType)) {
             throw new Error("Invalid layerEffectType supplied");
         }
 
@@ -1473,7 +1474,7 @@ define(function (require, exports, module) {
      * @return {LayerStructure} [description]
      */
     LayerStructure.prototype.deleteAllLayerEffects = function (layerIDs, layerEffectType) {
-        if (!Layer.layerEffectTypes.has(layerEffectType)) {
+        if (!LayerEffect.TYPES.has(layerEffectType)) {
             throw new Error("Invalid layerEffectType supplied");
         }
 

@@ -39,6 +39,7 @@ define(function (require, exports, module) {
         Dialog = require("jsx!js/jsx/shared/Dialog"),
         DropShadowList = require("jsx!./Shadow").DropShadowList,
         InnerShadowList = require("jsx!./Shadow").InnerShadowList,
+        UnsupportedEffectList = require("jsx!./UnsupportedEffectList"),
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization");
 
@@ -226,6 +227,10 @@ define(function (require, exports, module) {
                     <InnerShadowList {...this.props}
                         onFocus={this._handleFocus}
                         max={MAX_EFFECT_COUNT} />
+                    <UnsupportedEffectList
+                        document={this.props.document}
+                        layers={this.props.document.layers.selected}
+                        disabled={this.props.disabled}/>
                 </div>
             );
 

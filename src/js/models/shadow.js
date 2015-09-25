@@ -241,19 +241,20 @@ define(function (require, exports, module) {
      * Construct a list of Shadow models from a Photoshop layer descriptor.
      *
      * @param {object} layerDescriptor
+     * @param {string} type
      * @return {Immutable.List.<Shadow>}
      */
-    Shadow.fromLayerDescriptor = function (layerDescriptor, kind) {
+    Shadow.fromLayerDescriptor = function (layerDescriptor, type) {
         var layerEffects = layerDescriptor.layerEffects;
         if (!layerEffects) {
             return Immutable.List();
         }
 
-        var shadowDescriptors = objUtil.getPath(layerDescriptor, "layerEffects." + kind + "Multi");
+        var shadowDescriptors = objUtil.getPath(layerDescriptor, "layerEffects." + type + "Multi");
         if (!shadowDescriptors) {
             // layerDescriptor.layerEffects.*Shadow[Multi] will be undefined if the shadows are all deleted
             // in Design Space. 
-            var singleShadowDescriptor = objUtil.getPath(layerDescriptor, "layerEffects." + kind);
+            var singleShadowDescriptor = objUtil.getPath(layerDescriptor, "layerEffects." + type);
             shadowDescriptors = singleShadowDescriptor ? [singleShadowDescriptor] : [];
         }
 

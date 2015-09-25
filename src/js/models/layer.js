@@ -34,10 +34,11 @@ define(function (require, exports, module) {
         Stroke = require("./stroke"),
         Fill = require("./fill"),
         Shadow = require("./shadow"),
+        LayerEffect = require("./layereffect"),
         Text = require("./text");
 
     /**
-     * Possible smart object types for a layer
+     * Model for a layer's effects. Except for InnerShadow and DropShadow.
      *
      * @type {number}
      */
@@ -159,16 +160,15 @@ define(function (require, exports, module) {
          * @type {Fill}
          */
         fill: null,
-
+        
         /**
-         * @type {Immutable.List.<Shadow>}
+         * Stores layer effects map by types that are defined in LayerEffect.TYPES. 
+         * For effect types that the layer does not have, they will assign with an 
+         * empty immutable list as default value.
+         * 
+         * @type {Immutable.Map.< string, Immutable.List<LayerEffect|Shadow> >}
          */
-        dropShadows: Immutable.List(),
-
-        /**
-         * @type {Immutable.List.<Shadow>}
-         */
-        innerShadows: Immutable.List(),
+        effects: null,
 
         /**
          * @type {text}
@@ -240,13 +240,6 @@ define(function (require, exports, module) {
 
     Layer.smartObjectTypes = smartObjectTypes;
 
-    /**
-     * Array of available layer effect types
-     *
-     * @type {Set.<string>}
-     */
-    Layer.layerEffectTypes = new Set(["dropShadow", "innerShadow"]);
-
     Object.defineProperties(Layer.prototype, object.cachedGetSpecs({
         /**
          * Indicates whether there are features in the layer
@@ -288,18 +281,59 @@ define(function (require, exports, module) {
             return !this.locked &&
                 this.kind !== this.layerKinds.ADJUSTMENT &&
                 this.kind !== this.layerKinds.GROUPEND;
+        },
+        
+        /**
+         * Return all inner shadows.
+         * @type {Immutable.List<?Shadow>}
+         */
+        innerShadows: function () {
+            return this.effects.get("innerShadow");
+        },
+        
+        /**
+         * Return all drop shadows.
+         * @type {Immutable.List<?Shadow>}
+         */
+        dropShadows: function () {
+            return this.effects.get("dropShadow");
+        },
+        
+        /**
+         * True if the layer has layer effect.
+         * @type {boolean}  
+         */
+        hasLayerEffect: function () {
+            return !!this.effects.find(function (effects) {
+                return !effects.isEmpty();
+            });
+        },
+        
+        /**
+         * True if the layer has unsupported layer effect.
+         * @type {boolean}  
+         */
+        hasUnsupportedLayerEffect: function () {
+            return !!this.effects.find(function (effects, effectType) {
+                if (LayerEffect.UNSUPPORTED_TYPES.has(effectType)) {
+                    return !effects.isEmpty();
+                }
+            });
         }
     }));
 
     /**
-     * Retrieve the list of layer effects based on the provided type
-     * This currently assumes a simple "pluralization" rule
+     * Retrieve the list of layer effects based on the provided type.
      *
      * @param {string} layerEffectType
      * @return {Immutable.List<Layer>}
      */
     Layer.prototype.getLayerEffectsByType = function (layerEffectType) {
-        return this[layerEffectType + "s"];
+        if (!LayerEffect.TYPES.has(layerEffectType)) {
+            throw new Error("Invalid layer effect type: " + layerEffectType);
+        }
+        
+        return this.effects.get(layerEffectType);
     };
 
     /**
@@ -310,7 +344,13 @@ define(function (require, exports, module) {
      * @param {object} layerEffect instance of a layer effect such as a Shadow
      */
     Layer.prototype.setLayerEffectByType = function (layerEffectType, layerEffectIndex, layerEffect) {
-        return this.setIn([layerEffectType + "s", layerEffectIndex], layerEffect);
+        if (!LayerEffect.TYPES.has(layerEffectType)) {
+            throw new Error("Invalid layer effect type: " + layerEffectType);
+        }
+        
+        var nextEffects = this.effects.setIn([layerEffectType, layerEffectIndex], layerEffect);
+        
+        return this.set("effects", nextEffects);
     };
 
     /**
@@ -320,7 +360,13 @@ define(function (require, exports, module) {
      * @param {Immutable.List<Object>} layerEffects list of layer effects
      */
     Layer.prototype.setLayerEffectsByType = function (layerEffectType, layerEffects) {
-        return this.set(layerEffectType + "s", layerEffects);
+        if (!LayerEffect.TYPES.has(layerEffectType)) {
+            throw new Error("Invalid layer effect type: " + layerEffectType);
+        }
+        
+        var nextEffects = this.effects.set(layerEffectType, layerEffects);
+        
+        return this.set("effects", nextEffects);
     };
 
     /**
@@ -330,11 +376,11 @@ define(function (require, exports, module) {
      * @return {Shadow}  instance of a layer effect such as a Shadow
      */
     Layer.newLayerEffectByType = function (layerEffectType) {
-        if (layerEffectType === "dropShadow" || layerEffectType === "innerShadow") {
-            return new Shadow();
-        } else {
-            throw new Error("Can not generate layer effect model for unknown type: %s", layerEffectType);
+        if (!LayerEffect.TYPES.has(layerEffectType)) {
+            throw new Error("Invalid layer effect type: " + layerEffectType);
         }
+        
+        return LayerEffect.SHADOW_TYPES.has(layerEffectType) ? new Shadow() : new LayerEffect();
     };
 
     /**
@@ -432,6 +478,7 @@ define(function (require, exports, module) {
             stroke: null,
             dropShadows: Immutable.List(),
             innerShadows: Immutable.List(),
+            effects: LayerEffect.EMPTY_EFFECTS,
             mode: "passThrough",
             proportionalScaling: false,
             isArtboard: !!isArtboard,
@@ -481,8 +528,7 @@ define(function (require, exports, module) {
             radii: Radii.fromLayerDescriptor(layerDescriptor),
             stroke: Stroke.fromLayerDescriptor(layerDescriptor),
             fill: Fill.fromLayerDescriptor(layerDescriptor),
-            dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
-            innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
+            effects: LayerEffect.fromLayerDescriptor(layerDescriptor),
             text: Text.fromLayerDescriptor(resolution, layerDescriptor),
             proportionalScaling: layerDescriptor.proportionalScaling,
             isArtboard: layerDescriptor.artboardEnabled,
@@ -521,8 +567,7 @@ define(function (require, exports, module) {
                 radii: Radii.fromLayerDescriptor(layerDescriptor),
                 stroke: Stroke.fromLayerDescriptor(layerDescriptor),
                 fill: Fill.fromLayerDescriptor(layerDescriptor),
-                dropShadows: Shadow.fromLayerDescriptor(layerDescriptor, "dropShadow"),
-                innerShadows: Shadow.fromLayerDescriptor(layerDescriptor, "innerShadow"),
+                effects: LayerEffect.fromLayerDescriptor(layerDescriptor),
                 text: Text.fromLayerDescriptor(resolution, layerDescriptor),
                 proportionalScaling: layerDescriptor.proportionalScaling,
                 isArtboard: layerDescriptor.artboardEnabled,
@@ -539,14 +584,6 @@ define(function (require, exports, module) {
         return this.merge(model);
     };
     
-    /**
-     * True if the layer has layer effect.
-     * @return {boolean}  
-     */
-    Layer.prototype.hasLayerEffect = function () {
-        return !this.innerShadows.isEmpty() || !this.dropShadows.isEmpty();
-    };
-
     /**
      * True if the layer is text layer.
      * @return {boolean}  
