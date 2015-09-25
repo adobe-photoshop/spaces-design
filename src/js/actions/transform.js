@@ -337,7 +337,8 @@ define(function (require, exports) {
                 historyStateInfo: {
                     name: strings.ACTIONS.SET_LAYER_POSITION,
                     target: documentLib.referenceBy.id(document.id)
-                }
+                },
+                synchronous: false
             };
 
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
@@ -991,6 +992,7 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _artboardTransformHandler,
+        _moveToArtboardHandler,
         _layerTransformHandler;
 
     var beforeStartup = function () {
@@ -1048,10 +1050,18 @@ define(function (require, exports) {
             }
         }, this);
 
+        _moveToArtboardHandler = function () {
+            var appStore = this.flux.store("application"),
+                nextDoc = appStore.getCurrentDocument();
+
+            this.flux.actions.layers.resetIndex(nextDoc, true, true);
+        }.bind(this);
+
         descriptor.addListener("transform", _layerTransformHandler);
         descriptor.addListener("move", _layerTransformHandler);
         descriptor.addListener("nudge", _layerTransformHandler);
         descriptor.addListener("editArtboardEvent", _artboardTransformHandler);
+        descriptor.addListener("moveToArtboard", _moveToArtboardHandler);
         return Promise.resolve();
     };
     beforeStartup.reads = [];
@@ -1065,6 +1075,7 @@ define(function (require, exports) {
         descriptor.removeListener("move", _layerTransformHandler);
         descriptor.removeListener("nudge", _layerTransformHandler);
         descriptor.removeListener("editArtboardEvent", _artboardTransformHandler);
+        descriptor.removeListener("moveToArtboard", _moveToArtboardHandler);
 
         return Promise.resolve();
     };

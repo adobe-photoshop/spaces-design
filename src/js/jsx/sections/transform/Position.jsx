@@ -43,7 +43,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getSelectedChildBounds = function (props) {
-                return props.document.layers.selectedChildBounds;
+                return props.document.layers.selectedRelativeChildBounds;
             };
 
             var getRelevantProps = function (props) {
