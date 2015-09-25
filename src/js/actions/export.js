@@ -969,7 +969,7 @@ define(function (require, exports) {
     exports.exportLayerAssets = exportLayerAssets;
     exports.exportDocumentAssets = exportDocumentAssets;
     exports.setUseArtboardPrefix = setUseArtboardPrefix;
-    // exports.afterStartup = afterStartup;
+    exports.afterStartup = afterStartup;
     
     exports.copyFile = copyFile;
     exports.deleteFiles = deleteFiles;

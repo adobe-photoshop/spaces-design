@@ -524,7 +524,8 @@ define(function (require, exports) {
         var initPromise,
             dispatchPromise;
 
-        if (!currentLayer.vectorMaskEnabled) {
+        // if we are swtiching to vector mask mode, make sure the layer has a vector mask
+        if (!currentLayer.vectorMaskEnabled && vectorMaskMode === true) {
             initPromise = descriptor.playObject(vectorMaskLib.createRevealAllMask());
             var payload = {
                     documentID: currentDocument.id,
@@ -563,6 +564,7 @@ define(function (require, exports) {
                 .then(function () {
                     return UI.setSuppressTargetPaths(false);
                 })
+                .bind(this)
                 .then(function () {
                     var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
                         OS.eventKind.LEFT_MOUSE_DOWN);
