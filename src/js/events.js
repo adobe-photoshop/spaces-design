@@ -130,7 +130,8 @@ define(function (require, exports, module) {
             TRANSFORM_UPDATED: "transformUpdated",
             PANELS_RESIZED: "panelsResized",
             TOGGLE_OVERLAYS: "toggleOverlays",
-            SUPERSELECT_MARQUEE: "superselectMarquee"
+            SUPERSELECT_MARQUEE: "superselectMarquee",
+            REFERENCE_POINT_CHANGED: "referencePointChanged"
         },
         modifiers: {
             MODIFIERS_CHANGED: "modifiersChanged"
