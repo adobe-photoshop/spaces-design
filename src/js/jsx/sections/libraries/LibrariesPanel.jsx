@@ -103,7 +103,7 @@ define(function (require, exports, module) {
          * @return {?ReactComponent}
          */
         _renderLibrariesContent: function () {
-            if (!this.props.visible || this.props.disabled) {
+            if (this.props.disabled) {
                 return null;
             }
 
