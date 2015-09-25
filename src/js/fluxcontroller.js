@@ -691,11 +691,9 @@ define(function (require, exports, module) {
         beforeStartupPromise
             .bind(this)
             .then(function (results) {
+                this._running = true;
                 this.emit("ready");
                 return this._invokeActionMethods("afterStartup", results);
-            })
-            .then(function () {
-                this._running = true;
             });
 
         return beforeStartupPromise;
