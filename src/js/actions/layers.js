@@ -622,6 +622,49 @@ define(function (require, exports) {
     resetLayersByIndex.writes = [locks.JS_DOC];
 
     /**
+     * Fetch the visibility property for all layers, or given layer(s), and emit VISIBILITY_CHANGED
+     *
+     * @param {Document} document
+     * @param {Layer|Immutable.Iterable.<Layer>=} layers
+     * @return {Promise}
+     */
+    var resetLayerVisibility = function (document, layers) {
+        if (!layers) {
+            layers = document.layers.all;
+        } else if (layers instanceof Layer) {
+            layers = Immutable.List.of(layers);
+        } else if (layers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var docRef = documentLib.referenceBy.id(document.id),
+            layerRefs = layers.map(function (layer) {
+            return [
+                docRef,
+                layerLib.referenceBy.id(layer.id)
+            ];
+        }).toArray();
+
+        // convert to range fetch in case of all-layers?
+        return descriptor.batchMultiGetProperties(layerRefs, ["layerID", "visible"])
+            .bind(this)
+            .then(function (descriptors) {
+                var payload = {
+                    documentID: document.id
+                };
+
+                payload.layerProps = Immutable.Map(descriptors.map(function (descriptor) {
+                    return [descriptor.layerID, descriptor.visible];
+                }));
+
+                return this.dispatchAsync(events.document.VISIBILITY_CHANGED, payload);
+            });
+    };
+    resetLayerVisibility.reads = [locks.PS_DOC];
+    resetLayerVisibility.writes = [locks.JS_DOC];
+    resetLayerVisibility.modal = true;
+
+    /**
      * Expand or collapse the given group layers in the layers panel.
      *
      * @param {Document} document
@@ -1266,8 +1309,10 @@ define(function (require, exports) {
     var setVisibility = function (document, layer, visible) {
         var payload = {
                 documentID: document.id,
-                layerID: layer.id,
-                visible: visible
+                layerProps: {
+                    layerID: layer.id,
+                    visible: visible
+                }
             },
             command = visible ? layerLib.show : layerLib.hide,
             layerRef = [
@@ -2416,6 +2461,7 @@ define(function (require, exports) {
     exports.initializeLayers = initializeLayers;
     exports.resetLayers = resetLayers;
     exports.resetLayersByIndex = resetLayersByIndex;
+    exports.resetLayerVisibility = resetLayerVisibility;
     exports.resetBounds = resetBounds;
     exports.resetBoundsQuietly = resetBoundsQuietly;
     exports.setProportional = setProportional;
