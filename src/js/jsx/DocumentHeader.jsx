@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react"),
+    var Promise = require("bluebird"),
+        React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -123,12 +124,13 @@ define(function (require, exports, module) {
             os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
             this._updatePanelSizes();
             
-            window.addEventListener("resize", this._handleWindowResize);
+            this._handleWindowResizeDebounced = synchronization.debounce(this._handleWindowResize, this, 500);
+            window.addEventListener("resize", this._handleWindowResizeDebounced);
         },
 
         componentWillUnmount: function () {
             os.removeListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
-            window.removeEventListener("resize", this._handleWindowResize);
+            window.removeEventListener("resize", this._handleWindowResizeDebounced);
         },
 
         componentDidUpdate: function () {
@@ -137,12 +139,25 @@ define(function (require, exports, module) {
 
         /**
          * Update the state with the size of the header element on resize
+         *
+         * @private
+         * @return {Promise}
          */
         _handleWindowResize: function () {
-            this.setState({
-                headerWidth: React.findDOMNode(this).clientWidth
-            });
+            return new Promise(function (resolve) {
+                this.setState({
+                    headerWidth: React.findDOMNode(this).clientWidth
+                }, resolve);
+            }.bind(this));
         },
+
+        /**
+         * Debounced version of _handleWindowResize
+         *
+         * @private
+         * @type {function}
+         */
+        _handleWindowResizeDebounced: null,
 
         /** @ignore */
         _handleTabClick: function (documentID) {
