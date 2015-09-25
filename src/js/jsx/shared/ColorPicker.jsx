@@ -637,9 +637,12 @@ define(function (require, exports, module) {
          * @param {number} value
          */
         _handleHSVChange: function (prop, event, value) {
+            // If the color was in HSV format to begin with, and had saturation 0
+            // tinycolor resets the hue to 0, but we don't want to lose the current hue value
             var color = this.props.color,
                 tiny = tinycolor(color.toJS()),
-                hsv = tiny.toHsv();
+                format = tiny.getFormat(),
+                hsv = format === "hsv" ? color.toJS() : tiny.toHsv();
 
             if (prop !== "h") {
                 value = value / 100;
@@ -650,9 +653,12 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            // If the color is already in hsv format, grab current values
+            // tinycolor resets 0 saturation hsv colors h to 0 as well.
             var color = this.props.color,
                 tiny = tinycolor(color.toJS()),
-                hsv = tiny.toHsv(),
+                format = tiny.getFormat(),
+                hsv = format === "hsv" ? color : tiny.toHsv(),
                 rgb = tiny.toRgb();
 
             return (
