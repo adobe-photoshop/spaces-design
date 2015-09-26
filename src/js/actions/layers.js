@@ -430,27 +430,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Resets the list of selected layers by asking photoshop for targetLayers
-     *
-     * @param {Document} document document of which to reset layers
-     * @return {Promise}
-     */
-    var resetSelection = function (document) {
-        var payload = {
-            documentID: document.id
-        };
-
-        return _getSelectedLayerIndices(document)
-            .bind(this)
-            .then(function (selectedLayerIndices) {
-                payload.selectedIndices = selectedLayerIndices;
-                this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
-            });
-    };
-    resetSelection.reads = [locks.PS_DOC, locks.JS_DOC];
-    resetSelection.writes = [locks.JS_DOC];
-
-    /**
      * Emit RESET_LAYERS with layer descriptors for all given layers.
      *
      * @param {Document} document
@@ -742,6 +721,34 @@ define(function (require, exports) {
     initializeLayers.transfers = [resetLayers];
 
     /**
+     * Resets the list of selected layers by asking photoshop for targetLayers
+     *
+     * @param {Document} document document of which to reset layers
+     * @return {Promise}
+     */
+    var resetSelection = function (document) {
+        var payload = {
+            documentID: document.id
+        };
+
+        return _getSelectedLayerIndices(document)
+            .bind(this)
+            .then(function (selectedLayerIndices) {
+                payload.selectedIndices = selectedLayerIndices;
+                this.dispatch(events.document.SELECT_LAYERS_BY_INDEX, payload);
+            })
+            .then(function () {
+                var nextDocument = this.flux.store("document").getDocument(document.id),
+                    selected = nextDocument.layers.selected;
+
+                return this.transfer(initializeLayers, nextDocument, selected);
+            });
+    };
+    resetSelection.reads = [locks.PS_DOC, locks.JS_DOC];
+    resetSelection.writes = [locks.JS_DOC];
+    resetSelection.transfers = [initializeLayers];
+
+    /**
      * Selects the given layer with given modifiers
      *
      * @param {Document} document Owner document
@@ -796,14 +803,7 @@ define(function (require, exports) {
                 .then(function () {
                     if (modifier && modifier !== "select") {
                         var revealPromise = this.transfer(revealLayers, document, layerSpec),
-                            resetPromise = this.transfer(resetSelection, document)
-                                .bind(this)
-                                .then(function () {
-                                    var nextDocument = this.flux.store("document").getDocument(document.id),
-                                        selected = nextDocument.layers.selected;
-
-                                    return this.transfer(initializeLayers, nextDocument, selected);
-                                });
+                            resetPromise = this.transfer(resetSelection, document);
 
                         return Promise.join(resetPromise, revealPromise);
                     }
@@ -1200,13 +1200,18 @@ define(function (require, exports) {
             })
             .then(function () {
                 if (selectionNeedsReset) {
-                    this.transfer(resetSelection, document);
+                    return this.transfer(resetSelection, document);
+                } else {
+                    var nextDocument = this.flux.store("document").getDocument(document.id),
+                        selected = nextDocument.layers.selected;
+
+                    return this.transfer(initializeLayers, nextDocument, selected);
                 }
             });
     };
     ungroupSelected.reads = [locks.JS_APP];
     ungroupSelected.writes = [locks.PS_DOC, locks.JS_DOC];
-    ungroupSelected.transfers = [resetSelection];
+    ungroupSelected.transfers = [resetSelection, initializeLayers];
     ungroupSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
