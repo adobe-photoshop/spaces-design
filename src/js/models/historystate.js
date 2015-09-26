@@ -71,17 +71,5 @@ define(function (require, exports, module) {
             (this.documentExports && this.documentExports !== documentExports);
     };
 
-    /**
-     * Make a copy of this state that is suitable for generating a new "revert" state
-     *
-     * @return {HistoryState}
-     */
-    HistoryState.prototype.cloneForRevert = function () {
-        return new HistoryState({
-            document: this.document,
-            documentExports: this.documentExports
-        });
-    };
-
     module.exports = HistoryState;
 });
