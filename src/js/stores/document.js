@@ -555,9 +555,10 @@ define(function (require, exports, module) {
          * @private
          * @param {Document} document
          * @param {Immutable.Set<number>} selectedIDs
+         * @param {?number} pivotID
          */
-        _updateLayerSelection: function (document, selectedIDs) {
-            var nextLayers = document.layers.updateSelection(selectedIDs),
+        _updateLayerSelection: function (document, selectedIDs, pivotID) {
+            var nextLayers = document.layers.updateSelection(selectedIDs, pivotID),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
@@ -575,7 +576,7 @@ define(function (require, exports, module) {
                     return document.layers.byIndex(index + 1).id;
                 });
 
-            this._updateLayerSelection(document, selectedIDs);
+            this._updateLayerSelection(document, selectedIDs, null);
         },
 
         /**
@@ -586,9 +587,10 @@ define(function (require, exports, module) {
          */
         _handleLayerSelectByID: function (payload) {
             var document = this._openDocuments[payload.documentID],
-                selectedIDs = Immutable.Set(payload.selectedIDs);
+                selectedIDs = Immutable.Set(payload.selectedIDs),
+                pivotID = payload.hasOwnProperty("pivotID") ? payload.pivotID : null;
 
-            this._updateLayerSelection(document, selectedIDs);
+            this._updateLayerSelection(document, selectedIDs, pivotID);
         },
 
         /**

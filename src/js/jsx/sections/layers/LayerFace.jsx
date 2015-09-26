@@ -171,7 +171,14 @@ define(function (require, exports, module) {
                 }
             }
 
-            this.getFlux().actions.layers.select(this.props.document, this.props.layer, modifier);
+            // The clicked layer may an have out-of-date document models due to
+            // the aggressive SCU method in LayersPanel.
+            var documentID = this.props.document.id,
+                documentStore = this.getFlux().store("document"),
+                currentDocument = documentStore.getDocument(documentID),
+                currentLayer = currentDocument.layers.byID(this.props.layer.id);
+
+            this.getFlux().actions.layers.select(currentDocument, currentLayer, modifier);
         },
 
         /**

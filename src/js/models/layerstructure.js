@@ -54,7 +54,14 @@ define(function (require, exports, module) {
          *
          * @type {Immutable.List.<number>}
          */
-        index: null
+        index: null,
+
+        /**
+         * ID of the pivot layer, if any, for range selections.
+         *
+         * @type {?number}
+         */
+        pivotID: null
     });
 
     /**
@@ -170,6 +177,15 @@ define(function (require, exports, module) {
         },
 
         /**
+         * The pivot layer, if any, for range selections.
+         *
+         * @type {?Layer}
+         */
+        "pivot": function () {
+            return this.byID(this.pivotID);
+        },
+
+        /**
          * Indicates whether there are features in the document
          *  that are currently unsupported.
          *
@@ -218,6 +234,15 @@ define(function (require, exports, module) {
         */
         "allVisibleReversed": function () {
             return this.allVisible.reverse();
+        },
+
+        /**
+         * The subset of layers which are not hidden by a collapsed ancestor.
+         *
+         * @type {Immutable.List.<Layer>}
+         */
+        "exposed": function () {
+            return this.allVisible.filterNot(this.hasCollapsedAncestor, this);
         },
 
         /**
@@ -1219,13 +1244,16 @@ define(function (require, exports, module) {
      * @param {Immutable.Set.<number>} selectedIDs
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.updateSelection = function (selectedIDs) {
+    LayerStructure.prototype.updateSelection = function (selectedIDs, pivotID) {
         var updatedLayers = this.layers.map(function (layer) {
             var selected = selectedIDs.has(layer.id);
             return layer.set("selected", selected);
         });
 
-        return this.set("layers", updatedLayers);
+        return this.merge({
+            "layers": updatedLayers,
+            "pivotID": pivotID
+        });
     };
 
     /**
