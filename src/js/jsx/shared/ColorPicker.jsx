@@ -606,7 +606,7 @@ define(function (require, exports, module) {
      */
     var ColorFields = React.createClass({
         propTypes: {
-            color: React.PropTypes.instanceOf(Color),
+            color: React.PropTypes.instanceOf(HSVAColor),
             onChange: React.PropTypes.func
         },
 
