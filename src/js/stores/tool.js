@@ -99,6 +99,14 @@ define(function (require, exports, module) {
         _inVectorMode: null,
 
         /**
+         * stored ID of pointer policy created while in vector mask mode
+         *
+         * @private
+         * @type {number}
+         */
+        _vectorMaskPolicyID: null,
+
+        /**
          * Initialize the ToolStore
          */
         initialize: function () {
@@ -106,7 +114,8 @@ define(function (require, exports, module) {
                 events.RESET, this._handleReset,
                 events.tool.SELECT_TOOL, this._handleSelectTool,
                 events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange,
-                events.tool.VECTOR_MASK_MODE_CHANGE, this._handleVectorMaskModeChange
+                events.tool.VECTOR_MASK_MODE_CHANGE, this._handleVectorMaskModeChange,
+                events.tool.VECTOR_MASK_POLICY_CHANGE, this._handleVectorMaskPolicyChange
             );
 
             this._handleReset();
@@ -144,6 +153,7 @@ define(function (require, exports, module) {
             this._allTools = Object.defineProperties({}, toolSpec);
             this._inModalToolState = null;
             this._inVectorMode = null;
+            this._vectorMaskPolicyID = null;
             this._currentKeyboardPolicyID = null;
             this._currentPointerPolicyID = null;
             this._currentTool = null;
@@ -179,6 +189,15 @@ define(function (require, exports, module) {
         getVectorMode: function () {
             return this._inVectorMode;
         },
+
+        /**
+         * Gets the policy ID for vector mask mode
+         * 
+         * @return {number} 
+         */
+        getVectorMaskPolicyID: function () {
+            return this._vectorMaskPolicyID;
+        },
         
 
         /**
@@ -212,6 +231,16 @@ define(function (require, exports, module) {
          */
         _handleVectorMaskModeChange: function (payload) {
             this._inVectorMode = payload;
+
+            this.emit("change");
+        },
+
+        /**
+         * @private
+         * @param {number} payload
+         */
+        _handleVectorMaskPolicyChange: function (payload) {
+            this._vectorMaskPolicyID = payload;
 
             this.emit("change");
         },

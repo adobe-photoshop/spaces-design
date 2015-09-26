@@ -495,9 +495,10 @@ define(function (require, exports) {
     var changeVectorMaskMode = function (vectorMaskMode) {
         var flux = this.flux,
             toolStore = flux.store("tool"),
+            uiStore = flux.store("ui"),
             prevVectorMode = toolStore.getVectorMode(),
             currentTool = toolStore.getCurrentTool(),
-            firstLaunch = false;
+            firstLaunch = true;
 
         // entering Vector Mask Mode is only permitted while in a subset of our tools
         if (prevVectorMode === vectorMaskMode || !currentTool.handleVectorMaskMode) {
@@ -522,7 +523,8 @@ define(function (require, exports) {
         }
 
         var initPromise,
-            dispatchPromise;
+            dispatchPromise,
+            policyPromise;
 
         // if we are swtiching to vector mask mode, make sure the layer has a vector mask
         if (!currentLayer.vectorMaskEnabled && vectorMaskMode === true) {
@@ -546,6 +548,36 @@ define(function (require, exports) {
         if (vectorMaskMode) {
             toolMode = toolLib.toolModes.PATH;
         }
+         
+        if (vectorMaskMode) {
+            var centerOffsets = uiStore.getCenterOffsets(),
+                area = {
+                    x: centerOffsets.left,
+                    y: centerOffsets.top,
+                    width: centerOffsets.right - centerOffsets.left,
+                    height: centerOffsets.top - centerOffsets.bottom
+                },
+                pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                    OS.eventKind.LEFT_MOUSE_DOWN,
+                    {},
+                    area);
+            
+            policyPromise = this.transfer(policy.addPointerPolicies, [pointerPolicy])
+                .bind(this)
+                .then(function (policyID) {
+                    this.dispatch(events.tool.VECTOR_MASK_POLICY_CHANGE, policyID);
+                });
+        } else {
+            var pointerPolicyID = toolStore.getVectorMaskPolicyID();
+         
+            if (pointerPolicyID) {
+                policyPromise = this.transfer(policy.removePointerPolicies, pointerPolicyID)
+                .bind(this)
+                .then(function () {
+                    this.dispatch(events.tool.VECTOR_MASK_POLICY_CHANGE, null);
+                });
+            }
+        }
         
         if (currentTool.id === "rectangle" || currentTool.id === "ellipse" || currentTool.id === "pen") {
             var setObj = toolLib.setShapeToolMode(toolMode),
@@ -556,19 +588,13 @@ define(function (require, exports) {
                     currentTool.nativeToolName());
 
                 firstLaunch = false;
-                return Promise.join(initPromise, defaultPromise, resetPromise, dispatchPromise);
+                return Promise.join(initPromise, defaultPromise, resetPromise, dispatchPromise, policyPromise);
             } else if (!vectorMaskMode) {
-                return Promise.join(initPromise, resetPromise, dispatchPromise);
+                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise);
             } else {
-                return Promise.join(initPromise, resetPromise, dispatchPromise)
+                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise)
                 .then(function () {
                     return UI.setSuppressTargetPaths(false);
-                })
-                .bind(this)
-                .then(function () {
-                    var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                        OS.eventKind.LEFT_MOUSE_DOWN);
-                    return this.transfer(policy.addPointerPolicies, pointerPolicy);
                 })
                 .then(function () {
                     return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
@@ -578,12 +604,12 @@ define(function (require, exports) {
             if (!vectorMaskMode) {
                 return this.transfer(selectTool, toolStore.getToolByID("newSelect"))
                 .then(function () {
-                    return Promise.join(initPromise, dispatchPromise);
+                    return Promise.join(initPromise, dispatchPromise, policyPromise);
                 });
             } else {
                 return this.transfer(selectTool, toolStore.getToolByID("superselectVector"))
                 .then(function () {
-                    return Promise.join(initPromise, dispatchPromise);
+                    return Promise.join(initPromise, dispatchPromise, policyPromise);
                 })
                 .then(function () {
                     return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
@@ -591,12 +617,6 @@ define(function (require, exports) {
                 .then(function () {
                     descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
                         { synchronous: false });
-                })
-                .bind(this)
-                .then(function () {
-                    var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                        OS.eventKind.LEFT_MOUSE_DOWN);
-                    return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
                 });
             }
         }
@@ -604,7 +624,7 @@ define(function (require, exports) {
     changeVectorMaskMode.reads = [locks.JS_APP, locks.JS_TOOL];
     changeVectorMaskMode.writes = [locks.JS_TOOL];
     changeVectorMaskMode.modal = true;
-    changeVectorMaskMode.transfers = [selectTool, policy.addPointerPolicies];
+    changeVectorMaskMode.transfers = [selectTool, policy.addPointerPolicies, policy.removePointerPolicies];
 
     /**
      * Register event listeners for native tool selection change events, register
