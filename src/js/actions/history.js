@@ -150,7 +150,7 @@ define(function (require, exports) {
             return descriptor.playObject(historyPlayObject)
                 .bind(this)
                 .then(function () {
-                    descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
+                    return descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
                         .bind(this)
                         .catch(function () {
                             // no targetLayers property means no document is open
