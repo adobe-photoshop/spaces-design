@@ -661,20 +661,19 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
-                return this.transfer(toolActions.changeVectorMaskMode, false);
-            })
-            .then(function () {
                 var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
                     historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
                     guidesPromise = this.transfer(guideActions.queryCurrentGuides, document),
                     updateTransformPromise = this.transfer(ui.updateTransform),
-                    deselectPromise = descriptor.playObject(selectionLib.deselectAll());
+                    deselectPromise = descriptor.playObject(selectionLib.deselectAll()),
+                    disableMaskPromise = this.transfer(toolActions.changeVectorMaskMode, false);
 
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
                     guidesPromise,
                     updateTransformPromise,
-                    deselectPromise);
+                    deselectPromise,
+                    disableMaskPromise);
             });
     };
     selectDocument.reads = [locks.JS_TOOL];
