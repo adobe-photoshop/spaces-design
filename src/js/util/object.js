@@ -75,6 +75,22 @@ define(function (require, exports) {
         return obj;
     };
 
+    var makeEnum = function (specs) {
+        var counter = 0;
+
+        var enm = Object.keys(specs).reduce(function (enm, name) {
+            var spec = specs[name],
+                value = specs.hasOwnProperty("value") ? specs.value : counter++;
+
+            enm[name] = value;
+            enm.props[name] = spec.props;
+
+            return enm;
+        }, { props: {} });
+
+        return Object.freeze(enm);
+    };
+
     /**
      * Produce an object specification, consumable by Object.defineProperty,
      * for a lazily computed, cached property using the supplied getter function.
