@@ -45,7 +45,8 @@ define(function (require, exports) {
         layerActionsUtil = require("js/util/layeractions"),
         headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        Bounds = require("js/models/bounds");
 
     /**
      * play/batchPlay options that allow the canvas to be continually updated.
@@ -181,14 +182,17 @@ define(function (require, exports) {
     /**
      * Helper function for resize action
      * @private
-     * @param {object} bounds
+     *
+     * @param {Bounds} bounds of the layer
      * @param {{w: number=, h: number=}} size
-     * @param {boolean=} proportional
-     * @return {{w:number, h: number}} size
+     * @param {boolean=} proportional 
+     * @param {{x: number, y: number}} referencePoint x and y coordinates
+     * 
+     * @return {{w:number, h: number}} newLayerSize
      */
-    var _calculateNewSize = function (bounds, size, proportional) {
-        var newSize = {};
+    var _calculateNewSize = function (bounds, size, proportional, referencePoint) {
         if (proportional) {
+            var newSize = {};
             if (size.hasOwnProperty("w")) {
                 newSize.w = size.w;
                 newSize.h = newSize.w * (bounds.height / bounds.width);
@@ -199,11 +203,64 @@ define(function (require, exports) {
                 newSize.w = bounds.width;
                 newSize.h = bounds.height;
             }
+            return newSize;
         } else {
-            newSize.w = size.hasOwnProperty("w") ? size.w : bounds.width;
-            newSize.h = size.hasOwnProperty("h") ? size.h : bounds.height;
+            var newTopLeft = _calculateNewTopLeft(bounds.top, bounds.left, referencePoint);
+            var scaledLayer = _scaleLayer(newTopLeft.left, newTopLeft.top, size.w, size.h);
+            return scaledLayer;
         }
-        return newSize;
+    };
+
+    /**
+     * Helper function calculate new left coordinate
+     * @private
+     *
+     * @param {number} boundsTop 
+     * @param {number} boundsLeft 
+     * @param {{x: number, y: number}} referencePoint x and y coordinates
+     * 
+     * @return {number} newLT new top left value
+     */
+    var _calculateNewTopLeft = function (boundsTop, boundsLeft, referencePoint) {
+        var newLT = { top: 0, left: 0 },
+            diff;
+
+        if (referencePoint.x > boundsLeft) {
+            diff = referencePoint.x - boundsLeft;
+            newLT.left = boundsLeft - diff;
+        } else {
+            newLT.left = boundsLeft;
+        }
+
+        if (referencePoint.y > boundsTop) {
+            diff = referencePoint.y - boundsTop;
+            newLT.top = boundsTop - diff;
+        } else {
+            newLT.top = boundsTop;
+        }
+
+        return newLT;
+    };
+
+    /**
+     * Helper function to scale the layer
+     * @private
+     *
+     * @param {number} left bound
+     * @param {number} top bound
+     * @param {number} width (target)
+     * @param {number} height (target)
+     * 
+     * @return {Bounds} newBounds bounds of scaled layer
+     */
+    var _scaleLayer = function (left, top, width, height) {
+        var newBounds = new Bounds({
+                top: top,
+                bottom: top + height,
+                left: left,
+                right: left + width
+            });
+        return newBounds;
     };
 
     /**
@@ -215,10 +272,11 @@ define(function (require, exports) {
      * @param {Layer} targetLayer
      * @param {{w: number, h: number}} size
      * @param {Array.<{layer: Layer, w: number, h: number}>} resizeResults payload for updating each layer's bounds
+     * @param {String} referencePoint l(eft), m(iddle), or r(ight) and t(op), m(iddle), or b(ottom)
      *
      * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
-    var _getResizeLayerActions = function (document, targetLayer, size, resizeResults) {
+    var _getResizeLayerActions = function (document, targetLayer, size, resizeResults, referencePoint) {
         var overallBounds = document.layers.childBounds(targetLayer),
             documentRef = documentLib.referenceBy.id(document.id),
             resizingLayers;
@@ -243,11 +301,9 @@ define(function (require, exports) {
         // To work around this bug (#577) we compute new bounds for all child layers
         // so that they're resized the way Photoshop would resize them through the entire group
         return resizingLayers.reduce(function (playObjects, layer) {
-            if (!layer.bounds || layer.bounds.empty) {
-                return playObjects;
-            }
-
-            var layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
+            var layerBounds = layer.bounds,
+                layerExactRefPoint = _calculateRefPoint(layerBounds, referencePoint),
+                layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
                 layerTop = layer.bounds.top,
                 layerLeft = layer.bounds.left,
                 targetSize = {},
@@ -259,6 +315,10 @@ define(function (require, exports) {
                 heightRatio = layer.bounds.height / overallBounds.height,
                 resizeObj;
 
+            if (!layerBounds || layer.bounds.empty) {
+                return playObjects;
+            }
+
             if (size.hasOwnProperty("w")) {
                 targetSize.w = size.w * widthRatio;
                 targetPosition.left = overallBounds.left + (layerLeft - overallBounds.left) * overallWidthRatio;
@@ -269,11 +329,20 @@ define(function (require, exports) {
                 targetPosition.top = overallBounds.top + (layerTop - overallBounds.top) * overallHeightRatio;
             }
 
-            var newSize = _calculateNewSize(layer.bounds, targetSize, targetLayer.proportionalScaling),
+            var newSize = _calculateNewSize
+                        (layerBounds, targetSize, targetLayer.proportionalScaling, layerExactRefPoint),
                 newWidth = newSize.w,
                 newHeight = newSize.h,
-                newLeft = targetPosition.left,
+                newTop,
+                newLeft;
+
+            if (newSize.top && newSize.left) {
+                newTop = newSize.top;
+                newLeft = newSize.left;
+            } else {
                 newTop = targetPosition.top;
+                newLeft = targetPosition.left;
+            }
 
             if (layer.isArtboard) {
                 var boundingBox = {
@@ -309,6 +378,42 @@ define(function (require, exports) {
                 playObject: resizeObj
             });
         }, Immutable.List(), this);
+    };
+
+    /**
+     * Helper function to find the exact location of the reference point 
+     * with respect to a given layer
+     * @private
+     * 
+     * @param {Bounds} layerBounds The bounds of a layer
+     * @param {String} referencePoint l(eft), m(iddle), or r(ight) and t(op), m(iddle), or b(ottom)
+     * @return {Promise}
+     */
+    var _calculateRefPoint = function (layerBounds, referencePoint) {
+        var coordinates = { x: 0, y: 0 };
+        switch (referencePoint.charAt(0)) {
+            case "l":
+                coordinates.x = layerBounds.left;
+                break;
+            case "m":
+                coordinates.x = (layerBounds.width / 2) + layerBounds.left;
+                break;
+            case "r":
+                coordinates.x = layerBounds.right;
+        }
+
+        switch (referencePoint.charAt(1)) {
+            case "t":
+                coordinates.y = layerBounds.top;
+                break;
+            case "m":
+                coordinates.y = (layerBounds.height / 2) + layerBounds.top;
+                break;
+            case "b":
+                coordinates.y = layerBounds.bottom;
+        }
+
+        return coordinates;
     };
 
     /**
@@ -443,10 +548,11 @@ define(function (require, exports) {
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {{w: number, h: number}} size New width and height of the layers
+     * @param {String} referencePoint l(eft), m(iddle), or r(ight) and t(op), m(iddle), or b(ottom)
      *
      * @returns {Promise}
      */
-    var setSize = function (document, layerSpec, size) {
+    var setSize = function (document, layerSpec, size, referencePoint) {
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.kind === layer.layerKinds.GROUPEND ||
                 document.layers.strictAncestors(layer)
@@ -466,6 +572,7 @@ define(function (require, exports) {
                     target: documentLib.referenceBy.id(document.id)
                 }
             };
+
         // Document
         var dispatchPromise,
             sizePromise;
@@ -483,7 +590,8 @@ define(function (require, exports) {
             sizePromise = descriptor.playObject(resizeObj);
         } else {
             var resizeLayerActions = layerSpec.reduce(function (actions, layer) {
-                var layerActions = _getResizeLayerActions.call(this, document, layer, size, payload.sizes);
+                var layerActions = _getResizeLayerActions
+                    .call(this, document, layer, size, payload.sizes, referencePoint);
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
 
