@@ -156,6 +156,19 @@ define(function (require, exports) {
     };
 
     /**
+     * Get just a document descriptor for the given document reference. This is a light
+     * version of _getDocumentByRef, which skips properties and other information that are
+     * unnecessary for inactive documents.
+     *
+     * @private
+     * @param {object} reference
+     * @return {Promise.<object>}
+     */
+    var _getInactiveDocumentByRef = function (reference) {
+        return descriptor.multiGetProperties(reference, _documentProperties);
+    };
+
+    /**
      * Get an array of layer descriptors for the given document descriptor.
      *
      * @private
@@ -269,11 +282,14 @@ define(function (require, exports) {
             })
             .map(function (index) {
                 var indexRef = documentLib.referenceBy.index(index);
-                return _getDocumentByRef(indexRef)
+
+                // Only load essential properties for inactive documents
+                return _getInactiveDocumentByRef(indexRef)
                     .bind(this)
-                    .then(_getLayersForDocument)
-                    .then(function (payload) {
-                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
+                    .then(function (document) {
+                        this.dispatch(events.document.DOCUMENT_UPDATED, {
+                            document: document
+                        });
                     });
             }, this);
 
@@ -638,7 +654,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var selectDocument = function (document) {
-        var documentRef = documentLib.referenceBy.id(document.id);
+        var documentID = document.id,
+            documentRef = documentLib.referenceBy.id(documentID);
+
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         return this.transfer(ui.cloak)
@@ -647,11 +665,14 @@ define(function (require, exports) {
                 return descriptor.playObject(documentLib.select(documentRef));
             })
             .then(function () {
-                var payload = {
-                    selectedDocumentID: document.id
-                };
-
-                this.dispatch(events.document.SELECT_DOCUMENT, payload);
+                if (!document.layers) {
+                    // The now-active document has yet to be fully initialized.
+                    return this.transfer(updateDocument);
+                } else {
+                    this.dispatch(events.document.SELECT_DOCUMENT, {
+                        selectedDocumentID: documentID
+                    });
+                }
             })
             .then(function () {
                 var toolStore = this.flux.store("tool");
@@ -661,9 +682,10 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
-                var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, document),
-                    historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
-                    guidesPromise = this.transfer(guideActions.queryCurrentGuides, document),
+                var currentDocument = this.flux.store("document").getDocument(documentID),
+                    resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, currentDocument),
+                    historyPromise = this.transfer(historyActions.queryCurrentHistory, documentID),
+                    guidesPromise = this.transfer(guideActions.queryCurrentGuides, currentDocument),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deselectPromise = descriptor.playObject(selectionLib.deselectAll()),
                     disableMaskPromise = this.transfer(toolActions.changeVectorMaskMode, false);
@@ -680,7 +702,7 @@ define(function (require, exports) {
     selectDocument.writes = [locks.JS_APP];
     selectDocument.transfers = ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
         ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides,
-        toolActions.changeVectorMaskMode];
+        toolActions.changeVectorMaskMode, updateDocument];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 

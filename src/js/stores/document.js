@@ -139,7 +139,7 @@ define(function (require, exports, module) {
          * Construct a document model from a document and array of layer descriptors.
          *
          * @private
-         * @param {{document: object, layers: Array.<object>}} docObj
+         * @param {{document: object, layers: Array.<object>=, guides: Array.<object>=}} docObj
          * @return {Document}
          */
         _makeDocument: function (docObj) {
@@ -176,9 +176,10 @@ define(function (require, exports, module) {
 
             // If some selected layer remains uninitialized, a new document will
             // come along shortly. Wait until then to trigger the change event.
-            var initialized = nextDocument.layers.selected.every(function (layer) {
-                return layer.initialized;
-            });
+            var initialized = nextDocument.layers && nextDocument.layers.selected
+                .every(function (layer) {
+                    return layer.initialized;
+                });
 
             if (initialized) {
                 this.emit("change");
