@@ -201,14 +201,19 @@ define(function (require, exports, module) {
                 "section__sibling-collapsed": !this.props.visibleSibling
             });
 
-            var addStyleDisabled = this.props.disabled,
-                copyStyleDisabled = this.props.disabled || !(this.props.document &&
-                    this.props.document.layers.selected.size === 1),
-                pasteStyleDisabled = this.props.disabled || !(this.state.clipboard &&
-                    this.props.document &&
+            var backgroundLayer = this.props.document &&
+                    this.props.document.layers.selected.some(function (layer) {
+                        return layer.isBackground;
+                    }),
+                addStyleDisabled = this.props.disabled || backgroundLayer,
+                copyStyleDisabled = this.props.disabled || backgroundLayer ||
+                    !(this.props.document && this.props.document.layers.selected.size === 1),
+                pasteStyleDisabled = this.props.disabled || backgroundLayer ||
+                    !(this.state.clipboard && this.props.document &&
                     this.props.document.layers.selected.size > 0),
-                addStyleClasses = classnames("button-plus style-button", {
-                    "button-plus__disabled": addStyleDisabled
+                addStyleClasses = classnames({
+                    "style-button": true,
+                    "style-button__disabled": addStyleDisabled
                 }),
                 copyStyleClasses = classnames({
                     "style-button": true,
