@@ -70,6 +70,8 @@ define(function (require, exports, module) {
      * Given an array of layer descriptors, populate both the rootExports and layerExportsMap
      * with lists of ExportAssets derived from the photoshop extension data
      *
+     * For artboards, if the extension data is undefined, then default one asset
+     *
      * @param {{document: object, layers: Array.<object>}} payload
      * @return {DocumentExports}
      */
@@ -90,7 +92,10 @@ define(function (require, exports, module) {
         var rootExports = _toListOfAssets(document.exportAssets);
 
         var layerExportsMap = Immutable.Map(layers.map(function (layer) {
-            var exportList = _toListOfAssets(layer.exportAssets);
+            var assetProps = layer.artboardEnabled && layer.exportAssets === undefined ?
+                [{}] :
+                layer.exportAssets,
+            exportList = _toListOfAssets(assetProps);
             return [layer.layerID, exportList];
         }));
         
@@ -104,10 +109,10 @@ define(function (require, exports, module) {
      * Get a List of ExportAssets for the given layerID
      *
      * @param {number} layerID
-     * @return {?Immutable.List.<ExportAsset>}
+     * @return {Immutable.List.<ExportAsset>}
      */
     DocumentExports.prototype.getLayerExports = function (layerID) {
-        return this.layerExportsMap.get(layerID);
+        return this.layerExportsMap.get(layerID) || Immutable.List();
     };
 
     /**
@@ -157,8 +162,7 @@ define(function (require, exports, module) {
      */
     DocumentExports.prototype.filterLayersWithoutExports = function (layers) {
         return layers.filter(function (layer) {
-            var layerExports = this.getLayerExports(layer.id);
-            return !layerExports || layerExports.isEmpty();
+            return this.getLayerExports(layer.id).isEmpty();
         }, this);
     };
 
@@ -272,7 +276,7 @@ define(function (require, exports, module) {
      */
     DocumentExports.prototype.mergeLayerAssets = function (layerIDs, assetProps) {
         var nextLayerExportsMap = Immutable.Map(layerIDs.map(function (layerID) {
-            var assetList = this.layerExportsMap.get(layerID) || Immutable.List(),
+            var assetList = this.getLayerExports(layerID),
                 nextAssetList = _mergePropList(assetList, assetProps);
 
             return [layerID, nextAssetList];
@@ -300,7 +304,7 @@ define(function (require, exports, module) {
                 return newAsset;
             });
 
-            var assetList = this.layerExportsMap.get(layerID) || Immutable.List(),
+            var assetList = this.getLayerExports(layerID),
                 nextAssetList = assetList.splice.apply(assetList, [index, 0].concat(newAssetArray));
 
             return [layerID, nextAssetList];
