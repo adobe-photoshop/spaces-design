@@ -603,6 +603,14 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var initFontList = function () {
+        var fontStore = this.flux.store("font"),
+            fontState = fontStore.getState(),
+            initialized = fontState.initialized;
+
+        if (initialized) {
+            return Promise.resolve();
+        }
+
         return descriptor.getProperty("application", "fontList")
             .bind(this)
             .then(this.dispatch.bind(this, events.font.INIT_FONTS));
