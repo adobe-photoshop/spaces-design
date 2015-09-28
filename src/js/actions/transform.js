@@ -334,6 +334,10 @@ define(function (require, exports) {
                     name: strings.ACTIONS.SET_LAYER_POSITION,
                     target: documentLib.referenceBy.id(document.id)
                 },
+                // Setting this to false allows PS to send us
+                // notifications that happen as a result of this
+                // action, in conjunction with `suppresPlayLevelIncrease`
+                // flag in the descriptor
                 synchronous: false
             };
 

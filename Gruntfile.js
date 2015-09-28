@@ -106,11 +106,13 @@ module.exports = function (grunt) {
         },
         lintspaces: {
             src: [
-                "*.js",
-                "*.json",
+                "*",
                 "src/**/*.json",
                 "src/**/*.jsx",
-                "src/**/*.js"
+                "src/**/*.js",
+                "src/**/*.svg",
+                "src/**/*.less",
+                "!src/**/*.gif"
             ],
             options: {
                 newline: true,
