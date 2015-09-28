@@ -27,17 +27,20 @@
     color:@item-active;
     line-height: normal;
     width: 64.4rem;
+    min-height: 57rem;
     max-height: 67rem; //this is important for use with dialog.showModa()
     //height: 67rem;
     border-radius: 0.4rem;
     overflow: visible;
     font-size: @text-medium;
+    top: 4rem;
     
     &:before {
         content: "";
         position: absolute;
         top: -0.7rem;
-        left: 1.6rem;
+        left: inherit;
+        right: 1.5rem;
         width: 1.6rem;
         height: 1.6rem;
         background: @bg-alt;
