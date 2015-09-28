@@ -291,8 +291,6 @@ define(function (require, exports, module) {
                         <div className="column-4">
                         </div>
                         <div className="exports-panel__asset-list__container">
-                            
-
                             <div className="exports-panel__asset-list__quick-selection">
                                 <div className="column-2 control-group__vertical" >
                                     <CheckBox

@@ -118,6 +118,9 @@
     align-items: center;
     flex-wrap: nowrap;
     margin: 0.5rem 0rem;
+    overflow: none;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .exports-panel__layer-icon {
@@ -133,6 +136,7 @@
 .exports-panel__layer-info {
     width: 19rem;
     overflow:hidden;
+    text-overflow: ellipsis;
 }
 
 .exports-panel__layer__name {
@@ -161,8 +165,10 @@
 .exports-panel__layer-assets {
     font-size: @text-medium;
     font-color: @item-inactive;
-    display: flex;
+    display: inline;
     width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
 
     & span {
         text-overflow: ellipsis;
@@ -173,6 +179,7 @@
 .exports-panel__layer-asset {
     color: @warm-gray;
     margin-right: 0.5rem;
+    display: inline;
 }
 
 .exports-panel__layer-asset__stale {
