@@ -43,7 +43,7 @@ define(function (require, exports, module) {
      * @constructor
      */
     var EllipseTool = function () {
-        var resetPromise = descriptor.playObject(toolLib.resetShapeTool()),
+        var resetPromise = toolLib.setShapeToolMode(toolLib.toolModes.SHAPE),
             firstLaunch = true;
             
         /** @ignore */
