@@ -99,62 +99,33 @@ define(function (require, exports) {
     installShapeDefaults.modal = true;
 
     /**
-     * Resets the pointer policies around the selection border so we can pass
-     * pointer events to Photoshop for transforming, but still be able to
-     * click through to other layers
+     * Calculates the policy rectangles for the given bounds object
+     * Helper for resetBorderPolicies
      *
-     * @return {Promise}
+     * @private
+     * @param {Bounds} bounds
+     * @param {booelan} isArtboard If true, will not include rotation areas
+     * @return {Array.<Policy>}
      */
-    var resetBorderPolicies = function () {
-        var toolStore = this.flux.store("tool"),
-            appStore = this.flux.store("application"),
-            uiStore = this.flux.store("ui"),
-            currentDocument = appStore.getCurrentDocument(),
-            currentPolicy = _currentTransformPolicyID,
-            currentTool = toolStore.getCurrentTool(),
-            removePromise = currentPolicy ?
-                this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve(),
-            guidePromise; // We want to set these after border policies
-
-        // Make sure to always remove the remaining policies
-        if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
-            _currentTransformPolicyID = null;
-            guidePromise = this.transfer(guides.resetGuidePolicies);
-
-            return Promise.join(removePromise, guidePromise);
-        }
-
-        var targetLayers = currentDocument.layers.selected,
-            artboards = targetLayers.some(function (layer) {
-                return layer.isArtboard;
-            }),
-            selection = currentDocument.layers.selectedAreaBounds;
-
-        // If selection is empty, remove existing policy
-        if (!selection || selection.empty) {
-            _currentTransformPolicyID = null;
-            guidePromise = this.transfer(guides.resetGuidePolicies);
-
-            return Promise.join(removePromise, guidePromise);
-        }
-
+    var _calculatePolicyRectangles = function (bounds, isArtboard) {
         // Photoshop transform controls are either clickable on the corner squares for resizing
         // or in a 25 point area around them for rotating, to allow mouse clicks only in that area
         // we first create a policy covering the bigger area (width defined by offset + inset)
         // that sends all clicks to Photoshop. But to allow selection clicks to go through inside,
         // we set an inset policy over that other rectangle, creating a "frame" of mouse selection policy
-        var psSelectionTL = uiStore.transformCanvasToWindow(
-                selection.left, selection.top
+        var uiStore = this.flux.store("ui"),
+            psSelectionTL = uiStore.transformCanvasToWindow(
+                bounds.left, bounds.top
             ),
             psSelectionBR = uiStore.transformCanvasToWindow(
-                selection.right, selection.bottom
+                bounds.right, bounds.bottom
             ),
             psSelectionWidth = psSelectionBR.x - psSelectionTL.x,
             psSelectionHeight = psSelectionBR.y - psSelectionTL.y,
             // The resize rectangles are roughly 8 points radius
             inset = 4,
             // In case of artboards, we have no rotate, so we can stay within the border
-            outset = artboards ? inset : 27,
+            outset = isArtboard ? inset : 27,
             distortModifier = system.isMac ? { command: true } : { control: true };
 
         var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
@@ -218,7 +189,69 @@ define(function (require, exports) {
             outsidePolicy,
             outsideShiftPolicy
         ];
-        
+
+        return pointerPolicyList;
+    };
+
+    /**
+     * Resets the pointer policies around the selection border so we can pass
+     * pointer events to Photoshop for transforming, but still be able to
+     * click through to other layers
+     *
+     * @return {Promise}
+     */
+    var resetBorderPolicies = function () {
+        var toolStore = this.flux.store("tool"),
+            appStore = this.flux.store("application"),
+            currentDocument = appStore.getCurrentDocument(),
+            currentPolicy = _currentTransformPolicyID,
+            currentTool = toolStore.getCurrentTool(),
+            removePromise = currentPolicy ?
+                this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve(),
+            guidePromise; // We want to set these after border policies
+
+        // Make sure to always remove the remaining policies
+        if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
+            _currentTransformPolicyID = null;
+            guidePromise = this.transfer(guides.resetGuidePolicies);
+
+            return Promise.join(removePromise, guidePromise);
+        }
+
+        var targetLayers = currentDocument.layers.selected,
+            overallSelection = currentDocument.layers.selectedAreaBounds;
+
+        // If selection is empty, remove existing policy
+        if (!overallSelection || overallSelection.empty) {
+            _currentTransformPolicyID = null;
+            guidePromise = this.transfer(guides.resetGuidePolicies);
+
+            return Promise.join(removePromise, guidePromise);
+        }
+
+        var anyArtboards = targetLayers.some(function (layer) {
+                return layer.isArtboard;
+            }),
+            pointerPolicyList;
+
+        if (anyArtboards) {
+            pointerPolicyList = targetLayers.reduce(function (list, layer) {
+                var artboard = layer.isArtboard;
+
+                // If we have any artboards selected, and some other layer
+                // we don't want to draw policies around the other layer
+                // because PS won't either.
+                if (!artboard) {
+                    return list;
+                }
+
+                var bounds = currentDocument.layers.childBounds(layer);
+                return list.concat(_calculatePolicyRectangles.call(this, bounds, artboard));
+            }.bind(this), []);
+        } else {
+            pointerPolicyList = _calculatePolicyRectangles.call(this, overallSelection, false);
+        }
+                    
         _currentTransformPolicyID = null;
         
         return removePromise
