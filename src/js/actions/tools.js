@@ -624,7 +624,8 @@ define(function (require, exports) {
     changeVectorMaskMode.reads = [locks.JS_APP, locks.JS_TOOL];
     changeVectorMaskMode.writes = [locks.JS_TOOL];
     changeVectorMaskMode.modal = true;
-    changeVectorMaskMode.transfers = [selectTool, policy.addPointerPolicies, policy.removePointerPolicies];
+    changeVectorMaskMode.transfers = [selectTool, policy.addPointerPolicies, policy.removePointerPolicies,
+        installShapeDefaults];
 
     /**
      * Register event listeners for native tool selection change events, register
