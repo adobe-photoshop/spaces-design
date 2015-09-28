@@ -1023,14 +1023,19 @@ define(function (require, exports) {
         _layerTransformHandler = synchronization.debounce(function (event) {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
             
+            var appStore = this.flux.store("application"),
+                currentDoc = appStore.getCurrentDocument(),
+                artboardsSelected = currentDoc.layers.selected.some(function (layer) {
+                    return layer.isArtboard;
+                });
+                
             // If it was a simple click/didn't move anything, there is no need to update bounds
-            if (event.trackerEndedWithoutBreakingHysteresis) {
+            // But, if we're moving multiple artboards, we get one event with 0,0, which means
+            // we hit this and we have to update bounds
+            if (event.trackerEndedWithoutBreakingHysteresis && !artboardsSelected) {
                 return Promise.resolve();
             }
 
-            var appStore = this.flux.store("application"),
-                currentDoc = appStore.getCurrentDocument();
-                
             if (event.newDuplicateSheets) {
                 var duplicateInfo = event.newDuplicateSheets,
                     newSheetIDlist = duplicateInfo.newSheetIDlist,
