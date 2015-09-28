@@ -665,19 +665,22 @@ define(function (require, exports) {
                     historyPromise = this.transfer(historyActions.queryCurrentHistory, document.id),
                     guidesPromise = this.transfer(guideActions.queryCurrentGuides, document),
                     updateTransformPromise = this.transfer(ui.updateTransform),
-                    deselectPromise = descriptor.playObject(selectionLib.deselectAll());
+                    deselectPromise = descriptor.playObject(selectionLib.deselectAll()),
+                    disableMaskPromise = this.transfer(toolActions.changeVectorMaskMode, false);
 
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
                     guidesPromise,
                     updateTransformPromise,
-                    deselectPromise);
+                    deselectPromise,
+                    disableMaskPromise);
             });
     };
     selectDocument.reads = [locks.JS_TOOL];
     selectDocument.writes = [locks.JS_APP];
     selectDocument.transfers = ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
-        ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides];
+        ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides,
+        toolActions.changeVectorMaskMode];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 

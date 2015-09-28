@@ -28,7 +28,8 @@ define(function (require, exports, module) {
 
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool");
+        toolLib = require("adapter/lib/tool"),
+        UI = require("adapter/ps/ui");
 
     var Color = require("js/models/color"),
         Tool = require("js/models/tool"),
@@ -189,11 +190,15 @@ define(function (require, exports, module) {
             }.bind(this);
             descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
-            if (firstLaunch) {
-                firstLaunch = false;
+            return UI.setSuppressTargetPaths(true)
+            .bind(this)
+            .then(function () {
+                if (firstLaunch) {
+                    firstLaunch = false;
 
-                return descriptor.playObject(toolLib.resetTypeTool("left", "Myriad Pro", 16, [0, 0, 0]));
-            }
+                    return descriptor.playObject(toolLib.resetTypeTool("left", "Myriad Pro", 16, [0, 0, 0]));
+                }
+            });
         };
 
         var deselectHandler = function () {
@@ -208,6 +213,8 @@ define(function (require, exports, module) {
             _layerCreatedHandler = null;
             _layerDeletedHandler = null;
             _toolModalStateChangedHandler = null;
+
+            return UI.setSuppressTargetPaths(false);
         };
 
         Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", selectHandler, deselectHandler);

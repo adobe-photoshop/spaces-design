@@ -145,6 +145,7 @@ define(function (require, exports, module) {
      * @param {object?} descriptor.artboard Contains the artboard bounds descriptor
      * @param {object?} descriptor.pathBounds If available, will be parsed as shape layer
      * @param {object?} descriptor.boundsNoEffects Bounds object available for all layers
+     * @param {object?} descriptor.boundsNoMask Bounds object available for all layers
      *
      * @return {?{top: number, left: number, bottom: number, right: number}}
      */
@@ -154,7 +155,8 @@ define(function (require, exports, module) {
         // artboards are also groups. so we handle them separately 
         if (descriptor.artboardEnabled) {
             boundsObject = objUtil.getPath(descriptor, "artboard.artboardRect");
-        } else if (descriptor.hasOwnProperty("pathBounds")) {
+        } else if (descriptor.layerKind === layerLib.layerKinds.VECTOR &&
+                descriptor.hasOwnProperty("pathBounds")) {
             boundsObject = objUtil.getPath(descriptor, "pathBounds.pathBounds");
         } else {
             switch (descriptor.layerKind) {
@@ -165,8 +167,11 @@ define(function (require, exports, module) {
                 case layerLib.layerKinds.TEXT:
                     boundsObject = descriptor.boundingBox;
                     break;
-                default:
+                case layerLib.layerKinds.VECTOR:
                     boundsObject = descriptor.boundsNoEffects;
+                    break;
+                default:
+                    boundsObject = descriptor.boundsNoMask;
                     break;
             }
 

@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         this.id = id;
         this.icon = id;
         this.name = name;
-        this.nativeToolName = nativeToolName;
+        this.nativeToolName = function () { return nativeToolName; };
         this.selectHandler = selectHandler || null;
         this.deselectHandler = deselectHandler || null;
         this.keyboardPolicyList = keyboardPolicyList || [];
@@ -69,8 +69,8 @@ define(function (require, exports, module) {
     Tool.prototype.name = null;
 
     /**
-     * Photoshop tool name
-     * @type {!string}
+     * a function that returns the Photoshop tool name
+     * @type {!function}
      */
     Tool.prototype.nativeToolName = null;
 
@@ -152,6 +152,12 @@ define(function (require, exports, module) {
      * @type {?Object}
      */
     Tool.prototype.toolOverlay = null;
+
+    /**
+     * Optional indicate is a tool is usable in vector make mode 
+     * @type {boolean}
+     */
+    Tool.prototype.handlevectorMaskMode = null;
 
     module.exports = Tool;
 });

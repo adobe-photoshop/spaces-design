@@ -30,51 +30,66 @@ define(function (require, exports, module) {
         descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
         OS = require("adapter/os"),
-        UI = require("adapter/ps/ui");
+        UI = require("adapter/ps/ui"),
+        vectorMaskLib = require("adapter/lib/vectorMask");
 
     var Tool = require("js/models/tool"),
         toolActions = require("js/actions/tools"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        shortcuts = require("js/util/shortcuts");
+        utilShortcuts = require("js/util/shortcuts");
+
+    /**
+     * Sets the tool into either path or shape mode and calls the approprate PS actions based on that mode
+     *
+     * @private
+     */
+    var _selectHandler = function () {
+        var toolStore = this.flux.store("tool"),
+            vectorMode = toolStore.getVectorMode() || false,
+            toolMode = toolLib.toolModes.SHAPE,
+            firstLaunch = true;
+
+        if (vectorMode) {
+            toolMode = toolLib.toolModes.PATH;
+        }
+
+        var setObj = toolLib.setShapeToolMode(toolMode);
+
+        var setPromise = descriptor.batchPlayObjects([setObj]);
+
+        if (!vectorMode && firstLaunch) {
+            var defaultPromise = this.transfer(toolActions.installShapeDefaults,
+                "rectangleTool");
+
+            firstLaunch = false;
+            return Promise.join(defaultPromise, setPromise);
+        } else if (!vectorMode) {
+            return Promise.join(setPromise);
+        } else {
+            return setPromise
+            .then(function () {
+                return UI.setSuppressTargetPaths(false);
+            })
+            .then(function () {
+                return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+            });
+        }
+    };
 
     /**
      * @implements {Tool}
      * @constructor
      */
     var RectangleTool = function () {
-        var toolOptions = {
-            "$Abbx": false // Don't show transform controls
-        };
-
-        var toolOptionsObj = toolLib.setToolOptions("moveTool", toolOptions),
-            resetObj = toolLib.setShapeToolMode(toolLib.toolModes.SHAPE),
-            firstLaunch = true;
-
-        var selectHandler = function () {
-            var resetPromise = descriptor.batchPlayObjects([resetObj, toolOptionsObj]),
-                defaultPromise;
-            if (firstLaunch) {
-                var fillColor = [217, 217, 217],
-                    strokeColor = [157, 157, 157];
-
-                defaultPromise = this.transfer(toolActions.installShapeDefaults,
-                    "rectangleTool", strokeColor, 2, 100, fillColor);
-
-                firstLaunch = false;
-                return Promise.join(defaultPromise, resetPromise);
-            } else {
-                return resetPromise;
-            }
-        };
-
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, { shift: true }, shortcuts.GLOBAL.TOOLS.SHAPE);
+                OS.eventKind.KEY_DOWN, { shift: true }, utilShortcuts.GLOBAL.TOOLS.SHAPE);
 
-        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", selectHandler);
+        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", _selectHandler);
        
         this.keyboardPolicyList = [shiftUKeyPolicy];
-        this.activationKey = shortcuts.GLOBAL.TOOLS.RECTANGLE;
+        this.activationKey = utilShortcuts.GLOBAL.TOOLS.RECTANGLE;
+        this.handleVectorMaskMode = true;
     };
     util.inherits(RectangleTool, Tool);
 
@@ -88,10 +103,12 @@ define(function (require, exports, module) {
             toolStore = flux.store("tool"),
             detail = event.detail;
 
-        if (detail.keyChar === shortcuts.GLOBAL.TOOLS.SHAPE && detail.modifiers.shift) {
+        if (detail.keyChar === utilShortcuts.GLOBAL.TOOLS.SHAPE && detail.modifiers.shift) {
             flux.actions.tools.select(toolStore.getToolByID("ellipse"));
         }
     };
+
+    RectangleTool.prototype.toolMode = toolLib.shapeVectorTool;
 
     module.exports = RectangleTool;
 });

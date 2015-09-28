@@ -63,6 +63,10 @@ define(function (require, exports, module) {
             return true;
         }
 
+        if (!Immutable.is(this.props.layer.vectorMaskEnabled, nextProps.layer.vectorMaskEnabled)) {
+            return true;
+        }
+
         var document = this.props.document,
             nextDocument = nextProps.document;
 

@@ -50,6 +50,10 @@ define(function (require, exports) {
             iconID += "-collapsed";
         }
 
+        if (layer.vectorMaskEnabled && layer.kind !== layer.layerKinds.VECTOR) {
+            iconID += "-mask";
+        }
+
         return iconID;
     };
 

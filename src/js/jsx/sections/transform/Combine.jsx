@@ -80,9 +80,16 @@ define(function (require, exports, module) {
             var vectorLayers = this.props.document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.VECTOR;
                 }),
-                disabled = this.props.disabled ||
+                vectorMaskLayers = this.props.document.layers.selected.filter(function (layer) {
+                    return layer.vectorMaskEnabled;
+                }),
+                shapeDisabled = this.props.disabled ||
                     vectorLayers.isEmpty() ||
-                    (this.props.document.layers.selected.size !== vectorLayers.size);
+                    (this.props.document.layers.selected.size !== vectorLayers.size),
+                vectorMaskDisabled = this.props.disabled ||
+                    vectorMaskLayers.isEmpty() ||
+                    (this.props.document.layers.selected.size !== vectorMaskLayers.size),
+                disabled = shapeDisabled && vectorMaskDisabled;
 
             return (
                 <SplitButtonList className="button-radio__fixed vector-operations" size="column-16">

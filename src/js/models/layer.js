@@ -270,7 +270,8 @@ define(function (require, exports, module) {
                 selected: this.selected,
                 isArtboard: this.isArtboard,
                 isBackground: this.isBackground,
-                isLinked: this.isLinked
+                isLinked: this.isLinked,
+                vectorMaskEnabled: this.vectorMaskEnabled
             });
         },
         /**

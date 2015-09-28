@@ -82,6 +82,35 @@
                 }
             }
         },
+        "boundsNoMask": {
+            "_obj": "rectangle",
+            "_value": {
+                "bottom": {
+                    "_unit": "pixelsUnit",
+                    "_value": 1500
+                },
+                "height": {
+                    "_unit": "pixelsUnit",
+                    "_value": 1500
+                },
+                "left": {
+                    "_unit": "pixelsUnit",
+                    "_value": 0
+                },
+                "right": {
+                    "_unit": "pixelsUnit",
+                    "_value": 2100
+                },
+                "top": {
+                    "_unit": "pixelsUnit",
+                    "_value": 0
+                },
+                "width": {
+                    "_unit": "pixelsUnit",
+                    "_value": 2100
+                }
+            }
+        },
         "channelRestrictions": [
             {
                 "_enum": "channel",
@@ -219,6 +248,35 @@
             }
         },
         "boundsNoEffects": {
+            "_obj": "rectangle",
+            "_value": {
+                "bottom": {
+                    "_unit": "pixelsUnit",
+                    "_value": 1032
+                },
+                "height": {
+                    "_unit": "pixelsUnit",
+                    "_value": 1512
+                },
+                "left": {
+                    "_unit": "pixelsUnit",
+                    "_value": -243
+                },
+                "right": {
+                    "_unit": "pixelsUnit",
+                    "_value": 1258
+                },
+                "top": {
+                    "_unit": "pixelsUnit",
+                    "_value": -480
+                },
+                "width": {
+                    "_unit": "pixelsUnit",
+                    "_value": 1501
+                }
+            }
+        },
+        "boundsNoMask": {
             "_obj": "rectangle",
             "_value": {
                 "bottom": {
