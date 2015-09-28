@@ -60,51 +60,47 @@ define(function (require, exports) {
 
     /**
      * Helper function that will break down a given layer to all it's children
-     * and return layerActionsUtil compatible layer actions to move all the kids
-     * so the overall selection ends at given position
+     * and calculate the move action for the layer and new bounds of all the children.
      *
      * @param {Document} document
      * @param {Layer} targetLayer
-     * @param {{x: number, y: number}} position
+     * @param {{relative: boolean=, x: number, y: number}} position
+     * @param {boolean=} position.relative If true, will calculate new position relative to
+     *                                     parent artboard of the layer
      * @param {Array.<{layer: Layer, x: number, y: number}>} moveResults payload for updating each layer's bounds
      *
      * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
     var _getMoveLayerActions = function (document, targetLayer, position, moveResults) {
-        var overallBounds = document.layers.childBounds(targetLayer),
+        var overallBounds = position.relative ?
+                document.layers.relativeChildBounds(targetLayer) :
+                document.layers.childBounds(targetLayer),
             deltaX = position.hasOwnProperty("x") ? position.x - overallBounds.left : 0,
             deltaY = position.hasOwnProperty("y") ? position.y - overallBounds.top : 0,
             documentRef = documentLib.referenceBy.id(document.id),
-            movingLayers = document.layers.descendants(targetLayer);
+            movingLayers = document.layers.descendants(targetLayer),
+            layerRef = [documentRef, layerLib.referenceBy.id(targetLayer.id)];
 
         moveResults = moveResults || [];
 
-        return movingLayers.reduce(function (playObjects, layer) {
+        // We only send the move command for the main layer, but we
+        // calculate the new bounds for all child layers
+        movingLayers.forEach(function (layer) {
             if (!layer.bounds || layer.bounds.empty) {
-                return playObjects;
+                return;
             }
-            var layerRef = [documentRef, layerLib.referenceBy.id(layer.id)],
-                translateObj;
-
+            
             moveResults.push({
                 layer: layer,
                 x: layer.bounds.left + deltaX,
                 y: layer.bounds.top + deltaY
             });
+        });
 
-            // If the targetlayer is an artboard, we want the move action played only for it
-            // But we still want to reposition the child layers in our models so we stop here
-            if (targetLayer.isArtboard && layer !== targetLayer) {
-                return playObjects;
-            }
-                
-            translateObj = layerLib.translate(layerRef, deltaX, deltaY);
-
-            return playObjects.push({
-                layer: layer,
-                playObject: translateObj
-            });
-        }, Immutable.List(), this);
+        return Immutable.List.of({
+            layer: targetLayer,
+            playObject: layerLib.translate(layerRef, deltaX, deltaY)
+        });
     };
          
     /**
@@ -173,8 +169,8 @@ define(function (require, exports) {
         }
         
         return Immutable.List.of(
-            { x: l1Left, y: l1Top },
-            { x: l2Left, y: l2Top }
+            { x: l1Left, y: l1Top, relative: false },
+            { x: l2Left, y: l2Top, relative: false }
         );
     };
 
@@ -317,7 +313,10 @@ define(function (require, exports) {
      * @private
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
-     * @param {{x: number, y: number}} position New top and left values for each layer
+     * @param {object} position Object describing the position to move layers to
+     * @param {number} position.x Target horizontal location of top left corner of layer
+     * @param {number} position.y Target vertical location of top left corner of the layer
+     * @param {boolean} position.relative If true, x and y will be relative to the owner artboard of layer
      *
      * @return {Promise}
      */
@@ -334,7 +333,12 @@ define(function (require, exports) {
                 historyStateInfo: {
                     name: strings.ACTIONS.SET_LAYER_POSITION,
                     target: documentLib.referenceBy.id(document.id)
-                }
+                },
+                // Setting this to false allows PS to send us
+                // notifications that happen as a result of this
+                // action, in conjunction with `suppresPlayLevelIncrease`
+                // flag in the descriptor
+                synchronous: false
             };
 
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
@@ -342,17 +346,22 @@ define(function (require, exports) {
                 return this.transfer(toolActions.resetBorderPolicies);
             }),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
-                var layerActions = _getMoveLayerActions.call(this, document, layer, position, payload.positions);
+                var layerActions = _getMoveLayerActions.call(this,
+                        document, layer, position, payload.positions);
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
 
-        var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options);
+        var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options)
+            .bind(this)
+            .then(function () {
+                return this.transfer(layerActions.resetIndex, undefined, true, true);
+            });
 
         return Promise.join(dispatchPromise, positionPromise);
     };
     setPosition.reads = [];
     setPosition.writes = [locks.PS_DOC, locks.JS_DOC];
-    setPosition.transfers = [toolActions.resetBorderPolicies];
+    setPosition.transfers = [toolActions.resetBorderPolicies, layerActions.resetIndex];
 
     /**
      * Swaps the two given layers top-left positions
@@ -429,13 +438,16 @@ define(function (require, exports) {
 
                     return descriptor.playObject(setObj);
                 }
+            })
+            .then(function () {
+                return this.transfer(layerActions.resetIndex, document, true, true);
             });
 
         return Promise.join(dispatchPromise, swapPromise);
     };
     swapLayers.reads = [];
     swapLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    swapLayers.transfers = [toolActions.resetBorderPolicies];
+    swapLayers.transfers = [toolActions.resetBorderPolicies, layerActions.resetIndex];
 
     /**
      * Sets the given layers' sizes
@@ -987,6 +999,7 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _artboardTransformHandler,
+        _moveToArtboardHandler,
         _layerTransformHandler;
 
     var beforeStartup = function () {
@@ -1044,10 +1057,16 @@ define(function (require, exports) {
             }
         }, this);
 
+        _moveToArtboardHandler = synchronization.debounce(function () {
+            // Undefined makes it use the most recent document model
+            return this.flux.actions.layers.resetIndex(undefined, true, true);
+        }, this);
+
         descriptor.addListener("transform", _layerTransformHandler);
         descriptor.addListener("move", _layerTransformHandler);
         descriptor.addListener("nudge", _layerTransformHandler);
         descriptor.addListener("editArtboardEvent", _artboardTransformHandler);
+        descriptor.addListener("moveToArtboard", _moveToArtboardHandler);
         return Promise.resolve();
     };
     beforeStartup.reads = [];
@@ -1061,6 +1080,7 @@ define(function (require, exports) {
         descriptor.removeListener("move", _layerTransformHandler);
         descriptor.removeListener("nudge", _layerTransformHandler);
         descriptor.removeListener("editArtboardEvent", _artboardTransformHandler);
+        descriptor.removeListener("moveToArtboard", _moveToArtboardHandler);
 
         return Promise.resolve();
     };

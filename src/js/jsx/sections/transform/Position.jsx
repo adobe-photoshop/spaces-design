@@ -43,7 +43,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getSelectedChildBounds = function (props) {
-                return props.document.layers.selectedChildBounds;
+                return props.document.layers.selectedRelativeChildBounds;
             };
 
             var getRelevantProps = function (props) {
@@ -64,10 +64,13 @@ define(function (require, exports, module) {
          * @param {number} newX
          */
         _handleLeftChange: function (event, newX) {
-            var document = this.props.document;
+            var document = this.props.document,
+                positionObj = {
+                    x: newX,
+                    relative: true
+                };
             
-            this.getFlux().actions.transform
-                .setPositionThrottled(document, document.layers.selected, { x: newX });
+            this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected, positionObj);
         },
 
         /**
@@ -78,10 +81,14 @@ define(function (require, exports, module) {
          * @param {number} newY
          */
         _handleTopChange: function (event, newY) {
-            var document = this.props.document;
+            var document = this.props.document,
+                positionObj = {
+                    y: newY,
+                    relative: true
+                };
             
             this.getFlux().actions.transform
-                .setPositionThrottled(document, document.layers.selected, { y: newY });
+                .setPositionThrottled(document, document.layers.selected, positionObj);
         },
 
         /**
@@ -118,7 +125,7 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.props.document,
                 layers = document.layers.selected,
-                bounds = document.layers.selectedChildBounds;
+                bounds = document.layers.selectedRelativeChildBounds;
 
             var disabled = this._disabled(document, layers),
                 tops = collection.pluck(bounds, "top"),

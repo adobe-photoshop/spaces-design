@@ -25,8 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable"),
-        _ = require("lodash");
+        Immutable = require("immutable");
 
     var descriptor = require("adapter/ps/descriptor"),
         adapterOS = require("adapter/os"),
@@ -597,17 +596,6 @@ define(function (require, exports) {
     diveIn.transfers = [layerActions.select, editLayer];
 
     /**
-     * Stores the move listener that was installed by the last drag command
-     * so we can remove it if it hasn't been hit
-     * Certain drag operations (like space+drag to move canvas) still hit
-     * dragCommand method, so we gotta make sure there is only one move listener installed
-     * for this function at any point
-     *
-     * @type {function(event)}
-     */
-    var _moveToArtboardListener = null;
-
-    /**
      * Selects and starts dragging the layer around
      *
      * @param {Document} doc
@@ -622,8 +610,7 @@ define(function (require, exports) {
             coordinates = [x, y],
             dragModifiers = keyUtil.modifiersToBits(modifiers),
             diveIn = system.isMac ? modifiers.command : modifiers.control,
-            dontDeselect = modifiers.shift,
-            copyDrag = modifiers.option;
+            dontDeselect = modifiers.shift;
 
         if (panning) {
             var dragEvent = {
@@ -650,18 +637,6 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function (anySelected) {
                         if (anySelected) {
-                            if (_moveToArtboardListener) {
-                                descriptor.removeListener("moveToArtboard", _moveToArtboardListener);
-                            }
-
-                            if (!copyDrag) {
-                                _moveToArtboardListener = _.once(function () {
-                                    this.flux.actions.layers.resetIndex(doc, true, true);
-                                }.bind(this));
-
-                                descriptor.addListener("moveToArtboard", _moveToArtboardListener);
-                            }
-
                             var dragEvent = {
                                 eventKind: eventKind,
                                 location: coordinates,
