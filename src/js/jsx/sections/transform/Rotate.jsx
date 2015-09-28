@@ -160,7 +160,7 @@ define(function (require, exports, module) {
                         step={1}
                         bigstep={15}
                         ref="rotate"
-                        size="column-3" />
+                        size="column-4" />
                 </div>
             );
         }

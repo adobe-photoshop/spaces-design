@@ -54,7 +54,6 @@ define(function (require, exports, module) {
             var positionRotateClasses = classnames("formline",
                 "formline__bottom-align",
                 "formline__space-between",
-                "column-24",
                 "formline__padded-first-child");
             
             return (
@@ -63,7 +62,7 @@ define(function (require, exports, module) {
                         <AlignDistribute document={this.props.document} />
                     </header>
                     <div className="section-container__no-collapse transform__body">
-                        <div className="formline column-24 formline__padded-first-child">
+                        <div className="formline formline__padded-first-child formline__space-between">
                             <div className="control-group">
                                 <Size document={this.props.document} />
                             </div>
