@@ -441,7 +441,10 @@ define(function (require, exports, module) {
                 throw new Error("Could not revert using cached history state, document model not found");
             }
 
-            var newState = lastHistoryState.cloneFoRevert();
+            var newState = new HistoryState({
+                document: lastHistoryState.document,
+                documentExports: lastHistoryState.documentExports
+            });
 
             // push a new history on top of current
             this._pushHistoryState.call(this, newState, false, true);
