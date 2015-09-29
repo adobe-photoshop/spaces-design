@@ -501,6 +501,8 @@ define(function (require, exports, module) {
      */
     Layer.fromDescriptor = function (document, layerDescriptor, selected, initialized) {
         var id = layerDescriptor.layerID,
+            artboardEnabled = layerDescriptor.artboardEnabled,
+            exportEnabled = artboardEnabled && layerDescriptor.exportEnabled !== false || layerDescriptor.exportEnabled,
             documentID,
             resolution;
 
@@ -534,7 +536,7 @@ define(function (require, exports, module) {
             proportionalScaling: layerDescriptor.proportionalScaling,
             isArtboard: layerDescriptor.artboardEnabled,
             vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
-            exportEnabled: layerDescriptor.exportEnabled,
+            exportEnabled: exportEnabled,
             isLinked: _extractIsLinked(layerDescriptor),
             initialized: initialized || selected
             // if not explicitly marked as initialized, then it is initialized iff it is selected
@@ -556,6 +558,8 @@ define(function (require, exports, module) {
      */
     Layer.prototype.resetFromDescriptor = function (layerDescriptor, previousDocument) {
         var resolution = previousDocument.resolution,
+            artboardEnabled = layerDescriptor.artboardEnabled,
+            exportEnabled = artboardEnabled && layerDescriptor.exportEnabled !== false || layerDescriptor.exportEnabled,
             model = {
                 name: layerDescriptor.name,
                 kind: layerDescriptor.layerKind,
@@ -573,7 +577,7 @@ define(function (require, exports, module) {
                 proportionalScaling: layerDescriptor.proportionalScaling,
                 isArtboard: layerDescriptor.artboardEnabled,
                 vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
-                exportEnabled: layerDescriptor.exportEnabled,
+                exportEnabled: exportEnabled,
                 isLinked: _extractIsLinked(layerDescriptor),
                 initialized: true
             };

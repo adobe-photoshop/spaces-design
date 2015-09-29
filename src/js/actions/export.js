@@ -94,7 +94,7 @@ define(function (require, exports) {
         // helper to build play object for  individual layers
         var _buildPlayObject = function (layerID) {
             var layerExports = documentExports.getLayerExports(layerID),
-                layerExportsArray = layerExports && layerExports.toJS() || [],
+                layerExportsArray = layerExports.toJS(),
                 layer = document.layers.byID(layerID);
 
             if (!document || !layer) {
