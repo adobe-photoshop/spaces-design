@@ -407,6 +407,7 @@
         "TITLE_SETTINGS": "Settings",
         "EXPORT_DOCUMENT_FILENAME": "document",
         "ONLY_UNSUPPORTED_LAYERS_SELECTED": "No supported layers selected",
+        "EXPORT_MIXED": "Selection has mixed exports",
         "NO_ASSETS": "No exports configured",
         "USE_PREFIX": "Use Prefix"
     },

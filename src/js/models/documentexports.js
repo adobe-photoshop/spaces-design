@@ -167,6 +167,19 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Given a set of layers, return true if at least one layer has at least one asset
+     *
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @return {boolean}
+     */
+    Object.defineProperty(DocumentExports.prototype, "layersHaveSomeAssets",
+        objUtil.cachedLookupSpec(function (layers) {
+            return layers.some(function (layer) {
+                return !this.getLayerExports(layer.id).isEmpty();
+            }, this);
+        }));
+
+    /**
      * Given a set of layers, produce a "zipped" list of of lists of ExportAssets for those layers,
      * grouped by index within the layers
      *

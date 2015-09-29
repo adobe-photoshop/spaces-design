@@ -184,6 +184,23 @@ define(function (require, exports, module) {
             dialog.toggle(event);
         },
 
+        /**
+         * Generate a basic panel message component with the supplied message text
+         *
+         * @private
+         * @param {string} message
+         * @return {Component}
+         */
+        _messageComponent: function (message) {
+            return (
+                <div className="libraries__content panel__info">
+                    <div className="panel__info__body">
+                        {message}
+                    </div>
+                </div>
+            );
+        },
+
         render: function () {
             var document = this.props.document,
                 documentExports = this.state.documentExports,
@@ -204,22 +221,15 @@ define(function (require, exports, module) {
                     if (supportedLayers.isEmpty()) {
                         // Special case: there are selected layers, but none is supported
                         disabled = true;
-                        containerContents = (
-                            <div className="libraries__content panel__info">
-                                <div className="panel__info__body">
-                                    {strings.EXPORT.ONLY_UNSUPPORTED_LAYERS_SELECTED}
-                                </div>
-                            </div>
-                        );
+                        containerContents = this._messageComponent(strings.EXPORT.ONLY_UNSUPPORTED_LAYERS_SELECTED);
                     } else if (documentExports.getUniformAssetsOnly(supportedLayers).isEmpty()) {
-                        // Special case: there are selected layers, but no common assets (or none at all)
-                        containerContents = (
-                            <div className="libraries__content panel__info">
-                                <div className="panel__info__body">
-                                    {strings.EXPORT.NO_ASSETS}
-                                </div>
-                            </div>
-                        );
+                        if (documentExports.layersHaveSomeAssets(supportedLayers)) {
+                            // No uniform assets, but SOME assets, so this is a mixed state
+                            containerContents = this._messageComponent(strings.EXPORT.EXPORT_MIXED);
+                        } else {
+                            // The selected+supported layers have no assets what-so-ever
+                            containerContents = this._messageComponent(strings.EXPORT.NO_ASSETS);
+                        }
                     }
                 } else {
                     supportedLayers = undefined;
