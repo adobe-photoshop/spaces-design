@@ -648,6 +648,7 @@ define(function (require, exports, module) {
         _checkAndDrawArtboardAdder: function (svg, artboard, otherArtboards, direction) {
             var bounds = artboard.bounds,
                 scale = this._scale,
+                pxToRem = this.getFlux().store("ui").pxToRem,
                 checkBounds = this._getNewArtboardBounds(bounds, direction),
                 intersects = otherArtboards.some(function (artboard) {
                     return checkBounds.intersects(artboard.bounds);
@@ -658,9 +659,9 @@ define(function (require, exports, module) {
             }
 
             var adderXCenter, adderYCenter,
-                padding = 50 * scale,
-                crosshairLength = 3.5 * scale,
-                circleRadius = 13 * scale;
+                padding = pxToRem(50) * scale,
+                crosshairLength = pxToRem(7) * scale,
+                circleRadius = pxToRem(26) * scale;
 
             switch (direction) {
                 case "n":

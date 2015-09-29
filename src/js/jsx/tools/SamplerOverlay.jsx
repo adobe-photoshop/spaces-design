@@ -268,20 +268,19 @@ define(function (require, exports, module) {
 
             var samples = _.filter(this.state.sampleTypes, "value"),
                 mouseX = this.state.samplePoint.x,
-                mouseY = this.state.samplePoint.y;
+                mouseY = this.state.samplePoint.y,
+                pxToRem = this.getFlux().store("ui").pxToRem;
             
             if (samples.length === 0) {
                 return;
             }
 
             // Constants
-            // TODO: Do we need to hook up sampleSize to the app rem size for different screens?
-            // Values all based on the single sampleSize variable
-            var sampleSize = 24,
+            var sampleSize = pxToRem(40),
                 rectWidth = (sampleSize * samples.length) + (sampleSize / 3),
                 rectHeight = Math.round(sampleSize * 1.25),
                 rectTLXOffset = -rectWidth / 2,
-                rectTLYOffset = -sampleSize - 16,
+                rectTLYOffset = -sampleSize - pxToRem(26),
                 rectRound = sampleSize / 6;
 
             var rectTLX = Math.round(mouseX + rectTLXOffset),
@@ -291,9 +290,9 @@ define(function (require, exports, module) {
             var trianglePoints = [
                 { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.4166666667 },
                 { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.5 },
-                { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.5 },
+                { x: mouseX + sampleSize * 0.20833, y: mouseY - sampleSize * 0.5 },
                 { x: mouseX + sampleSize * 0.20833, y: mouseY - sampleSize * 0.4166666667 },
-                { x: mouseX, y: mouseY - 5 }
+                { x: mouseX, y: mouseY - pxToRem(5) }
             ];
 
             var lineFunction = d3.svg.line()
