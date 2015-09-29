@@ -61,7 +61,8 @@ define(function (require, exports, module) {
                     LAYER_EFFECTS_BATCH_CHANGED: "layerEffectsBatchChanged",
                     RADII_CHANGED: "radiiChanged",
                     TYPE_COLOR_CHANGED: "typeColorChanged",
-                    ADD_VECTOR_MASK_TO_LAYER: "AddVectorMaskToLayer"
+                    ADD_VECTOR_MASK_TO_LAYER: "AddVectorMaskToLayer",
+                    REMOVE_VECTOR_MASK_FROM_LAYER: "RemoveVectorMaskFromLayer"
                 },
                 nonOptimistic: {
                     STROKE_ADDED: "strokeAdded",
