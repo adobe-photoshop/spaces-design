@@ -439,7 +439,8 @@ define(function (require, exports, module) {
                         area.top < y && area.bottom > y;
 
                 if (intersects) {
-                    if (policy.action === UI.policyAction.ALWAYS_PROPAGATE) {
+                    if (policy.action === UI.policyAction.ALWAYS_PROPAGATE ||
+                        policy.action === UI.policyAction.ALPHA_PROPAGATE) {
                         underAlways = true;
                     } else {
                         underAlways = false;
