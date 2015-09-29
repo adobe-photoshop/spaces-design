@@ -87,6 +87,7 @@ define(function (require, exports, module) {
         componentWillUnmount: function () {
             OS.removeListener("externalMouseMove", this.mouseMoveHandler);
             window.removeEventListener("mousemove", this.windowMouseMoveHandler);
+            window.removeEventListener("resize", this.drawOverlay);
         },
 
         componentDidMount: function () {
@@ -98,6 +99,7 @@ define(function (require, exports, module) {
             // Marquee mouse handlers
             OS.addListener("externalMouseMove", this.mouseMoveHandler);
             window.addEventListener("mousemove", this.windowMouseMoveHandler);
+            window.addEventListener("resize", this.drawOverlay);
         },
 
         componentDidUpdate: function () {
