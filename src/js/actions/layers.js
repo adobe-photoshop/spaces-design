@@ -1025,11 +1025,17 @@ define(function (require, exports) {
                 if (resetHistory) {
                     this.transfer(historyActions.queryCurrentHistory, document.id);
                 }
+            })
+            .then(function () {
+                var nextDocument = this.flux.store("document").getDocument(document.id),
+                    selected = nextDocument.layers.selected;
+
+                return this.transfer(initializeLayers, nextDocument, selected);
             });
     };
     removeLayers.reads = [locks.PS_DOC];
     removeLayers.writes = [locks.JS_DOC];
-    removeLayers.transfers = ["history.queryCurrentHistory"];
+    removeLayers.transfers = ["history.queryCurrentHistory", initializeLayers];
     removeLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
