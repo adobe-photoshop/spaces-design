@@ -76,6 +76,15 @@ define(function (require, exports, module) {
          * @type {AdobeLibraryElement}
          */
         lastLocallyCreatedElement: null,
+        
+        /**
+         * Store the last locally updated graphic element and modified time. Used to determine whether the 
+         * library list should scroll to reveal the updated graphic.
+         * 
+         * @type {AdobeLibraryElement}
+         */
+        lastLocallyUpdatedGraphic: null,
+        lastLocallyUpdatedGraphicModified: null,
 
         getInitialState: function () {
             return {
@@ -90,15 +99,29 @@ define(function (require, exports, module) {
         },
         
         componentDidUpdate: function () {
-            if (this.lastLocallyCreatedElement !== this.props.lastLocallyCreatedElement) {
-                this.lastLocallyCreatedElement = this.props.lastLocallyCreatedElement;
-                
+            var scrollTo = function (element) {
                 // Scroll to reveal the newly created element.
-                var typeName = _ELEMENT_TYPE_TO_NAME_MAP[this.lastLocallyCreatedElement.type],
+                var typeName = _ELEMENT_TYPE_TO_NAME_MAP[element.type],
                     sectionClass = "libraries__assets__" + typeName,
                     graphicsListEle = window.document.getElementsByClassName(sectionClass)[0];
                     
                 graphicsListEle.scrollIntoView();
+            };
+            
+            if (this.lastLocallyCreatedElement !== this.props.lastLocallyCreatedElement) {
+                this.lastLocallyCreatedElement = this.props.lastLocallyCreatedElement;
+                scrollTo(this.lastLocallyCreatedElement);
+            }
+            
+            if (this.lastLocallyUpdatedGraphic &&
+                (this.lastLocallyUpdatedGraphic !== this.props.lastLocallyUpdatedGraphic ||
+                 this.lastLocallyUpdatedGraphicModified !== this.props.lastLocallyUpdatedGraphic.modified)) {
+                this.lastLocallyUpdatedGraphic = this.props.lastLocallyUpdatedGraphic;
+                this.lastLocallyUpdatedGraphicModified = this.props.lastLocallyUpdatedGraphic.modified;
+                
+                if (this.lastLocallyUpdatedGraphic.library === this.props.library) {
+                    scrollTo(this.lastLocallyUpdatedGraphic);
+                }
             }
         },
         
