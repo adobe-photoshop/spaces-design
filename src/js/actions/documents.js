@@ -375,7 +375,7 @@ define(function (require, exports) {
                     historyPromise = current ?
                         this.transfer(historyActions.queryCurrentHistory, doc.documentID, true) :
                         Promise.resolve(null),
-                    guidesPromise = _getGuidesForDocument(doc);
+                    guidesPromise = current ? _getGuidesForDocument(doc) : Promise.resolve();
 
                 return Promise.join(layersPromise, historyPromise, guidesPromise,
                     function (payload, historyPayload, guidesPayload) {
