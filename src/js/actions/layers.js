@@ -756,8 +756,9 @@ define(function (require, exports) {
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a single layer that
      *  the selection is based on, or an array of such layers
-     * @param {string} modifier Way of modifying the selection. Possible values
-     *  are defined in `adapter/src/lib/layer.js` under `select.vals`
+     * @param {string=} modifier Way of modifying the selection. Possible values
+     *  are defined in `adapter/src/lib/layer.js` under `select.vals`.
+     *  Default is similar to "select", but the pivot layer will always be cleared.
      *
      * @returns {Promise}
      */
@@ -770,57 +771,91 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var payload = {
-            documentID: document.id
-        };
-
-        // TODO: Dispatch optimistically here for the other modifiers, and
-        // eventually remove SELECT_LAYERS_BY_INDEX.
-        var dispatchPromise,
-            revealPromise;
-            
-        if (!modifier || modifier === "select") {
-            payload.selectedIDs = collection.pluck(layerSpec, "id");
-            dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
-                .bind(this)
-                .then(function () {
-                    this.transfer(initializeLayers, document, layerSpec);
-                });
-            revealPromise = this.transfer(revealLayers, document, layerSpec);
-        } else {
-            dispatchPromise = Promise.resolve();
-            revealPromise = Promise.resolve();
+        if (modifier !== undefined && layerSpec.size > 1) {
+            return Promise.reject(new Error("Select with modifier requires a single layer"));
         }
 
-        var layerRef = layerSpec
+        var selected = document.layers.selected,
+            pivot = document.layers.pivot,
+            nextSelected,
+            nextPivot;
+
+        switch (modifier) {
+        case "select":
+            nextSelected = layerSpec;
+            nextPivot = layerSpec.first();
+            break;
+        case "deselect":
+            nextSelected = selected.filterNot(function (layer) {
+                return layerSpec.first().id === layer.id;
+            });
+            if (pivot) {
+                if (pivot.id === layerSpec.first().id) {
+                    nextPivot = selected.first();
+                } else {
+                    nextPivot = pivot;
+                }
+            }
+            break;
+        case "add":
+            nextSelected = selected.concat(layerSpec);
+            nextPivot = pivot;
+            break;
+        case "addUpTo":
+            if (selected.isEmpty()) {
+                nextSelected = layerSpec;
+                nextPivot = layerSpec.first();
+            } else {
+                nextPivot = pivot || selected.first();
+
+                var pivotIndex = document.layers.indexOf(nextPivot),
+                    targetIndex = document.layers.indexOf(layerSpec.first()),
+                    firstIndex = Math.min(pivotIndex, targetIndex),
+                    lastIndex = Math.max(pivotIndex, targetIndex);
+
+                nextSelected = document.layers.exposed.filter(function (layer) {
+                    var index = document.layers.indexOf(layer);
+
+                    return firstIndex <= index && index <= lastIndex;
+                });
+            }
+            break;
+        default:
+            nextSelected = layerSpec;
+            nextPivot = null;
+        }
+
+        var payload = {
+            documentID: document.id,
+            selectedIDs: collection.pluck(nextSelected, "id"),
+            pivotID: nextPivot && nextPivot.id
+        };
+
+        var dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
+                .bind(this)
+                .then(function () {
+                    var policiesPromise = this.transfer(tools.resetBorderPolicies),
+                        initializePromise = this.transfer(initializeLayers, document, nextSelected);
+
+                    return Promise.join(policiesPromise, initializePromise);
+                }),
+            revealPromise = this.transfer(revealLayers, document, nextSelected);
+
+        var layerRef = (modifier === "deselect" ? layerSpec : nextSelected)
             .map(function (layer) {
                 return layerLib.referenceBy.id(layer.id);
             })
             .unshift(documentLib.referenceBy.id(document.id))
             .toArray();
 
-        var selectObj = layerLib.select(layerRef, false, modifier),
+        var selectObj = layerLib.select(layerRef, false, modifier === "deselect" ? modifier : undefined),
             selectPromise = descriptor.playObject(selectObj)
                 .bind(this)
                 .then(function () {
-                    if (modifier && modifier !== "select") {
-                        var revealPromise = this.transfer(revealLayers, document, layerSpec),
-                            resetPromise = this.transfer(resetSelection, document);
-
-                        return Promise.join(resetPromise, revealPromise);
-                    }
-                }).then(function () {
                     return this.transfer(tools.changeVectorMaskMode, false);
                 });
 
-        var modelUpdatePromise = Promise.join(dispatchPromise, selectPromise)
-            .bind(this)
-            .then(function () {
-                // Wait for the model to e updated with the new selected layers
-                return this.transfer(tools.resetBorderPolicies);
-            });
-
-        return Promise.join(modelUpdatePromise, revealPromise);
+        return Promise.join(dispatchPromise, revealPromise, selectPromise);
     };
     select.reads = [];
     select.writes = [locks.PS_DOC, locks.JS_DOC];
