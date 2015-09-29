@@ -192,13 +192,17 @@ define(function (require, exports, module) {
                 exportDisabled = this.state.exportDisabled || exportState.serviceBusy || !exportState.serviceAvailable,
                 selectedLayers,
                 supportedLayers,
-                containerContents;
+                containerContents,
+                uniformAssets,
+                withoutLayerExports;
 
             if (!documentExports || disabled) {
                 containerContents = null;
             } else {
                 selectedLayers = this.props.document.layers.selected;
                 supportedLayers = document.layers.filterExportable(selectedLayers);
+                uniformAssets = documentExports.getUniformAssetsOnly(supportedLayers);
+                withoutLayerExports = documentExports.filterLayersWithoutExports(supportedLayers);
                 
                 if (!selectedLayers.isEmpty()) {
                     if (supportedLayers.isEmpty()) {
@@ -211,8 +215,26 @@ define(function (require, exports, module) {
                                 </div>
                             </div>
                         );
-                    } else if (documentExports.getUniformAssetsOnly(supportedLayers).isEmpty()) {
-                        // Special case: there are selected layers, but no common assets (or none at all)
+                    } else if (withoutLayerExports.count() === supportedLayers.count() && supportedLayers.count() > 1) {
+                        // There are selected layers, but no assets
+                        containerContents = (
+                            <div className="libraries__content panel__info">
+                                <div className="panel__info__body">
+                                    {strings.EXPORT.NO_ASSETS}
+                                </div>
+                            </div>
+                        );
+                    } else if (uniformAssets.isEmpty() && supportedLayers.count() > 1) {
+                        // There are selected layers, but no common assets
+                        containerContents = (
+                            <div className="libraries__content panel__info">
+                                <div className="panel__info__body">
+                                    {strings.EXPORT.EXPORT_MIXED}
+                                </div>
+                            </div>
+                        );
+                    } else if (uniformAssets.isEmpty()) {
+                        // There are no assets for the layer(s)
                         containerContents = (
                             <div className="libraries__content panel__info">
                                 <div className="panel__info__body">
