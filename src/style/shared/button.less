@@ -218,7 +218,7 @@ button {
         top: 0;
         left: 0;
         background: transparent;
-        border: .21rem solid @warm-gray;
+        border: .21rem solid @icon-active;
         border-radius: .21rem;
         &:after {
             content: '';
@@ -234,8 +234,8 @@ button {
             opacity: 0;
             transform: rotate(-45deg);
         }
-        &:hover::after {
-            opacity: 0.3;
+        &:hover {
+            border: .21rem solid @icon-hover;
         }
     }
     input[type=checkbox] {
@@ -243,7 +243,10 @@ button {
         margin: 0;
         
         &:checked + label {
-            background-color: @warm-gray;
+            background-color: @icon-active;
+        }
+        &:checked:hover + label {
+            background-color: @icon-hover;
         }
         &:checked + label:after {
           opacity: 1;
@@ -253,7 +256,7 @@ button {
 
 .button-checkbox__mixed {
     label {
-        background-color: @warm-gray;
+        background-color: @icon-active;
         &:after {
             top: 0.1rem;
             left: 0.1rem;
@@ -261,38 +264,8 @@ button {
             opacity: 1;
             transform: rotate(0);
         }
-    }
-}
-
-// Fixing for Retina
-@media (-webkit-min-device-pixel-ratio: 2) {
-    .button-checkbox {
-        width: 11px;
-        height: 11px;
-
-        label {
-            width: 11px;
-            height: 11px;
-            &:after {
-                content: '';
-                width: 0.7rem;
-                height: 0.3rem;
-                border-width: 2px;
-                position: absolute;
-                top: 2px;
-                left: 0px;
-            }
+        &:hover {
+            background-color: @icon-hover;
         }
     }
-
-    .button-checkbox__mixed {
-        label {
-            &:after {
-                top: 2px;
-                left: 1px;
-                width: 7px;
-            }
-        }
-    }
-
 }
