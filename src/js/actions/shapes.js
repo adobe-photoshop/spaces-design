@@ -187,34 +187,23 @@ define(function (require, exports) {
 
         options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE);
 
-        if (_allStrokesExist(layers)) {
-            // toJS gets rid of color so we re-insert it here
-            strokeJSObj.color = stroke.color.normalizeAlpha();
-            strokeJSObj.opacity = strokeJSObj.color.a;
+        // toJS gets rid of color so we re-insert it here
+        strokeJSObj.color = stroke.color.normalizeAlpha();
+        strokeJSObj.opacity = strokeJSObj.color.a;
 
-            // optimistically dispatch the change event    
-            var dispatchPromise = _strokeChangeDispatch.call(this,
-                document,
-                layers,
-                strokeJSObj,
-                eventName);
+        // optimistically dispatch the change event    
+        var dispatchPromise = _strokeChangeDispatch.call(this,
+            document,
+            layers,
+            strokeJSObj,
+            eventName);
 
-            var strokePromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
+        var strokePromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
-            // after both, if enabled has potentially changed, transfer to resetBounds
-            return Promise.join(dispatchPromise,
-                    strokePromise,
-                    function () {
-                        return this.transfer(layerActions.resetBounds, document, layers);
-                    }.bind(this));
-        } else {
-            return layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options)
-                .bind(this)
-                .then(function () {
-                    // upon completion, fetch the stroke info for all layers
-                    return _refreshStrokes.call(this, document, layers);
-                });
-        }
+        return Promise.join(dispatchPromise, strokePromise,
+            function () {
+                return this.transfer(layerActions.resetBounds, document, layers);
+            }.bind(this));
     };
     setStroke.reads = [];
     setStroke.writes = [locks.PS_DOC, locks.JS_DOC];
