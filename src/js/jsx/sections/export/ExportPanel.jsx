@@ -186,7 +186,7 @@ define(function (require, exports, module) {
 
         /**
          * Generate a basic panel message component with the supplied message text
-         * 
+         *
          * @private
          * @param {string} message
          * @return {Component}

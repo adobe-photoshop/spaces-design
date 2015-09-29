@@ -175,9 +175,7 @@ define(function (require, exports, module) {
     Object.defineProperty(DocumentExports.prototype, "layersHaveSomeAssets",
         objUtil.cachedLookupSpec(function (layers) {
             return layers.some(function (layer) {
-                var exportList = this.getLayerExports(layer.id);
-
-                return exportList && !exportList.isEmpty();
+                return !this.getLayerExports(layer.id).isEmpty();
             }, this);
         }));
 
