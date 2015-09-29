@@ -124,17 +124,18 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            return this.layers.unsupported;
+            return this.layers && this.layers.unsupported;
         }
     }));
 
     /**
      * Construct a new document model from a Photoshop document descriptor and
-     * a list of layer and guide descriptors.
+     * a list of layer and guide descriptors. The latter may be omitted if the
+     * document is being partially initialized, e.g., as an inactive document.
      * 
      * @param {object} documentDescriptor
-     * @param {Immutable.Iterator.<object>} layerDescriptors
-     * @param {Immutable.Iterator.<object>} guideDescriptors
+     * @param {Immutable.Iterator.<object>=} layerDescriptors
+     * @param {Immutable.Iterator.<object>=} guideDescriptors
      * @return {Document}
      */
     Document.fromDescriptors = function (documentDescriptor, layerDescriptors, guideDescriptors) {
@@ -149,7 +150,7 @@ define(function (require, exports, module) {
         model.guidesVisible = documentDescriptor.guidesVisibility;
         model.smartGuidesVisible = documentDescriptor.smartGuidesVisibility;
         model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
-        model.layers = LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
+        model.layers = layerDescriptors && LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
         model.guides = guideDescriptors ? Guide.fromDescriptors(documentDescriptor, guideDescriptors) :
             Immutable.List();
 
@@ -180,7 +181,7 @@ define(function (require, exports, module) {
          * @type {Bounds}
          */
         "visibleBounds": function () {
-            if (this.layers.hasArtboard) {
+            if (this.layers && this.layers.hasArtboard) {
                 return this.layers.overallBounds;
             } else {
                 return this.bounds;
