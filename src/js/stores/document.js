@@ -366,18 +366,40 @@ define(function (require, exports, module) {
         },
 
         /**
-         * When a layer visibility is toggled, updates the layer object.
+         * Update basic properties (e.g., name, opacity, etc.) of the given layerMap.
+         * LayerID => properties
          *
          * @private
-         * @param {{documentID: number, layerID: number, visible: boolean}} payload
+         * @param {number} documentID
+         * @param {Immutable.Map.<number, object>} layerMap
+         */
+        _updateLayerPropertiesMap: function (documentID, layerMap) {
+            var document = this._openDocuments[documentID],
+                nextLayers = document.layers.setLayerPropsMap(layerMap),
+                nextDocument = document.set("layers", nextLayers);
+
+            this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * When a layer visibility is toggled, updates the layer object.
+         * layerProps can be either an object {layerID: number, visible: boolean}
+         * or Immutable.Map<number, boolean>  --> LayerID => visible
+         *
+         * @private
+         * @param {{documentID: number, layerProps: object|Immutable.Map}} payload
          */
         _handleVisibilityChanged: function (payload) {
             var documentID = payload.documentID,
-                layerID = payload.layerID,
-                layerIDs = Immutable.List.of(layerID),
-                visible = payload.visible;
+                layerProps = payload.layerProps,
+                visibilityMap = Immutable.Map.isMap(layerProps) ?
+                    layerProps :
+                    Immutable.Map([[layerProps.layerID, layerProps.visible]]),
+                layerMap = visibilityMap.map(function (visible) {
+                    return Immutable.Map({ visible: visible });
+                });
 
-            this._updateLayerProperties(documentID, layerIDs, { visible: visible });
+            this._updateLayerPropertiesMap(documentID, layerMap);
         },
 
         /**

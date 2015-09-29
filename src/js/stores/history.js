@@ -406,7 +406,8 @@ define(function (require, exports, module) {
             if (!nextState.document) {
                 throw new Error("Could not find a valid document for the requested state");
             } else {
-                var nextDocument = nextState.document,
+                var currentDocument = this.flux.store("application").getCurrentDocument(),
+                    nextDocument = nextState.document,
                     nextDocumentExports = nextState.documentExports;
 
                 if (payload.selectedIndices) {
@@ -417,6 +418,13 @@ define(function (require, exports, module) {
                         
                     nextDocument = nextDocument.set("layers", nextLayers);
                 }
+
+                // Overlay layer visibility values from the current document.
+                // Even though we will also fetch layer visibilities separately from Photoshop,
+                // this will allow us to paint most of the UI with our best guess
+                // and only late-change the layers panel in the rare case that visibility was re-enabled
+                // by undoing to a history state that deals with an otherwise invisible layer
+                nextDocument = nextDocument.overlayVisibility(currentDocument);
 
                 // these will emit their own changes
                 this.flux.store("document").setDocument(nextDocument);

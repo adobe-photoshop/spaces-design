@@ -165,7 +165,10 @@ define(function (require, exports) {
                             });
                         })
                         .then(function () {
-                            return this.transfer(toolActions.resetBorderPolicies);
+                            var borderPromise = this.transfer(toolActions.resetBorderPolicies),
+                                visibilityPromise = this.transfer(layerActions.resetLayerVisibility, document);
+
+                            return Promise.join(borderPromise, visibilityPromise);
                         });
                 });
         } else {
@@ -204,7 +207,8 @@ define(function (require, exports) {
     };
     incrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
     incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
-    incrementHistory.transfers = [toolActions.resetBorderPolicies, "documents.updateDocument"];
+    incrementHistory.transfers = [toolActions.resetBorderPolicies, "layers.resetLayerVisibility",
+        "documents.updateDocument"];
     incrementHistory.modal = true;
 
     /**
@@ -230,7 +234,8 @@ define(function (require, exports) {
     };
     decrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
     decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
-    decrementHistory.transfers = [toolActions.resetBorderPolicies, "documents.updateDocument"];
+    decrementHistory.transfers = [toolActions.resetBorderPolicies, "layers.resetLayerVisibility",
+        "documents.updateDocument"];
     decrementHistory.modal = true;
 
     /**

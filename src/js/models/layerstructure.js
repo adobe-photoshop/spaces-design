@@ -1113,6 +1113,17 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Merges properties into the layers based on a map of simple property maps, keyed by layer ID
+     *
+     * @param {Immutable.Map.<number, Immutable.Map>} layerMap
+     */
+    LayerStructure.prototype.setLayerPropsMap = function (layerMap) {
+        return this.mergeDeep({
+            layers: layerMap
+        });
+    };
+
+    /**
      * Update the bounds of the given layers.
      *
      * @private
@@ -1620,6 +1631,23 @@ define(function (require, exports, module) {
      */
     LayerStructure.prototype.setParagraphStyleProperties = function (layerIDs, properties) {
         return this._setTextStyleProperties("paragraphStyle", layerIDs, properties);
+    };
+
+    /**
+     * Given a set of layers representing the current state, overlay the visibility status
+     * of any matching layers
+     *
+     * @param {LayerStructure} layerTree
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.overlayVisibility = function (layerTree) {
+        var nextLayers = layerTree.layers.map(function (layer, key) {
+            if (this.layers.has(key)) {
+                return this.layers.get(key).set("visible", layer.visible);
+            }
+        }, this);
+
+        return this.set("layers", this.layers.merge(nextLayers));
     };
 
     module.exports = LayerStructure;
