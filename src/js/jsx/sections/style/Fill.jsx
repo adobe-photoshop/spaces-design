@@ -115,8 +115,6 @@ define(function (require, exports, module) {
 
             var fillOverlay = function (colorTiny) {
                 var fillStyle = {
-                    height: "100%",
-                    width: "100%",
                     backgroundColor: colorTiny ? colorTiny.toRgbString() : "transparent"
                 };
                 

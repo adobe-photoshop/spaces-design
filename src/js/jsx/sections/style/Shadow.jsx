@@ -321,7 +321,7 @@ define(function (require, exports) {
             return (
                 <div className={shadowClasses}>
                     <div className="formline formline__no-padding">
-                        <div className="control-group column-3">
+                        <div className="control-group control-group__vertical">
                             <ColorInput
                                 id={colorInputID}
                                 className={"shadow"}
@@ -336,13 +336,13 @@ define(function (require, exports) {
                                 swatchOverlay={shadowOverlay}>
                             </ColorInput>
                         </div>
-                        <div className="control-group column-23">
+                        <div className="column-21 control-group__horizontal__left">
                             <BlendMode
                                 listID={blendModelistID}
                                 modes={downsample.blendModes}
                                 handleChange={this._blendModeChanged}
                                 disabled={this.props.disabled}
-                                size="column-20"
+                                size="column-19"
                                 onChange={this._blendModeChanged} />
                         </div>
                         <ToggleButton

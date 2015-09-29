@@ -25,22 +25,27 @@
     display: flex;
     justify-content: flex-start;
     align-content: center;
-    margin-right: 1rem;
+    margin-right: 0.8rem;
     margin-top: 0.7rem;
 }
 
 .color-input {    
-    .stroke__preview,
-    .type__preview,
-    .fill__preview {
-        z-index: 10;
+    .fill__preview,
+    .stroke__preview {
+        height: 100%;
+        width: 100%;
     }
 
-    .stroke__preview {
+    .stroke__preview:after {
+        position: absolute;
+        content: " ";
         width: 50%;
         height: 50%;
+        left: 25%;
+        top: 25%;
         background-color: @bg-panel;
         border-radius: 0.2rem;
+        z-index: 10;
     }
         
     .type__preview {
@@ -49,10 +54,6 @@
         font-size: 2rem;        
     }
     
-}
-
-.vector-fill .color-input__swatch__background-hide {
-    background: none;
 }
 
 .color-input__swatch__background,
