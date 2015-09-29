@@ -27,7 +27,7 @@
 
 .search-bar__dialog {
     background: url(../img/ico-layer-search.svg) no-repeat left @bg-panel;
-    background-size: 2rem;
+    background-size: @text-xxlarge;
     background-position: 1.7rem 1.5rem;
     top: 25%;
     left: 50%;
@@ -70,10 +70,13 @@
 
 .search-bar__dialog .drop-down input {
     border: none;
-    font-size: 2rem;
+    font-size: @text-xxlarge;
     margin-left: 1.1rem;
     width: 42rem;
     color: @item-hover;
+    height: auto;
+    line-height: 2.8rem;
+    background: rgba(0, 0, 0, 0);
 }
 
 .search-bar__dialog .drop-down.hasIcon input {
@@ -90,13 +93,13 @@
     border: none;
 }
 
-.search-bar__dialog .drop-down input:focus:hover {
+.search-bar__dialog .drop-down input:hover, .search-bar__dialog .drop-down input:focus:hover {
     background: rgba(0,0,0,0);
     border: none;
 }
 
 .search-bar__dialog .drop-down .hidden-input {
-    font-size: 2rem;
+    font-size: @text-xxlarge;
     display: inline-block;
     position: absolute;
     margin-left: 1.1rem;
@@ -180,7 +183,7 @@
     height: 1.6rem;
     margin-right: 0rem;
     margin-left: 1rem;
-    margin-top: .8rem;
+    margin-top: .6rem;
     fill: white;
 }
 
@@ -188,9 +191,10 @@
     display: inline-block;
     position: absolute;
     color: @item-disabled;
-    line-height: 2.8rem;
+    line-height: 3rem;
+    height: 3rem;
     white-space: pre;
-    font-size: 2rem;
+    font-size: @text-xxlarge;
     overflow: hidden;
     text-overflow: ellipsis;
 }

@@ -200,8 +200,8 @@ define(function (require, exports, module) {
                         // Adjust the position of the opened dialog according to the target
                         targetBounds = this._target.getBoundingClientRect(),
                         offsetParentBounds = this._target.offsetParent.getBoundingClientRect(),
-                        placedDialogTop = targetBounds.bottom - offsetParentBounds.top,
-                        placedDialogBottom = placedDialogTop + dialogBounds.height;
+                        placedDialogTop = Math.round(targetBounds.bottom) - Math.round(offsetParentBounds.top),
+                        placedDialogBottom = placedDialogTop + Math.round(dialogBounds.height);
 
                     if (placedDialogBottom > clientHeight) {
                         // If there is space, let's place this above the target

@@ -85,16 +85,16 @@ dialog {
     font-size: 100%;
     display: flex;
     justify-content: flex-start;
-    border: none;
     width: @panel-column-width - (@dialog-margin*2) - (@dialog-padding*2);
     max-height: 25rem;
     height: auto;
     border-radius: @dialog-radius;
-    background:@bg-border;
-    border:@hairline solid @underlines;
+    background: @bg-border;
+    border: @hairline solid @underlines;
     padding: @dialog-padding;
     margin: @dialog-margin;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 dialog:not([open]) {
@@ -109,9 +109,28 @@ dialog::backdrop {
     left: inherit;
 }
 
+.column-28 + .dialog-blendmodes{
+    width: 28.8rem;
+    left: 5.2rem;
+}
+
+.column-14 + .dialog-blendmodes{
+    width: 14.9rem;
+    left: 5.2rem;
+    margin-top: -0.1rem;
+}
+
+.column-8 + .dialog-blendmodes{
+    width: 9.2rem;
+}
+
+.column-4 + .dialog-blendmodes{
+    width: 5.2rem;
+}
+
 .dialog-blendmodes {
-    width: 15rem;
-    left: 5.5rem;
+    width: 20rem;
+    left: 5.2rem;
     margin-top: -1px;
 }
 
@@ -131,31 +150,28 @@ dialog::backdrop {
 }
 
 .dialog-stroke-alignment {
-    width: 8.6rem;
     right: 4rem;
     margin-top: 0px;
     height: auto;
 }
 
-.dialog-type-typefaces,
-.dialog-type-weights {
-    margin-top: -1px;
+.dialog-type-typefaces, .dialog-type-weights {
+    margin-top: -0.1rem;
 }
 
 .dialog-type-typefaces {
     overflow-y: scroll;
-    width: 28rem;
-    right: 1.2rem;    
+    width: 30rem;
+    left: 0rem;    
 }
 
 .dialog-type-weights {
     overflow-y: scroll;
-    width: 23rem;
-    right: 1.2rem;    
+    width: 23.2rem;
+    left: 6.8rem;    
 }
 
-.dialog-effects-popover,
-.dialog-export-popover {
+.dialog-effects-popover, .dialog-export-popover {
     width: 12rem;
     margin-right: 0.8rem;
 }
@@ -163,20 +179,16 @@ dialog::backdrop {
     left: 6.65rem;
 }
 
-.dialog-export-scale, .dialog-export-format{
-    width: 4rem;
-    left: 1.6rem;
-    right: 0;
-    margin: -1px 0 0 0;
-}
-
 .dialog-export-scale{
-    width: 5rem;
+    width: 5.0rem;
+    left: 1.1rem;
+    margin: -0.1rem 0 0 0;
 }
 
 .dialog-export-format {
-    width: 9rem;
-    left: 17.7rem;
+    width: 9.2rem;
+    left: 17.5rem;
+    margin: -0.1rem 0 0 0;
 }
 
 .dialog-search-bar {
@@ -188,9 +200,9 @@ dialog::backdrop {
 }
 
 .dialog-libraries {
-    width: 18rem;
-    left: 2rem;
-    margin: 0;
+    width: 20.6rem;
+    left: 1.1rem;
+    margin: -0.1rem 0 0 0;
     box-shadow: none;
     
     .select__header {

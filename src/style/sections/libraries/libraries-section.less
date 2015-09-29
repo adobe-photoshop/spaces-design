@@ -97,9 +97,6 @@
             width: 100%;
         }
 
-        &__content-input {
-            border-bottom: @hairline solid @focus-highlight;
-        }
         display: flex;
         flex-direction: row;
         justify-content: space-between;
@@ -110,14 +107,10 @@
         
         .drop-down {
             flex-grow: 1;
-            border: 0;
             width: 18.4rem;
-            border-bottom: @hairline solid @underlines;
-
+            
             input {
                 width: 100%;
-                font-size: 1.3rem;
-                user-select: none;
             }
         }
 
@@ -146,7 +139,7 @@
             width: 6rem;
             flex-shrink: 0;
             text-align: center;
-            font-size: 1.3rem;
+            font-size: @text-medium;
             padding-top: 1rem;
             padding-bottom: 1rem;
             color: @item-active;
@@ -165,7 +158,7 @@
         }
 
         .libraires__bar__input {
-            font-size: 1.3rem;
+            font-size: @text-medium;
             flex-grow: 1;
             color: @item-hover;
             
@@ -257,9 +250,8 @@
             }
         }
         
-        &-selected, &-selected:hover {
+        &-selected, &-selected:hover, &-selected:hover:disabled {
             background-color: @list-select-color;
-            //justify-content: space-between;
             padding-right: 0;
             .libraries__asset__title {
                 input {
@@ -282,17 +274,20 @@
             justify-content: center;
             height: @libraries-preview-height;
 
-            input {
-                color: @item-hover;
-                font-size: 1.2rem;
+            input[type="text"], input[type="text"]:disabled {
+                color: @item-active;
                 -webkit-user-select: none;
-                
+                border-bottom: @hairline solid transparent;
 
-                &:focus {
+                &:focus, &:focus:disabled {
                     align-self: stretch;
                     color: @item-hover;
                     user-select: none;
                     border-bottom: @hairline solid @focus-highlight;
+                }
+                
+                &:hover, &:hover:disabled {
+                    color: @item-hover;
                 }
                 
                 &[disabled] {
@@ -440,7 +435,7 @@
         &__body {
             width: 100%;
             color: @item-active;
-            font-size: 1.4rem;
+            font-size: @text-medium;
             line-height: 2rem;
             padding: 1rem 2.5rem;
         }
@@ -448,7 +443,7 @@
         &__btn-cancel, &__btn-confirm {
             flex-grow: 1;
             line-height: 2.5rem;
-            font-size: 1.4rem;
+            font-size: @text-medium;
             text-align: center;
             &:hover {
                 color: @item-hover;
