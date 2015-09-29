@@ -180,26 +180,84 @@ define(function (require, exports) {
      * @param {object} bounds
      * @param {{w: number=, h: number=}} size
      * @param {boolean=} proportional
+     * @param {character} referencePoint l(eft), m(iddle), r(ight), t(op), c(enter), b(ottom)
+     * 
      * @return {{w:number, h: number}} size
      */
-    var _calculateNewSize = function (bounds, size, proportional) {
-        var newSize = {};
+    var _calculateNewSize = function (bounds, size, proportional, referencePoint) {
+        var newBounds;
         if (proportional) {
             if (size.hasOwnProperty("w")) {
-                newSize.w = size.w;
-                newSize.h = newSize.w * (bounds.height / bounds.width);
+                newBounds = bounds.merge({
+                    width: size.w,
+                    height: size.w * (bounds.height / bounds.width)
+                });
             } else if (size.hasOwnProperty("h")) {
-                newSize.h = size.h;
-                newSize.w = newSize.h * (bounds.width / bounds.height);
+                newBounds = bounds.merge({
+                    height: size.h,
+                    width: size.h * (bounds.width / bounds.height)
+                });
             } else {
-                newSize.w = bounds.width;
-                newSize.h = bounds.height;
+                newBounds = bounds;
             }
         } else {
-            newSize.w = size.hasOwnProperty("w") ? size.w : bounds.width;
-            newSize.h = size.hasOwnProperty("h") ? size.h : bounds.height;
+           if (size.hasOwnProperty("w")) {
+                newBounds = _calculateNewWidth(bounds, size.w, referencePoint.charAt(0));
+           } else if (size.hasOwnProperty("h")) {
+                newBounds = _calculateNewHeight(bounds, size.h, referencePoint.charAt(1));
+           } else {
+                newBounds = bounds;
+           }
         }
-        return newSize;
+        return newBounds;
+    };
+
+    var _calculateNewWidth = function (bounds, newWidth, referencePoint) {
+        var newBounds;
+        switch (referencePoint) {
+            case "l": 
+                newBounds = bounds.merge({
+                    right: bounds.left + newWidth
+                });
+                break;
+            case "m": 
+                var midpoint = (bounds.right - bounds.left) / 2;
+                newBounds = bounds.merge({
+                    left: midpoint - (newWidth / 2),
+                    right: midpoint + (newWidth / 2)
+                });
+                break;
+            case "r":
+                newBounds = bounds.merge({
+                    left: bounds.right - newWidth
+                });
+                break;
+        }
+        return newBounds;
+    };
+
+    var _calculateNewHeight = function (bounds, newHeight, referencePoint) {
+        var newBounds;
+        switch (referencePoint) {
+            case "t": 
+                newBounds = bounds.merge({
+                    bottom: bounds.top + newHeight
+                });
+                break;
+            case "c": 
+                var midpoint = (bounds.bottom - bounds.top) / 2;
+                newBounds = bounds.merge({
+                    top: midpoint - (newHeight / 2),
+                    bottom: midpoint + (newHeight / 2)
+                });
+                break;
+            case "b":
+                newBounds = bounds.merge({
+                    top: bounds.bottom - newHeight
+                });
+                break;
+        }
+        return newBounds;
     };
 
     /**
@@ -211,10 +269,11 @@ define(function (require, exports) {
      * @param {Layer} targetLayer
      * @param {{w: number, h: number}} size
      * @param {Array.<{layer: Layer, w: number, h: number}>} resizeResults payload for updating each layer's bounds
+     * @param {character} referencePoint l(eft), m(iddle), r(ight), t(op), c(enter), b(ottom)
      *
      * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
-    var _getResizeLayerActions = function (document, targetLayer, size, resizeResults) {
+    var _getResizeLayerActions = function (document, targetLayer, size, resizeResults, referencePoint) {
         var overallBounds = document.layers.childBounds(targetLayer),
             documentRef = documentLib.referenceBy.id(document.id),
             resizingLayers;
@@ -265,39 +324,54 @@ define(function (require, exports) {
                 targetPosition.top = overallBounds.top + (layerTop - overallBounds.top) * overallHeightRatio;
             }
 
-            var newSize = _calculateNewSize(layer.bounds, targetSize, targetLayer.proportionalScaling),
-                newWidth = newSize.w,
-                newHeight = newSize.h,
-                newLeft = targetPosition.left,
-                newTop = targetPosition.top;
+            var newSize = _calculateNewSize(layer.bounds, targetSize, targetLayer.proportionalScaling, referencePoint);
+                // newWidth = newSize.w,
+                // newHeight = newSize.h,
+                // newLeft = targetPosition.left,
+                // newTop = targetPosition.top;
 
             if (layer.isArtboard) {
                 var boundingBox = {
-                    top: newTop,
-                    bottom: newTop + newHeight,
-                    left: newLeft,
-                    right: newLeft + newWidth
+                    // top: newTop,
+                    // bottom: newTop + newHeight,
+                    // left: newLeft,
+                    // right: newLeft + newWidth
+                    top: newSize.top,
+                    bottom: newSize.bottom,
+                    left: newSize.left,
+                    right: newSize.right
                 };
 
                 resizeResults.push({
+                    // layer: layer,
+                    // w: newWidth,
+                    // h: newHeight,
+                    // x: newLeft,
+                    // y: newTop
                     layer: layer,
-                    w: newWidth,
-                    h: newHeight,
-                    x: newLeft,
-                    y: newTop
+                    w: newSize.width,
+                    h: newSize.height,
+                    x: newSize.left,
+                    y: newSize.top
                 });
 
                 resizeObj = artboardLib.transform(layerRef, boundingBox);
             } else {
                 resizeResults.push({
-                    layer: layer,
-                    w: newWidth,
-                    h: newHeight,
-                    x: newLeft,
-                    y: newTop
+                    // layer: layer,
+                    // w: newWidth,
+                    // h: newHeight,
+                    // x: newLeft,
+                    // y: newTop
+                     layer: layer,
+                    w: newSize.width,
+                    h: newSize.height,
+                    x: newSize.left,
+                    y: newSize.top
                 });
 
-                resizeObj = layerLib.setSize(layerRef, newWidth, newHeight, false, newLeft, newTop);
+                // resizeObj = layerLib.setSize(layerRef, newWidth, newHeight, false, newLeft, newTop);
+                resizeObj = layerLib.setSize(layerRef, newSize.width, newSize.height, false, newSize.left, newSize.top);
             }
 
             return playObjects.push({
@@ -455,10 +529,11 @@ define(function (require, exports) {
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {{w: number, h: number}} size New width and height of the layers
+     * @param {character} referencePoint l(eft), m(iddle), r(ight), t(op), c(enter), b(ottom)
      *
      * @returns {Promise}
      */
-    var setSize = function (document, layerSpec, size) {
+    var setSize = function (document, layerSpec, size, referencePoint) {
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.kind === layer.layerKinds.GROUPEND ||
                 document.layers.strictAncestors(layer)
@@ -495,7 +570,8 @@ define(function (require, exports) {
             sizePromise = descriptor.playObject(resizeObj);
         } else {
             var resizeLayerActions = layerSpec.reduce(function (actions, layer) {
-                var layerActions = _getResizeLayerActions.call(this, document, layer, size, payload.sizes);
+                var layerActions = _getResizeLayerActions.call
+                                        (this, document, layer, size, payload.sizes, referencePoint);
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
 

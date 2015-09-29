@@ -102,19 +102,19 @@ define(function (require, exports, module) {
                                 <div className="control-group reference-mark">
                                     <SVGIcon CSSID="reference-cm" />
                                     <span
-                                        className={getReferenceClasses("a")}
-                                        onClick={this._handleReferenceClick.bind(this, "a")}>
-                                            a
+                                        className={getReferenceClasses("lt")}
+                                        onClick={this._handleReferenceClick.bind(this, "lt")}>
+                                            lt
                                     </span>
                                     <span
-                                        className={getReferenceClasses("b")}
-                                        onClick={this._handleReferenceClick.bind(this, "b")}>
-                                            b
+                                        className={getReferenceClasses("mt")}
+                                        onClick={this._handleReferenceClick.bind(this, "mt")}>
+                                            mt
                                     </span>
                                     <span
-                                        className={getReferenceClasses("c")}
-                                        onClick={this._handleReferenceClick.bind(this, "c")}>
-                                            c
+                                        className={getReferenceClasses("rt")}
+                                        onClick={this._handleReferenceClick.bind(this, "rt")}>
+                                            rt
                                     </span>
                                 </div>
                             </div>

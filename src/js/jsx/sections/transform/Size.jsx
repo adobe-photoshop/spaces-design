@@ -67,12 +67,15 @@ define(function (require, exports, module) {
          * @private
          * @param {SyntheticEvent} event
          * @param {number} newWidth
+         * @param {string} referencePoint
          */
-        _handleWidthChange: function (event, newWidth) {
-            var document = this.props.document;
+        _handleWidthChange: function (event, newWidth, referencePoint) {
+            var document = this.props.document,
+                flux = this.getFlux(),
+                referencePoint = flux.store("ui").getReferencePoint().referencePoint;
             
-            this.getFlux().actions.transform
-                .setSizeThrottled(document, document.layers.selected, { w: newWidth });
+            flux.actions.transform
+                .setSizeThrottled(document, document.layers.selected, { w: newWidth }, referencePoint);
         },
 
         /**
@@ -81,12 +84,15 @@ define(function (require, exports, module) {
          * @private
          * @param {SyntheticEvent} event
          * @param {number} newHeight
+         * @param {string} referencePoint
          */
-        _handleHeightChange: function (event, newHeight) {
-            var document = this.props.document;
+        _handleHeightChange: function (event, newHeight, referencePoint) {
+            var document = this.props.document,
+                flux = this.getFlux(),
+                referencePoint = flux.store("ui").getReferencePoint().referencePoint;
             
-            this.getFlux().actions.transform
-                .setSizeThrottled(document, document.layers.selected, { h: newHeight });
+            flux.actions.transform
+                .setSizeThrottled(document, document.layers.selected, { h: newHeight }, referencePoint);
         },
 
         /**

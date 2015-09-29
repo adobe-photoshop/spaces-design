@@ -201,6 +201,12 @@ define(function (require, exports, module) {
                 referencePoint: this._referencePoint
             };
         },
+
+        getReferencePoint: function () {
+            return {
+                referencePoint: this._referencePoint
+            };
+        },
         
         /** @ignore */
         zoomWindowToCanvas: function (x) {
