@@ -742,7 +742,6 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
-        this.transfer(shortcuts.removeShortcut, "vectorModeSwitch");
 
         _currentTransformPolicyID = null;
 
@@ -751,7 +750,6 @@ define(function (require, exports) {
     onReset.modal = true;
     onReset.reads = [];
     onReset.writes = [];
-    onReset.transfers = [shortcuts.removeShortcut];
 
     exports.changeVectorMaskMode = changeVectorMaskMode;
     exports.installShapeDefaults = installShapeDefaults;
