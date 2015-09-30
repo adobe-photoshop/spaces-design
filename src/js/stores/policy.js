@@ -150,7 +150,17 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         isSuspended: function (kind) {
-            return this._suspendedPolicySets[kind];
+            return !!this._suspendedPolicySets[kind];
+        },
+        
+        /**
+         * Return true if all policies (mouse and keyboard) are suspended.
+         * 
+         * @return {boolean}
+         */
+        areAllSuspended: function () {
+            return !!this._suspendedPolicySets[_eventKind.KEYBOARD] &&
+                !!this._suspendedPolicySets[_eventKind.KEYBOARD];
         },
 
         /**
