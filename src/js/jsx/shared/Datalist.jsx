@@ -70,6 +70,16 @@ define(function (require, exports, module) {
             releaseOnBlur: React.PropTypes.bool
         },
 
+        /**
+         * A unique key to append the Dialog ID. 
+         * This is a simple solution to prevent collision of dialog ID names when
+         * a component doesn't unmount before another instance mounts
+         *
+         * @private
+         * @type {Number}
+         */
+        _uniqkey: null,
+
         getDefaultProps: function () {
             return {
                 onChange: _.identity,
@@ -103,6 +113,10 @@ define(function (require, exports, module) {
                     id: null
                 });
             }
+        },
+
+        componentWillMount: function () {
+            this._uniqkey = (new Date()).getTime();
         },
 
         componentDidMount: function () {
@@ -656,7 +670,7 @@ define(function (require, exports, module) {
             var dialog = searchableOptions && (
                     <Dialog
                         ref="dialog"
-                        id={"datalist-" + this.props.list}
+                        id={"datalist-" + this.props.list + this._uniqkey}
                         className={this.props.className}
                         onClose={this._handleDialogClose}>
                         <Select

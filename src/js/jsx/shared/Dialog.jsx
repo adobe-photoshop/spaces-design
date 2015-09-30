@@ -56,16 +56,6 @@ define(function (require, exports, module) {
          * @type {?DOMElement}
          */
         _target: null,
-        
-        /**
-         * A unique key to append the Dialog ID. 
-         * This is a simple solution to prevent collision of dialog ID names when
-         * a component doesn't unmount before another instance mounts
-         *
-         * @private
-         * @type {Number}
-         */
-        _uniqkey: null,
 
         propTypes: {
             id: React.PropTypes.string.isRequired,
@@ -111,13 +101,12 @@ define(function (require, exports, module) {
                 openDialogs = dialogState.openDialogs;
 
             return {
-                open: openDialogs.has(this.props.id + this._uniqkey)
+                open: openDialogs.has(this.props.id)
             };
         },
 
         componentWillMount: function () {
-            this._uniqkey = (new Date()).getTime();
-            this.getFlux().store("dialog").registerDialog(this.props.id + this._uniqkey, this._getDismissalPolicy());
+            this.getFlux().store("dialog").registerDialog(this.props.id, this._getDismissalPolicy());
         },
 
         /**
@@ -140,7 +129,7 @@ define(function (require, exports, module) {
          */
         toggle: function (event) {
             var flux = this.getFlux(),
-                id = this.props.id + this._uniqkey;
+                id = this.props.id;
 
             if (this.state.open) {
                 this._target = null;
@@ -325,10 +314,10 @@ define(function (require, exports, module) {
         componentWillUnmount: function () {
             if (this.state.open) {
                 this._removeListeners();
-                this.getFlux().actions.dialog.closeDialog(this.props.id + this._uniqkey);
+                this.getFlux().actions.dialog.closeDialog(this.props.id);
             }
 
-            this.getFlux().store("dialog").deregisterDialog(this.props.id + this._uniqkey);
+            this.getFlux().store("dialog").deregisterDialog(this.props.id);
         },
 
         /** @ignore */
