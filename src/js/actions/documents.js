@@ -428,6 +428,8 @@ define(function (require, exports) {
                         // needs to be initialized first
                         return this.transfer(updateDocument, nextDocumentID)
                             .return(nextDocumentID);
+                    } else {
+                        return nextDocumentID;
                     }
                 }
             })

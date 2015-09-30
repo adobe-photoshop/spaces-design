@@ -1641,11 +1641,15 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.overlayVisibility = function (layerTree) {
-        var nextLayers = layerTree.layers.map(function (layer, key) {
-            if (this.layers.has(key)) {
-                return this.layers.get(key).set("visible", layer.visible);
-            }
-        }, this);
+        var nextLayers = layerTree.layers
+            .map(function (layer, key) {
+                if (this.layers.has(key)) {
+                    return this.layers.get(key).set("visible", layer.visible);
+                }
+            }, this)
+            .filter(function (layer) {
+                return layer;
+            });
 
         return this.set("layers", this.layers.merge(nextLayers));
     };
