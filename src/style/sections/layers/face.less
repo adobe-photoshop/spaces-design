@@ -82,9 +82,10 @@
 
 .generate-depth(10);
 
-input[type="text"].face__name {
+input[type="text"].face__name, input[type="text"]:disabled.face__name {
     font-size: 1.2rem;
     color: @item-active;
+    border-bottom: solid @hairline transparent;
 }
 
 .face__name {
@@ -133,8 +134,9 @@ input[type="text"].face__name {
     background-color: @list-hover-color;
     z-index: 99;
     
-    input{
-        color: @item-hover;   
+    input[type="text"], input[type="text"]:disabled {
+        color: @item-hover;
+        border-bottom: solid @hairline transparent;
     }
 }
 
@@ -144,8 +146,8 @@ input[type="text"].face__name {
 }
 
 .face__not-visible input[type="text"].face__name {
-   color: @item-hover;
-   opacity: @label-hidden-opacity;
+    color: @item-hover;
+    opacity: @label-hidden-opacity;
 }
 
 .face__select_immediate input[type="text"].face__name {
@@ -175,6 +177,10 @@ input[type="text"].face__name {
 .face__select_child, .face__select_child:hover,
 .face__select_descendant, .face__select_descendant:hover {
     background-color: @list-select-child-color;
+    
+    input[type="text"], input[type="text"]:disabled {
+        border-bottom: solid @hairline transparent;
+    }
 }
 
 .face__select_descendant .face__name, .face__select_descendant:hover .face__name {
@@ -187,6 +193,10 @@ input[type="text"].face__name {
 
 .face__drop_target, .face__drop_target:hover {
     background-color: none;
+}
+
+.face__select_immediate input[type="text"].face__name {
+    border-bottom: solid @hairline transparent;
 }
 
 .face__select_immediate input[type="text"].face__name:focus,

@@ -589,7 +589,7 @@ define(function (require, exports, module) {
                             defaultSelected={postScriptFamilyName}
                             options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}
-                            size="column-28" />
+                            size="column-full" />
                     </div>
                     <div className="formline formline__space-between">
                         <div className={"control-group control-group__vertical column-4"}>
