@@ -1030,12 +1030,12 @@ define(function (require, exports) {
                 var nextDocument = this.flux.store("document").getDocument(document.id),
                     selected = nextDocument.layers.selected;
 
-                return this.transfer(initializeLayers, nextDocument, selected);
+                this.flux.actions.layers.initializeLayers(nextDocument, selected);
             });
     };
     removeLayers.reads = [locks.PS_DOC];
     removeLayers.writes = [locks.JS_DOC];
-    removeLayers.transfers = ["history.queryCurrentHistory", initializeLayers];
+    removeLayers.transfers = ["history.queryCurrentHistory"];
     removeLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
