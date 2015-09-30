@@ -193,12 +193,12 @@ define(function (require, exports, module) {
 
         /** @ignore */
         _handleColumnVisibilityToggle: function (columnName) {
-            var nextState = {},
-                uiStore = this.getFlux().store("ui"),
-                components = uiStore.components,
-                flux = this.getFlux(),
+            var flux = this.getFlux(),
+                uiStore = flux.store("ui"),
                 modifierStore = flux.store("modifier"),
-                modifierState = modifierStore.getState();
+                components = uiStore.components,
+                modifierState = modifierStore.getState(),
+                nextState = {};
                 
             if (modifierState.command) {
                 nextState[components.LAYERS_LIBRARY_COL] = !this.state[components.LAYERS_LIBRARY_COL];
