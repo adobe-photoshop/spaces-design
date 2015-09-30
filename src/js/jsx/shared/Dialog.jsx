@@ -65,7 +65,7 @@ define(function (require, exports, module) {
          * @private
          * @type {Number}
          */
-        _uniqkey: (new Date()).getTime(),
+        _uniqkey: null,
 
         propTypes: {
             id: React.PropTypes.string.isRequired,
@@ -116,6 +116,7 @@ define(function (require, exports, module) {
         },
 
         componentWillMount: function () {
+            this._uniqkey = (new Date()).getTime();
             this.getFlux().store("dialog").registerDialog(this.props.id + this._uniqkey, this._getDismissalPolicy());
         },
 
