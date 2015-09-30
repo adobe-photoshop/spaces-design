@@ -206,6 +206,7 @@
         "TOGGLE_DROP_SHADOW": "Toggle Drop Shadow",
         "DELETE_DROP_SHADOW": "Delete Drop Shadow",
         "DELETE_LAYER_EFFECT": "Delete %s",
+        "TOGGLE_LAYER_EFFECT": "Toggle %s",
         "SET_DROP_SHADOW_COLOR": "Set Drop Shadow Color",
         "SET_DROP_SHADOW_PROPS": "Set Drop Shadow Dimensions",
         "SET_DROP_SHADOW_X_POSITION": "Set Drop Shadow X Position",
@@ -214,6 +215,13 @@
         "SET_DROP_SHADOW_SPREAD": "Set Drop Shadow Spread",
         "SET_COLOR_PICKER_FORMAT": "Set Color Picker Format",
         "SET_COLOR_PICKER_MODE": "Set Color Picker Mode",
+        "SET_COLOR_OVERLAY_COLOR": "Set Color Overlay Color",
+        "TOGGLE_COLOR_OVERLAY": "Toggle Color Overlay",
+        "DELETE_COLOR_OVERLAY": "Delete Color Overlay",
+        "SET_STROKE_EFFECT_COLOR": "Set Stroke Color",
+        "SET_STROKE_EFFECT_SIZE": "Set Stroke Size",
+        "TOGGLE_STROKE_EFFECT": "Toggle Stroke",
+        "DELETE_STROKE_EFFECT": "Delete Stroke",
         "TOGGLE_INNER_SHADOW": "Toggle Inner Shadow",
         "DELETE_INNER_SHADOW": "Delete Inner Shadow",
         "SET_INNER_SHADOW_COLOR": "Set Inner Shadow Color",
@@ -363,17 +371,26 @@
             "SPREAD": "Spread",
             "MIXED": "Mixed Appearances"
         },
+        "COLOR_OVERLAY": {
+            "TITLE": "Color Overlays",
+            "TITLE_SINGLE": "Color Overlay",            
+            "MIXED": "Mixed Appearances"
+        },
+        "STROKE_EFFECT": {
+            "TITLE": "Strokes",
+            "TITLE_SINGLE": "Stroke",   
+            "SIZE": "Size",
+            "MIXED": "Mixed Appearances"
+        },
         "UNSUPPORTED_EFFECTS": {
             "TITLE": "Unsupported",
             "NAMES": {
                 "BEVEL_EMBOSS": "Bevel & Emboss",
-                "CHROME_FX": "Satin",
+                "SATIN": "Satin",
                 "INNER_GLOW": "Inner Glow",
                 "OUTER_GLOW": "Outer Glow",
-                "PATTERN_FILL": "Pattern Overlay",
-                "FRAME_FX": "Stroke Overlay",
-                "GRADIENT_FILL": "Gradient Overlay",
-                "SOLID_FILL": "Color Overlay"
+                "PATTERN_OVERLAY": "Pattern Overlay",
+                "GRADIENT_OVERLAY": "Gradient Overlay"
             },
             "MIXED": "Mixed Appearances"
         },

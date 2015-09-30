@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         mathjs = require("mathjs"),
         _ = require("lodash");
 
-    var Color = require("./color"),
+    var Color = require("js/models/color"),
         objUtil = require("js/util/object"),
         log = require("js/util/log");
 
@@ -84,6 +84,12 @@ define(function (require, exports, module) {
      * @param {object} model
      */
     var Shadow = Immutable.Record({
+        /**
+         * Effect type
+         * @type {string}
+         */
+        type: null,
+        
         /**
          * True if shadow is enabled
          * @type {boolean}
@@ -196,78 +202,51 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Construct a shadow model from a Photoshop descriptor. The descriptor
-     * is typically included as layerEffects._value.shadow property of a layer.
+     * Construct list of shadow models from Photoshop shadow descriptors. The descriptors
+     * are typically included as layerEffects._value.shadow property of a layer.
      *
-     * @param {object} shadowDescriptor
+     * @param {string} shadowType
+     * @param {Array.<object>} shadowDescriptors
      * @param {number} globalLightingAngle
-     * @return {Shadow}
-     */
-    Shadow.fromShadowDescriptor = function (shadowDescriptor, globalLightingAngle) {
-        var model = {};
-
-        model.enabled = shadowDescriptor.enabled;
-
-        var opacity = objUtil.getPath(shadowDescriptor, "opacity._value"),
-            rawColor = objUtil.getPath(shadowDescriptor, "color");
-
-        if (Color.isValidPhotoshopColorObj(rawColor)) {
-            model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
-        } else {
-            log.warn("Could not parse shadow color because photoshop did not supply a valid RGB color");
-        }
-
-        var angle = objUtil.getPath(shadowDescriptor, "localLightingAngle._value"),
-            distance = objUtil.getPath(shadowDescriptor, "distance._value");
-
-        if (objUtil.getPath(shadowDescriptor, "useGlobalAngle")) {
-            angle = globalLightingAngle;
-        }
-
-        var coords = _calculateCartesianCoords(angle, distance);
-
-        model.x = coords.x;
-        model.y = coords.y;
-
-        model.blur = objUtil.getPath(shadowDescriptor, "blur._value");
-        model.spread = objUtil.getPath(shadowDescriptor, "chokeMatte._value");
-
-        model.blendMode = objUtil.getPath(shadowDescriptor, "mode._value");
-
-        return new Shadow(model);
-    };
-
-    /**
-     * Construct a list of Shadow models from a Photoshop layer descriptor.
-     *
-     * @param {object} layerDescriptor
-     * @param {string} type
      * @return {Immutable.List.<Shadow>}
      */
-    Shadow.fromLayerDescriptor = function (layerDescriptor, type) {
-        var layerEffects = layerDescriptor.layerEffects;
-        if (!layerEffects) {
-            return Immutable.List();
-        }
-
-        var shadowDescriptors = objUtil.getPath(layerDescriptor, "layerEffects." + type + "Multi");
-        if (!shadowDescriptors) {
-            // layerDescriptor.layerEffects.*Shadow[Multi] will be undefined if the shadows are all deleted
-            // in Design Space. 
-            var singleShadowDescriptor = objUtil.getPath(layerDescriptor, "layerEffects." + type);
-            shadowDescriptors = singleShadowDescriptor ? [singleShadowDescriptor] : [];
-        }
-
-        return Immutable.List(shadowDescriptors.reduce(function (result, shadowDescriptor) {
-            // the enabled state should also respect the "master" layerFXVisible flag
-            shadowDescriptor.enabled =
-                shadowDescriptor.enabled && layerDescriptor.layerFXVisible;
-
-            if (shadowDescriptor.present) {
-                result.push(Shadow.fromShadowDescriptor(shadowDescriptor, layerDescriptor.globalAngle));
+    Shadow.fromEffectDescriptors = function (shadowType, shadowDescriptors, globalLightingAngle, layerFXVisible) {
+        return shadowDescriptors.reduce(function (shadows, shadowDescriptor) {
+            if (!shadowDescriptor.present) {
+                return shadows;
             }
-            return result;
-        }, []));
+                
+            var model = {
+                type: shadowType,
+                enabled: shadowDescriptor.enabled && layerFXVisible
+            };
+
+            var opacity = objUtil.getPath(shadowDescriptor, "opacity._value"),
+                rawColor = objUtil.getPath(shadowDescriptor, "color");
+
+            if (Color.isValidPhotoshopColorObj(rawColor)) {
+                model.color = Color.fromPhotoshopColorObj(rawColor, opacity);
+            } else {
+                log.warn("Could not parse shadow color because photoshop did not supply a valid RGB color");
+            }
+
+            var angle = objUtil.getPath(shadowDescriptor, "localLightingAngle._value"),
+                distance = objUtil.getPath(shadowDescriptor, "distance._value");
+
+            if (objUtil.getPath(shadowDescriptor, "useGlobalAngle")) {
+                angle = globalLightingAngle;
+            }
+
+            var coords = _calculateCartesianCoords(angle, distance);
+
+            model.x = coords.x;
+            model.y = coords.y;
+            model.blur = objUtil.getPath(shadowDescriptor, "blur._value");
+            model.spread = objUtil.getPath(shadowDescriptor, "chokeMatte._value");
+            model.blendMode = objUtil.getPath(shadowDescriptor, "mode._value");
+
+            return shadows.push(new Shadow(model));
+        }, new Immutable.List());
     };
 
     module.exports = Shadow;

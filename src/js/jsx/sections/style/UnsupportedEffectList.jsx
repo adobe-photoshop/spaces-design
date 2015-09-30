@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         _ = require("lodash");
     
-    var LayerEffect = require("js/models/layereffect");
+    var LayerEffect = require("js/models/effects/layereffect");
 
     var ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings");
@@ -39,12 +39,28 @@ define(function (require, exports, module) {
         
         /**
          * Handle delete unsupported layer effect.
+         *
+         * @private
          * @param  {string} effectType
          * @param  {number} effectIndex
          */
         _handleDelete: function (effectType, effectIndex) {
             this.getFlux().actions.layerEffects.deleteEffect(
                 this.props.document, this.props.layers, effectIndex, effectType);
+        },
+        
+        /**
+         * Handle the change of the Shadow enabled state
+         *
+         * @private
+         * @param {string} effectType
+         * @param {number} effectIndex
+         * @param {SyntheticEvent} event
+         * @param {boolean} enabled new enabled state
+         */
+        _enabledChangedHandler: function (effectType, effectIndex, event, enabled) {
+            this.getFlux().actions.layerEffects.setEffectEnabled(
+                this.props.document, this.props.layers, effectIndex, enabled, effectType);
         },
 
         render: function () {
@@ -80,6 +96,7 @@ define(function (require, exports, module) {
                     return effects.map(function (effect, effectIndex) {
                         var effectStringKey = _.snakeCase(effectType).toUpperCase(),
                             effectName = strings.STYLE.UNSUPPORTED_EFFECTS.NAMES[effectStringKey],
+                            toggleBtnTitle = strings.TOOLTIPS.TOGGLE_LAYER_EFFECT.replace("%s", effectName),
                             deleteBtnTitle = strings.TOOLTIPS.DELETE_LAYER_EFFECT.replace("%s", effectName);
                             
                         return {
@@ -87,7 +104,9 @@ define(function (require, exports, module) {
                             index: effectIndex,
                             name: effectName,
                             deleteBtnTitle: deleteBtnTitle,
-                            total: effects.size
+                            toggleBtnTitle: toggleBtnTitle,
+                            total: effects.size,
+                            enabled: effect.enabled
                         };
                     }).toJS();
                 }).toJS())).sort(function (a, b) {
@@ -95,23 +114,38 @@ define(function (require, exports, module) {
                 });
                     
                 var effectComponents = orderedEffects.map(function (effect) {
-                    var indexStr = effect.total > 1 ? (effect.index + 1) + " of " + effect.total : null,
+                    var key = effect.type + effect.index,
+                        indexStr = effect.total > 1 ? (effect.index + 1) + " of " + effect.total : null,
                         deletionHandler = !this.props.disabled && this._handleDelete.bind(
+                            this, effect.type, effect.index),
+                        _enabledChangedHandler = !this.props.disabled && this._enabledChangedHandler.bind(
                             this, effect.type, effect.index);
                     
                     return (
-                        <div className="unsupported-effect-list__effect">
+                        <div className="unsupported-effect-list__effect"
+                             key={key}>
                             <div className="unsupported-effect-list__effect__title">
                                 {effect.name}
                                 <span className="unsupported-effect-list__effect__index">{indexStr}</span>
                             </div>
-                            <ToggleButton
-                                title={effect.deleteBtnTitle}
-                                buttonType="delete"
-                                className="delete"
-                                selected={true}
-                                onClick={deletionHandler}
-                                size="column-2" />
+                            <div className="unsupported-effect-list__effect__toggle-btns">
+                                <ToggleButton
+                                    title={effect.toggleBtnTitle}
+                                    name="toggleShadowEnabled"
+                                    buttonType="layer-not-visible"
+                                    selected={effect.enabled}
+                                    selectedButtonType={"layer-visible"}
+                                    onFocus={this.props.onFocus}
+                                    onClick={!this.props.readOnly ? _enabledChangedHandler : _.noop}
+                                    size="column-2" />
+                                <ToggleButton
+                                    title={effect.deleteBtnTitle}
+                                    buttonType="delete"
+                                    className="delete"
+                                    selected={true}
+                                    onClick={deletionHandler}
+                                    size="column-2" />
+                            </div>
                         </div>
                     );
                 }, this);

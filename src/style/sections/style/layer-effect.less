@@ -32,20 +32,31 @@
     background-color: @item-active;
 }
 
+.effect-list {
+    &__container {
+        margin-bottom: 1rem;
+    }
+    
+    &__list-container__mixed {
+        padding-top: 1rem;
+        text-align: center;
+        color: @item-disabled;
+        font-style: italic;
+    }
+}
+
 .effect-list__shadow {
     margin-bottom: 1rem;
+    
+    &__disabled {
+        color: @item-disabled;
+    }
 }
 
-.effect-list__shadow__disabled {
-    color: @item-disabled;
-}
-
-.effect-list__list-container__mixed {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    text-align: center;
-    color: @item-disabled;
-    font-style: italic;
+.effect-list__stroke {
+    &__styles {
+        height: auto;
+    }
 }
 
 .unsupported-effect-list {
@@ -66,6 +77,12 @@
         &__index {
             margin-left: 1em;
             font-style: italic;
+        }
+        
+        &__toggle-btns { 
+            display: flex;
+            justify-content: space-between;
+            width: 4.5rem;
         }
     }
 }

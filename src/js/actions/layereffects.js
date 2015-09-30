@@ -31,6 +31,7 @@ define(function (require, exports) {
         documentLib = require("adapter/lib/document");
 
     var Color = require("js/models/color"),
+        LayerEffect = require("js/models/effects/layereffect"),
         events = require("../events"),
         locks = require("js/locks"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -77,7 +78,8 @@ define(function (require, exports) {
                 layerHasEffects = curLayer.usedToHaveLayerEffect;
 
             types.forEach(function (type) {
-                var layerEffectsFromStore = layerFromStore.getLayerEffectsByType(type),
+                var descriptorType = LayerEffect.getDescriptorType(type),
+                    layerEffectsFromStore = layerFromStore.getLayerEffectsByType(type),
                     effectAdapterObject = layerEffectsFromStore
                         .map(function (effect) {
                             return effect.toAdapterObject();
@@ -86,13 +88,14 @@ define(function (require, exports) {
                 if (layerHasEffects) {
                     layerEffectPlayObjects.push({
                         layer: curLayer,
-                        playObject: layerEffectLib.setExtendedLayerEffect(type, referenceID, effectAdapterObject)
+                        playObject: layerEffectLib.setExtendedLayerEffect(descriptorType,
+                            referenceID, effectAdapterObject)
                     });
                 } else {
                     if (effectAdapterObject.length > 0) {
                         layerEffectPlayObjects.push({
                             layer: curLayer,
-                            playObject: layerEffectLib.setLayerEffect(type, referenceID, effectAdapterObject)
+                            playObject: layerEffectLib.setLayerEffect(descriptorType, referenceID, effectAdapterObject)
                         });
                         layerHasEffects = true;
                     }
@@ -115,9 +118,8 @@ define(function (require, exports) {
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var _upsertShadowProperties = function (document, layers, layerEffectIndex, newProps, coalesce, type) {
-        var toEmit = events.document.history.optimistic.LAYER_EFFECT_CHANGED,
-            layerIDs = collection.pluck(layers, "id"),
+    var _upsertEffectProperties = function (document, layers, layerEffectIndex, newProps, coalesce, type) {
+        var layerIDs = collection.pluck(layers, "id"),
             layerEffectPropsList = [],
             layerEffectIndexList = [];
 
@@ -154,7 +156,7 @@ define(function (require, exports) {
         };
 
         // Synchronously update the stores
-        this.dispatch(toEmit, payload);
+        this.dispatch(events.document.history.optimistic.LAYER_EFFECT_CHANGED, payload);
         // Then update photoshop
         return _syncStoreToPs.call(this, document, layers, coalesce, type);
     };
@@ -166,27 +168,28 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
      * @return {Promise}
      */
-    var addShadow = function (document, layers, type) {
-        return _upsertShadowProperties.call(this, document, layers, null, { enabled: true }, undefined, type);
+    var addEffect = function (document, layers, type) {
+        return _upsertEffectProperties.call(this, document, layers, null, { enabled: true }, undefined, type);
     };
-    addShadow.reads = [locks.PS_DOC, locks.JS_DOC];
-    addShadow.writes = [locks.PS_DOC, locks.JS_DOC];
+    addEffect.reads = [locks.PS_DOC, locks.JS_DOC];
+    addEffect.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
-     * Set the  Shadow enabled flag for all selected layers
+     * Set the effect enabled flag for all selected layers
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} effectIndex index of the effectType within the layer(s)
      * @param {boolean} enabled enabled flag
+     * @param {string} effectType
      * @return {Promise}
      */
-    var setShadowEnabled = function (document, layers, shadowIndex, enabled, type) {
-        return _upsertShadowProperties.call(
-            this, document, layers, shadowIndex, { enabled: enabled }, 0, type);
+    var setEffectEnabled = function (document, layers, effectIndex, enabled, effectType) {
+        return _upsertEffectProperties.call(
+            this, document, layers, effectIndex, { enabled: enabled }, 0, effectType);
     };
-    setShadowEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
-    setShadowEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
+    setEffectEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
+    setEffectEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Delete the selected Shadow for all selected layers
@@ -214,61 +217,63 @@ define(function (require, exports) {
     deleteEffect.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
-     * Set the Shadow alpha value for all selected layers. Preserves the opaque color.
+     * Set the effect alpha value for all selected layers. Preserves the opaque color.
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
-     * @param {number} alpha alpha value of the Drop Shadow
+     * @param {string} effectType
+     * @param {number} effectIndex index of the effect within the layer(s)
+     * @param {number} alpha alpha value of the effect
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setShadowAlpha = function (document, layers, shadowIndex, alpha, coalesce, type) {
-        var alphaUpdater = function (shadow) {
-            if (shadow && shadow.color) {
-                return { color: shadow.color.setAlpha(alpha) };
+    var setAlpha = function (document, layers, effectType, effectIndex, alpha, coalesce) {
+        var alphaUpdater = function (effect) {
+            if (effect && effect.color) {
+                return { color: effect.color.setAlpha(alpha) };
             } else {
                 return { color: Color.DEFAULT.set("a", alpha) };
             }
         };
-        return _upsertShadowProperties.call(
-            this, document, layers, shadowIndex, alphaUpdater, coalesce, type);
+        return _upsertEffectProperties.call(
+            this, document, layers, effectIndex, alphaUpdater, coalesce, effectType);
     };
-    setShadowAlpha.reads = [locks.PS_DOC, locks.JS_DOC];
-    setShadowAlpha.writes = [locks.PS_DOC, locks.JS_DOC];
+    setAlpha.reads = [locks.PS_DOC, locks.JS_DOC];
+    setAlpha.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
-     * Set the Drop Shadow Color for all selected layers
+     * Set the effect Color for all selected layers
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
-     * @param {Color} color color of the Drop Shadow
+     * @param {string} effectType
+     * @param {number} effectIndex index of the effect within the layer(s)
+     * @param {Color} color color of the effect
      * @param {boolean=} coalesce Whether to coalesce this operation's history state
      * @param {boolean=} ignoreAlpha Whether to ignore the alpha value of the
      *  given color and only update the opaque color value.
      * @return {Promise}
      */
-    var setShadowColor = function (document, layers, shadowIndex, color, coalesce, ignoreAlpha, type) {
+    var setColor = function (document, layers, effectType, effectIndex, color, coalesce, ignoreAlpha) {
         if (ignoreAlpha) {
-            var colorUpdater = function (shadow) {
-                if (shadow && shadow.color) {
-                    return { color: shadow.color.setOpaque(color) };
+            var colorUpdater = function (effect) {
+                if (effect && effect.color) {
+                    return { color: effect.color.setOpaque(color) };
                 } else {
                     return { color: Color.DEFAULT.setOpaque(color) };
                 }
             };
 
-            return _upsertShadowProperties.call(
-                this, document, layers, shadowIndex, colorUpdater, coalesce, type);
+            return _upsertEffectProperties.call(
+                this, document, layers, effectIndex, colorUpdater, coalesce, effectType);
         } else {
             var normalizedColor = color ? color.normalizeAlpha() : null;
-            return _upsertShadowProperties.call(
-                this, document, layers, shadowIndex, { color: normalizedColor }, coalesce, type);
+            return _upsertEffectProperties.call(
+                this, document, layers, effectIndex, { color: normalizedColor }, coalesce, effectType);
         }
     };
-    setShadowColor.reads = [locks.PS_DOC, locks.JS_DOC];
-    setShadowColor.writes = [locks.PS_DOC, locks.JS_DOC];
+    setColor.reads = [locks.PS_DOC, locks.JS_DOC];
+    setColor.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Set the Drop Shadow X coordinate for all selected layers
@@ -280,7 +285,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setShadowX = function (document, layers, shadowIndex, x, type) {
-        return _upsertShadowProperties.call(
+        return _upsertEffectProperties.call(
            this, document, layers, shadowIndex, { x: x }, null, type);
     };
     setShadowX.reads = [locks.PS_DOC, locks.JS_DOC];
@@ -296,7 +301,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setShadowY = function (document, layers, shadowIndex, y, type) {
-        return _upsertShadowProperties.call(
+        return _upsertEffectProperties.call(
            this, document, layers, shadowIndex, { y: y }, null, type);
     };
     setShadowY.reads = [locks.PS_DOC, locks.JS_DOC];
@@ -312,7 +317,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setShadowBlur = function (document, layers, shadowIndex, blur, type) {
-        return _upsertShadowProperties.call(
+        return _upsertEffectProperties.call(
             this, document, layers, shadowIndex, { blur: blur }, null, type);
     };
     setShadowBlur.reads = [locks.PS_DOC, locks.JS_DOC];
@@ -328,28 +333,60 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setShadowSpread = function (document, layers, shadowIndex, spread, type) {
-        return _upsertShadowProperties.call(
+        return _upsertEffectProperties.call(
             this, document, layers, shadowIndex, { spread: spread }, null, type);
     };
     setShadowSpread.reads = [locks.PS_DOC, locks.JS_DOC];
     setShadowSpread.writes = [locks.PS_DOC, locks.JS_DOC];
     
     /**
-     * Set the Drop Shadow Blend Mode value for all selected layers
+     * Set the effect Blend Mode value for all selected layers
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers list of layers to update
-     * @param {number} shadowIndex index of the Drop Shadow within the layer(s)
+     * @param {number} effectIndex index of the effectType within the layer(s)
      * @param {string} blendMode  blendMode name
-     * @param {string} type of shadow
+     * @param {string} effectType
      * @return {Promise}
      */
-    var setShadowBlendMode = function (document, layers, shadowIndex, blendMode, type) {
-        return _upsertShadowProperties.call(
-           this, document, layers, shadowIndex, { blendMode: blendMode }, null, type);
+    var setBlendMode = function (document, layers, effectIndex, blendMode, effectType) {
+        return _upsertEffectProperties.call(
+           this, document, layers, effectIndex, { blendMode: blendMode }, null, effectType);
     };
-    setShadowBlendMode.reads = [locks.PS_DOC, locks.JS_DOC];
-    setShadowBlendMode.writes = [locks.PS_DOC, locks.JS_DOC];
+    setBlendMode.reads = [locks.PS_DOC, locks.JS_DOC];
+    setBlendMode.writes = [locks.PS_DOC, locks.JS_DOC];
+    
+    /**
+     * Set the size of Stroke Effect for all selected layers
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers list of layers to update
+     * @param {number} effectIndex index of the effectType within the layer(s)
+     * @param {number} size
+     * @return {Promise}
+     */
+    var setStrokeSize = function (document, layers, effectIndex, size) {
+        return _upsertEffectProperties.call(
+           this, document, layers, effectIndex, { strokeSize: size }, null, LayerEffect.STROKE);
+    };
+    setStrokeSize.reads = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeSize.writes = [locks.PS_DOC, locks.JS_DOC];
+    
+    /**
+     * Set the style of Stroke Effect for all selected layers
+     *
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers list of layers to update
+     * @param {number} effectIndex index of the effectType within the layer(s)
+     * @param {string} style
+     * @return {Promise}
+     */
+    var setStrokeStyle = function (document, layers, effectIndex, style) {
+        return _upsertEffectProperties.call(
+           this, document, layers, effectIndex, { style: style }, null, LayerEffect.STROKE);
+    };
+    setStrokeStyle.reads = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeStyle.writes = [locks.PS_DOC, locks.JS_DOC];
 
     /**
      * Duplicates the layer effects of the source layer on all the target layers
@@ -438,16 +475,19 @@ define(function (require, exports) {
     duplicateLayerEffects.reads = [locks.PS_DOC, locks.JS_DOC];
     duplicateLayerEffects.writes = [locks.PS_DOC, locks.JS_DOC];
 
-    exports.addShadow = addShadow;
-    exports.setShadowEnabled = setShadowEnabled;
-    exports.setShadowAlpha = setShadowAlpha;
-    exports.setShadowColor = setShadowColor;
+    exports.addEffect = addEffect;
+    exports.deleteEffect = deleteEffect;
+    
+    exports.setEffectEnabled = setEffectEnabled;
+    exports.setAlpha = setAlpha;
+    exports.setColor = setColor;
     exports.setShadowX = setShadowX;
     exports.setShadowY = setShadowY;
-    exports.setShadowBlendMode = setShadowBlendMode;
+    exports.setBlendMode = setBlendMode;
     exports.setShadowBlur = setShadowBlur;
     exports.setShadowSpread = setShadowSpread;
-    exports.deleteEffect = deleteEffect;
+    exports.setStrokeSize = setStrokeSize;
+    exports.setStrokeStyle = setStrokeStyle;
 
     exports.duplicateLayerEffects = duplicateLayerEffects;
 });
