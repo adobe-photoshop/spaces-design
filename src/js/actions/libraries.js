@@ -353,7 +353,7 @@ define(function (require, exports) {
             tempPreviewPath;
         
         if (!typeData.adbeFont) {
-            log.warn("Can't create character style from mixed type layers!");
+            log.warn("[CC Lib] can't create character style from mixed type layers!");
             return Promise.resolve();
         }
         
@@ -800,6 +800,12 @@ define(function (require, exports) {
             })
             .bind(this)
             .then(function (path) {
+                if (!path) {
+                    log.warn("[CC Lib] createLayerFromElement: unable to fetch \"" + element.displayName +
+                        "\" content path");
+                    return Promise.resolve();
+                }
+                
                 var hasAlt = this.flux.stores.modifier.getState().alt;
                 
                 return Promise.bind(this)

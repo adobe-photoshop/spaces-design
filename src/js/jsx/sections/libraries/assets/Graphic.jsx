@@ -101,6 +101,18 @@ define(function (require, exports, module) {
             // Stop propagation to avoid triggering the select asset event.
             event.stopPropagation();
         },
+        
+        /**
+         * Handle drag start event. If the element does not have a renditionPath yet, we will cancel
+         * the drag-n-drop event because its content is likely broken and cannot be placed on the canvas. 
+         * 
+         * @param  {SyntheticEvent} event
+         */
+        _handleDragStart: function (event) {
+            if (this.state.renditionPath) {
+                this.props.handleDragStart(event);
+            }
+        },
 
         render: function () {
             var element = this.props.element,
@@ -124,7 +136,7 @@ define(function (require, exports, module) {
                     key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-graphic"
                          key={this.props.element.id + this.props.element.modified}
-                         onMouseDown={this.props.handleDragStart}
+                         onMouseDown={this._handleDragStart}
                          onClick={this._handleClickPreview}
                          onDoubleClick={this._handleOpenForEdit}>
                         <AssetPreviewImage
