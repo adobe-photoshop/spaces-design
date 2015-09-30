@@ -68,14 +68,16 @@ define(function (require, exports, module) {
                 numPanels = propertiesCol + layersCol;
 
             return {
-                numberOfPanels: numPanels
+                numberOfPanels: numPanels,
+                singleColumnModeEnabled: preferences.get("singleColumnModeEnabled", false)
             };
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
             return this.state.ready !== nextState.ready ||
                 this.state.active !== nextState.active ||
-                this.state.numberOfPanels !== nextState.numberOfPanels;
+                this.state.numberOfPanels !== nextState.numberOfPanels ||
+                this.state.singleColumnModeEnabled !== nextState.singleColumnModeEnabled;
         },
 
         /**
@@ -165,11 +167,12 @@ define(function (require, exports, module) {
                         active={this.state.active} />
                     <PanelSet
                         ref="panelSet"
-                        active={this.state.active} />
+                        active={this.state.active}
+                        singleColumnModeEnabled={this.state.singleColumnModeEnabled} />
                     <Help />
                     <Search />
                     <ExportModal />
-                    
+
                     <svg style={{ display: "none" }}>
                         <defs dangerouslySetInnerHTML={{ __html: _ICO_LOADER }}/>
                     </svg>

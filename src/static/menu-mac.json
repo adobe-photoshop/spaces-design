@@ -655,6 +655,9 @@
                     "id": "TOGGLE_TOOLBAR"
                 },
                 {
+                    "id": "TOGGLE_SINGLE_COLUMN_MODE"
+                },
+                {
                     "separator": true
                 },
                 {

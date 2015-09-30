@@ -208,6 +208,7 @@
         "BRING_ALL_TO_FRONT": "Bring All to Front",
         "NEXT_DOCUMENT": "Next Document",
         "TOGGLE_TOOLBAR": "Pin Toolbar",
+        "TOGGLE_SINGLE_COLUMN_MODE": "Single Column Mode",
         "PREVIOUS_DOCUMENT": "Previous Document",
         "RETURN_TO_STANDARD": "Return to Standard Photoshop",
         "OPEN_DOCUMENT_ONE": "Document Name 1",
