@@ -165,8 +165,9 @@ define(function (require, exports) {
                             });
                         })
                         .then(function () {
-                            var borderPromise = this.transfer(toolActions.resetBorderPolicies),
-                                visibilityPromise = this.transfer(layerActions.resetLayerVisibility, document);
+                            var currentDocument = this.flux.store("application").getCurrentDocument(),
+                                borderPromise = this.transfer(toolActions.resetBorderPolicies),
+                                visibilityPromise = this.transfer(layerActions.resetLayerVisibility, currentDocument);
 
                             return Promise.join(borderPromise, visibilityPromise);
                         });

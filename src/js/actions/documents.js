@@ -420,16 +420,30 @@ define(function (require, exports) {
     var disposeDocument = function (documentID, isDocumentSaved) {
         return _getSelectedDocumentID()
             .bind(this)
-            .then(function (currentDocumentID) {
+            .then(function (nextDocumentID) {
+                if (nextDocumentID) {
+                    var nextDocument = this.flux.store("document").getDocument(nextDocumentID);
+                    if (nextDocument && !nextDocument.layers) {
+                        // The next document which will be active upon close of the current document
+                        // needs to be initialized first
+                        return this.transfer(updateDocument, nextDocumentID)
+                            .return(nextDocumentID);
+                    } else {
+                        return nextDocumentID;
+                    }
+                }
+            })
+            .then(function (nextDocumentID) {
                 var payload = {
                     documentID: documentID,
-                    selectedDocumentID: currentDocumentID
+                    selectedDocumentID: nextDocumentID
                 };
 
                 this.dispatch(events.document.CLOSE_DOCUMENT, payload);
 
                 var newDocument = this.flux.store("application").getCurrentDocument(),
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
+                    resetHistoryPromise = this.transfer(historyActions.queryCurrentHistory, newDocument.id),
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles,
@@ -437,6 +451,7 @@ define(function (require, exports) {
                     policyPromise = this.transfer(toolActions.resetBorderPolicies);
 
                 return Promise.join(resetLinkedPromise,
+                        resetHistoryPromise,
                         updateTransformPromise,
                         recentFilesPromise,
                         deleteTempFilesPromise,
@@ -445,8 +460,9 @@ define(function (require, exports) {
     };
     disposeDocument.reads = [];
     disposeDocument.writes = [locks.JS_DOC, locks.JS_APP];
-    disposeDocument.transfers = ["layers.resetLinkedLayers", application.updateRecentFiles, ui.updateTransform,
-        "libraries.deleteGraphicTempFiles", toolActions.resetBorderPolicies];
+    disposeDocument.transfers = [updateDocument, "layers.resetLinkedLayers", "history.queryCurrentHistory",
+        "ui.updateTransform", "application.updateRecentFiles", "libraries.deleteGraphicTempFiles",
+        "tools.resetBorderPolicies"];
     disposeDocument.lockUI = true;
 
     /**
