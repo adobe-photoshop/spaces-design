@@ -98,9 +98,8 @@ define(function (require, exports, module) {
                             <div className="control-group">
                                 <Size document={this.props.document} />
                             </div>
-                            <div className="control-group">
-                                <div className="control-group reference-mark">
-                                    <SVGIcon CSSID="reference-cm" />
+                        </div>
+                        <div className="control-group reference-mark reference-point-button">
                                     <span
                                         className={getReferenceClasses("lt")}
                                         onClick={this._handleReferenceClick.bind(this, "lt")}>
@@ -117,8 +116,40 @@ define(function (require, exports, module) {
                                             rt
                                     </span>
                                 </div>
-                            </div>
-                        </div>
+                                <div className="control-group reference-mark reference-point-button">
+                                    <span
+                                        className={getReferenceClasses("lc")}
+                                        onClick={this._handleReferenceClick.bind(this, "lc")}>
+                                            lc
+                                    </span>
+                                    <span
+                                        className={getReferenceClasses("mc")}
+                                        onClick={this._handleReferenceClick.bind(this, "mc")}>
+                                            mc
+                                    </span>
+                                    <span
+                                        className={getReferenceClasses("rc")}
+                                        onClick={this._handleReferenceClick.bind(this, "rc")}>
+                                            rc
+                                    </span>
+                                </div>
+                                <div className="control-group reference-mark reference-point-button">
+                                    <span
+                                        className={getReferenceClasses("lb")}
+                                        onClick={this._handleReferenceClick.bind(this, "lb")}>
+                                            lb
+                                    </span>
+                                    <span
+                                        className={getReferenceClasses("mb")}
+                                        onClick={this._handleReferenceClick.bind(this, "mb")}>
+                                            mb
+                                    </span>
+                                    <span
+                                        className={getReferenceClasses("rb")}
+                                        onClick={this._handleReferenceClick.bind(this, "rb")}>
+                                            rb
+                                    </span>
+                                </div>
                         <div className={positionRotateClasses}>
                             <div className="control-group">
                                 <Position document={this.props.document} />

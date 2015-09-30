@@ -324,11 +324,17 @@ define(function (require, exports) {
                 targetPosition.top = overallBounds.top + (layerTop - overallBounds.top) * overallHeightRatio;
             }
 
-            var newSize = _calculateNewSize(layer.bounds, targetSize, targetLayer.proportionalScaling, referencePoint);
-                // newWidth = newSize.w,
-                // newHeight = newSize.h,
-                // newLeft = targetPosition.left,
-                // newTop = targetPosition.top;
+            var newSize = _calculateNewSize(layer.bounds, targetSize, targetLayer.proportionalScaling, referencePoint),
+                newLeft = targetPosition.left,
+                newTop = targetPosition.top;
+
+            // console.log("These are the final layer things:" + 
+            //     "Top: " + newSize.top + " ," + 
+            //     "Bottom " + newSize.bottom + " ," + 
+            //     "Left " + newSize.left + " ," + 
+            //     "Right " + newSize.right + " ," + 
+            //     "Width " + newSize.width + " ," +
+            //     "Height " + newSize.height + " ,");
 
             if (layer.isArtboard) {
                 var boundingBox = {
@@ -351,8 +357,8 @@ define(function (require, exports) {
                     layer: layer,
                     w: newSize.width,
                     h: newSize.height,
-                    x: newSize.left,
-                    y: newSize.top
+                    x: newLeft,
+                    y: newTop
                 });
 
                 resizeObj = artboardLib.transform(layerRef, boundingBox);
@@ -363,7 +369,7 @@ define(function (require, exports) {
                     // h: newHeight,
                     // x: newLeft,
                     // y: newTop
-                     layer: layer,
+                    layer: layer,
                     w: newSize.width,
                     h: newSize.height,
                     x: newSize.left,
