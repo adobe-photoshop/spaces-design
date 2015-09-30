@@ -1191,7 +1191,8 @@ define(function (require, exports, module) {
     LayerStructure.prototype.repositionLayers = function (layerPositions) {
         var allBounds = Immutable.Map(layerPositions.reduce(function (allBounds, layerData) {
             var layer = this.byID(layerData.layer.id);
-            if (layer.bounds) {
+            // Due to handleCanvasShift, we may have non existent layers here
+            if (layer && layer.bounds) {
                 allBounds.set(layer.id, layer.bounds.updatePosition(layerData.x, layerData.y));
             }
 
