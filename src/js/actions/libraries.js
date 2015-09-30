@@ -160,6 +160,15 @@ define(function (require, exports) {
      * @type {LibrarySyncStatus}
      */
     var _librarySyncStatus;
+    
+    /**
+     * Event handlers initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _placeEventHandler,
+        _toolModalStateChangedHandler;
 
     /**
      * Finds a usable representation for the image element that PS will accept
@@ -791,12 +800,18 @@ define(function (require, exports) {
             })
             .bind(this)
             .then(function (path) {
-                return this.transfer(policyActions.addKeydownPolicy, true, os.eventKeyCode.ENTER, null)
-                    .bind(this)
-                    .then(function (policyID) {
+                var hasAlt = this.flux.stores.modifier.getState().alt;
+                
+                return Promise.bind(this)
+                    .then(function () {
+                        // Suspend all policies to allow moving and transforming the new graphic layer.
+                        if (!hasAlt) {
+                            return this.transfer(policyActions.suspendAllPolicies);
+                        }
+                    })
+                    .then(function () {
                         var docRef = docAdapter.referenceBy.id(currentDocument.id),
-                            placeObj = libraryAdapter.placeElement(docRef, element, path, location),
-                            hasAlt = this.flux.stores.modifier.getState().alt;
+                            placeObj = libraryAdapter.placeElement(docRef, element, path, location);
 
                         // This command is played "asynchronously", which means that Photoshop will
                         // allow CEF to run while the command is being played (i.e., while in the
@@ -806,12 +821,14 @@ define(function (require, exports) {
                         // So, although the command does not resolve until the placement has finished,
                         // it does resolve before the layer model has been updated because the event
                         // has not yet been received. For more details see issue #2177.
-                        var placeElementPromise = descriptor.playObject(placeObj, { synchronous: false })
-                            .bind(this)
-                            .finally(function () {
-                                return this.transfer(policyActions.removeKeyboardPolicies, policyID, true);
-                            });
-                            
+                        return descriptor.playObject(placeObj, { synchronous: false });
+                    })
+                    .then(function () {
+                        if (!hasAlt) {
+                            this.dispatch(events.libraries.PLACE_GRAPHIC_UPDATED, { isPlacing: true });
+                        }
+                    })
+                    .then(function () {
                         // Dropping graphic asset with ALT/OPT modifier will expand the asset (instead of adding 
                         // CLSO layer) and result in creating multiple layers in Photoshop. Unlike regualr drop 
                         // event (without modifier), this will not trigger the "placeEvent" handler, so we need 
@@ -821,26 +838,50 @@ define(function (require, exports) {
                         // FIXME: we should instead get IDs back from Photoshop when layers are placed with modifier, 
                         //        so we don't have to get all the layer IDs.
                         if (hasAlt) {
-                            placeElementPromise = placeElementPromise.then(function () {
-                                return this.transfer(layerActions._getLayerIDsForDocumentID, currentDocument.id);
-                            })
-                            .then(function (nextDocumentIDS) {
-                                var nextLayerIDs = nextDocumentIDS.layerIDs,
-                                    existingLayerIDs = currentDocument.layers.index.toArray(),
-                                    newLayerIDs = _.difference(nextLayerIDs, existingLayerIDs).reverse();
+                            return this.transfer(layerActions._getLayerIDsForDocumentID, currentDocument.id)
+                                .bind(this)
+                                .then(function (nextDocumentIDS) {
+                                    var nextLayerIDs = nextDocumentIDS.layerIDs,
+                                        existingLayerIDs = currentDocument.layers.index.toArray(),
+                                        newLayerIDs = _.difference(nextLayerIDs, existingLayerIDs).reverse();
 
-                                return this.transfer(layerActions.addLayers, currentDocument, newLayerIDs, true, false);
-                            });
+                                    return this.transfer(layerActions.addLayers, currentDocument,
+                                        newLayerIDs, true, false);
+                                });
                         }
-                        
-                        return placeElementPromise;
+                    })
+                    .catch(function () {
+                        if (!hasAlt) {
+                            return this.transfer(handleCompletePlacingGraphic);
+                        }
                     });
             });
     };
     createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
-    createLayerFromElement.writes = [locks.PS_DOC];
+    createLayerFromElement.writes = [locks.JS_LIBRARIES, locks.PS_DOC];
     createLayerFromElement.transfers = [layerActions._getLayerIDsForDocumentID, layerActions.addLayers,
-        policyActions.addKeydownPolicy, policyActions.removeKeyboardPolicies];
+        policyActions.suspendAllPolicies, "libraries.handleCompletePlacingGraphic"];
+        
+    /**
+     * This event will be triggered when the user confirm or cancel the new layer 
+     * created from createLayerFromElement
+     * 
+     * @return {Promise}
+     */
+    var handleCompletePlacingGraphic = function () {
+        return this.dispatchAsync(events.libraries.PLACE_GRAPHIC_UPDATED, { isPlacing: false })
+            .bind(this)
+            .then(function () {
+                var policyStore = this.flux.store("policy");
+                
+                if (policyStore.areAllSuspended) {
+                    return this.transfer(policyActions.restoreAllPolicies);
+                }
+            });
+    };
+    handleCompletePlacingGraphic.reads = [locks.JS_APP];
+    handleCompletePlacingGraphic.writes = [locks.JS_LIBRARIES];
+    handleCompletePlacingGraphic.transfers = [policyActions.restoreAllPolicies];
 
     /**
      * Applies the given layer style element to the active layers
@@ -1160,6 +1201,23 @@ define(function (require, exports) {
                 ELEMENT_COLORTHEME_TYPE
             ]
         });
+        
+        _placeEventHandler = function () {
+            if (this.flux.store("library").isPlacingGraphic()) {
+                this.flux.actions.libraries.handleCompletePlacingGraphic();
+            }
+        }.bind(this);
+        descriptor.addListener("placeEvent", _placeEventHandler);
+
+        _toolModalStateChangedHandler = function (event) {
+            var isPlacingGraphic = this.flux.store("library").isPlacingGraphic(),
+                modalStateCancelled = event.reason && event.reason._value === "cancel";
+
+            if (isPlacingGraphic && modalStateCancelled) {
+                this.flux.actions.libraries.handleCompletePlacingGraphic();
+            }
+        }.bind(this);
+        descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         return Promise.resolve();
     };
@@ -1183,6 +1241,21 @@ define(function (require, exports) {
     afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
     afterStartup.writes = [locks.JS_LIBRARIES];
     
+    /**
+     * Remove event handlers.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var onReset = function () {
+        descriptor.removeListener("placeEvent", _placeEventHandler);
+        descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
+
+        return Promise.resolve();
+    };
+    onReset.reads = [];
+    onReset.writes = [];
+
     exports.RENDITION_DEFAULT_SIZE = RENDITION_DEFAULT_SIZE;
     exports.RENDITION_GRAPHIC_SIZE = RENDITION_GRAPHIC_SIZE;
     exports.ELEMENT_CHARACTERSTYLE_TYPE = ELEMENT_CHARACTERSTYLE_TYPE;
@@ -1216,10 +1289,12 @@ define(function (require, exports) {
     exports.removeAsset = removeAsset;
 
     exports.createLayerFromElement = createLayerFromElement;
+    exports.handleCompletePlacingGraphic = handleCompletePlacingGraphic;
     exports.applyLayerStyle = applyLayerStyle;
     exports.applyCharacterStyle = applyCharacterStyle;
     exports.applyColor = applyColor;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
+    exports.onReset = onReset;
 });

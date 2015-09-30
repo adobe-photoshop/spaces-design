@@ -97,6 +97,11 @@ define(function (require, exports, module) {
          * @type {AdobeLibraryElement}
          */
         _lastLocallyUpdatedGraphic: null,
+        
+        /**
+         * @type {boolean}
+         */
+        _isPlacingGraphic: null,
 
         initialize: function () {
             this.bindActions(
@@ -113,8 +118,9 @@ define(function (require, exports, module) {
                 events.libraries.ASSET_CREATED, this._handleElementCreated,
                 events.libraries.ASSET_RENAMED, this._handleElementRenamed,
                 events.libraries.ASSET_REMOVED, this._handleElementRemoved,
-                
+
                 events.libraries.OPEN_GRAPHIC_FOR_EDIT, this._handleOpenGraphicForEdit,
+                events.libraries.PLACE_GRAPHIC_UPDATED, this._handlePlaceGraphicUpdate,
                 events.libraries.UPDATING_GRAPHIC_CONTENT, this._handleUpdatingGraphicContent,
                 events.libraries.UPDATED_GRAPHIC_CONTENT, this._handleUpdatedGraphicContent,
                 events.document.CLOSE_DOCUMENT, this._handleClosedGraphicDocument,
@@ -135,6 +141,7 @@ define(function (require, exports, module) {
             this._selectedLibraryID = null;
             this._serviceConnected = false;
             this._isSyncing = false;
+            this._isPlacingGraphic = false;
             this._editStatusByDocumentID = new Immutable.Map();
             this._createdNewGraphicLocally = false;
         },
@@ -291,6 +298,16 @@ define(function (require, exports, module) {
                 isUpdatingContent: false,
                 isDocumentClosed: false
             });
+        },
+        
+        /**
+         * Handle update of place graphic event. 
+         *
+         * @param {object} payload
+         * @param {boolean} payload.isPlacing
+         */
+        _handlePlaceGraphicUpdate: function (payload) {
+            this._isPlacingGraphic = payload.isPlacing;
         },
         
         /**
@@ -501,6 +518,15 @@ define(function (require, exports, module) {
         /** @ignore */
         isSyncing: function () {
             return this._isSyncing;
+        },
+        
+        /**
+         * Ture if DS is in placing graphic mode.
+         * 
+         * @return {boolean}
+         */
+        isPlacingGraphic: function () {
+            return this._isPlacingGraphic;
         },
         
         /**

@@ -179,6 +179,7 @@ define(function (require, exports, module) {
             ASSET_REMOVED: "libraryAssetRemoved",
             ASSET_RENAMED: "libraryAssetRenamed",
             OPEN_GRAPHIC_FOR_EDIT: "libraryOpenGraphicForEdit",
+            PLACE_GRAPHIC_UPDATED: "libraryPlaceGraphicUpdated",
             UPDATING_GRAPHIC_CONTENT: "libraryUpdatingGraphicContent",
             UPDATED_GRAPHIC_CONTENT: "libraryUpdatedGraphicContent",
             DELETED_GRAPHIC_TEMP_FILES: "libraryDeletedGraphicTempFiles",
