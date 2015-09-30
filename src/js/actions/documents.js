@@ -420,16 +420,13 @@ define(function (require, exports) {
     var disposeDocument = function (documentID, isDocumentSaved) {
         return _getSelectedDocumentID()
             .bind(this)
-            .then(function (nextDocumentID) {
+            .tap(function (nextDocumentID) {
                 if (nextDocumentID) {
                     var nextDocument = this.flux.store("document").getDocument(nextDocumentID);
                     if (nextDocument && !nextDocument.layers) {
                         // The next document which will be active upon close of the current document
                         // needs to be initialized first
-                        return this.transfer(updateDocument, nextDocumentID)
-                            .return(nextDocumentID);
-                    } else {
-                        return nextDocumentID;
+                        return this.transfer(updateDocument, nextDocumentID);
                     }
                 }
             })
@@ -443,7 +440,8 @@ define(function (require, exports) {
 
                 var newDocument = this.flux.store("application").getCurrentDocument(),
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
-                    resetHistoryPromise = this.transfer(historyActions.queryCurrentHistory, newDocument.id),
+                    resetHistoryPromise = newDocument ?
+                        this.transfer(historyActions.queryCurrentHistory, newDocument.id) : Promise.resolve(),
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles,
