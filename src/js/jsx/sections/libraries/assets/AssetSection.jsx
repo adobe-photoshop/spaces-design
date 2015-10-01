@@ -167,9 +167,9 @@ define(function (require, exports, module) {
             var sectionContent,
                 deleteConfirmationDialog,
                 element = this.props.element,
-                subTitle = this.props.subTitle && (<div className="libraries__asset__subtitle">
-                            {this.props.subTitle}
-                        </div>);
+                title = this.props.title || this.props.displayName,
+                subTitle = this.props.subTitle &&
+                    (<div className="libraries__asset__subtitle" title={title}> {this.props.subTitle} </div>);
 
             if (this.props.selected) {
                 var library = element.library,
@@ -181,7 +181,7 @@ define(function (require, exports, module) {
                             <TextInput
                                 ref="input"
                                 editable={true}
-                                title={this.props.title || this.props.displayName}
+                                title={title}
                                 value={this.props.displayName}
                                 preventHorizontalScrolling={true}
                                 onClick={this._handleTitleClicked}
@@ -210,7 +210,7 @@ define(function (require, exports, module) {
                         <TextInput
                             ref="input"
                             editable={true}
-                            title={this.props.title || this.props.displayName}
+                            title={title}
                             value={this.props.displayName}
                             preventHorizontalScrolling={true}
                             onClick={this._handleTitleClicked}
@@ -223,14 +223,14 @@ define(function (require, exports, module) {
             }
 
             if (this.state.deleting) {
-                var title = strings.LIBRARIES.DELETE_ASSET.replace("%s", element.name),
+                var dialogTitle = strings.LIBRARIES.DELETE_ASSET.replace("%s", element.name),
                     body = strings.LIBRARIES.DELETE_ASSET_CONFIRM.replace("%s", element.name),
                     cancelBtn = strings.LIBRARIES.BTN_CANCEL,
                     confirmBtn = strings.LIBRARIES.BTN_DELETE;
 
                 deleteConfirmationDialog = (
                     <LibraryDialog
-                        title={title}
+                        title={dialogTitle}
                         body={body}
                         cancel={cancelBtn}
                         confirm={confirmBtn}

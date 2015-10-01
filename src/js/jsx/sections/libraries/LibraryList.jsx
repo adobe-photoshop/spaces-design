@@ -27,15 +27,16 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
+        
+    var ui = require("js/util/ui"),
+        strings = require("i18n!nls/strings");
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         LibraryDialog = require("jsx!./LibraryDialog"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
-        SplitButtonItem = SplitButton.SplitButtonItem,
-        ui = require("js/util/ui"),
-        strings = require("i18n!nls/strings");
+        SplitButtonItem = SplitButton.SplitButtonItem;
 
     /**
      * Commands of the bottom three items in the dropdown menu.
@@ -245,8 +246,7 @@ define(function (require, exports, module) {
                 cancelBtn = strings.LIBRARIES.BTN_CANCEL,
                 isIncomingLibrary = selectedLibrary.collaboration === _INCOMING_LIBRARY,
                 confirmBtn = isIncomingLibrary ? strings.LIBRARIES.BTN_LEAVE : strings.LIBRARIES.BTN_DELETE,
-                title = (isIncomingLibrary ? strings.LIBRARIES.LEAVE_LIBRARY : strings.LIBRARIES.DELETE_LIBRARY)
-                    .replace("%s", selectedLibrary.name);
+                title = isIncomingLibrary ? strings.LIBRARIES.LEAVE_LIBRARY : strings.LIBRARIES.DELETE_LIBRARY;
 
             return (<LibraryDialog
                 title={title}

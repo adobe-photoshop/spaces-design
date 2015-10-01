@@ -98,6 +98,7 @@ define(function (require, exports, module) {
             return !Immutable.is(this.props.value, nextProps.value) ||
                 !Immutable.is(this.state.value, nextState.value) ||
                 !Immutable.is(this.props.placeholderText, nextProps.placeholderText) ||
+                this.props.title !== nextProps.title ||
                 this.state.editing !== nextState.editing;
         },
 

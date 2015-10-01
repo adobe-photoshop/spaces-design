@@ -67,6 +67,7 @@ define(function (require, exports, module) {
         
         shouldComponentUpdate: function (nextProps, nextState) {
             return this._elementLastModified !== nextProps.element.modified ||
+                   this.props.title !== nextProps.title ||
                    this.state.loading !== nextState.loading ||
                    this.state.renditionPath !== nextState.renditionPath;
         },
@@ -120,10 +121,10 @@ define(function (require, exports, module) {
             
             if (!this.state.renditionPath) {
                 return (<div className="libraries__asset__preview-image
-                    libraries__asset__preview-image-blank"/>);
+                    libraries__asset__preview-image-blank" title={this.props.title}/>);
             }
             
-            return (<div className="libraries__asset__preview-image">
+            return (<div className="libraries__asset__preview-image" title={this.props.title}>
                 <img src={this.state.renditionPath}/>
             </div>);
         }

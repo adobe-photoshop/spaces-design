@@ -27,16 +27,14 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        classnames = require("classnames"),
-        _ = require("lodash");
+        classnames = require("classnames");
         
-    var libraryActions = require("js/actions/libraries");
+    var libraryUtil = require("js/util/libraries"),
+        strings = require("i18n!nls/strings");
         
     var Draggable = require("jsx!js/jsx/shared/Draggable"),
         AssetSection = require("jsx!./AssetSection"),
         AssetPreviewImage = require("jsx!./AssetPreviewImage");
-        
-    var _REPRESENTATION_TO_EXTENSION_MAP = _.invert(libraryActions.EXTENSION_TO_REPRESENTATION_MAP);
 
     var Graphic = React.createClass({
         mixins: [FluxMixin],
@@ -117,9 +115,17 @@ define(function (require, exports, module) {
         render: function () {
             var element = this.props.element,
                 dragPreview = this._renderDragPreview(),
-                representation = element.getPrimaryRepresentation(),
-                extension = representation && _REPRESENTATION_TO_EXTENSION_MAP[representation.type],
-                title = !extension ? element.displayName : (element.displayName + " - " + extension.toUpperCase());
+                extension = libraryUtil.getExtension(element),
+                title = extension ? (element.displayName + " - " + extension.toUpperCase()) : element.displayName,
+                previewTitle;
+            
+            if (!this.state.renditionPath) {
+                previewTitle = strings.TOOLTIPS.LIBRARY_EMPTY_GRAPHIC;
+            } else if (libraryUtil.isEditableGraphic(element)) {
+                previewTitle = strings.TOOLTIPS.LIBRARY_EDITABLE_GRAPHIC;
+            } else {
+                previewTitle = strings.TOOLTIPS.LIBRARY_NONEDITABLE_GRAPHIC;
+            }
 
             var classNames = classnames({
                 "assets__graphic__dragging": this.props.isDragging
@@ -140,6 +146,7 @@ define(function (require, exports, module) {
                          onClick={this._handleClickPreview}
                          onDoubleClick={this._handleOpenForEdit}>
                         <AssetPreviewImage
+                            title={previewTitle}
                             element={this.props.element}
                             onComplete={this._handlePreviewCompleted}/>
                     </div>
