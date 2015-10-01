@@ -32,7 +32,10 @@ define(function (require, exports, module) {
         classnames = require("classnames");
 
     var os = require("adapter/os"),
-        LayerEffect = require("js/models/effects/layereffect");
+        LayerEffect = require("js/models/effects/layereffect"),
+        strings = require("i18n!nls/strings"),
+        collection = require("js/util/collection"),
+        synchronization = require("js/util/synchronization");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
@@ -42,9 +45,7 @@ define(function (require, exports, module) {
         InnerShadowList = require("jsx!./ShadowList").InnerShadowList,
         ColorOverlayList = require("jsx!./ColorOverlayList"),
         StrokeList = require("jsx!./StrokeList"),
-        UnsupportedEffectList = require("jsx!./UnsupportedEffectList"),
-        strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization");
+        UnsupportedEffectList = require("jsx!./UnsupportedEffectList");
 
     /**
      * @const
@@ -176,7 +177,21 @@ define(function (require, exports, module) {
             dialog.toggle(event);
             this.getFlux().actions.layerEffects.addEffect(this.props.document, layers, effectType);
         },
-
+        
+        /**
+         * True if user can add new effect to the selected layers.
+         *
+         * @private
+         * @param {string} effectName - accept: strokeEffects, colorOverlays, innerShadows, dropShadows
+         * @return {boolean}
+         */
+        _canAddEffect: function (effectName) {
+            var effects = collection.pluck(this.props.document.layers.selected, effectName);
+            
+            // Return false if any of the selected layers reach maximum effect count.
+            return collection.zip(effects).size < MAX_EFFECT_COUNT;
+        },
+        
         render: function () {
             if (this.props.document.layers.selected.isEmpty()) {
                 return null;
@@ -225,17 +240,28 @@ define(function (require, exports, module) {
                         layers={this.props.document.layers.selected}
                         disabled={this.props.disabled}/>
                     <InnerShadowList {...this.props}
-                        onFocus={this._handleFocus}
-                        max={MAX_EFFECT_COUNT} />
+                        onFocus={this._handleFocus}/>
                     <DropShadowList {...this.props}
-                        onFocus={this._handleFocus}
-                        max={MAX_EFFECT_COUNT} />
+                        onFocus={this._handleFocus}/>
                     <UnsupportedEffectList
                         document={this.props.document}
                         layers={this.props.document.layers.selected}
                         disabled={this.props.disabled}/>
                 </div>
             );
+            
+            var canAddStroke = this._canAddEffect("strokeEffects"),
+                canAddColorOverlay = this._canAddEffect("colorOverlays"),
+                canAddInnerShadow = this._canAddEffect("innerShadows"),
+                canAddDropShadow = this._canAddEffect("dropShadows"),
+                strokeMenuClasses = classnames("popover-list__item",
+                    { "popover-list__item-disabled": !canAddStroke }),
+                colorOverlayMenuClasses = classnames("popover-list__item",
+                    { "popover-list__item-disabled": !canAddColorOverlay }),
+                innerShadowMenuClasses = classnames("popover-list__item",
+                    { "popover-list__item-disabled": !canAddInnerShadow }),
+                dropShadowMenuClasses = classnames("popover-list__item",
+                    { "popover-list__item-disabled": !canAddDropShadow });
 
             return (
                 <section
@@ -284,20 +310,24 @@ define(function (require, exports, module) {
                         id={"effects-popover-" + this.props.document.id}
                         className={"dialog-effects-popover"}>
                         <ul className="popover-list">
-                            <li className="popover-list__item"
-                                onClick={this._handleEffectListClick.bind(this, LayerEffect.STROKE)}>
+                            <li className={strokeMenuClasses}
+                                onClick={canAddStroke &&
+                                    this._handleEffectListClick.bind(this, LayerEffect.STROKE)}>
                                 {strings.STYLE.STROKE_EFFECT.TITLE_SINGLE}
                             </li>
-                            <li className="popover-list__item"
-                                onClick={this._handleEffectListClick.bind(this, LayerEffect.COLOR_OVERLAY)}>
+                            <li className={colorOverlayMenuClasses}
+                                onClick={canAddColorOverlay &&
+                                    this._handleEffectListClick.bind(this, LayerEffect.COLOR_OVERLAY)}>
                                 {strings.STYLE.COLOR_OVERLAY.TITLE_SINGLE}
                             </li>
-                            <li className="popover-list__item"
-                                onClick={this._handleEffectListClick.bind(this, LayerEffect.INNER_SHADOW)}>
+                            <li className={innerShadowMenuClasses}
+                                onClick={canAddInnerShadow &&
+                                    this._handleEffectListClick.bind(this, LayerEffect.INNER_SHADOW)}>
                                 {strings.STYLE.INNER_SHADOW.TITLE_SINGLE}
                             </li>
-                            <li className="popover-list__item"
-                                onClick={this._handleEffectListClick.bind(this, LayerEffect.DROP_SHADOW)}>
+                            <li className={dropShadowMenuClasses}
+                                onClick={canAddDropShadow &&
+                                    this._handleEffectListClick.bind(this, LayerEffect.DROP_SHADOW)}>
                                 {strings.STYLE.DROP_SHADOW.TITLE_SINGLE}
                             </li>
                         </ul>
