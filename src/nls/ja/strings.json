@@ -47,50 +47,52 @@
         "GET_STARTED": "開始",
         "SLIDES": [
             {
-                "HEADLINE": "こんにちは。",
-                "SUBHEAD": "すばらしいことの始まりにようこそ。",
-                "BODY_FIRST": "これは、プロの Web / アプリデザイナー向けの、Photoshop のコンパニオン機能である Design Space (テクノロジープレビュー) です。インタラクションは、ユーザーのワークフローに合わせて調整され、Adobe Photoshop CC でおなじみの機能と信頼性を基に構築されています。",
-                "BODY_SECOND": "これは早い段階の外観です。エンドツーエンドのワークフローは現在開発中ですが、今この Space を皆さんと共有できることをうれしく思います。皆様が求める機能を実現するために、ご協力をお願いします。"
+                "TITLE": "ランディング",
+                "ICON": "ツール - 新しい選択",
+                "HEADLINE": "デザインスペースへようこそ",
+                "SUBHEAD": "",
+                "BODY_FIRST": "デザインスペースは、Web やアプリケーションデザイナー向けの Photoshop の関連機能です。",
+                "BODY_SECOND": "html+js で作業してワークフローに合わせた新しいインタラクションを作成しています。"
             },
             {
-                "HEADLINE": "合理化されたインターフェイス",
-                "BODY": "最小化されたツールセットと単一のコンテキスト属性パネルで、必要な情報とコントロールのみが提供されるため、作業に集中できます。"
+                "TITLE": "ツールセット",
+                "ICON": "ツール - 新しい選択",
+                "HEADLINE": "最小化されたツールセットとコンテキスト属性パネル。"
             },
             {
-                "HEADLINE": "新機能と新しいインタラクション",
-                "BODY": "当社は、新しいテクノロジーである Photoshop Spaces を活用しています。これを使用すると、当社はお客様のワークフローに合わせて、新しいインタラクションと新機能をすばやく構築できます。より少ないクリック回数とダイアログで、仕事をより速く完了できることをご期待ください。詳細については、今後の情報をお待ちください。これはほんの始まりにすぎません。",
-                "FEATURE_SELECT": {
-                    "TITLE": "選択",
-                    "BODY": "改良された選択ツールを使うと、ターゲットとしての設定と編集が簡単になります。ダブルクリックして、任意のグループ、ネスト化されたグループ、またはレイヤーを選択したり、Esc を押して戻ったりすることができます。"
-                },
-                "FEATURE_VECTOR": {
-                    "TITLE": "ベクトルワークフロー",
-                    "BODY": "Design Space では、ベクトル優先手法を採用しています。シェイプや文字は、作成、レイアウト、スタイル設定、編集の効率が上がるように最適化された主要要素です。"
-                },
-                "FEATURE_MATH": {
-                    "TITLE": "算術演算",
-                    "BODY": "位置、長さ、サイズをすばやく記述するには、任意の数値フィールドで算術演算 (100 / 2 など) を使用します。"
-                },
-                "FEATURE_ARTBOARD": {
-                    "TITLE": "アートボード",
-                    "BODY": "複数のアートボードを作成して、1 つのドキュメントで視覚的な流量と全体的な流量の両方をデザインできます。アートボードは、初期設定で提供される機能です。"
-                },
-                "FEATURE_SWAP": {
-                    "TITLE": "入れ替え",
-                    "BODY": "1 回のクリックで、レイヤーまたはグループの任意のペアの内容や位置を簡単に入れ替えることができます。"
-                },
-                "FEATURE_OS": {
-                    "TITLE": "ソースを開く",
-                    "BODY": "ソースコードをダウンロードし、次から当社の開発チームの進捗状況を把握します : "
-                }
+                "TITLE": "検索",
+                "ICON": "レイヤー - 検索 - アプリ",
+                "HEADLINE_FIRST": "レイヤーや開いているドキュメントを検索して、ライブラリアセットなどを配置します。",
+                "HEADLINE_SECOND": "⌘+f または Control+f を使用"
             },
             {
-                "HEADLINE": "Design Space と Photoshop の間を移動しています",
-                "BODY": "Design Space は、標準の Photoshop および PSD と完全な互換性を維持する予定です。ツールバー、キーボードショートカット、ウィンドウメニューで相互に移動できます。"
+                "TITLE": "サンプラー",
+                "ICON": "ツール - スポイト",
+                "HEADLINE_FIRST": "クリックして Shift キーを押しながらクリックするだけで、カラーと効果をサンプリング。",
+                "HEADLINE_SECOND": "スペースパーで、他のすべて、グラフィックさえもサンプリング。"
             },
             {
-                "HEADLINE": "フィードバック",
-                "BODY": "オンラインで当社にアクセスし、ご意見をお聞かせください。Design Space はまだ早期の段階です。Design Space をさらに優れたものにするために、ご協力をお願いします。"
+                "TITLE": "アートボード",
+                "ICON": "レイヤー - アートボード",
+                "HEADLINE": "より効果的なビジュアルワークフローのために複数のアートボードを作成。"
+            },
+            {
+                "TITLE": "入れ替え",
+                "ICON": "入れ替え",
+                "HEADLINE": "1 回のクリックで、レイヤーの内容や位置を入れ替ることができます。"
+            },
+            {
+                "TITLE": "切り替え中",
+                "ICON": "ワークスペース",
+                "HEADLINE": "高度な写真機能を使用する場合は、標準の Photoshop にいつでも切り替え可能。"
+            },
+            {
+                "TITLE": "連絡先",
+                "ICON": "鳥",
+                "HEADLINE": "デザインスペース",
+                "BODY_FIRST": "Twitter",
+                "BODY_SECOND": "Github",
+                "BODY_THIRD": "フォーラム"
             }
         ]
     },
@@ -203,6 +205,8 @@
         "ADD_EFFECT": "レイヤー効果を追加",
         "TOGGLE_DROP_SHADOW": "ドロップシャドウを切り替える",
         "DELETE_DROP_SHADOW": "ドロップシャドウを削除",
+        "DELETE_LAYER_EFFECT": "削除 %s",
+        "TOGGLE_LAYER_EFFECT": "能_[8472483] Toggle %s",
         "SET_DROP_SHADOW_COLOR": "ドロップシャドウのカラーを設定",
         "SET_DROP_SHADOW_PROPS": "ドロップシャドウの寸法を設定",
         "SET_DROP_SHADOW_X_POSITION": "ドロップシャドウの X 位置を設定",
@@ -211,6 +215,13 @@
         "SET_DROP_SHADOW_SPREAD": "ドロップシャドウの拡散を設定",
         "SET_COLOR_PICKER_FORMAT": "カラーピッカーの形式を設定",
         "SET_COLOR_PICKER_MODE": "カラーピッカーモードを設定",
+        "SET_COLOR_OVERLAY_COLOR": "能_[8472486] Set Color Overlay Color",
+        "TOGGLE_COLOR_OVERLAY": "能_[8472488] Toggle Color Overlay",
+        "DELETE_COLOR_OVERLAY": "能_[8472484] Delete Color Overlay",
+        "SET_STROKE_EFFECT_COLOR": "ストロークのカラーを設定",
+        "SET_STROKE_EFFECT_SIZE": "ストロークの大きさを設定",
+        "TOGGLE_STROKE_EFFECT": "ストロークを切り替える",
+        "DELETE_STROKE_EFFECT": "能_[8472482] Delete Stroke",
         "TOGGLE_INNER_SHADOW": "シャドウ (内側) を切り替える",
         "DELETE_INNER_SHADOW": "シャドウ (内側) を削除",
         "SET_INNER_SHADOW_COLOR": "シャドウ (内側) のカラーを設定",
@@ -360,6 +371,29 @@
             "SPREAD": "スプレッド",
             "MIXED": "混在アピアランス"
         },
+        "COLOR_OVERLAY": {
+            "TITLE": "カラーオーバーレイ",
+            "TITLE_SINGLE": "カラーオーバーレイ",
+            "MIXED": "混在アピアランス"
+        },
+        "STROKE_EFFECT": {
+            "TITLE": "ストローク",
+            "TITLE_SINGLE": "ストローク",
+            "SIZE": "サイズ",
+            "MIXED": "混在アピアランス"
+        },
+        "UNSUPPORTED_EFFECTS": {
+            "TITLE": "サポート対象外",
+            "NAMES": {
+                "BEVEL_EMBOSS": "ベベルとエンボス",
+                "SATIN": "サテン",
+                "INNER_GLOW": "光彩 (内側)",
+                "OUTER_GLOW": "光彩 (外側)",
+                "PATTERN_OVERLAY": "パターンオーバーレイ",
+                "GRADIENT_OVERLAY": "グラデーションオーバーレイ"
+            },
+            "MIXED": "混在アピアランス"
+        },
         "TYPE": {
             "TITLE": "書式",
             "TYPEFACE": "字体",
@@ -390,8 +424,9 @@
         "TITLE_SETTINGS": "設定",
         "EXPORT_DOCUMENT_FILENAME": "ドキュメント",
         "ONLY_UNSUPPORTED_LAYERS_SELECTED": "サポートされているレイヤーが選択されていません",
+        "EXPORT_MIXED": "選択は合成されて書き出されました",
         "NO_ASSETS": "書き出しが設定されていません",
-        "USE_PREFIX": "能_[8453800] Use Prefix"
+        "USE_PREFIX": "接頭辞を使用"
     },
     "TEMPLATES": {
         "IPHONE_6_PLUS": "iPhone 6+",
@@ -504,9 +539,9 @@
         "INTRO_LINK_TITLE": "ライブラリの使用方法を表示",
         "INTRO_URL": "https://helpx.adobe.com/jp/creative-cloud/help/libraries.html",
         "NO_CONNECTION": "Creative Cloud Libraries を使用するには、Creative Cloud にサインインしてください。",
-        "LEADING": "能_[8453802] Leading: %s",
-        "LEADING_AUTO": "能_[8453803] Auto",
-        "TRACKING": "能_[8453801] Tracking: %s"
+        "LEADING": "行送り : %s",
+        "LEADING_AUTO": "自動",
+        "TRACKING": "トラッキング : %s"
     },
     "ERR": {
         "UNRECOVERABLE": "Design Space で回復できないエラーが発生しました。"

@@ -47,50 +47,52 @@
         "GET_STARTED": "Prise en main",
         "SLIDES": [
             {
-                "HEADLINE": "Bonjour.",
-                "SUBHEAD": "Bienvenue dans le début d'une aventure d'impressionnante.",
-                "BODY_FIRST": "Il s'agit de l'espace de conception (aperçu technique), une application qui accompagne Photoshop, conçue pour les graphistes Web et les concepteurs d'applications. Les interactions sont adaptées à vos flux de production et reposent sur la puissance et la fiabilité d'Adobe Photoshop CC.",
-                "BODY_SECOND": "Ce n'est qu'un aperçu provisoire. Nous continuons à développer un flux de production de bout en bout, mais nous sommes ravis de partager cet espace maintenant afin que vous puissiez contribuer à façonner l'expérience que vous souhaitez."
+                "TITLE": "destination",
+                "ICON": "outil-nouvelle Sélection",
+                "HEADLINE": "Bienvenue dans Design Space",
+                "SUBHEAD": "",
+                "BODY_FIRST": "Design Space est une application qui s'utilise conjointement avec Photoshop pour les concepteurs Web et les concepteurs d'applications.",
+                "BODY_SECOND": "Nous utilisons les langages html + js pour créer de nouvelles interactions adaptées à vos flux de travaux."
             },
             {
-                "HEADLINE": "Interface rationnalisée",
-                "BODY": "Grâce à un kit d'outils réduit et à un panneau Propriétés contextuel, seules les informations requises et les commandes nécessaires s'affichent, ce qui vous permet de vous concentrer sur votre travail."
+                "TITLE": "Ensemble d'outils",
+                "ICON": "outil-nouvelle Sélection",
+                "HEADLINE": "Ensemble d'outils réduit et panneau de propriétés contextuel."
             },
             {
-                "HEADLINE": "Nouvelles fonctionnalités et interactions",
-                "BODY": "Nous tirons parti d'une nouvelle technologie, les espaces de Photoshop, qui nous permet de créer rapidement des interactions et des fonctionnalités pour vos flux de production. Attendez-vous à travailler plus rapidement en réduisant le nombre de clics et de boîtes de dialogue. Restez à l'écoute, ce n'est que le début.",
-                "FEATURE_SELECT": {
-                    "TITLE": "Sélectionner",
-                    "BODY": "L'amélioration de l'outil Sélection simplifie le ciblage et la modification. Double-cliquez sur un groupe, un groupe imbriqué ou un calque et appuyez sur Echap pour sortir."
-                },
-                "FEATURE_VECTOR": {
-                    "TITLE": "Flux de production vectoriels",
-                    "BODY": "L'espace de conception adopte une approche vectorielle en priorité. Les formes et le type sont des éléments de première classe, et la création, la mise en page, la mise en forme et la publication sont optimisées pour l'efficacité."
-                },
-                "FEATURE_MATH": {
-                    "TITLE": "Opérations mathématiques",
-                    "BODY": "Utilisez des opérations mathématiques (par exemple, 100/2) dans un champ numérique pour décrire rapidement les positions les longueurs et les dimensions."
-                },
-                "FEATURE_ARTBOARD": {
-                    "TITLE": "Plan de travail",
-                    "BODY": "Créez plusieurs plans de travail pour concevoir le flux visuel et le flux général dans un même document. Les plans de travail constituent l'expérience par défaut."
-                },
-                "FEATURE_SWAP": {
-                    "TITLE": "Permuter",
-                    "BODY": "Permute facilement le contenu et les positions des paires de calques ou des groupes d'un simple clic."
-                },
-                "FEATURE_OS": {
-                    "TITLE": "Ouvrir la source",
-                    "BODY": "Téléchargez le code source et suivez la progression de l'équipe de développement sur "
-                }
+                "TITLE": "Rechercher",
+                "ICON": "calque-recherche-application",
+                "HEADLINE_FIRST": "Recherchez des calques, des documents ouverts, placez des ressources de bibliothèque et plus encore.",
+                "HEADLINE_SECOND": "Utilisez ⌘ + f ou Ctrl + f"
             },
             {
-                "HEADLINE": "Déplacement entre l'espace de conception et Photoshop",
-                "BODY": "L'espace de conception est prévu pour être totalement compatible avec Photoshop et les fichiers .psd standard. Basculez entre les deux environnements à l'aide de la barre d'outils, d'un raccourci clavier ou du menu Fenêtre."
+                "TITLE": "Echantillonnage",
+                "ICON": "outil-pipette",
+                "HEADLINE_FIRST": "Echantillonnez des couleurs et des effets en cliquant tout en appuyant sur Maj.",
+                "HEADLINE_SECOND": "Echantillonnez tout le reste, même les graphiques, avec la barre d'espace."
             },
             {
-                "HEADLINE": "Commentaires",
-                "BODY": "Consultez notre site web en ligne pour nous faire part de votre avis. L'espace de conception n'en est qu'à une phase précoce, et vous pouvez contribuer à l'optimiser."
+                "TITLE": "Plans de travail",
+                "ICON": "calque-planche graphique",
+                "HEADLINE": "Créez plusieurs planches graphiques pour un flux de travaux plus visuel."
+            },
+            {
+                "TITLE": "Permuter",
+                "ICON": "permuter",
+                "HEADLINE": "Remplacez les contenus et les positions des calques en un seul clic."
+            },
+            {
+                "TITLE": "Changement",
+                "ICON": "espace de travail",
+                "HEADLINE": "Passez à Photoshop Classic à tout moment pour accéder aux fonctionnalités avancées des photos."
+            },
+            {
+                "TITLE": "Contact",
+                "ICON": "oiseau",
+                "HEADLINE": "Espace de conception",
+                "BODY_FIRST": "Twitter",
+                "BODY_SECOND": "GitHub",
+                "BODY_THIRD": "Forum"
             }
         ]
     },
@@ -203,6 +205,8 @@
         "ADD_EFFECT": "Ajouter un effet de calque",
         "TOGGLE_DROP_SHADOW": "Activer/Désactiver l'ombre portée",
         "DELETE_DROP_SHADOW": "Supprimer l'ombre portée",
+        "DELETE_LAYER_EFFECT": "Supprimer %s",
+        "TOGGLE_LAYER_EFFECT": "[8472483] é_Toggle %s",
         "SET_DROP_SHADOW_COLOR": "Définir la couleur de l'ombre portée",
         "SET_DROP_SHADOW_PROPS": "Définir les dimensions de l'ombre portée",
         "SET_DROP_SHADOW_X_POSITION": "Définir la position de l'ombre portée X",
@@ -211,6 +215,13 @@
         "SET_DROP_SHADOW_SPREAD": "Définir l'étendue de l'ombre portée",
         "SET_COLOR_PICKER_FORMAT": "Définir le format du sélecteur de couleurs",
         "SET_COLOR_PICKER_MODE": "Définir le mode du sélecteur de couleurs",
+        "SET_COLOR_OVERLAY_COLOR": "[8472486] é_Set Color Overlay Color",
+        "TOGGLE_COLOR_OVERLAY": "[8472488] é_Toggle Color Overlay",
+        "DELETE_COLOR_OVERLAY": "[8472484] é_Delete Color Overlay",
+        "SET_STROKE_EFFECT_COLOR": "Définir la couleur du contour",
+        "SET_STROKE_EFFECT_SIZE": "Définir la taille du contour",
+        "TOGGLE_STROKE_EFFECT": "Activer/désactiver le contour",
+        "DELETE_STROKE_EFFECT": "Supprimer le contour",
         "TOGGLE_INNER_SHADOW": "Activer/Désactiver l'ombre interne",
         "DELETE_INNER_SHADOW": "Supprimer l'ombre interne",
         "SET_INNER_SHADOW_COLOR": "Définir la couleur de l'ombre interne",
@@ -360,6 +371,29 @@
             "SPREAD": "Grossi",
             "MIXED": "Aspects mixtes"
         },
+        "COLOR_OVERLAY": {
+            "TITLE": "Incrustations couleur",
+            "TITLE_SINGLE": "Incrustation couleur",
+            "MIXED": "Aspects mixtes"
+        },
+        "STROKE_EFFECT": {
+            "TITLE": "Contours",
+            "TITLE_SINGLE": "Contour",
+            "SIZE": "Taille",
+            "MIXED": "Aspects mixtes"
+        },
+        "UNSUPPORTED_EFFECTS": {
+            "TITLE": "Non pris en charge",
+            "NAMES": {
+                "BEVEL_EMBOSS": "Biseautage & estampage",
+                "SATIN": "Satin",
+                "INNER_GLOW": "Lueur interne",
+                "OUTER_GLOW": "Lueur externe",
+                "PATTERN_OVERLAY": "Incrustation de motif",
+                "GRADIENT_OVERLAY": "Incrustation en dégradé"
+            },
+            "MIXED": "Aspects mixtes"
+        },
         "TYPE": {
             "TITLE": "Texte",
             "TYPEFACE": "Type de caractère",
@@ -390,6 +424,7 @@
         "TITLE_SETTINGS": "Settings",
         "EXPORT_DOCUMENT_FILENAME": "document",
         "ONLY_UNSUPPORTED_LAYERS_SELECTED": "Aucun calque pris en charge sélectionné",
+        "EXPORT_MIXED": "La sélection se compose d'exportations mixtes",
         "NO_ASSETS": "Aucune exportation configurée",
         "USE_PREFIX": "Utiliser un préfixe"
     },
