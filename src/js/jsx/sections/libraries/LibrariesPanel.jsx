@@ -43,19 +43,18 @@ define(function (require, exports, module) {
         mixins: [FluxMixin, StoreWatchMixin("library", "draganddrop")],
 
         getStateFromFlux: function () {
-            var libraryStore = this.getFlux().store("library"),
-                libraries = libraryStore.getLibraries(),
+            var libraryState = this.getFlux().store("library").getState(),
                 dndState = this.getFlux().store("draganddrop").getState(),
                 isDropTarget = dndState.dropTarget && dndState.dropTarget.key === DroppablePanel.DROPPABLE_KEY;
 
             return {
-                libraries: libraries,
-                isSyncing: libraryStore.isSyncing(),
+                libraries: libraryState.libraries,
+                isSyncing: libraryState.isSyncing,
                 isDropTarget: isDropTarget,
                 isValidDropTarget: dndState.hasValidDropTarget,
-                selectedLibrary: libraryStore.getCurrentLibrary(),
-                lastLocallyCreatedElement: libraryStore.getLastLocallyCreatedElement(),
-                lastLocallyUpdatedGraphic: libraryStore.getLastLocallyUpdatedGraphic()
+                selectedLibrary: libraryState.currentLibrary,
+                lastLocallyCreatedElement: libraryState.lastLocallyCreatedElement,
+                lastLocallyUpdatedGraphic: libraryState.lastLocallyUpdatedGraphic
             };
         },
 
@@ -108,8 +107,8 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var libraryStore = this.getFlux().store("library"),
-                connected = libraryStore.getConnectionStatus(),
+            var libraryState = this.getFlux().store("library").getState(),
+                connected = libraryState.isConnected,
                 libraries = this.state.libraries,
                 currentLibrary = this.state.selectedLibrary,
                 containerContents;
@@ -200,7 +199,7 @@ define(function (require, exports, module) {
     var canDropLayers = function (dropInfo, dragTargets) {
         var droppablePanel = dropInfo.droppable,
             flux = require("js/main").getController().flux,
-            currentLibrary = flux.store("library").getCurrentLibrary(),
+            currentLibrary = flux.store("library").getState().currentLibrary,
             // Single linked layer is not accepted, but multiple linked (or mixed) layers are accepted.
             isSingleLinkedLayer = dragTargets.size === 1 && dragTargets.first().isLinked;
 
