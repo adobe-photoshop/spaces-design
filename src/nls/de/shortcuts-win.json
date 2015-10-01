@@ -74,7 +74,9 @@
             "ELLIPSE": "e",
             "PEN": "p",
             "TYPE": "t",
-            "SAMPLER": "i"
+            "SAMPLER": "i",
+            "MASK_SELECT": "m",
+            "VECTOR_SELECT": "a"
         }
     }
 }
