@@ -61,6 +61,7 @@
 @warm-gray: mix(@item-active, @bg-alt, 70%);
 @black: mix(black, @bg-alt, 80%);
 @color-checkerboard: @item-hover;
+@color-preview-background: white;
 @color-clear: fade(@item-active, 0%);
 @transparent-black: rgba(0, 0, 0, 0.0);
 
@@ -100,6 +101,7 @@
 
 .background-checkerboard(@size: 10) {
     @halfsize: @size / 2;
+    background-color: @color-preview-background;
     // checkerboard
     background-image:
     -webkit-linear-gradient(45deg, @color-checkerboard 25%, transparent 25%,transparent 75%, @color-checkerboard 75%, @color-checkerboard 100%),
