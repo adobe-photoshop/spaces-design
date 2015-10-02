@@ -246,7 +246,7 @@
         &:hover {
             background-color: @list-hover-color;
             
-             input {
+             input[type="text"], input[type="text"]:disabled {
                 color: @item-hover;
             }
         }
@@ -255,7 +255,7 @@
             background-color: @list-select-color;
             padding-right: 0;
             .libraries__asset__title {
-                input {
+                input[type="text"], input[type="text"]:disabled, input[type="text"]:hover, input[type="text"]:hover:disabled{
                     color: @item-hover;
                 }
             }
@@ -280,15 +280,16 @@
                 -webkit-user-select: none;
                 border-bottom: @hairline solid transparent;
 
-                &:focus, &:focus:disabled {
+                &:focus, &:focus:hover, &:focus:disabled {
                     align-self: stretch;
-                    color: @item-hover;
+                    color: @item;
                     user-select: none;
                     border-bottom: @hairline solid @focus-highlight;
                 }
                 
                 &:hover, &:hover:disabled {
                     color: @item-hover;
+                    border-bottom: @hairline solid transparent;
                 }
                 
                 &[disabled] {
