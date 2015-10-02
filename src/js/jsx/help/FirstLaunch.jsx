@@ -115,7 +115,7 @@ define(function (require, exports, module) {
                             <ul className="carousel__slide__three__list">
                                 <li>
                                     <div
-                                        onClick={ui.openURL.bind(null, psForumURL)}>
+                                        onClick={ui.openURL.bind(null, githubURL)}>
                                         <SVGIcon
                                             CSSID="github"/>
                                         <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_SECOND}</h2>
@@ -125,7 +125,7 @@ define(function (require, exports, module) {
                             <ul className="carousel__slide__three__list">
                                 <li>
                                     <div
-                                        onClick={ui.openURL.bind(null, githubURL)}>
+                                        onClick={ui.openURL.bind(null, psForumURL)}>
                                         <SVGIcon
                                             CSSID="workspace"/>
                                         <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_THIRD}</h2>
