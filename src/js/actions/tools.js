@@ -549,7 +549,8 @@ define(function (require, exports) {
         }
 
         var nonVectorModeLayer = (currentLayer.kind === currentLayer.layerKinds.BACKGROUND ||
-                currentLayer.kind === currentLayer.layerKinds.VECTOR);
+                currentLayer.kind === currentLayer.layerKinds.VECTOR) ||
+                currentLayer.locked;
 
         if (vectorMaskMode && nonVectorModeLayer) {
             return Promise.resolve();
