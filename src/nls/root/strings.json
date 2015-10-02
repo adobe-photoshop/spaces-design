@@ -39,7 +39,8 @@
         "UNGROUP_LAYERS": "Ungroup layers",
         "MODIFY_EXPORT_ASSETS": "Updated Export Asset Configurations",
         "APPLY_TEXT_STYLE": "Apply Text Style",
-        "APPLY_LAYER_STYLE": "Apply Layer Style"
+        "APPLY_LAYER_STYLE": "Apply Layer Style",
+        "CREATE_LAYER_FROM_ELEMENT": "Create Layer From Graphic Asset"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -251,6 +252,9 @@
         "LIBRARY_VIEW_ON_WEBSITE": "View on Website",
         "LIBRARY_CLICK_TO_APPLY": "Click to apply",
         "LIBRARY_DELETE": "Delete",
+        "LIBRARY_EDITABLE_GRAPHIC": "Double click to edit",
+        "LIBRARY_NONEDITABLE_GRAPHIC": "Not editable in this app",
+        "LIBRARY_EMPTY_GRAPHIC": "Graphic has no content",
         "EXPORT_EXPORT_ASSETS": "Export these assets",
         "EXPORT_ADD_ASSET": "Add export asset",
         "EXPORT_REMOVE_ASSET": "Remove asset configuration",

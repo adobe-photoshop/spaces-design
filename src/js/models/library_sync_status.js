@@ -40,10 +40,13 @@ define(function (require, exports, module) {
         
         // Contains the ID of the libraries that are currently syncing with remote server.
         this._syncingLibraryIDs = new Set();
+        this._downloadingLibraryIDs = new Set();
         
         this._status = {
             isSyncing: false,
-            libraryNumber: this.getFilteredLibraries().length
+            isDownloading: false,
+            libraryNumber: this.getFilteredLibraries().length,
+            libraryNumberChanged: false
         };
          
         this._libraryCollection.addSyncListener(this._onLibraryCollectionSync.bind(this));
@@ -74,13 +77,15 @@ define(function (require, exports, module) {
         // Check for new libraries created from other source and their sync progress. 
         newLibraries.forEach(function (data) {
             if (typeof data.progress === "number" && data.progress !== 100) {
-                log.debug("[CC Lib] syncing new library \"%s\": %s", data.id, data.progress);
+                if (!this._downloadingLibraryIDs.has(data.id)) {
+                    log.debug("[CC Lib] downloading new library \"%s\"", data.id);
+                    
+                    this._downloadingLibraryIDs.add(data.id);
+                }
+            } else if (this._downloadingLibraryIDs.has(data.id)) {
+                log.debug("[CC Lib] downloaded new library \"%s\"", data.id);
                 
-                this._syncingLibraryIDs.add(data.id);
-            } else if (this._syncingLibraryIDs.has(data.id)) {
-                log.debug("[CC Lib] synced new library \"%s\"", data.id);
-                
-                this._syncingLibraryIDs.delete(data.id);
+                this._downloadingLibraryIDs.delete(data.id);
             }
         }, this);
         
@@ -122,13 +127,15 @@ define(function (require, exports, module) {
         
         var newStatus = {
             isSyncing: this._syncingLibraryIDs.size !== 0,
-            libraryNumber: libraries.length
+            isDownloading: this._downloadingLibraryIDs.size !== 0,
+            libraryNumber: libraries.length,
+            libraryNumberChanged: this._status.libraryNumber !== libraries.length
         };
         
+        // Make sure to always emit a sync event when the libraries are syncing, so that the libraries panel can 
+        // update itself for changes in library name, asset name, or library orders.
         if (newStatus.isSyncing || !_.isEqual(this._status, newStatus)) {
-            var libNumberChanged = this._status.libraryNumber !== newStatus.libraryNumber;
-            
-            this._emitter.emit("sync", newStatus.isSyncing, libNumberChanged);
+            this._emitter.emit("sync", newStatus);
             this._status = newStatus;
         }
     };

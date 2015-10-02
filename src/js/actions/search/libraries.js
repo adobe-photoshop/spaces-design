@@ -49,7 +49,7 @@ define(function (require, exports) {
     var _getLibrarySearchOptions = function () {
         var libStore = this.flux.store("library"),
             appStore = this.flux.store("application"),
-            libraries = libStore.getLibraries(),
+            libraries = libStore.getState().libraries,
             currentDocument = appStore.getCurrentDocument();
 
         // Map from vnd.adobe.element type to library strings.SEARCH.CATEGORIES keys

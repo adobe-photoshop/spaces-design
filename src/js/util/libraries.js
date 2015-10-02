@@ -29,7 +29,9 @@ define(function (require, exports) {
         _ = require("lodash");
         
     var strings = require("i18n!nls/strings"),
-        librariesAction = require("js/actions/libraries");
+        libraryActions = require("js/actions/libraries");
+    
+    var _REPRESENTATION_TO_EXTENSION_MAP;
         
     /**
      * Return character style's color object.
@@ -56,7 +58,7 @@ define(function (require, exports) {
      * @return {?object}
      */
     var getCharStyleData = function (element) {
-        var representation = _.find(element.representations, { type: librariesAction.REP_CHARACTERSTYLE_TYPE }),
+        var representation = _.find(element.representations, { type: libraryActions.REP_CHARACTERSTYLE_TYPE }),
             style = representation && representation.getValue("characterstyle", "data");
         
         if (!style) {
@@ -127,8 +129,38 @@ define(function (require, exports) {
         
         return _.remove(strs, null).join(separator);
     };
+    
+    /**
+     * True if the graphic element is editable in DS.
+     * 
+     * @param {AdobeLibraryElement} element
+     * @return {boolean}
+     */
+    var isEditableGraphic = function (element) {
+        var representation = element.getPrimaryRepresentation();
+        
+        return libraryActions.EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type);
+    };
+    
+    /**
+     * Return the file extension of the element's primary representation.
+     * 
+     * @param {AdobeLibraryElement} element
+     * @return {?string}
+     */
+    var getExtension = function (element) {
+        if (!_REPRESENTATION_TO_EXTENSION_MAP) {
+            _REPRESENTATION_TO_EXTENSION_MAP = _.invert(libraryActions.EXTENSION_TO_REPRESENTATION_MAP);
+        }
+        
+        var representation = element.getPrimaryRepresentation();
+            
+        return _REPRESENTATION_TO_EXTENSION_MAP[representation.type];
+    };
 
     exports.formatCharStyle = formatCharStyle;
     exports.getCharStyleColor = getCharStyleColor;
     exports.getCharStyleData = getCharStyleData;
+    exports.isEditableGraphic = isEditableGraphic;
+    exports.getExtension = getExtension;
 });

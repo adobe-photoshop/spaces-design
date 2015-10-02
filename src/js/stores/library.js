@@ -52,7 +52,7 @@ define(function (require, exports, module) {
         _libraryCollection: null,
 
         /**
-         * @type {Immutable.Map.<number, AdobeLibraryComposite>}
+         * @type {Immutable.Map.<string, AdobeLibraryComposite>}
          */
         _libraries: null,
 
@@ -131,6 +131,34 @@ define(function (require, exports, module) {
         },
 
         /**
+         * @typedef {object} LibraryState
+         * @property {Immutable.Map.<string, AdobeLibraryComposite>} libraries - libraries map by IDs
+         * @property {?AdobeLibraryCollection} libraryCollection
+         * @property {?string} currentLibraryID
+         * @property {?AdobeLibraryComposite} currentLibrary
+         * @property {boolean} isConnected
+         * @property {boolean} isSyncing
+         * @property {boolean} isPlacingGraphic - ture if DS is in placing graphic mode.
+         * @property {?AdobeLibraryElement} lastLocallyCreatedElement
+         * @property {?AdobeLibraryElement} lastLocallyUpdatedGraphic
+         * 
+         * @return {LibraryState} 
+         */
+        getState: function () {
+            return {
+                libraries: this._libraries,
+                libraryCollection: this._libraryCollection,
+                currentLibraryID: this._selectedLibraryID,
+                currentLibrary: this.getLibraryByID(this._selectedLibraryID),
+                isConnected: this._serviceConnected,
+                isSyncing: this._isSyncing,
+                isPlacingGraphic: this._isPlacingGraphic,
+                lastLocallyCreatedElement: this._lastLocallyCreatedElement,
+                lastLocallyUpdatedGraphic: this._lastLocallyUpdatedGraphic
+            };
+        },
+
+        /**
          * Reset or initialize store state.
          *
          * @private
@@ -143,7 +171,8 @@ define(function (require, exports, module) {
             this._isSyncing = false;
             this._isPlacingGraphic = false;
             this._editStatusByDocumentID = new Immutable.Map();
-            this._createdNewGraphicLocally = false;
+            this._lastLocallyCreatedElement = null;
+            this._lastLocallyUpdatedGraphic = null;
         },
 
         /** @ignore */
@@ -410,7 +439,7 @@ define(function (require, exports, module) {
          * @param  {string} nextSelectedLibraryID - change the current library to nextSelectedLibraryID
          */
         _updateLibraries: function (nextSelectedLibraryID) {
-            var lastSelectedLibrary = this.getCurrentLibrary(),
+            var lastSelectedLibrary = this.getLibraryByID(this._selectedLibraryID),
                 libraries = _.filter(this._libraryCollection.libraries,
                     { deletedLocally: false, deletedFromServer: false });
 
@@ -426,7 +455,7 @@ define(function (require, exports, module) {
                 } else {
                     this._selectedLibraryID = this._libraries.keySeq().first();
                 }
-            } else if (lastSelectedLibrary && !this.getCurrentLibrary()) {
+            } else if (lastSelectedLibrary && !this.getLibraryByID(this._selectedLibraryID)) {
                 // We just deleted the currently active library. We need to choose a different library to be the current
                 // one. We want the one that appears in the menu just below the one we deleted, in other words, the next
                 // newest library.
@@ -464,24 +493,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Returns all loaded libraries
-         *
-         * @return {Immutable.Iterable<AdobeLibraryComposite>}
-         */
-        getLibraries: function () {
-            return this._libraries;
-        },
-
-        /**
-         * Returns the loaded library collection
-         *
-         * @return {AdobeLibraryCollection}
-         */
-        getLibraryCollection: function () {
-            return this._libraryCollection;
-        },
-
-        /**
          * Returns the Library with given ID, the library needs to be loaded first
          *
          * @param {string} id Library GUID
@@ -492,43 +503,6 @@ define(function (require, exports, module) {
             return this._libraries.get(id);
         },
 
-        /**
-         * Returns the currently shown library
-         *
-         * @return {?AdobeLibraryComposite}
-         */
-        getCurrentLibrary: function () {
-            return this._libraries.get(this._selectedLibraryID);
-        },
-        
-        /**
-         * Get current library ID
-         * 
-         * @return {string}
-         */
-        getCurrentLibraryID: function () {
-            return this._selectedLibraryID;
-        },
-
-        /** @ignore */
-        getConnectionStatus: function () {
-            return this._serviceConnected;
-        },
-        
-        /** @ignore */
-        isSyncing: function () {
-            return this._isSyncing;
-        },
-        
-        /**
-         * Ture if DS is in placing graphic mode.
-         * 
-         * @return {boolean}
-         */
-        isPlacingGraphic: function () {
-            return this._isPlacingGraphic;
-        },
-        
         /**
          * Get edit status by element 
          *
@@ -558,24 +532,6 @@ define(function (require, exports, module) {
                     
                 return documentName.indexOf(status.elementID) !== -1;
             }.bind(this));
-        },
-        
-        /**
-         * Return the last locally created element.
-         * 
-         * @return {?AdobeLibraryElement}
-         */
-        getLastLocallyCreatedElement: function () {
-            return this._lastLocallyCreatedElement;
-        },
-        
-        /**
-         * Return the last locally updated graphic element.
-         * 
-         * @return {?AdobeLibraryElement}
-         */
-        getLastLocallyUpdatedGraphic: function () {
-            return this._lastLocallyUpdatedGraphic;
         },
         
         /**

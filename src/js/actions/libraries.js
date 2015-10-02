@@ -235,9 +235,9 @@ define(function (require, exports) {
      */
     var createGraphicFromSelectedLayer = function () {
         var appStore = this.flux.store("application"),
-            libStore = this.flux.store("library"),
+            libState = this.flux.store("library").getState(),
             currentDocument = appStore.getCurrentDocument(),
-            currentLibrary = libStore.getCurrentLibrary(),
+            currentLibrary = libState.currentLibrary,
             currentLayers = currentDocument.layers.selected;
 
         if (!currentLibrary) {
@@ -336,10 +336,10 @@ define(function (require, exports) {
      */
     var createCharacterStyleFromSelectedLayer = function () {
         var appStore = this.flux.store("application"),
-            libStore = this.flux.store("library"),
+            libState = this.flux.store("library").getState(),
             fontStore = this.flux.store("font"),
             currentDocument = appStore.getCurrentDocument(),
-            currentLibrary = libStore.getCurrentLibrary(),
+            currentLibrary = libState.currentLibrary,
             currentLayers = currentDocument.layers.selected,
             currentLayer = currentLayers.first();
 
@@ -353,7 +353,7 @@ define(function (require, exports) {
             tempPreviewPath;
         
         if (!typeData.adbeFont) {
-            log.warn("Can't create character style from mixed type layers!");
+            log.warn("[CC Lib] can't create character style from mixed type layers!");
             return Promise.resolve();
         }
         
@@ -418,9 +418,9 @@ define(function (require, exports) {
      */
     var createLayerStyleFromSelectedLayer = function () {
         var appStore = this.flux.store("application"),
-            libStore = this.flux.store("library"),
+            libState = this.flux.store("library").getState(),
             currentDocument = appStore.getCurrentDocument(),
-            currentLibrary = libStore.getCurrentLibrary(),
+            currentLibrary = libState.currentLibrary,
             currentLayers = currentDocument.layers.selected;
 
         if (!currentLibrary || currentLayers.size !== 1) {
@@ -483,8 +483,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var createColorAsset = function (color) {
-        var libStore = this.flux.store("library"),
-            currentLibrary = libStore.getCurrentLibrary();
+        var libState = this.flux.store("library").getState(),
+            currentLibrary = libState.currentLibrary;
 
         if (!currentLibrary) {
             return Promise.resolve();
@@ -668,7 +668,7 @@ define(function (require, exports) {
             
         // Check if the library exists - if it was deleted, switch to the current library
         if (!library || library.deletedLocally) {
-            library = libraryStore.getCurrentLibrary();
+            library = libraryStore.getState().currentLibrary;
 
             if (!library) {
                 // There's no current library, so don't do anything
@@ -779,10 +779,10 @@ define(function (require, exports) {
      */
     var createLayerFromElement = function (element, location) {
         var appStore = this.flux.store("application"),
-            libStore = this.flux.store("library"),
+            libState = this.flux.store("library").getState(),
             uiStore = this.flux.store("ui"),
             currentDocument = appStore.getCurrentDocument(),
-            currentLibrary = libStore.getCurrentLibrary(),
+            currentLibrary = libState.currentLibrary,
             pixelRatio = window.devicePixelRatio;
 
         if (!currentDocument || !currentLibrary) {
@@ -800,6 +800,12 @@ define(function (require, exports) {
             })
             .bind(this)
             .then(function (path) {
+                if (!path) {
+                    log.warn("[CC Lib] createLayerFromElement: unable to fetch \"" + element.displayName +
+                        "\" content path");
+                    return Promise.resolve();
+                }
+                
                 var hasAlt = this.flux.stores.modifier.getState().alt;
                 
                 return Promise.bind(this)
@@ -1031,10 +1037,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var selectLibrary = function (id) {
+        var libraryState = this.flux.stores.library.getState();
+        
         this.dispatch(events.libraries.LIBRARY_SELECTED, { id: id });
         
         return this.transfer(preferencesActions.setPreference,
-            _LAST_SELECTED_LIBRARY_ID_PREF, this.flux.stores.library.getCurrentLibraryID());
+            _LAST_SELECTED_LIBRARY_ID_PREF, libraryState.currentLibraryID);
     };
     selectLibrary.reads = [];
     selectLibrary.writes = [locks.JS_LIBRARIES];
@@ -1047,14 +1055,14 @@ define(function (require, exports) {
      * @return {Promise.<Library>} Resolves to the created library
      */
     var createLibrary = function (name) {
-        var libStore = this.flux.store("library"),
-            libraryCollection = libStore.getLibraryCollection(),
+        var libraryState = this.flux.store("library").getState(),
+            libraryCollection = libraryState.libraryCollection,
             newLibrary = libraryCollection.createLibrary(name);
             
         this.dispatch(events.libraries.LIBRARY_CREATED, { library: newLibrary });
 
         return this.transfer(preferencesActions.setPreference,
-            _LAST_SELECTED_LIBRARY_ID_PREF, libStore.getCurrentLibraryID());
+            _LAST_SELECTED_LIBRARY_ID_PREF, libraryState.currentLibraryID);
     };
     createLibrary.reads = [];
     createLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
@@ -1067,9 +1075,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var removeLibrary = function (id) {
-        var libStore = this.flux.store("library"),
-            libraryCollection = libStore.getLibraryCollection(),
-            library = libStore.getLibraryByID(id);
+        var libraryStore = this.flux.store("library"),
+            libraryState = libraryStore.getState(),
+            libraryCollection = libraryState.libraryCollection,
+            library = libraryStore.getLibraryByID(id);
 
         if (!libraryCollection || !library) {
             return Promise.resolve();
@@ -1087,7 +1096,7 @@ define(function (require, exports) {
                 this.dispatch(events.libraries.LIBRARY_REMOVED, payload);
                 
                 return this.transfer(preferencesActions.setPreference,
-                    _LAST_SELECTED_LIBRARY_ID_PREF, libStore.getCurrentLibraryID());
+                    _LAST_SELECTED_LIBRARY_ID_PREF, libraryState.currentLibraryID);
             });
     };
     removeLibrary.reads = [];
@@ -1113,8 +1122,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var renameLibrary = function (id, name) {
-        var libStore = this.flux.store("library"),
-            library = libStore.getLibraryByID(id);
+        var library = this.flux.store("library").getLibraryByID(id);
 
         if (!library || library.name === name) {
             return Promise.resolve();
@@ -1163,17 +1171,18 @@ define(function (require, exports) {
      * Callback for LibrarySyncStatus. Check LibrarySyncStatus#addSyncListener for details.
      *
      * @private
-     * @param {boolean} isSyncing
-     * @param {boolean} libraryNumberChanged
+     * @param {object} status
+     * @param {boolean} status.isSyncing
+     * @param {boolean} status.isDownloading
+     * @param {number} status.libraryNumber
+     * @param {boolean} status.libraryNumberChanged
      */
-    var handleSyncingLibraries = function (isSyncing, libraryNumberChanged) {
-        this.dispatch(events.libraries.SYNCING_LIBRARIES, {
-            isSyncing: isSyncing,
-            libraryNumberChanged: libraryNumberChanged
-        });
+    var handleSyncingLibraries = function (status) {
+        var libraryState = this.flux.stores.library.getState();
         
-        this.flux.actions.preferences.setPreference(_LAST_SELECTED_LIBRARY_ID_PREF,
-            this.flux.stores.library.getCurrentLibraryID());
+        this.dispatch(events.libraries.SYNCING_LIBRARIES, status);
+        
+        this.flux.actions.preferences.setPreference(_LAST_SELECTED_LIBRARY_ID_PREF, libraryState.currentLibraryID);
     };
 
     var beforeStartup = function () {
@@ -1203,14 +1212,14 @@ define(function (require, exports) {
         });
         
         _placeEventHandler = function () {
-            if (this.flux.store("library").isPlacingGraphic()) {
+            if (this.flux.store("library").getState().isPlacingGraphic) {
                 this.flux.actions.libraries.handleCompletePlacingGraphic();
             }
         }.bind(this);
         descriptor.addListener("placeEvent", _placeEventHandler);
 
         _toolModalStateChangedHandler = function (event) {
-            var isPlacingGraphic = this.flux.store("library").isPlacingGraphic(),
+            var isPlacingGraphic = this.flux.store("library").getState().isPlacingGraphic,
                 modalStateCancelled = event.reason && event.reason._value === "cancel";
 
             if (isPlacingGraphic && modalStateCancelled) {
