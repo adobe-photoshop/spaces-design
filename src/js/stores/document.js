@@ -71,7 +71,7 @@ define(function (require, exports, module) {
                 events.document.history.optimistic.GROUP_SELECTED, this._handleGroupLayers,
                 events.document.history.nonOptimistic.UNGROUP_SELECTED, this._handleUngroupLayers,
                 events.document.history.optimistic.REPOSITION_LAYERS, this._handleLayerRepositioned,
-                events.document.TRANSLATE_LAYERS, this._handleLayerTranslated,
+                events.document.REPOSITION_LAYERS, this._handleLayerRepositioned,
                 events.document.history.optimistic.RESIZE_LAYERS, this._handleLayerResized,
                 events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, this._handleSetLayersProportional,
                 events.document.history.optimistic.RESIZE_DOCUMENT, this._handleDocumentResized,
@@ -639,23 +639,6 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.repositionLayers(payload.positions),
-                nextDocument = document.set("layers", nextLayers);
-
-            this.setDocument(nextDocument, true);
-        },
-
-        /**
-         * Updates the passed in translation to affected layers
-         *
-         * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, change: {x: number, y: number}}} payload
-         */
-        _handleLayerTranslated: function (payload) {
-            var documentID = payload.documentID,
-                layerIDs = payload.layerIDs,
-                position = payload.position,
-                document = this._openDocuments[documentID],
-                nextLayers = document.layers.translateLayers(layerIDs, position.x, position.y),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);

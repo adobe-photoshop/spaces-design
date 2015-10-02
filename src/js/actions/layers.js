@@ -2156,7 +2156,7 @@ define(function (require, exports) {
                 positions: positions
             };
     
-        return this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload);
+        return this.dispatchAsync(events.document.REPOSITION_LAYERS, payload);
     };
     handleCanvasShift.reads = [];
     handleCanvasShift.writes = [locks.JS_DOC];

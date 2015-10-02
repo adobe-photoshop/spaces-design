@@ -90,7 +90,7 @@ define(function (require, exports, module) {
             RESET_BOUNDS: "resetBoundsNoHistory", // slightly different than above LAYER_BOUNDS_CHANGED
             RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",
-            TRANSLATE_LAYERS: "translateLayers",
+            REPOSITION_LAYERS: "repositionLayersNoHistory",
             GUIDES_VISIBILITY_CHANGED: "guidesVisibilityChanged",
             SELECT_DOCUMENT: "selectDocument",
             SAVE_DOCUMENT: "saveDocument",
