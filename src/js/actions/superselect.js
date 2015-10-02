@@ -28,6 +28,7 @@ define(function (require, exports) {
         Immutable = require("immutable");
 
     var descriptor = require("adapter/ps/descriptor"),
+        toolLib = require("adapter/lib/tool"),
         adapterOS = require("adapter/os"),
         adapterUI = require("adapter/ps/ui");
 
@@ -633,8 +634,12 @@ define(function (require, exports) {
                 // This general bounds check on JS prevents a PS call and starts marquee faster
                 return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
             } else {
-                return this.transfer(click, doc, x, y, diveIn, false)
+                // Hide transform controls
+                return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
                     .bind(this)
+                    .then(function () {
+                        return this.transfer(click, doc, x, y, diveIn, false);
+                    })
                     .then(function (anySelected) {
                         if (anySelected) {
                             var dragEvent = {
@@ -646,7 +651,13 @@ define(function (require, exports) {
                             return adapterOS.postEvent(dragEvent);
                         }
                     })
-                    .catch(function () {}); // Move should silently fail if there are no selected layers
+                    .catch(function () {}) // Move should silently fail if there are no selected layers
+                    .finally(function () {
+                        // Re show the transform controls, which will appear once we're out of the modal state
+                        return descriptor.playObject(
+                            toolLib.setToolOptions("moveTool", { "$Abbx": true }),
+                            { canExecuteWhileModal: true });
+                    });
             }
         }
     };
