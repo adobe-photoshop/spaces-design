@@ -563,12 +563,15 @@ define(function (require, exports) {
             })
             .then(function () {
                 return this.transfer(exportActions.addDefaultAsset, documentID);
+            })
+            .then(function () {
+                return this.transfer(toolActions.changeVectorMaskMode, false);
             });
     };
     createNew.reads = [locks.JS_PREF];
     createNew.writes = [locks.PS_DOC, locks.PS_APP];
     createNew.transfers = [preferencesActions.setPreference, allocateDocument,
-        ui.setOverlayOffsetsForFirstDocument, exportActions.addDefaultAsset];
+        ui.setOverlayOffsetsForFirstDocument, exportActions.addDefaultAsset, toolActions.changeVectorMaskMode];
     createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
     /**
@@ -601,9 +604,10 @@ define(function (require, exports) {
                     .then(function () {
                         var initPromise = this.transfer(initActiveDocument),
                             uiPromise = this.transfer(ui.updateTransform),
-                            recentFilesPromise = this.transfer(application.updateRecentFiles);
+                            recentFilesPromise = this.transfer(application.updateRecentFiles),
+                            disableMaskPromise = this.transfer(toolActions.changeVectorMaskMode, false);
 
-                        return Promise.join(initPromise, uiPromise, recentFilesPromise);
+                        return Promise.join(initPromise, uiPromise, recentFilesPromise, disableMaskPromise);
                     }, function () {
                         // If file doesn't exist anymore, user will get an Open dialog
                         // If user cancels out of open dialog, PS will throw, so catch it here
@@ -614,7 +618,7 @@ define(function (require, exports) {
     open.reads = [];
     open.writes = [locks.PS_APP, locks.JS_UI];
     open.transfers = [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
-        ui.setOverlayOffsetsForFirstDocument, menu.native];
+        ui.setOverlayOffsetsForFirstDocument, menu.native, toolActions.changeVectorMaskMode];
     open.lockUI = true;
     open.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
