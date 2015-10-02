@@ -26,47 +26,14 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var OS = require("adapter/os"),
-        UI = require("adapter/ps/ui"),
-        EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+    var OS = require("adapter/os");
 
     var log = require("js/util/log");
-
-    var arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-            OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
-        arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-            OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN),
-        arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-            OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT),
-        arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-            OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT);
-
-    var keyboardPolicyList = [
-        arrowUpKeyPolicy,
-        arrowDownKeyPolicy,
-        arrowLeftKeyPolicy,
-        arrowRightKeyPolicy
-    ];
-
-    var _keyboardPolicy = null;
 
     module.exports = {
         /** @ignore */
         acquireFocus: function () {
             return OS.acquireKeyboardFocus()
-                .bind(this)
-                .then(function () {
-                    if (_keyboardPolicy) {
-                        return;
-                    }
-
-                    return this.getFlux().actions.policy.addKeyboardPolicies(keyboardPolicyList)
-                        .bind(this)
-                        .then(function (policy) {
-                            _keyboardPolicy = policy;
-                        });
-                })
                 .catch(function (err) {
                     var message = err instanceof Error ? (err.stack || err.message) : err;
 
@@ -75,19 +42,8 @@ define(function (require, exports, module) {
         },
         /** @ignore */
         releaseFocus: function () {
-            var keyboardPolicy;
-            if (_keyboardPolicy) {
-                keyboardPolicy = _keyboardPolicy;
-                _keyboardPolicy = null;
-            }
-
             return OS.releaseKeyboardFocus()
                 .bind(this)
-                .then(function () {
-                    if (keyboardPolicy) {
-                        return this.getFlux().actions.policy.removeKeyboardPolicies(keyboardPolicy, true);
-                    }
-                })
                 .catch(function (err) {
                     var message = err instanceof Error ? (err.stack || err.message) : err;
 
