@@ -432,14 +432,11 @@ define(function (require, exports) {
             var shadowCountsUnmatch = !layers.every(function (l) {
                     return l.dropShadows.size === layers.first().dropShadows.size;
                 }),
-                reachMaximumShadows = false,
                 shadowsContent;
                 
             if (!shadowCountsUnmatch) {
                 // Group into arrays of dropShadows, by position in each layer
                 var shadowGroups = collection.zip(collection.pluck(layers, "dropShadows"));
-                
-                reachMaximumShadows = shadowGroups.size >= this.props.max;
                 
                 shadowsContent = shadowGroups.map(function (dropShadows, index) {
                     return (
@@ -504,7 +501,6 @@ define(function (require, exports) {
             var shadowCountsUnmatch = !layers.every(function (l) {
                     return l.innerShadows.size === layers.first().innerShadows.size;
                 }),
-                reachMaximumShadows = false,
                 shadowsContent;
                 
             if (!shadowCountsUnmatch) {
@@ -512,8 +508,6 @@ define(function (require, exports) {
 
                 var temp = collection.pluck(layers, "innerShadows");
                 var shadowGroups = collection.zip(temp);
-                
-                reachMaximumShadows = shadowGroups.size >= this.props.max;
                 
                 shadowsContent = shadowGroups.map(function (innerShadows, index) {
                     return (
