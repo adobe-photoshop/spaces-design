@@ -47,50 +47,52 @@
         "GET_STARTED": "Erste Schritte",
         "SLIDES": [
             {
-                "HEADLINE": "Hallo.",
-                "SUBHEAD": "Willkommen zum Beginn einer tollen neuen Lösung.",
-                "BODY_FIRST": "Wir präsentieren „Design-Bereich“ (Technologievorschau), die optimale Ergänzung zu Photoshop für professionelle Web- und Anwendungsdesigner. Die Interaktionen sind optimal auf Ihre Arbeitsabläufe abgestimmt und basieren auf der Leistung und Zuverlässigkeit, die Sie von Adobe Photoshop CC kennen.",
-                "BODY_SECOND": "Hierbei handelt es sich um eine Vorschau. Wir arbeiten immer noch an der Entwicklung eines durchgängigen Arbeitsablaufs, aber wir freuen uns, diesen Bereich schon jetzt für Sie freigeben zu dürfen, damit Sie uns dabei helfen können, ihn ganz an Ihre Anforderungen und Wünsche anzupassen."
+                "TITLE": "Start",
+                "ICON": "Werkzeug-neuAuswählen",
+                "HEADLINE": "Zu „Design-Bereich“ wechseln",
+                "SUBHEAD": "",
+                "BODY_FIRST": "„Design-Bereich“ ist die optimale Ergänzung zu Photoshop für Web- und Anwendungsdesigner.",
+                "BODY_SECOND": "Wir arbeiten in HTML + JS, um neue Interaktionen zu schaffen, die auf Ihre Arbeitsabläufe zugeschnitten sind."
             },
             {
-                "HEADLINE": "Optimierte Benutzeroberfläche",
-                "BODY": "Ein minimiertes Werkzeugset und ein einzelnes kontextbezogenes Eigenschaftenbedienfeld liefern Ihnen nur die benötigten Informationen und Steuerelemente, sodass Sie sich ganz auf Ihre Arbeit konzentrieren können."
+                "TITLE": "Werkzeugset",
+                "ICON": "Werkzeug-neuAuswählen",
+                "HEADLINE": "Ein minimiertes Werkzeugset und kontextbezogenes Eigenschaftenbedienfeld."
             },
             {
-                "HEADLINE": "Neue Funktionen und Interaktionen",
-                "BODY": "Wir nutzen eine neuartige Technologie – Photoshop-Bereiche –, mit der wir schnell neue Interaktionen und Funktionen speziell für Ihre Workflows erstellen können. Stellen Sie sich darauf ein, dass Sie Ihre Arbeit zukünftig schneller und mit weniger Klicks und Dialogfeldern erledigen können. Bald erhalten Sie von uns weitere Informationen, denn das ist erst der Anfang.",
-                "FEATURE_SELECT": {
-                    "TITLE": "Auswahl",
-                    "BODY": "Dank des verbesserten Auswahlwerkzeugs werden Steuerung und Bearbeitung zum Kinderspiel. Doppelklicken Sie, um eine beliebige Gruppe, verschachtelte Gruppe oder Ebene ausführlicher anzuzeigen, und drücken Sie die Esc-Taste, um zur vorherigen Ansicht zurückzukehren."
-                },
-                "FEATURE_VECTOR": {
-                    "TITLE": "Vektor-Arbeitsablauf",
-                    "BODY": "„Design-Bereich“ verwendet den Vektor-Prioritätsansatz. Formen und Schriftart haben Priorität und Erstellung, Layout, Formatierung sowie Bearbeitung sind für hohe Effizienz optimiert."
-                },
-                "FEATURE_MATH": {
-                    "TITLE": "Rechenvorgänge",
-                    "BODY": "Verwenden Sie Rechenvorgänge (z. B. 100 : 2) in einem beliebigen numerischen Feld, um Positionen, Längen und Größen schnell zu beschreiben."
-                },
-                "FEATURE_ARTBOARD": {
-                    "TITLE": "Zeichenfläche",
-                    "BODY": "Erstellen Sie mehrere Zeichenflächen, um sowohl Grafiken als auch den Gesamtfluss in einem einzelnen Dokument zu entwerfen. Zeichenflächen sind das Standarderlebnis."
-                },
-                "FEATURE_SWAP": {
-                    "TITLE": "Vertauschen",
-                    "BODY": "Vertauschen Sie den Inhalt und die Positionen von zwei Ebenen oder Gruppen ganz einfach per Mausklick."
-                },
-                "FEATURE_OS": {
-                    "TITLE": "Quelle öffnen",
-                    "BODY": "Laden Sie den Quellcode herunter und verfolgen Sie den Fortschritt unseres Entwicklungsteams auf "
-                }
+                "TITLE": "Suchen",
+                "ICON": "Ebene-Suchen-Anwendung",
+                "HEADLINE_FIRST": "Suchen Sie nach Ebenen und geöffneten Dokumenten, platzieren Sie Bibliothekselemente und vieles mehr.",
+                "HEADLINE_SECOND": "Verwenden Sie ⌘ + f oder Strg + f."
             },
             {
-                "HEADLINE": "Wechseln zwischen „Design-Bereich“ und Photoshop",
-                "BODY": "„Design-Bereich“ ist für vollständige Kompatibilität mit der Standardversion von Photoshop und PSD-Dateien konzipiert. Wechseln Sie per Tastenbefehl zwischen der Symbolleiste oder dem Menü „Fenster“ hin und her."
+                "TITLE": "Farbaufnehmer",
+                "ICON": "Werkzeug-Pipette",
+                "HEADLINE_FIRST": "Nehmen Sie Farben und Effekte nur per Klick und Umschalt+Klick auf.",
+                "HEADLINE_SECOND": "Nehmen Sie auch alles andere auf, sogar Grafiken mit der Leertaste."
             },
             {
-                "HEADLINE": "Feedback",
-                "BODY": "Besuchen Sie uns online und teilen Sie uns Ihre Meinung mit. Es bleibt uns noch genügend Zeit, um „Design-Bereich“ mithilfe Ihres Feedback noch besser zu machen."
+                "TITLE": "Zeichenflächen",
+                "ICON": "Ebene-Zeichenfläche",
+                "HEADLINE": "Erstellen Sie mehrere Zeichenflächen für einen visuelleren Arbeitsablauf."
+            },
+            {
+                "TITLE": "Vertauschen",
+                "ICON": "Austauschen",
+                "HEADLINE": "Tauschen Sie mit nur einem Klick die Inhalte und Positionen von Ebenen miteinander aus."
+            },
+            {
+                "TITLE": "Wechselnder",
+                "ICON": "Arbeitsbereich",
+                "HEADLINE": "Wechseln Sie jederzeit zum klassischen Photoshop, um erweiterte Fotografiefunktionen in Anspruch zu nehmen."
+            },
+            {
+                "TITLE": "Kontakt",
+                "ICON": "Vogel",
+                "HEADLINE": "Design-Bereich",
+                "BODY_FIRST": "Twitter",
+                "BODY_SECOND": "GitHub",
+                "BODY_THIRD": "Forum"
             }
         ]
     },
@@ -203,6 +205,8 @@
         "ADD_EFFECT": "Ebeneneffekt hinzufügen",
         "TOGGLE_DROP_SHADOW": "Schlagschatten ein/aus",
         "DELETE_DROP_SHADOW": "Schlagschatten löschen",
+        "DELETE_LAYER_EFFECT": "%s löschen",
+        "TOGGLE_LAYER_EFFECT": "[8472483] ü_Toggle %s",
         "SET_DROP_SHADOW_COLOR": "Schlagschattenfarbe festlegen",
         "SET_DROP_SHADOW_PROPS": "Maße für Schlagschatten festlegen",
         "SET_DROP_SHADOW_X_POSITION": "X-Position für Schlagschatten festlegen",
@@ -211,6 +215,13 @@
         "SET_DROP_SHADOW_SPREAD": "Ausbreitung des Schlagschattens festlegen",
         "SET_COLOR_PICKER_FORMAT": "Farbwähler-Format festlegen",
         "SET_COLOR_PICKER_MODE": "Farbwähler-Modus festlegen",
+        "SET_COLOR_OVERLAY_COLOR": "[8472486] ü_Set Color Overlay Color",
+        "TOGGLE_COLOR_OVERLAY": "[8472488] ü_Toggle Color Overlay",
+        "DELETE_COLOR_OVERLAY": "[8472484] ü_Delete Color Overlay",
+        "SET_STROKE_EFFECT_COLOR": "Konturfarbe festlegen",
+        "SET_STROKE_EFFECT_SIZE": "Strichstärke festlegen",
+        "TOGGLE_STROKE_EFFECT": "Kontur ein/aus",
+        "DELETE_STROKE_EFFECT": "Kontur löschen",
         "TOGGLE_INNER_SHADOW": "Schatten nach innen ein/aus",
         "DELETE_INNER_SHADOW": "Schatten nach innen löschen",
         "SET_INNER_SHADOW_COLOR": "Farbe für Schatten nach innen festlegen",
@@ -360,6 +371,29 @@
             "SPREAD": "Überfüllen",
             "MIXED": "Gemischte Darstellung"
         },
+        "COLOR_OVERLAY": {
+            "TITLE": "Farbüberlagerungen",
+            "TITLE_SINGLE": "Farbüberlagerung",
+            "MIXED": "Gemischte Darstellung"
+        },
+        "STROKE_EFFECT": {
+            "TITLE": "Striche",
+            "TITLE_SINGLE": "Kontur",
+            "SIZE": "Größe",
+            "MIXED": "Gemischte Darstellung"
+        },
+        "UNSUPPORTED_EFFECTS": {
+            "TITLE": "Nicht unterstützt",
+            "NAMES": {
+                "BEVEL_EMBOSS": "Abgeflachte Kante und Relief",
+                "SATIN": "Satin",
+                "INNER_GLOW": "Schein nach innen",
+                "OUTER_GLOW": "Schein nach außen",
+                "PATTERN_OVERLAY": "Musterüberlagerung",
+                "GRADIENT_OVERLAY": "Verlaufsüberlagerung"
+            },
+            "MIXED": "Gemischte Darstellung"
+        },
         "TYPE": {
             "TITLE": "Typ",
             "TYPEFACE": "Schriftart",
@@ -390,6 +424,7 @@
         "TITLE_SETTINGS": "Einstellungen",
         "EXPORT_DOCUMENT_FILENAME": "Dokument",
         "ONLY_UNSUPPORTED_LAYERS_SELECTED": "Keine unterstützten Ebenen ausgewählt",
+        "EXPORT_MIXED": "Auswahl enthält gemischte Exporte",
         "NO_ASSETS": "Keine Exporte konfiguriert",
         "USE_PREFIX": "Präfix verwenden"
     },

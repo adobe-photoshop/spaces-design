@@ -176,8 +176,8 @@
         "SWAP_POSITION": "Position tauschen",
         "LOCK_LAYER": "Fixieren",
         "UNLOCK_LAYER": "Lösen",
-        "SHOW_LAYER": "[8463867] ü_Show",
-        "HIDE_LAYER": "[8463868] ü_Hide",
+        "SHOW_LAYER": "Anzeigen",
+        "HIDE_LAYER": "Ausblenden",
         "GROUP_LAYERS": "Gruppe",
         "UNGROUP_LAYERS": "Gruppierung aufheben",
         "BRING_TO_FRONT": "In den Vordergrund"
@@ -205,6 +205,7 @@
         "BRING_ALL_TO_FRONT": "Alle in den Vordergrund",
         "NEXT_DOCUMENT": "Nächstes Dokument",
         "TOGGLE_TOOLBAR": "Symbolleiste anheften",
+        "TOGGLE_SINGLE_COLUMN_MODE": "[8472470] ü_Single Column Mode",
         "PREVIOUS_DOCUMENT": "Vorheriges Dokument",
         "RETURN_TO_STANDARD": "Zum Standard-Photoshop zurückkehren",
         "OPEN_DOCUMENT_ONE": "Dokumentname 1",
