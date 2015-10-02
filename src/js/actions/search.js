@@ -78,7 +78,7 @@ define(function (require, exports) {
         var searchStore = this.flux.store("search");
 
         searchStore.registerSearch(ID,
-            ["LIBRARY", "ALL_LAYER", "CURRENT_DOC", "RECENT_DOC", "MENU_COMMAND"]);
+            ["CURRENT_DOC", "RECENT_DOC", "ALL_LAYER", "MENU_COMMAND", "LIBRARY"]);
 
         return Promise.resolve();
     };
