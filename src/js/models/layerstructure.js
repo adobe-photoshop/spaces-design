@@ -1471,7 +1471,7 @@ define(function (require, exports, module) {
                 stroke = layer.stroke;
 
             if (!stroke) {
-                throw new Error("Unable to set stroke properties of layer: " + layer.name);
+                stroke = new Stroke();
             }
 
             var nextStroke = stroke.setStrokeProperties(strokeProperties),
