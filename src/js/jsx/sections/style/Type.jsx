@@ -31,6 +31,8 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         classnames = require("classnames");
 
+    var textLayer = require("adapter/lib/textLayer");
+
     var Label = require("jsx!js/jsx/shared/Label"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
@@ -44,7 +46,20 @@ define(function (require, exports, module) {
         collection = require("js/util/collection"),
         Color = require("js/models/color"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
-        textLayer = require("adapter/lib/textLayer");
+        unit = require("js/util/unit");
+
+    /**
+     * Minimum and maximum values for font size, leading and tracking.
+     *
+     * @const
+     * @type {number}
+     */
+    var MIN_FONT_SIZE_PTS = 0.01,
+        MAX_FONT_SIZE_PTS = 1296,
+        MIN_LEADING_PTS = 0.01,
+        MAX_LEADING_PTS = 5000,
+        MIN_TRACKING = -1000,
+        MAX_TRACKING = 1000;
 
     var Type = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("font", "tool")],
@@ -536,6 +551,14 @@ define(function (require, exports, module) {
                 }),
                 fillBlendFormline;
 
+            // Convert the given point value to pixels
+            var toPixels = function (value) {
+                return unit.toPixels({
+                    _value: value,
+                    _unit: "pointsUnit"
+                }, doc.resolution);
+            };
+
             if (hasSomeTextLayers && this.props.uniformLayerKind) {
                 fillBlendFormline = (
                     <div className={fillClassNames}>
@@ -595,6 +618,9 @@ define(function (require, exports, module) {
                         <div className={"control-group control-group__vertical column-4"}>
                             <NumberInput
                                 value={locked ? null : sizes}
+                                precision={2}
+                                min={toPixels(MIN_FONT_SIZE_PTS)}
+                                max={toPixels(MAX_FONT_SIZE_PTS)}
                                 onChange={this._handleSizeChange}
                                 disabled={locked} />
                         </div>
@@ -655,6 +681,8 @@ define(function (require, exports, module) {
                             <NumberInput
                                 value={locked ? null : trackings}
                                 disabled={locked}
+                                min={MIN_TRACKING}
+                                max={MAX_TRACKING}
                                 onChange={this._handleTrackingChange}
                                 valueType="size" />
                         </div>
@@ -667,6 +695,9 @@ define(function (require, exports, module) {
                             </Label>
                             <NumberInput
                                 value={locked ? null : leadings}
+                                precision={2}
+                                min={toPixels(MIN_LEADING_PTS)}
+                                max={toPixels(MAX_LEADING_PTS)}
                                 disabled={locked}
                                 special={strings.STYLE.TYPE.AUTO_LEADING}
                                 onChange={this._handleLeadingChange}

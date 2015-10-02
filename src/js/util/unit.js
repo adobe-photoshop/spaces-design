@@ -58,7 +58,7 @@ define(function (require, exports) {
      * Valid values for unitValue._unit are: pixelsUnit, rulerInches, pointsUnit, millimetersUnit, rulerCm
      * Returns null if invalid unit provided
      * 
-     * @param {{value: number, _unit: string}} unitValue
+     * @param {{_value: number, _unit: string}} unitValue
      * @param {number} resolution
      * @return {number|null}
      */
