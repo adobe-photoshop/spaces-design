@@ -26,14 +26,19 @@
 module.exports = function (grunt) {
     "use strict";
     
-    /** @ignore */
+    /**
+     * Get options for r.js parametrized by locale.
+     *
+     * @param {string} locale
+     * @return {object}
+     */
     var getRequireOptions = function (locale) {
         return {
             options: {
                 baseUrl: "src/",
                 mainConfigFile: "src/js/config.js",
-                name: "js/main",
-                out: "build/js/main-" + locale + ".js",
+                name: "js/init-build",
+                out: "build/js/init-build-" + locale + ".js",
                 // optimize: "none",
                 paths: {
                     "react": "../bower_components/react/react-with-addons.min",
@@ -49,6 +54,29 @@ module.exports = function (grunt) {
                 }
             }
         };
+    };
+
+    /**
+     * Get options for LESS compilation parametrized by color stop.
+     *
+     * @param {string} stop
+     * @return {object}
+     */
+    var getLessConfigForStop = function (stop) {
+        var config = {
+            options: {
+                globalVars: {
+                    stop: stop
+                }
+            },
+            files: {}
+        };
+
+        var target = "build/style/style-" + stop + ".css";
+
+        config.files[target] = "src/style/main.less";
+
+        return config;
     };
 
     grunt.initConfig({
@@ -133,11 +161,10 @@ module.exports = function (grunt) {
             ja: getRequireOptions("ja")
         },
         less: {
-            production: {
-                files: {
-                    "build/style/style.css": "src/style/main.less"
-                }
-            }
+            original: getLessConfigForStop("original"),
+            light: getLessConfigForStop("light"),
+            medium: getLessConfigForStop("medium"),
+            dark: getLessConfigForStop("dark")
         }
     });
 
@@ -154,6 +181,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("test", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
     grunt.registerTask("compile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs"]);
+    grunt.registerTask("compile:en", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs:en"]);
     grunt.registerTask("build", ["test", "compile"]);
     grunt.registerTask("default", ["test"]);
 };
