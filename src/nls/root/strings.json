@@ -260,7 +260,7 @@
         "EXPORT_REMOVE_ASSET": "Remove asset configuration",
         "EXPORT_IOS_PRESETS": "Add 3 iOS assets + SVG",
         "EXPORT_HDPI_PRESETS": "Add 6 HDPI assets + SVG",
-        "EXPORT_DIALOG": "Export..."
+        "EXPORT_DIALOG": "Export…"
     },
     "LAYER_KIND": {
         "0": "Any Layer",
@@ -447,19 +447,20 @@
     },
     "SEARCH": {
         "PLACEHOLDER": "Search, open & select",
+        "PLACEHOLDER_INITIALIZING": "Initializing…",
         "PLACEHOLDER_FILTER": "Search ",
         "NO_OPTIONS": "No results match your search",
         "HEADERS": {
             "ALL_LAYER": "Layers",
             "CURRENT_LAYER": "Layers",
-            "CURRENT_DOC": "Current Documents",
+            "CURRENT_DOC": "Open Documents",
             "RECENT_DOC": "Recent Documents",
             "MENU_COMMAND": "Menu Commands",
             "LIBRARY": "All Libraries",
-            "FILTER": "Limit search to..."
+            "FILTER": "Limit search to…"
         },
         "CATEGORIES": {
-            "CURRENT_DOC": "Current Documents",
+            "CURRENT_DOC": "Open Documents",
             "RECENT_DOC": "Recent Documents",
             "MENU_COMMAND": "Menu Commands",
             "ALL_LAYER": "Layers",

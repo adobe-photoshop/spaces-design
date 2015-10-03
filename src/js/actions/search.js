@@ -28,8 +28,7 @@ define(function (require, exports) {
 
     var dialog = require("./dialog"),
         search = require("../stores/search"),
-        locks = require("../locks"),
-        documentActions = require("./documents");
+        locks = require("../locks");
 
     /**
      * The search bar dialog ID
@@ -52,27 +51,11 @@ define(function (require, exports) {
             return this.transfer(dialog.closeDialog, ID);
         }
 
-        var allDocuments = this.flux.store("document").getAllDocuments(),
-            documentPromises = Object.keys(allDocuments)
-                .map(function (documentID) {
-                    return allDocuments[documentID];
-                })
-                .filter(function (document) {
-                    return !document.layers;
-                })
-                .map(function (document) {
-                    return this.transfer(documentActions.updateDocument, document.id);
-                }, this);
-
-        return Promise.all(documentPromises)
-            .bind(this)
-            .then(function () {
-                return this.transfer(dialog.openDialog, ID);
-            });
+        return this.transfer(dialog.openDialog, ID);
     };
     toggleSearchBar.reads = [locks.JS_DIALOG];
-    toggleSearchBar.writes = [locks.JS_DOC];
-    toggleSearchBar.transfers = [dialog.openDialog, dialog.closeDialog, documentActions.updateDocument];
+    toggleSearchBar.writes = [];
+    toggleSearchBar.transfers = [dialog.openDialog, dialog.closeDialog];
 
     var beforeStartup = function () {
         var searchStore = this.flux.store("search");

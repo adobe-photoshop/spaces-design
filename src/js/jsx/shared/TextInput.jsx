@@ -287,6 +287,21 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Focus the input element and begin editing if necessary.
+         */
+        focus: function () {
+            var node = React.findDOMNode(this.refs.input);
+            if (!node) {
+                return;
+            }
+
+            node.focus();
+            if (!this.editing && !this.selectDisabled) {
+                this._beginEdit();
+            }
+        },
+
+        /**
          * If the value is editable, goes into edit mode
          *
          * @private

@@ -28,12 +28,14 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        _ = require("lodash"),
         Immutable = require("immutable"),
-        collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings");
+        _ = require("lodash");
 
-    var Datalist = require("jsx!js/jsx/shared/Datalist"),
+    var os = require("adapter/os");
+
+    var collection = require("js/util/collection"),
+        strings = require("i18n!nls/strings"),
+        Datalist = require("jsx!js/jsx/shared/Datalist"),
         Button = require("jsx!js/jsx/shared/Button");
 
     /**
@@ -45,7 +47,7 @@ define(function (require, exports, module) {
     var PLACEHOLDER_ID = "NO_OPTIONS-placeholder";
 
     var SearchBar = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("search")],
+        mixins: [FluxMixin, StoreWatchMixin("search", "application")],
 
         propTypes: {
             dismissDialog: React.PropTypes.func,
@@ -56,7 +58,9 @@ define(function (require, exports, module) {
         },
 
         getStateFromFlux: function () {
-            var searchStore = this.getFlux().store("search"),
+            var flux = this.getFlux(),
+                appStore = flux.store("application"),
+                searchStore = flux.store("search"),
                 searchState = searchStore.getState(this.props.searchID),
                 options = searchState.searchItems,
 
@@ -81,7 +85,9 @@ define(function (require, exports, module) {
                 // Gets passed to Datalist as list of option IDs that when selected, should not close the dialog
                 filterIDs: filterIDs,
                 // Filter names that are user-inputted strings, stored under IDs
-                safeFilterNameMap: searchState.safeFilterNameMap
+                safeFilterNameMap: searchState.safeFilterNameMap,
+                // Whether or not there are uninitialized documents waiting to be initialized
+                ready: appStore.getUninitializedDocuments().size === 0
             };
         },
 
@@ -102,12 +108,60 @@ define(function (require, exports, module) {
             };
         },
 
-        componentDidMount: function () {
+        /**
+         * Explicitly focus the text input of the search datalist when the window is activated.
+         *
+         * @private
+         * @param {{becameActive: boolean}} event
+         */
+        _handleActivationChanged: function (event) {
+            if (this.state.ready && event && event.becameActive) {
+                this.refs.datalist.focus();
+            }
+        },
+
+        /**
+         * Initialize search providers for the given searchID.
+         *
+         * @private
+         */
+        _initSearchProviders: function () {
             var searchStore = this.getFlux().store("search");
             searchStore._updateSearchItems(this.props.searchID);
         },
 
+        componentWillMount: function () {
+            this.getFlux().actions.documents.initializeDocumentsThrottled();
+        },
+
+        componentDidMount: function () {
+            if (this.state.ready) {
+                // In case all documents are already initialized
+                this._initSearchProviders();
+            }
+
+            os.addListener("activationChanged", this._handleActivationChanged);
+        },
+
+        componentWillUnmount: function () {
+            os.removeListener("activationChanged", this._handleActivationChanged);
+        },
+
         componentDidUpdate: function (prevProps, prevState) {
+            if (!prevState.ready && this.state.ready) {
+                // In case some documents were not initialized, but now are
+                this._initSearchProviders();
+            } else if (prevState.ready && !this.state.ready) {
+                // In case there are newly uninitiazlied documents
+                this.getFlux().actions.documents.initializeDocumentsThrottled();
+            }
+
+            if (this.state.ready) {
+                // Ensures that the text input has focus once the datalist goes from
+                // a read-only initializing state to being ready.
+                this.refs.datalist.focus();
+            }
+
             if (prevState.filter !== this.state.filter && this.refs.datalist) {
                 this._updateDatalistInput(this.state.filter);
                 // Force update because Datalist's state might not change at all
@@ -401,8 +455,8 @@ define(function (require, exports, module) {
                     type: "placeholder"
                 };
 
-            var placeholderText = searchStrings.PLACEHOLDER,
-                filter = this.state.filter;
+            var filter = this.state.filter,
+                placeholderText;
 
             // If we have applied a filter, change the placeholder text
             if (filter.length > 0) {
@@ -411,6 +465,10 @@ define(function (require, exports, module) {
                     category = categoryString ?
                         categoryString.toLowerCase() : this.state.safeFilterNameMap[lastFilter];
                 placeholderText = searchStrings.PLACEHOLDER_FILTER + category;
+            } else if (!this.state.ready) {
+                placeholderText = searchStrings.PLACEHOLDER_INITIALIZING;
+            } else {
+                placeholderText = searchStrings.PLACEHOLDER;
             }
 
             return (
@@ -419,6 +477,7 @@ define(function (require, exports, module) {
                    <Datalist
                         ref="datalist"
                         live={false}
+                        disabled={!this.state.ready}
                         className="dialog-search-bar"
                         options={this.state.options}
                         startFocused={true}
@@ -429,6 +488,7 @@ define(function (require, exports, module) {
                         dontCloseDialogIDs={this.state.filterIDs}
                         useAutofill={true}
                         neverSelectAllInput={true}
+                        changeOnBlur={false}
                         onChange={this._handleChange}
                         onClick={this._handleDialogClick}
                         onKeyDown={this._handleKeyDown} />

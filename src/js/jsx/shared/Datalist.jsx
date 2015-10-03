@@ -67,7 +67,9 @@ define(function (require, exports, module) {
             // SVG class for an icon to show next to the Text Input
             filterIcon: React.PropTypes.string,
             // Release keyboard focus when the text input is blurred.
-            releaseOnBlur: React.PropTypes.bool
+            releaseOnBlur: React.PropTypes.bool,
+            // Emit a change event when the input blurs
+            changeOnBlur: React.PropTypes.bool
         },
 
         /**
@@ -91,7 +93,8 @@ define(function (require, exports, module) {
                 neverSelectAllInput: false,
                 dontCloseDialogIDs: [],
                 filterIcon: null,
-                autoSelect: true
+                autoSelect: true,
+                changeOnBlur: true
             };
         },
 
@@ -121,7 +124,7 @@ define(function (require, exports, module) {
 
         componentDidMount: function () {
             if (this.props.startFocused) {
-                this.refs.textInput._beginEdit();
+                this.focus();
             }
         },
 
@@ -214,11 +217,11 @@ define(function (require, exports, module) {
                 return;
             }
 
-            if (dialog.isOpen()) {
+            if (dialog.isOpen() && this.props.changeOnBlur) {
                 dialog.toggle(event);
             }
 
-            if (!this.props.live && this.state.id) {
+            if (!this.props.live && this.state.id && this.props.changeOnBlur) {
                 this.props.onChange(this.state.id);
             }
 
@@ -553,7 +556,7 @@ define(function (require, exports, module) {
             }
 
             if (this.props.startFocused && this.refs.textInput) {
-                this.refs.textInput._beginEdit();
+                this.focus();
             }
         },
 
@@ -572,7 +575,7 @@ define(function (require, exports, module) {
             }
 
             if (this.props.startFocused && this.refs.textInput) {
-                this.refs.textInput._beginEdit();
+                this.focus();
             }
         },
 
@@ -729,6 +732,13 @@ define(function (require, exports, module) {
                     {dialog}
                 </div>
             );
+        },
+
+        /**
+         * Ensure that the child text input has focus.
+         */
+        focus: function () {
+            this.refs.textInput.focus();
         }
     });
 
