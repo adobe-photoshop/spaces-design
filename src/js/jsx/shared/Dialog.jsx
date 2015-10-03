@@ -43,7 +43,8 @@ define(function (require, exports, module) {
      */
     var POSITION_METHODS = {
         CENTER: "center",
-        TARGET: "target"
+        TARGET: "target",
+        ADJACENT: "adjacent"
     };
 
     var Dialog = React.createClass({
@@ -218,6 +219,17 @@ define(function (require, exports, module) {
                 } else {
                     throw new Error("Could not determine target by which to render this dialog: " + this.displayName);
                 }
+            } else if (this.props.position === POSITION_METHODS.ADJACENT) {
+                var flux = this.getFlux(),
+                    uiStore = this.getFlux().store("ui"),
+                    components = uiStore.components,
+                    preferencesStore = flux.store("preferences"),
+                    preferences = preferencesStore.getState(),
+                    placeRight = 4.4;
+
+                placeRight = preferences.get(components.PROPERTIES_COL, true) ? placeRight + 32 : placeRight;
+                placeRight = preferences.get(components.LAYERS_LIBRARY_COL, true) ? placeRight + 32 : placeRight;
+                dialogEl.style.right = placeRight + "rem";
             }
         },
 

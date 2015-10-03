@@ -51,7 +51,7 @@ define(function (require, exports, module) {
                 <Dialog
                     id="exports-panel-dialog"
                     modal
-                    position={Dialog.POSITION_METHODS.CENTER}
+                    position={Dialog.POSITION_METHODS.ADJACENT}
                     dismissOnCanvasClick={true}
                     dismissOnWindowClick={true}
                     dismissOnWindowResize={true}
