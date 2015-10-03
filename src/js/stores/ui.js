@@ -163,6 +163,7 @@ define(function (require, exports, module) {
                 events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart,
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
                 events.ui.REFERENCE_POINT_CHANGED, this._handleReferencePointChanged,
+                events.ui.DISPLAY_CHANGED, this._handleDisplayChanged,
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated,
                 events.document.RESET_BOUNDS, this._handleLayersUpdated,
@@ -539,7 +540,16 @@ define(function (require, exports, module) {
          */
         _handleReferencePointChanged: function (payload) {
             this._referencePoint = payload.referencePoint;
+            this.emit("change");
+        },
 
+        /**
+         * Re-set the root font size when the display changes.
+         *
+         * @private
+         */
+        _handleDisplayChanged: function () {
+            this._setRootSize();
             this.emit("change");
         }
     });

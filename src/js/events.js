@@ -135,7 +135,8 @@ define(function (require, exports, module) {
             PANELS_RESIZED: "panelsResized",
             TOGGLE_OVERLAYS: "toggleOverlays",
             SUPERSELECT_MARQUEE: "superselectMarquee",
-            REFERENCE_POINT_CHANGED: "referencePointChanged"
+            REFERENCE_POINT_CHANGED: "referencePointChanged",
+            DISPLAY_CHANGED: "displayChanged"
         },
         modifiers: {
             MODIFIERS_CHANGED: "modifiersChanged"

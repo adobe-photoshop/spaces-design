@@ -526,6 +526,14 @@ define(function (require, exports) {
     zoomInOut.writes = [];
     zoomInOut.transfers = [zoom];
 
+    var handleDisplayConfigurationChanged = function () {
+        return this.dispatchAsync(events.ui.DISPLAY_CHANGED);
+    };
+    handleDisplayConfigurationChanged.reads = [];
+    handleDisplayConfigurationChanged.writes = [locks.JS_UI];
+    handleDisplayConfigurationChanged.transfers = [];
+    handleDisplayConfigurationChanged.modal = true;
+
     /**
      * Set the global resize reference point.
      *
@@ -555,7 +563,8 @@ define(function (require, exports) {
      */
     var _scrollHandler,
         _activationChangeHandler,
-        _resizeHandler;
+        _resizeHandler,
+        _displayConfigurationChangedHandler;
 
     /**
      * Register event listeners for UI change events, and initialize the UI.
@@ -593,6 +602,10 @@ define(function (require, exports) {
             windowResizeDebounced(event);
         };
         window.addEventListener("resize", _resizeHandler);
+
+        _displayConfigurationChangedHandler = synchronization.debounce(
+            this.flux.actions.ui.handleDisplayConfigurationChanged, this, DEBOUNCE_DELAY);
+        adapterOS.addListener("displayConfigurationChanged", _displayConfigurationChangedHandler);
 
         // Enable over-scroll mode
         var osPromise = adapterUI.setOverscrollMode(adapterUI.overscrollMode.ALWAYS_OVERSCROLL);
@@ -644,6 +657,7 @@ define(function (require, exports) {
     var onReset = function () {
         descriptor.removeListener("scroll", _scrollHandler);
         adapterOS.removeListener("activationChanged", _activationChangeHandler);
+        adapterOS.removeListener("displayConfigurationChanged", _displayConfigurationChangedHandler);
         window.removeEventListener("resize", _resizeHandler);
 
         return Promise.resolve();
@@ -668,6 +682,7 @@ define(function (require, exports) {
     exports.zoomInOut = zoomInOut;
     exports.zoom = zoom;
     exports.setReferencePoint = setReferencePoint;
+    exports.handleDisplayConfigurationChanged = handleDisplayConfigurationChanged;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
