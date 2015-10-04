@@ -276,7 +276,8 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 return this.transfer(policy.addPointerPolicies, pointerPolicyList);
-            }).then(function (policyID) {
+            })
+            .then(function (policyID) {
                 _currentTransformPolicyID = policyID;
             
                 return this.transfer(guides.resetGuidePolicies);
