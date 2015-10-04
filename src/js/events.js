@@ -131,9 +131,11 @@ define(function (require, exports, module) {
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated",
-            PANELS_RESIZED: "panelsResized",
             TOGGLE_OVERLAYS: "toggleOverlays",
             SUPERSELECT_MARQUEE: "superselectMarquee"
+        },
+        panel: {
+            PANELS_RESIZED: "panelsResized"
         },
         modifiers: {
             MODIFIERS_CHANGED: "modifiersChanged"

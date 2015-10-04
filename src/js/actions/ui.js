@@ -256,7 +256,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updatePanelSizes = function (sizes) {
-        return this.dispatchAsync(events.ui.PANELS_RESIZED, sizes)
+        return this.dispatchAsync(events.panel.PANELS_RESIZED, sizes)
             .bind(this)
             .then(function () {
                 return this.transfer(updateTransform);

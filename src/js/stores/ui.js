@@ -277,10 +277,14 @@ define(function (require, exports, module) {
          * Calculate the overlay offsets, optionally taking into account a
          * (future) number of open columns.
          *
+         * @param {number=} columns
          * @return {{top: number, right: number, bottom: number, left: number}}
          */
         getCenterOffsets: function (columns) {
-            var right = this._iconBarWidth;
+            var preferences = this.flux.store("preferences").getState(),
+                singleColumn = preferences.get("singleColumnModeEnabled", false),
+                right = (columns !== undefined && singleColumn) ? 0 :
+                    this._iconBarWidth;
 
             if (columns === undefined || columns === this._columnCount) {
                 right += this._panelWidth;

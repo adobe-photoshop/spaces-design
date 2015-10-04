@@ -32,24 +32,24 @@ define(function (require, exports) {
      */
     var _imports = {
         "application": require("./application"),
+        "dialog": require("./dialog"),
         "document": require("./document"),
-        "export": require("./export"),
-        "font": require("./font"),
-        "tool": require("./tool"),
-        "policy": require("./policy"),
-        "menu": require("./menu"),
-        "modifier": require("./modifier"),
-        "preferences": require("./preferences"),
-        "ui": require("./ui"),
-        "shortcut": require("./shortcut"),
+        "draganddrop": require("./draganddrop"),
         "example-one": require("./example-one"),
         "example-two": require("./example-two"),
-        "dialog": require("./dialog"),
+        "export": require("./export"),
+        "font": require("./font"),
         "history": require("./history"),
-        "draganddrop": require("./draganddrop"),
         "library": require("./library"),
+        "menu": require("./menu"),
+        "modifier": require("./modifier"),
+        "policy": require("./policy"),
+        "preferences": require("./preferences"),
         "search": require("./search"),
+        "shortcut": require("./shortcut"),
         "style": require("./style")
+        "tool": require("./tool"),
+        "ui": require("./ui"),
     };
 
     /**
