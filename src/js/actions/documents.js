@@ -445,15 +445,16 @@ define(function (require, exports) {
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles,
-                        documentID, isDocumentSaved),
-                    policyPromise = this.transfer(toolActions.resetBorderPolicies);
+                        documentID, isDocumentSaved);
 
                 return Promise.join(resetLinkedPromise,
                         resetHistoryPromise,
                         updateTransformPromise,
                         recentFilesPromise,
-                        deleteTempFilesPromise,
-                        policyPromise);
+                        deleteTempFilesPromise);
+            })
+            .then(function () {
+                return this.transfer(toolActions.resetBorderPolicies);
             });
     };
     disposeDocument.reads = [];
@@ -637,6 +638,7 @@ define(function (require, exports) {
 
         if (!document) {
             return Promise.resolve();
+            // return this.transfer(toolActions.resetBorderPolicies);
         }
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
@@ -661,7 +663,7 @@ define(function (require, exports) {
     };
     close.reads = [locks.JS_APP, locks.JS_DOC];
     close.writes = [locks.JS_UI, locks.PS_APP, locks.PS_DOC];
-    close.transfers = [ui.cloak, disposeDocument];
+    close.transfers = [ui.cloak, disposeDocument, toolActions.resetBorderPolicies];
     close.lockUI = true;
     close.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
