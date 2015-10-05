@@ -443,7 +443,7 @@ define(function (require, exports) {
         if (layers instanceof Layer) {
             layers = Immutable.List.of(layers);
         } else if (layers.isEmpty()) {
-            return Promise.resolve();
+            return this.transfer(tools.resetBorderPolicies);
         }
 
         var layerRefs = layers.map(function (layer) {
