@@ -43,16 +43,20 @@ define(function (require, exports, module) {
          * Update the sizes of the panels.
          *
          * @private
+         * @param {boolean=} unmounting
          * @return {Promise}
          */
-        _updatePanelSizes: function () {
-            var node = React.findDOMNode(this),
-                iconBarWidth;
-
-            if (node) {
-                iconBarWidth = node.getBoundingClientRect().width;
-            } else {
+        _updatePanelSizes: function (unmounting) {
+            var iconBarWidth;
+            if (unmounting) {
                 iconBarWidth = 0;
+            } else {
+                var node = React.findDOMNode(this);
+                if (node) {
+                    iconBarWidth = node.getBoundingClientRect().width;
+                } else {
+                    iconBarWidth = 0;
+                }
             }
 
             return this.getFlux().actions.ui.updatePanelSizes({
@@ -75,6 +79,7 @@ define(function (require, exports, module) {
 
         componentWillUnmount: function () {
             os.removeListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
+            this._updatePanelSizes(true);
         },
 
         render: function () {

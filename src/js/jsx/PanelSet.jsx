@@ -110,7 +110,8 @@ define(function (require, exports, module) {
             }
 
             var columnCount = 0;
-            if (this.state.activeDocument && this.state.activeDocumentInitialized && this.state.documentIDs.size > 0) {
+            if (this.state.activeDocument && this.state.activeDocumentInitialized &&
+                this.state.documentIDs.size > 0 && !this.props.singleColumnModeEnabled) {
                 var uiStore = this.getFlux().store("ui");
                 if (this.state[uiStore.components.LAYERS_LIBRARY_COL]) {
                     columnCount++;
@@ -158,7 +159,8 @@ define(function (require, exports, module) {
                 prevState.recentFilesInitialized !== this.state.recentFilesInitialized ||
                 hasDoc(prevState) !== hasDoc(this.state) ||
                 prevState[components.PROPERTIES_COL] !== this.state[components.PROPERTIES_COL] ||
-                prevState[components.LAYERS_LIBRARY_COL] !== this.state[components.LAYERS_LIBRARY_COL]) {
+                prevState[components.LAYERS_LIBRARY_COL] !== this.state[components.LAYERS_LIBRARY_COL] ||
+                prevProps.singleColumnModeEnabled !== this.props.singleColumnModeEnabled) {
                 this._updatePanelSizes();
             }
         },
