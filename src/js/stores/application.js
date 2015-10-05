@@ -147,7 +147,7 @@ define(function (require, exports, module) {
         /**
          * Get the currently active document models
          * 
-         * @return {?Immutable.List.<Document>}
+         * @return {Immutable.List.<Document>}
          */
         getOpenDocuments: function () {
             var documentStore = this.flux.store("document"),
@@ -156,6 +156,18 @@ define(function (require, exports, module) {
                 });
 
             return documents;
+        },
+
+        /**
+         * Get the list of open but uninitialized document models.
+         *
+         * @return {Immutable.List.<Document>}
+         */
+        getUninitializedDocuments: function () {
+            return this.getOpenDocuments()
+                .filterNot(function (document) {
+                    return document.layers;
+                });
         },
 
         /**

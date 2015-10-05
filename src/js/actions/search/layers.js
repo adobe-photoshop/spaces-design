@@ -71,8 +71,8 @@ define(function (require, exports) {
     */
     var _formatLayerAncestry = function (layer, appStore) {
         var layerTree = appStore.getCurrentDocument().layers,
-            ancestors = layerTree.ancestors(layer),
-            ancestorNames = ancestors.first().name;
+            ancestors = layerTree.strictAncestors(layer),
+            ancestorNames = ancestors.isEmpty() ? "" : ancestors.first().name;
             
         return ancestors.skip(1).reduce(function (ancestors, ancestor) {
             return ancestorNames += ("/" + ancestor.name);
@@ -204,7 +204,7 @@ define(function (require, exports) {
             "getOptions": options,
             "filters": filters,
             "handleExecute": _confirmSearch.bind(this),
-            "shortenPaths": true,
+            "shortenPaths": false,
             "haveDocument": true,
             "getSVGClass": svgUtil.getSVGClassFromLayerCategories
         };

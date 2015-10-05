@@ -396,6 +396,26 @@ define(function (require, exports) {
     updateDocument.lockUI = true;
 
     /**
+     * Initialize any inactive and uninitialized documents with updateDocument.
+     * If all documents are initialized, this is a fast no-op.
+     *
+     * @return {Promise}
+     */
+    var initializeDocuments = function () {
+        var appStore = this.flux.store("application"),
+            documentPromises = appStore.getUninitializedDocuments()
+                .map(function (document) {
+                    return this.transfer(updateDocument, document.id);
+                }, this)
+                .toArray();
+
+        return Promise.all(documentPromises);
+    };
+    initializeDocuments.reads = [locks.JS_APP, locks.JS_DOC];
+    initializeDocuments.writes = [];
+    initializeDocuments.transfers = [updateDocument];
+
+    /**
      * Fetch the ID of the currently selected document, or null if there is none.
      *
      * @private
@@ -1083,6 +1103,7 @@ define(function (require, exports) {
     exports.updateDocument = updateDocument;
     exports.initActiveDocument = initActiveDocument;
     exports.initInactiveDocuments = initInactiveDocuments;
+    exports.initializeDocuments = initializeDocuments;
     exports.packageDocument = packageDocument;
     exports.toggleGuidesVisibility = toggleGuidesVisibility;
     exports.toggleSmartGuidesVisibility = toggleSmartGuidesVisibility;

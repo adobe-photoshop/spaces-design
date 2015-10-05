@@ -28,14 +28,14 @@
             "WEB_1440_900": "Web (1440 x 900)",
             "WEB_1920_1080": "Web (1920 x 1080)"
         },
-        "OPEN": "Open...",
+        "OPEN": "Open…",
         "OPEN_RECENT": {
             "$MENU": "Open Recent"
         },
         "CLOSE": "Close",
         "SAVE": "Save",
         "SAVE_AS": "Save As…",
-        "EXPORT_UTILITY": "Export...",
+        "EXPORT_UTILITY": "Export…",
         "REVERT": "Revert",
         "RENAME_DOCUMENT": "Rename…",
         "GENERATE_ASSETS": "Generate Assets…",
