@@ -39,7 +39,8 @@
         "UNGROUP_LAYERS": "レイヤーをグループ解除",
         "MODIFY_EXPORT_ASSETS": "更新された書き出しアセット設定",
         "APPLY_TEXT_STYLE": "テキストスタイルを適用",
-        "APPLY_LAYER_STYLE": "レイヤースタイルを適用"
+        "APPLY_LAYER_STYLE": "レイヤースタイルを適用",
+        "CREATE_LAYER_FROM_ELEMENT": "能_[8477628] Create Layer From Graphic Asset"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -84,14 +85,14 @@
             {
                 "TITLE": "切り替え中",
                 "ICON": "ワークスペース",
-                "HEADLINE": "高度な写真機能を使用する場合は、標準の Photoshop にいつでも切り替え可能。"
+                "HEADLINE": "能_[8470756] Switch to Standard Photoshop at any time for advanced photography features."
             },
             {
                 "TITLE": "連絡先",
                 "ICON": "鳥",
                 "HEADLINE": "デザインスペース",
                 "BODY_FIRST": "Twitter",
-                "BODY_SECOND": "Github",
+                "BODY_SECOND": "能_[8470749] GitHub",
                 "BODY_THIRD": "フォーラム"
             }
         ]
@@ -206,7 +207,7 @@
         "TOGGLE_DROP_SHADOW": "ドロップシャドウを切り替える",
         "DELETE_DROP_SHADOW": "ドロップシャドウを削除",
         "DELETE_LAYER_EFFECT": "削除 %s",
-        "TOGGLE_LAYER_EFFECT": "能_[8472483] Toggle %s",
+        "TOGGLE_LAYER_EFFECT": "%sを切り替え",
         "SET_DROP_SHADOW_COLOR": "ドロップシャドウのカラーを設定",
         "SET_DROP_SHADOW_PROPS": "ドロップシャドウの寸法を設定",
         "SET_DROP_SHADOW_X_POSITION": "ドロップシャドウの X 位置を設定",
@@ -215,13 +216,13 @@
         "SET_DROP_SHADOW_SPREAD": "ドロップシャドウの拡散を設定",
         "SET_COLOR_PICKER_FORMAT": "カラーピッカーの形式を設定",
         "SET_COLOR_PICKER_MODE": "カラーピッカーモードを設定",
-        "SET_COLOR_OVERLAY_COLOR": "能_[8472486] Set Color Overlay Color",
-        "TOGGLE_COLOR_OVERLAY": "能_[8472488] Toggle Color Overlay",
-        "DELETE_COLOR_OVERLAY": "能_[8472484] Delete Color Overlay",
+        "SET_COLOR_OVERLAY_COLOR": "カラーオーバーレイのカラーを設定",
+        "TOGGLE_COLOR_OVERLAY": "カラーオーバーレイを切り替え",
+        "DELETE_COLOR_OVERLAY": "カラーオーバーレイを削除",
         "SET_STROKE_EFFECT_COLOR": "ストロークのカラーを設定",
         "SET_STROKE_EFFECT_SIZE": "ストロークの大きさを設定",
         "TOGGLE_STROKE_EFFECT": "ストロークを切り替える",
-        "DELETE_STROKE_EFFECT": "能_[8472482] Delete Stroke",
+        "DELETE_STROKE_EFFECT": "線を削除",
         "TOGGLE_INNER_SHADOW": "シャドウ (内側) を切り替える",
         "DELETE_INNER_SHADOW": "シャドウ (内側) を削除",
         "SET_INNER_SHADOW_COLOR": "シャドウ (内側) のカラーを設定",
@@ -251,6 +252,9 @@
         "LIBRARY_VIEW_ON_WEBSITE": "Web サイトに表示",
         "LIBRARY_CLICK_TO_APPLY": "クリックすると、適用されます",
         "LIBRARY_DELETE": "削除",
+        "LIBRARY_EDITABLE_GRAPHIC": "能_[8477630] Double click to edit",
+        "LIBRARY_NONEDITABLE_GRAPHIC": "能_[8477629] Not editable in this app",
+        "LIBRARY_EMPTY_GRAPHIC": "能_[8477631] Graphic has no content",
         "EXPORT_EXPORT_ASSETS": "これらのアセットを書き出し",
         "EXPORT_ADD_ASSET": "書き出しアセットを追加",
         "EXPORT_REMOVE_ASSET": "アセット設定を削除",
