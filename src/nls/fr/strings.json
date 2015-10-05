@@ -39,7 +39,8 @@
         "UNGROUP_LAYERS": "Dissocier les calques",
         "MODIFY_EXPORT_ASSETS": "Configurations d'exportation de fichier mises à jour",
         "APPLY_TEXT_STYLE": "Appliquer le style de texte",
-        "APPLY_LAYER_STYLE": "Appliquer le style de calque"
+        "APPLY_LAYER_STYLE": "Appliquer le style de calque",
+        "CREATE_LAYER_FROM_ELEMENT": "[8477628] é_Create Layer From Graphic Asset"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -84,14 +85,14 @@
             {
                 "TITLE": "Changement",
                 "ICON": "espace de travail",
-                "HEADLINE": "Passez à Photoshop Classic à tout moment pour accéder aux fonctionnalités avancées des photos."
+                "HEADLINE": "[8470756] é_Switch to Standard Photoshop at any time for advanced photography features."
             },
             {
                 "TITLE": "Contact",
                 "ICON": "oiseau",
                 "HEADLINE": "Espace de conception",
                 "BODY_FIRST": "Twitter",
-                "BODY_SECOND": "GitHub",
+                "BODY_SECOND": "[8470749] é_GitHub",
                 "BODY_THIRD": "Forum"
             }
         ]
@@ -206,7 +207,7 @@
         "TOGGLE_DROP_SHADOW": "Activer/Désactiver l'ombre portée",
         "DELETE_DROP_SHADOW": "Supprimer l'ombre portée",
         "DELETE_LAYER_EFFECT": "Supprimer %s",
-        "TOGGLE_LAYER_EFFECT": "[8472483] é_Toggle %s",
+        "TOGGLE_LAYER_EFFECT": "Activer/désactiver%s  ",
         "SET_DROP_SHADOW_COLOR": "Définir la couleur de l'ombre portée",
         "SET_DROP_SHADOW_PROPS": "Définir les dimensions de l'ombre portée",
         "SET_DROP_SHADOW_X_POSITION": "Définir la position de l'ombre portée X",
@@ -215,9 +216,9 @@
         "SET_DROP_SHADOW_SPREAD": "Définir l'étendue de l'ombre portée",
         "SET_COLOR_PICKER_FORMAT": "Définir le format du sélecteur de couleurs",
         "SET_COLOR_PICKER_MODE": "Définir le mode du sélecteur de couleurs",
-        "SET_COLOR_OVERLAY_COLOR": "[8472486] é_Set Color Overlay Color",
-        "TOGGLE_COLOR_OVERLAY": "[8472488] é_Toggle Color Overlay",
-        "DELETE_COLOR_OVERLAY": "[8472484] é_Delete Color Overlay",
+        "SET_COLOR_OVERLAY_COLOR": "Définir la couleur de l'incrustation couleur",
+        "TOGGLE_COLOR_OVERLAY": "Activer/désactiver l'incrustation couleur",
+        "DELETE_COLOR_OVERLAY": "Supprimer l'incrustation couleur",
         "SET_STROKE_EFFECT_COLOR": "Définir la couleur du contour",
         "SET_STROKE_EFFECT_SIZE": "Définir la taille du contour",
         "TOGGLE_STROKE_EFFECT": "Activer/désactiver le contour",
@@ -251,6 +252,9 @@
         "LIBRARY_VIEW_ON_WEBSITE": "Afficher sur le site web",
         "LIBRARY_CLICK_TO_APPLY": "Cliquez pour appliquer.",
         "LIBRARY_DELETE": "Supprimer",
+        "LIBRARY_EDITABLE_GRAPHIC": "[8477630] é_Double click to edit",
+        "LIBRARY_NONEDITABLE_GRAPHIC": "[8477629] é_Not editable in this app",
+        "LIBRARY_EMPTY_GRAPHIC": "[8477631] é_Graphic has no content",
         "EXPORT_EXPORT_ASSETS": "Exporter ces fichiers",
         "EXPORT_ADD_ASSET": "Ajouter un fichier exporté",
         "EXPORT_REMOVE_ASSET": "Supprimer la configuration d'un fichier",

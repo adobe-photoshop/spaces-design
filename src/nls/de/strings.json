@@ -39,7 +39,8 @@
         "UNGROUP_LAYERS": "Gruppierung von Ebenen aufheben",
         "MODIFY_EXPORT_ASSETS": "Aktualisierte Export-Asset-Konfigurationen",
         "APPLY_TEXT_STYLE": "Textformat anwenden",
-        "APPLY_LAYER_STYLE": "Ebenenstil anwenden"
+        "APPLY_LAYER_STYLE": "Ebenenstil anwenden",
+        "CREATE_LAYER_FROM_ELEMENT": "Ebene aus grafischem Element erstellen"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -84,7 +85,7 @@
             {
                 "TITLE": "Wechselnder",
                 "ICON": "Arbeitsbereich",
-                "HEADLINE": "Wechseln Sie jederzeit zum klassischen Photoshop, um erweiterte Fotografiefunktionen in Anspruch zu nehmen."
+                "HEADLINE": "Wechseln Sie jederzeit zum Standard-Photoshop, um erweiterte Fotografiefunktionen in Anspruch zu nehmen."
             },
             {
                 "TITLE": "Kontakt",
@@ -206,7 +207,7 @@
         "TOGGLE_DROP_SHADOW": "Schlagschatten ein/aus",
         "DELETE_DROP_SHADOW": "Schlagschatten löschen",
         "DELETE_LAYER_EFFECT": "%s löschen",
-        "TOGGLE_LAYER_EFFECT": "[8472483] ü_Toggle %s",
+        "TOGGLE_LAYER_EFFECT": "Ein/aus: %s",
         "SET_DROP_SHADOW_COLOR": "Schlagschattenfarbe festlegen",
         "SET_DROP_SHADOW_PROPS": "Maße für Schlagschatten festlegen",
         "SET_DROP_SHADOW_X_POSITION": "X-Position für Schlagschatten festlegen",
@@ -215,9 +216,9 @@
         "SET_DROP_SHADOW_SPREAD": "Ausbreitung des Schlagschattens festlegen",
         "SET_COLOR_PICKER_FORMAT": "Farbwähler-Format festlegen",
         "SET_COLOR_PICKER_MODE": "Farbwähler-Modus festlegen",
-        "SET_COLOR_OVERLAY_COLOR": "[8472486] ü_Set Color Overlay Color",
-        "TOGGLE_COLOR_OVERLAY": "[8472488] ü_Toggle Color Overlay",
-        "DELETE_COLOR_OVERLAY": "[8472484] ü_Delete Color Overlay",
+        "SET_COLOR_OVERLAY_COLOR": "Farbüberlagerungsfarbe festlegen",
+        "TOGGLE_COLOR_OVERLAY": "Farbüberlagerung ein/aus",
+        "DELETE_COLOR_OVERLAY": "Farbüberlagerung löschen",
         "SET_STROKE_EFFECT_COLOR": "Konturfarbe festlegen",
         "SET_STROKE_EFFECT_SIZE": "Strichstärke festlegen",
         "TOGGLE_STROKE_EFFECT": "Kontur ein/aus",
@@ -251,6 +252,9 @@
         "LIBRARY_VIEW_ON_WEBSITE": "Auf Website anzeigen",
         "LIBRARY_CLICK_TO_APPLY": "Zum Anwenden klicken",
         "LIBRARY_DELETE": "Löschen",
+        "LIBRARY_EDITABLE_GRAPHIC": "Doppelklicken, um zu bearbeiten.",
+        "LIBRARY_NONEDITABLE_GRAPHIC": "Nicht in dieser App bearbeitbar",
+        "LIBRARY_EMPTY_GRAPHIC": "Grafik hat keinen Inhalt",
         "EXPORT_EXPORT_ASSETS": "Diese Elemente exportieren",
         "EXPORT_ADD_ASSET": "Exportelement hinzufügen",
         "EXPORT_REMOVE_ASSET": "Elementkonfiguration entfernen",
