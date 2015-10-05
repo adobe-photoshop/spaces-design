@@ -43,6 +43,15 @@ define(function (require, exports, module) {
         global = require("./util/global");
 
     /**
+     * The number of logical CPU cores, used to determine the maximum number of
+     * concurrently executing actions.
+     *
+     * @const
+     * @type {number}
+     */
+    var CORES = window.navigator.hardwareConcurrency || 8;
+
+    /**
      * Suffix used to name throttled actions.
      * 
      * @const
@@ -93,9 +102,7 @@ define(function (require, exports, module) {
     var FluxController = function (testStores) {
         EventEmitter.call(this);
 
-        var cores = window.navigator.hardwareConcurrency || 8;
-
-        this._actionQueue = new AsyncDependencyQueue(cores);
+        this._actionQueue = new AsyncDependencyQueue(CORES);
         this._initActionNames();
         this._initActionLocks();
 
@@ -170,6 +177,14 @@ define(function (require, exports, module) {
      * @type {Map.<Action, ActionReceiver>} 
      */
     FluxController.prototype._actionReceivers = null;
+
+    /**
+     * Indicates whether or not the UI is currently locked.
+     *
+     * @private
+     * @type {boolean}
+     */
+    FluxController.prototype._uiLocked = false;
 
     Object.defineProperties(FluxController.prototype, {
         "flux": {
@@ -336,6 +351,19 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Call each action receiver's _reset method, which clears its transfer
+     * queue. This is called when an action transfer fails.
+     *
+     * @private
+     */
+    FluxController.prototype._resetActionReceivers = function () {
+        this._actionReceivers.forEach(function (receiver) {
+            // Reset the receiver, clearing it's transfer queue
+            receiver._reset();
+        }, this);
+    };
+
+    /**
      * Construct a receiver for the given action that augments the standard
      * Fluxxor "dispatch binder" with additional action-specific helper methods.
      *
@@ -351,7 +379,8 @@ define(function (require, exports, module) {
                 "All locks will be required for execution.");
         }
 
-        var currentTransfers = new Set(action.transfers || []),
+        var transferQueue = new AsyncDependencyQueue(CORES),
+            currentTransfers = new Set(action.transfers || []),
             self = this,
             resolvedPromise;
 
@@ -362,6 +391,17 @@ define(function (require, exports, module) {
              */
             controller: {
                 value: self
+            },
+
+            /**
+             * Reset the action receiver. Clears all jobs from the transfer queue.
+             *
+             * @private
+             */
+            _reset: {
+                value: function () {
+                    transferQueue.removeAll();
+                }
             },
 
             /**
@@ -383,19 +423,59 @@ define(function (require, exports, module) {
                         var message = "Invalid transfer from " + actionName + " to " + nextActionName +
                                 ". Add " + nextActionName + " to the list of transfers declared for " +
                                 actionName + ".";
-                                
-                        throw new Error(message);
-                    }
 
-                    var lockUI = nextAction.lockUI;
-                    if (lockUI) {
-                        self.emit("lock");
+                        throw new Error(message);
                     }
     
                     var params = Array.prototype.slice.call(arguments, 1),
-                        nextReceiver = self._actionReceivers.get(nextAction);
+                        nextReceiver = self._actionReceivers.get(nextAction),
+                        reads = self._transitiveReads.get(nextAction),
+                        writes = self._transitiveWrites.get(nextAction),
+                        logTransfers = global.debug &&
+                            this.flux.store("preferences").getState().get("logActionTransfers"),
+                        enqueued;
 
-                    return self._applyAction(nextAction, nextReceiver, params, actionName);
+                    if (logTransfers) {
+                        enqueued = Date.now();
+                        log.debug("Enqueuing transfer from %s to %s; %d/%d",
+                            actionName, nextActionName,
+                            transferQueue.active(), transferQueue.pending());
+                    }
+
+                    return transferQueue.push(function () {
+                        var start;
+                        if (logTransfers) {
+                            start = Date.now();
+                            log.debug("Executing transfer from %s to %s after waiting %dms; %d/%d",
+                                actionName, nextActionName,
+                                start - enqueued,
+                                transferQueue.active(), transferQueue.pending());
+                        }
+
+                        return self._applyAction(nextAction, nextReceiver, params, actionName)
+                            .tap(function () {
+                                if (logTransfers) {
+                                    var finished = Date.now(),
+                                        elapsed = finished - start,
+                                        total = finished - enqueued;
+
+                                    log.debug("Finished transfer from %s to %s in %dms with RTT %dms; %d/%d",
+                                        actionName, nextActionName,
+                                        elapsed, total,
+                                        transferQueue.active(), transferQueue.pending());
+                                }
+                            })
+                            .catch(function (err) {
+                                var message = "Transfer from " + actionName + " to " + nextActionName + " failed:",
+                                    errMessage = err instanceof Error ? (err.stack || err.message) : err;
+
+                                log.error(message, errMessage);
+
+                                // Any failed transfer triggers a complete controller reset
+                                this._resetController(err);
+                                throw err;
+                            });
+                    }.bind(self), reads, writes);
                 }
             },
 
@@ -438,6 +518,30 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Lock the UI.
+     *
+     * @private
+     */
+    FluxController.prototype._lockUI = function () {
+        if (!this._uiLocked) {
+            this._uiLocked = true;
+            this.emit("lock");
+        }
+    };
+
+    /**
+     * Unock the UI.
+     *
+     * @private
+     */
+    FluxController.prototype._unlockUI = function () {
+        if (this._uiLocked) {
+            this._uiLocked = false;
+            this.emit("unlock");
+        }
+    };
+
+    /**
      * Apply the given action, bound to the given action receiver, to
      * the given actual parameters. Verifies any postconditions defined as part
      * of the action.
@@ -468,8 +572,9 @@ define(function (require, exports, module) {
             actionPromise = Promise.reject(valueError);
         }
 
-        if (lockUI) {
-            this.emit("lock");
+        var uiWasLocked = this._uiLocked;
+        if (lockUI && !uiWasLocked) {
+            this._lockUI();
         }
 
         return actionPromise
@@ -497,8 +602,8 @@ define(function (require, exports, module) {
                 }
             })
             .tap(function () {
-                if (lockUI) {
-                    this.emit("unlock");
+                if (lockUI && !uiWasLocked) {
+                    this._unlockUI();
                 }
             });
     };
@@ -574,7 +679,7 @@ define(function (require, exports, module) {
                         log.error("Action " + actionName + " failed:", message);
 
                         // Reset all action modules on failure
-                        this._reset(err);
+                        this._resetController(err);
                         throw err;
                     });
             }.bind(self), reads, writes);
@@ -711,7 +816,7 @@ define(function (require, exports, module) {
         }
 
         this._running = false;
-        this.emit("lock");
+        this._lockUI();
 
         return this._invokeActionMethods("onShutdown");
     };
@@ -762,7 +867,7 @@ define(function (require, exports, module) {
             })
             .then(this._invokeActionMethods.bind(this, "beforeStartup", true))
             .then(function (results) {
-                this.emit("unlock");
+                this._unlockUI();
 
                 return this._invokeActionMethods("afterStartup", results);
             })
@@ -796,8 +901,9 @@ define(function (require, exports, module) {
      * @private
      * @param {Error} err
      */
-    FluxController.prototype._reset = function (err) {
+    FluxController.prototype._resetController = function (err) {
         this._actionQueue.removeAll();
+        this._resetActionReceivers();
 
         if (!this._running || this._resetRetryDelay > MAX_RETRY_WINDOW) {
             this.emit("error", {
@@ -809,7 +915,7 @@ define(function (require, exports, module) {
         }
 
         this._resetPending = true;
-        this.emit("lock");
+        this._lockUI();
         this._resetHelper();
     };
 

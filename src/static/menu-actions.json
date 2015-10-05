@@ -437,6 +437,10 @@
             "$action": "menu.actionFailure",
             "$enable-rule": "always-except-modal"
         },
+        "TRANSFER_FAILURE": {
+            "$action": "menu.transferFailure",
+            "$enable-rule": "always-except-modal"
+        },
         "RESET_FAILURE": {
             "$action": "menu.resetFailure",
             "$enable-rule": "always-except-modal"
@@ -459,6 +463,10 @@
         },
         "TOGGLE_POSTCONDITIONS": {
             "$action": "menu.togglePostconditions",
+            "$enable-rule": "always-except-modal"
+        },
+        "TOGGLE_ACTION_TRANSFER_LOGGING": {
+            "$action": "menu.toggleActionTransferLogging",
             "$enable-rule": "always-except-modal"
         },
         "OPEN_FIRST_LAUNCH": {

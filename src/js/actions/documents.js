@@ -465,17 +465,16 @@ define(function (require, exports) {
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles,
-                        documentID, isDocumentSaved);
+                        documentID, isDocumentSaved),
+                    policyPromise = newDocument ? Promise.resolve() :
+                        this.transfer(toolActions.resetBorderPolicies);
 
                 return Promise.join(resetLinkedPromise,
                         resetHistoryPromise,
                         updateTransformPromise,
                         recentFilesPromise,
-                        deleteTempFilesPromise);
-            })
-            .then(function () {
-                // This must run after the above transfers. See #2785.
-                return this.transfer(toolActions.resetBorderPolicies);
+                        deleteTempFilesPromise,
+                        policyPromise);
             });
     };
     disposeDocument.reads = [];
@@ -537,6 +536,7 @@ define(function (require, exports) {
     createNewExtended.reads = [];
     createNewExtended.writes = [locks.PS_DOC, locks.PS_APP];
     createNewExtended.transfers = [menu.native, ui.setOverlayOffsetsForFirstDocument];
+    createNewExtended.lockUI = true;
 
     /**
      * Creates a document in default settings, or using an optionally supplied preset
@@ -595,6 +595,7 @@ define(function (require, exports) {
     createNew.transfers = [preferencesActions.setPreference, allocateDocument,
         ui.setOverlayOffsetsForFirstDocument, exportActions.addDefaultAsset, toolActions.changeVectorMaskMode];
     createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
+    createNew.locksUI = true;
 
     /**
      * Opens the document in the given path or, if none is given, prompts the

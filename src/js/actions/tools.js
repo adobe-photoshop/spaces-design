@@ -280,7 +280,7 @@ define(function (require, exports) {
             })
             .then(function (policyID) {
                 _currentTransformPolicyID = policyID;
-            
+
                 return this.transfer(guides.resetGuidePolicies);
             });
     };
