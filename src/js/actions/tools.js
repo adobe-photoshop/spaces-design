@@ -607,23 +607,26 @@ define(function (require, exports) {
         } else {
             // delete empty masks when leaving mask mode
             removePromise = this.transfer(layers.resetLayers, currentDocument, currentLayer)
+                .bind(this)
                 .then(function () {
                     currentLayer = appStore.getCurrentDocument().layers.selected.first();
 
                     if (currentLayer.vectorMaskEnabled && currentLayer.vectorMaskEmpty) {
-                        return descriptor.playObject(vectorMaskLib.deleteVectorMask());
+                        return descriptor.playObject(vectorMaskLib.deleteVectorMask())
+                            .bind(this)
+                            .then(function () {
+                                var payload = {
+                                        documentID: currentDocument.id,
+                                        layerIDs: Immutable.List.of(currentLayer.id),
+                                        vectorMaskEnabled: false
+                                    },
+                                    event = events.document.history.optimistic.REMOVE_VECTOR_MASK_FROM_LAYER;
+
+                                return this.dispatch(event, payload);
+                            });
                     } else {
                         return Promise.resolve();
                     }
-                })
-                .bind(this)
-                .then(function () {
-                    var payload = {
-                            documentID: currentDocument.id,
-                            layerIDs: Immutable.List.of(currentLayer.id),
-                            vectorMaskEnabled: false
-                        };
-                    return this.dispatch(events.document.history.optimistic.REMOVE_VECTOR_MASK_FROM_LAYER, payload);
                 });
 
             var pointerPolicyID = toolStore.getVectorMaskPolicyID();
