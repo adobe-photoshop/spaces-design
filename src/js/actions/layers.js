@@ -472,10 +472,14 @@ define(function (require, exports) {
                 } else {
                     this.dispatch(events.document.RESET_LAYERS, payload);
                 }
+            })
+            .then(function () {
+                return this.transfer(tools.resetBorderPolicies);
             });
     };
     resetLayers.reads = [locks.PS_DOC];
     resetLayers.writes = [locks.JS_DOC];
+    resetLayers.transfers = [tools.resetBorderPolicies];
 
     /**
      * Emit a RESET_BOUNDS with bounds descriptors for the given layers.
