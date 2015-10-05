@@ -42,6 +42,7 @@ define(function (require, exports) {
         guides = require("./guides"),
         layers = require("./layers"),
         locks = require("js/locks"),
+        log = require("js/util/log"),
         policy = require("./policy"),
         ui = require("./ui"),
         shortcuts = require("./shortcuts"),
@@ -550,9 +551,13 @@ define(function (require, exports) {
         var currentLayers = currentDocument.layers.selected,
             currentLayer = currentLayers.first();
 
-        // vector mask mode requires an avtive layer
+        // vector mask mode requires an active layer
         if (!currentLayer) {
-            return Promise.resolve();
+            if (vectorMaskMode) {
+                return Promise.resolve();
+            } else {
+                return this.dispatchAsync(events.tool.VECTOR_MASK_MODE_CHANGE, vectorMaskMode);
+            }
         }
 
         var nonVectorModeLayer = (currentLayer.kind === currentLayer.layerKinds.BACKGROUND ||
@@ -576,13 +581,13 @@ define(function (require, exports) {
                     layerIDs: Immutable.List.of(currentLayer.id),
                     vectorMaskEnabled: true
                 },
-                dispatchAdd = this.dispatch(events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, payload),
-                dispatchToolMode = this.dispatch(events.tool.VECTOR_MASK_MODE_CHANGE, vectorMaskMode);
+                dispatchAdd = this.dispatchAsync(events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, payload),
+                dispatchToolMode = this.dispatchAsync(events.tool.VECTOR_MASK_MODE_CHANGE, vectorMaskMode);
 
             dispatchPromise = Promise.join(dispatchAdd, dispatchToolMode);
         } else {
             initPromise = Promise.resolve();
-            dispatchPromise = this.dispatch(events.tool.VECTOR_MASK_MODE_CHANGE, vectorMaskMode);
+            dispatchPromise = this.dispatchAsync(events.tool.VECTOR_MASK_MODE_CHANGE, vectorMaskMode);
         }
 
         var toolMode = toolLib.toolModes.SHAPE;
@@ -628,7 +633,7 @@ define(function (require, exports) {
                                     },
                                     event = events.document.history.optimistic.REMOVE_VECTOR_MASK_FROM_LAYER;
 
-                                return this.dispatch(event, payload);
+                                return this.dispatchAsync(event, payload);
                             });
                     } else {
                         return Promise.resolve();
@@ -686,13 +691,13 @@ define(function (require, exports) {
                 .then(function () {
                     if (!currentLayer.vectorMaskEmpty) {
                         return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
+                            .bind(this)
                             .then(function () {
-                                return descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
-                                    { synchronous: false });
+                                // We are not transfering here, because we activly want to end the use of our locks
+                                this.flux.actions.tools.enterPathModalState();
                             });
-                    } else {
-                        return Promise.resolve();
                     }
+                    return Promise.resolve();
                 });
             }
         }
@@ -702,6 +707,26 @@ define(function (require, exports) {
     changeVectorMaskMode.modal = true;
     changeVectorMaskMode.transfers = [selectTool, policy.addPointerPolicies, policy.removePointerPolicies,
         installShapeDefaults, "layers.resetLayers"];
+
+    /**
+     * Enter the free transform path mode modal tool state. 
+     * We do not care if this event fails, and it may take a long time to return 
+     * 
+     * @return {Promise}
+     */
+    var enterPathModalState = function () {
+        descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
+                { synchronous: false })
+            .catch(function () {
+                log.error("Photoshop returned from free transform path modal state with an error");
+                // Silence the errors here since we cannot guarantee that PS will not throw an error
+                // when we end the modal tool state in a valid case
+            });
+        return Promise.resolve();
+    };
+    enterPathModalState.reads = [];
+    enterPathModalState.writes = [];
+    enterPathModalState.modal = true;
 
     /**
      * Register event listeners for native tool selection change events, register
@@ -807,6 +832,7 @@ define(function (require, exports) {
     exports.initTool = initTool;
     exports.handleToolModalStateChanged = handleToolModalStateChanged;
     exports.changeModalState = changeModalState;
+    exports.enterPathModalState = enterPathModalState;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;

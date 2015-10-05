@@ -84,8 +84,8 @@ define(function (require, exports, module) {
                         return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
                     })
                     .then(function () {
-                        return descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
-                            { synchronous: false });
+                        // We are not transfering here, because we activly want to end the use of our locks
+                        this.flux.actions.tools.enterPathModalState();
                     });
             } else {
                 var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,

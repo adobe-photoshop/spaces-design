@@ -618,7 +618,11 @@ define(function (require, exports) {
 
                 if (!filePath) {
                     // An "open" event will be triggered
-                    return this.transfer(menu.native, { commandID: _OPEN_DOCUMENT, waitForCompletion: true });
+                    return this.transfer(menu.native, { commandID: _OPEN_DOCUMENT, waitForCompletion: true })
+                        .bind(this)
+                        .then(function () {
+                            return this.transfer(toolActions.changeVectorMaskMode, false);
+                        });
                 }
 
                 var documentRef = {
@@ -721,6 +725,9 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
+                return this.transfer(toolActions.changeVectorMaskMode, false);
+            })
+            .then(function () {
                 var toolStore = this.flux.store("tool");
 
                 if (toolStore.getCurrentTool() === toolStore.getToolByID("superselectVector")) {
@@ -733,15 +740,13 @@ define(function (require, exports) {
                     historyPromise = this.transfer(historyActions.queryCurrentHistory, documentID),
                     guidesPromise = this.transfer(guideActions.queryCurrentGuides, currentDocument),
                     updateTransformPromise = this.transfer(ui.updateTransform),
-                    deselectPromise = descriptor.playObject(selectionLib.deselectAll()),
-                    disableMaskPromise = this.transfer(toolActions.changeVectorMaskMode, false);
+                    deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                 return Promise.join(resetLinkedPromise,
                     historyPromise,
                     guidesPromise,
                     updateTransformPromise,
-                    deselectPromise,
-                    disableMaskPromise);
+                    deselectPromise);
             });
     };
     selectDocument.reads = [locks.JS_TOOL];
