@@ -386,7 +386,7 @@ define(function (require, exports) {
                     }.bind(this))
                     .bind(this)
                     .then(function () {
-                        this.transfer(toolActions.resetBorderPolicies);
+                        return this.transfer(toolActions.resetBorderPolicies);
                     });
             });
     };
