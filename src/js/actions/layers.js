@@ -406,11 +406,15 @@ define(function (require, exports) {
                     naiveLayerCount = document.layers.all.size + layerSpec.length;
 
                 return nextLayerCount !== naiveLayerCount;
-            });
+            })
+            .then(function () {
+                return this.transfer(tools.resetBorderPolicies);
+            })
     };
     addLayers.modal = true;
     addLayers.reads = [locks.PS_DOC];
     addLayers.writes = [locks.JS_DOC];
+    addLayers.transfers = [tools.resetBorderPolicies];
     addLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -1035,11 +1039,14 @@ define(function (require, exports) {
                     selected = nextDocument.layers.selected;
 
                 return this.transfer(initializeLayers, nextDocument, selected);
+            })
+            .then(function () {
+                return this.transfer(tools.resetBorderPolicies);
             });
     };
     removeLayers.reads = [locks.PS_DOC];
     removeLayers.writes = [locks.JS_DOC];
-    removeLayers.transfers = ["history.queryCurrentHistory", initializeLayers];
+    removeLayers.transfers = ["history.queryCurrentHistory", initializeLayers, tools.resetBorderPolicies];
     removeLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
