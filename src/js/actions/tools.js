@@ -540,8 +540,13 @@ define(function (require, exports) {
         }
 
         var appStore = flux.store("application"),
-            currentDocument = appStore.getCurrentDocument(),
-            currentLayers = currentDocument.layers.selected,
+            currentDocument = appStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var currentLayers = currentDocument.layers.selected,
             currentLayer = currentLayers.first();
 
         // vector mask mode requires an avtive layer
