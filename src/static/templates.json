@@ -30,6 +30,12 @@
         "height": 2048
     },
     {
+        "id": "IPAD_PRO",
+        "preset": "iPad Pro (2048, 2732)",
+        "width": 2048,
+        "height": 2732
+    },
+    {
         "id": "ANDROID_1080P",
         "preset": "Android 1080p (1080, 1920)",
         "width": 1080,
