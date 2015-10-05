@@ -25,23 +25,49 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React),
+        StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
-    var SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        AlignDistribute = require("jsx!./AlignDistribute"),
+    // var Button = require("jsx!js/jsx/shared/Button"),
+    // var SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+    var AlignDistribute = require("jsx!./AlignDistribute"),
         Size = require("jsx!./Size"),
         Position = require("jsx!./Position"),
         Rotate = require("jsx!./Rotate"),
         Combine = require("jsx!./Combine"),
         Flip = require("jsx!./Flip");
+    // strings = require("i18n!nls/strings");
 
     var TransformPanel = React.createClass({
+        mixins: [FluxMixin, StoreWatchMixin("ui")],
+
+        getStateFromFlux: function () {
+            var uiStore = this.getFlux().store("ui"),
+                uiState = uiStore.getState();
+
+            return {
+                referencePoint: uiState.referencePoint
+            };
+        },
+
         shouldComponentUpdate: function (nextProps) {
             if (!this.props.active && !nextProps.active) {
                 return false;
             }
             
             return true;
+        },
+
+        /**
+         * Set the reference point on click.
+         *
+         * @private
+         * @param {string} referencePoint One of "a", "b", "c"
+         */
+        _handleReferenceClick: function (referencePoint) {
+            this.getFlux().actions.ui.setReferencePoint(referencePoint);
         },
         
         render: function () {
@@ -55,7 +81,15 @@ define(function (require, exports, module) {
                 "formline__bottom-align",
                 "formline__space-between",
                 "formline__padded-first-child");
-            
+
+            var currentReferencePoint = this.state.referencePoint,
+                getReferenceClasses = function (referencePoint) {
+                    return classnames({
+                        "reference-point": true,
+                        "reference-point__active": referencePoint === currentReferencePoint
+                    });
+                };
+
             return (
                 <section className={sectionClasses}>
                     <header className="section-header">
@@ -66,15 +100,62 @@ define(function (require, exports, module) {
                             <div className="control-group">
                                 <Size document={this.props.document} />
                             </div>
-                            <div className="control-group">
-                                <div className="control-group reference-mark">
-                                    <SVGIcon CSSID="reference-cm" />
-                                </div>
-                            </div>
                         </div>
+                        <div className="control-group reference-mark reference-point-button">
+                                <span
+                                    className={getReferenceClasses("lt")}
+                                    onClick={this._handleReferenceClick.bind(this, "lt")}>
+                                        lt
+                                </span>
+                                <span
+                                    className={getReferenceClasses("mt")}
+                                    onClick={this._handleReferenceClick.bind(this, "mt")}>
+                                        mt
+                                </span>
+                                <span
+                                    className={getReferenceClasses("rt")}
+                                    onClick={this._handleReferenceClick.bind(this, "rt")}>
+                                        rt
+                                </span>
+                            </div>
+                            <div className="control-group reference-mark reference-point-button">
+                                <span
+                                    className={getReferenceClasses("lc")}
+                                    onClick={this._handleReferenceClick.bind(this, "lc")}>
+                                        lc
+                                </span>
+                                <span
+                                    className={getReferenceClasses("mc")}
+                                    onClick={this._handleReferenceClick.bind(this, "mc")}>
+                                        mc
+                                </span>
+                                <span
+                                    className={getReferenceClasses("rc")}
+                                    onClick={this._handleReferenceClick.bind(this, "rc")}>
+                                        rc
+                                </span>
+                            </div>
+                            <div className="control-group reference-mark reference-point-button">
+                                <span
+                                    className={getReferenceClasses("lb")}
+                                    onClick={this._handleReferenceClick.bind(this, "lb")}>
+                                        lb
+                                </span>
+                                <span
+                                    className={getReferenceClasses("mb")}
+                                    onClick={this._handleReferenceClick.bind(this, "mb")}>
+                                        mb
+                                </span>
+                                <span
+                                    className={getReferenceClasses("rb")}
+                                    onClick={this._handleReferenceClick.bind(this, "rb")}>
+                                        rb
+                                </span>
+                            </div>
                         <div className={positionRotateClasses}>
                             <div className="control-group">
-                                <Position document={this.props.document} />
+                                <Position document={this.props.document}
+                                    referencePoint={this.state.referencePoint} />
                             </div>
                             <div className="control-group">
                                 <Rotate document={this.props.document} />

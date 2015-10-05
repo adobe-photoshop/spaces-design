@@ -146,6 +146,8 @@ define(function (require, exports, module) {
          */
         components: UI_COMPONENTS,
 
+        _referencePoint: null,
+
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
@@ -153,6 +155,7 @@ define(function (require, exports, module) {
                 events.ui.PANELS_RESIZED, this._handlePanelResize,
                 events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart,
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
+                events.ui.REFERENCE_POINT_CHANGED, this._handleReferencePointChanged,
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated,
                 events.document.RESET_BOUNDS, this._handleLayersUpdated,
@@ -182,6 +185,7 @@ define(function (require, exports, module) {
             this._zoom = null;
             this._transformMatrix = null;
             this._inverseTransformMatrix = null;
+            this._referencePoint = "a";
         },
         
         /** @ignore */
@@ -193,7 +197,8 @@ define(function (require, exports, module) {
                 centerOffsets: this.getCenterOffsets(),
                 overlaysEnabled: this._overlaysEnabled,
                 marqueeEnabled: this._marqueeEnabled,
-                marqueeStart: this._marqueeStart
+                marqueeStart: this._marqueeStart,
+                referencePoint: this._referencePoint
             };
         },
         
@@ -516,6 +521,18 @@ define(function (require, exports, module) {
                 y: payload.y
             } : null;
             
+            this.emit("change");
+        },
+
+        /**
+         * Set the size-adjustment reference point.
+         *
+         * @private
+         * @param {{referencePoint: string}} payload
+         */
+        _handleReferencePointChanged: function (payload) {
+            this._referencePoint = payload.referencePoint;
+
             this.emit("change");
         }
     });

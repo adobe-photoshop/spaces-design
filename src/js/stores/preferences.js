@@ -99,6 +99,10 @@ define(function (require, exports, module) {
             return this._preferences;
         },
 
+        get: function (key, unsetValue) {
+            return this._preferences.get(key, unsetValue);
+        },
+
         /**
          * Load persisted preferences and initialize the preferences table.
          *
