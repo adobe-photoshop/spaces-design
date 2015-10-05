@@ -174,6 +174,13 @@ define(function (require, exports, module) {
             this.getFlux().actions.export.openExportPanel();
         },
 
+        /**
+         * Opens the search tool
+         */
+        _openSearchTool: function () {
+            this.getFlux().actions.search.toggleSearchBar();
+        },
+
         render: function () {
             var documentStore = this.getFlux().store("document"),
                 document = this.state.document,
@@ -213,6 +220,13 @@ define(function (require, exports, module) {
                                 onClick={this._openExportPanel}>
                                 <SVGIcon
                                     CSSID="extract-all" />
+                            </Button>
+                            <Button
+                                className="button-plus button-simple"
+                                title={strings.TOOLTIPS.SEARCH}
+                                onClick={this._openSearchTool}>
+                                <SVGIcon
+                                    CSSID="layer-search-app" />
                             </Button>
                         </div>
                     </div>
