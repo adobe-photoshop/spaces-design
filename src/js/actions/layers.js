@@ -2134,24 +2134,33 @@ define(function (require, exports) {
     selectVectorMask.modal = true;
 
     /**
-     * Dispatches a layer translate for all layers in the document
+     * Dispatches a layer reposition for all layers in the given document model
+     * We may use an outdated document model here, because we want to update the 
+     * positions of layers at the point this event was emitted to us. Please refer to 
+     * https://github.com/adobe-photoshop/spaces-design/pull/2721
+     * and 
+     * https://github.com/adobe-photoshop/spaces-design/issues/2713
      *
+     * @param {Document} document Document model to update
      * @param {object} event Action Descriptor of autoCanvasResizeShift event
      * @return {Promise}
      */
-    var handleCanvasShift = function (event) {
-        var applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument(),
+    var handleCanvasShift = function (document, event) {
+        var layerIDs = collection.pluck(document.layers.all, "id"),
+            newLayers = document.layers.translateLayers(layerIDs, event.to.horizontal, event.to.vertical),
+            positions = newLayers.all.map(function (layer) {
+                return {
+                    layer: layer,
+                    x: layer.bounds ? layer.bounds.left : 0,
+                    y: layer.bounds ? layer.bounds.top : 0
+                };
+            }).toList(),
             payload = {
-                documentID: currentDocument.id,
-                layerIDs: collection.pluck(currentDocument.layers.all, "id"),
-                position: {
-                    x: event.to.horizontal,
-                    y: event.to.vertical
-                }
+                documentID: document.id,
+                positions: positions
             };
-        
-        return this.dispatchAsync(events.document.TRANSLATE_LAYERS, payload);
+    
+        return this.dispatchAsync(events.document.REPOSITION_LAYERS, payload);
     };
     handleCanvasShift.reads = [];
     handleCanvasShift.writes = [locks.JS_DOC];
@@ -2313,7 +2322,10 @@ define(function (require, exports) {
         // Listens to layer shift events caused by auto canvas resize feature of artboards
         // and shifts all the layers correctly
         _autoCanvasResizeShiftHandler = function (event) {
-            this.flux.actions.layers.handleCanvasShift(event);
+            var applicationStore = this.flux.store("application"),
+                currentDocument = applicationStore.getCurrentDocument();
+        
+            this.flux.actions.layers.handleCanvasShift(currentDocument, event);
         }.bind(this);
         descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);
 
