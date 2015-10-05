@@ -191,7 +191,7 @@ define(function (require, exports, module) {
          */
         _alignmentChanged: function (alignment) {
             this.getFlux().actions.shapes
-                .setStrokeAlignmentThrottled(this.props.document, this.props.layers, alignment);
+                .setStrokeAlignmentThrottled(this.props.document, this.state.layers, alignment);
         },
 
         /**
