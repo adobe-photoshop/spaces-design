@@ -59,7 +59,7 @@ define(function (require, exports, module) {
         MIN_LEADING_PTS = 0.01,
         MAX_LEADING_PTS = 5000,
         MIN_TRACKING = -1000,
-        MAX_TRACKING = 1000;
+        MAX_TRACKING = 10000;
 
     var Type = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("font", "tool")],
