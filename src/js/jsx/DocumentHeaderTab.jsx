@@ -54,18 +54,53 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            return this.props.current !== nextProps.current ||
-                this.props.dirty !== nextProps.dirty ||
-                this.props.name !== nextProps.name ||
+            var currentDoc = this.props.document,
+                nextDoc = nextProps.document;
+
+            return currentDoc.id !== nextDoc.id ||
+                currentDoc.name !== nextDoc.name ||
+                currentDoc.dirty !== nextDoc.dirty ||
+                currentDoc.unsupported !== nextDoc.unsupported ||
+                this.props.current !== nextProps.current ||
                 this.props.smallTab !== nextProps.smallTab ||
-                this.props.maskMode !== nextProps.maskMode ||
                 this.state.vectorMode !== nextState.vectorMode;
         },
 
-        render: function () {
-            var warning;
+        /**
+         * Activate the given document on click.
+         *
+         * @private
+         */
+        _handleTabClick: function (documentID) {
+            var selectedDoc = this.getFlux().store("document").getDocument(documentID);
+            if (selectedDoc) {
+                this.getFlux().actions.documents.selectDocument(selectedDoc);
+            }
+        },
 
-            if (this.props.unsupported) {
+        /**
+         * Close the given document on click.
+         *
+         * @private
+         */
+        _handleTabCloseClick: function (documentID, event) {
+            var selectedDoc = this.getFlux().store("document").getDocument(documentID);
+            if (selectedDoc) {
+                this.getFlux().actions.documents.close(selectedDoc);
+            }
+
+            // Prevents _handleTabClick from being triggered as well
+            event.stopPropagation();
+        },
+
+        render: function () {
+            var doc = this.props.document,
+                name = doc.name,
+                dirty = doc.dirty,
+                unsupported = doc.unsupported,
+                warning;
+
+            if (unsupported) {
                 warning = (
                     <span
                         title={strings.TOOLTIPS.UNSUPPORTED_FEATURES}
@@ -83,12 +118,13 @@ define(function (require, exports, module) {
                         "document-title__small": this.props.smallTab,
                         "document-title__mask": this.state.vectorMode && this.props.current
                     })}
-                    onClick={this.props.onClick}>
-                    {this.props.dirty ? "*" : ""}
-                    {this.props.name}
+                    onClick={this._handleTabClick.bind(this, doc.id)}>
+                    {dirty ? "*" : ""}
+                    {name}
                     {warning}
                     <Button
-                        className="doc-tab-close">
+                        className="doc-tab-close"
+                        onClick={this._handleTabCloseClick.bind(this, doc.id)}>
                         <SVGIcon
                             viewbox="0 0 18 16"
                             CSSID="close" />

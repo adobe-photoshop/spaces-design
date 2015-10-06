@@ -159,14 +159,6 @@ define(function (require, exports, module) {
          */
         _handleWindowResizeDebounced: null,
 
-        /** @ignore */
-        _handleTabClick: function (documentID) {
-            var selectedDoc = this.getFlux().store("document").getDocument(documentID);
-            if (selectedDoc) {
-                this.getFlux().actions.documents.selectDocument(selectedDoc);
-            }
-        },
-
         /**
          * Opens the export dialog 
          */
@@ -190,10 +182,7 @@ define(function (require, exports, module) {
                         <DocumentHeaderTab
                             key={"docheader" + docID}
                             smallTab={smallTab}
-                            name={doc.name}
-                            dirty={doc.dirty}
-                            unsupported={doc.unsupported}
-                            onClick={this._handleTabClick.bind(this, docID)}
+                            document={doc}
                             current={document && docID === document.id} />
                     );
                 }
