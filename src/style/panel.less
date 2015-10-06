@@ -426,36 +426,27 @@
 .panel-set__container__small-screen {
     .section.section__collapsed {
         flex-grow: 0;
+        flex-shrink: 0;
         height: auto;
         border-bottom: 2*@hairline solid @bg-border;
     }
 
-    .export {
-        min-height: 3.2rem;
+    .libraries, .layers {
+        flex-grow: 1;
+        flex-basis: 20rem;
     }
 
-    .layers, .libraries {
-        min-height: 3rem;
+    .layers, .libraries, .export, .effects {
+        min-height: 7rem;
 
         &.section__collapsed {
-            min-height: 0;
+            min-height: 3.2rem;
+            flex-basis: 0;
         }
     }
-    
+
     .appearance, .type {
         height: 18rem;
         flex-grow: 0;
-    }
-    
-    .libraries .section-container {
-        flex-basis: 10rem;
-    }
-
-    .effects.section__active {
-        min-height: 10rem;
-    }
-
-    .effects.section__collapsed {
-        min-height: 3rem;
     }
 }
