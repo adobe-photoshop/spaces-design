@@ -33,7 +33,8 @@ define(function (require, exports) {
         layerLib = require("adapter/lib/layer"),
         artboardLib = require("adapter/lib/artboard"),
         contentLib = require("adapter/lib/contentLayer"),
-        unitLib = require("adapter/lib/unit");
+        unitLib = require("adapter/lib/unit"),
+        uiUtil = require("js/util/ui");
 
     var events = require("../events"),
         locks = require("js/locks"),
@@ -67,16 +68,18 @@ define(function (require, exports) {
      * @param {{relative: boolean=, x: number, y: number}} position
      * @param {boolean=} position.relative If true, will calculate new position relative to
      *                                     parent artboard of the layer
+     * @param {string} refPoint Two character string denoting corner/edge of the layer to set the position into
      * @param {Array.<{layer: Layer, x: number, y: number}>} moveResults payload for updating each layer's bounds
      *
      * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
-    var _getMoveLayerActions = function (document, targetLayer, position, moveResults) {
+    var _getMoveLayerActions = function (document, targetLayer, position, refPoint, moveResults) {
         var overallBounds = position.relative ?
                 document.layers.relativeChildBounds(targetLayer) :
                 document.layers.childBounds(targetLayer),
-            deltaX = position.hasOwnProperty("x") ? position.x - overallBounds.left : 0,
-            deltaY = position.hasOwnProperty("y") ? position.y - overallBounds.top : 0,
+            positionKeys = uiUtil.getPositionKeysByRefPoint(refPoint),
+            deltaX = position.hasOwnProperty("x") ? position.x - overallBounds[positionKeys.x] : 0,
+            deltaY = position.hasOwnProperty("y") ? position.y - overallBounds[positionKeys.y] : 0,
             documentRef = documentLib.referenceBy.id(document.id),
             movingLayers = document.layers.descendants(targetLayer),
             layerRef = [documentRef, layerLib.referenceBy.id(targetLayer.id)];
@@ -180,6 +183,7 @@ define(function (require, exports) {
      * @param {object} bounds
      * @param {{w: number=, h: number=}} size
      * @param {boolean=} proportional
+     * 
      * @return {{w:number, h: number}} size
      */
     var _calculateNewSize = function (bounds, size, proportional) {
@@ -207,14 +211,27 @@ define(function (require, exports) {
      * and return layerActionsUtil compatible layer actions to resize all the kids
      * so the overall selection ends with given size
      *
+     * Resizing layers needs to acccount for a number of different cases:
+     *      - artboards
+     *      - groups of layers 
+     *      - the reference point
+     *      - whether the width and height should grow proportionally
+     * 
+     * In the case of groups of layers, we need to get all the descendants and calculate
+     * the ratio at which they should each change given the new size. Then we need to 
+     * calculate how much the layer will shift with regard to its current top-left position,
+     * given the reference point and new size. These shifts will be known as the top and left
+     * offsets respectively.
+     *
      * @param {Document} document
      * @param {Layer} targetLayer
-     * @param {{w: number, h: number}} size
+     * @param {{w: number=, h: number=}} size
      * @param {Array.<{layer: Layer, w: number, h: number}>} resizeResults payload for updating each layer's bounds
+     * @param {string} refPoint in the format of vertical direction then horizontal
      *
      * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
-    var _getResizeLayerActions = function (document, targetLayer, size, resizeResults) {
+    var _getResizeLayerActions = function (document, targetLayer, size, resizeResults, refPoint) {
         var overallBounds = document.layers.childBounds(targetLayer),
             documentRef = documentLib.referenceBy.id(document.id),
             resizingLayers;
@@ -223,15 +240,57 @@ define(function (require, exports) {
             // We don't want to break down artboards, but just change their bounds
             resizingLayers = Immutable.List.of(targetLayer);
         } else {
+            // For groups, grab all the descendants 
             resizingLayers = document.layers.descendants(targetLayer);
         }
 
         resizeResults = resizeResults || [];
 
+        var tempSize = _calculateNewSize(overallBounds, size, targetLayer.proportionalScaling);
+
+        size.w = tempSize.w;
+        size.h = tempSize.h;
+
         // Used to calculate the new top/left positions of all layers in relation to top/left
         // of the group
         var overallWidthRatio = size.w ? size.w / overallBounds.width : 0,
-            overallHeightRatio = size.h ? size.h / overallBounds.height : 0;
+            overallHeightRatio = size.h ? size.h / overallBounds.height : 0,
+            overallLeftOffset = 0,
+            overallTopOffset = 0,
+            direction;
+
+        // This is the case if the width input was changed
+        // "L" and "T" are the default cases in which none of the offsets need to be calculated.
+        if (size.hasOwnProperty("w")) {
+            direction = refPoint.charAt(0);
+            switch (direction) {
+                // This is the default case in which no left offset needs to be calculated. 
+                // This case is included for self-documentation.
+                case "l":
+                    break;
+                case "m":
+                    overallLeftOffset = (overallBounds.width - size.w) / 2;
+                    break;
+                case "r":
+                    overallLeftOffset = overallBounds.width - size.w;
+                    break;
+            }
+        } else if (size.hasOwnProperty("h")) {
+            // if the height input was changed
+            direction = refPoint.charAt(1);
+            switch (direction) {
+                // This is the default case in which no top offset needs to be calculated. 
+                // This case is included for self-documentation.
+                case "t":
+                    break;
+                case "c":
+                    overallTopOffset = (overallBounds.height - size.h) / 2;
+                    break;
+                case "b":
+                    overallTopOffset = overallBounds.height - size.h;
+                    break;
+            }
+        }
 
         // We used to pass Photoshop just the width and height, and groups would be resized
         // in the same ratio. However, layers like center aligned text and adjustment layers
@@ -248,8 +307,8 @@ define(function (require, exports) {
                 layerLeft = layer.bounds.left,
                 targetSize = {},
                 targetPosition = {
-                    left: layerLeft,
-                    top: layerTop
+                    left: layerLeft + overallLeftOffset,
+                    top: layerTop + overallTopOffset
                 },
                 widthRatio = layer.bounds.width / overallBounds.width,
                 heightRatio = layer.bounds.height / overallBounds.height,
@@ -257,12 +316,14 @@ define(function (require, exports) {
 
             if (size.hasOwnProperty("w")) {
                 targetSize.w = size.w * widthRatio;
-                targetPosition.left = overallBounds.left + (layerLeft - overallBounds.left) * overallWidthRatio;
+                targetPosition.left =
+                    overallBounds.left + overallLeftOffset + (layerLeft - overallBounds.left) * overallWidthRatio;
             }
 
             if (size.hasOwnProperty("h")) {
                 targetSize.h = size.h * heightRatio;
-                targetPosition.top = overallBounds.top + (layerTop - overallBounds.top) * overallHeightRatio;
+                targetPosition.top =
+                    overallBounds.top + overallTopOffset + (layerTop - overallBounds.top) * overallHeightRatio;
             }
 
             var newSize = _calculateNewSize(layer.bounds, targetSize, targetLayer.proportionalScaling),
@@ -317,10 +378,12 @@ define(function (require, exports) {
      * @param {number} position.x Target horizontal location of top left corner of layer
      * @param {number} position.y Target vertical location of top left corner of the layer
      * @param {boolean} position.relative If true, x and y will be relative to the owner artboard of layer
+     * @param {string} refPoint Two character string denoting the active reference point so we know 
+     *                 which corner of the layer to move
      *
      * @return {Promise}
      */
-    var setPosition = function (document, layerSpec, position) {
+    var setPosition = function (document, layerSpec, position, refPoint) {
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.kind === layer.layerKinds.GROUPEND;
         });
@@ -347,7 +410,7 @@ define(function (require, exports) {
             }),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
                 var layerActions = _getMoveLayerActions.call(this,
-                        document, layer, position, payload.positions);
+                        document, layer, position, refPoint, payload.positions);
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
 
@@ -390,9 +453,9 @@ define(function (require, exports) {
                 positions: []
             },
             layerOneActions = _getMoveLayerActions
-                .call(this, document, layers.get(0), newPositions.get(0), payload.positions),
+                .call(this, document, layers.get(0), newPositions.get(0), "lt", payload.positions),
             layerTwoActions = _getMoveLayerActions
-                .call(this, document, layers.get(1), newPositions.get(1), payload.positions),
+                .call(this, document, layers.get(1), newPositions.get(1), "lt", payload.positions),
             translateActions = layerOneActions.concat(layerTwoActions);
                 
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
@@ -454,11 +517,12 @@ define(function (require, exports) {
      * @private
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
-     * @param {{w: number, h: number}} size New width and height of the layers
+     * @param {{w: number=, h: number=}} size
+     * @param {string} refPoint reference point, vertical position first then horizontal
      *
      * @returns {Promise}
      */
-    var setSize = function (document, layerSpec, size) {
+    var setSize = function (document, layerSpec, size, refPoint) {
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.kind === layer.layerKinds.GROUPEND ||
                 document.layers.strictAncestors(layer)
@@ -495,7 +559,7 @@ define(function (require, exports) {
             sizePromise = descriptor.playObject(resizeObj);
         } else {
             var resizeLayerActions = layerSpec.reduce(function (actions, layer) {
-                var layerActions = _getResizeLayerActions.call(this, document, layer, size, payload.sizes);
+                var layerActions = _getResizeLayerActions.call(this, document, layer, size, payload.sizes, refPoint);
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
 

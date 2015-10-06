@@ -100,6 +100,17 @@ define(function (require, exports, module) {
         },
 
         /**
+        * Directly get the value for the given preference key, or an unsetValue if the key does not exist.
+        * 
+        * @param {string} key
+        * @param {?string} unsetValue
+        * @return {?string} 
+        */
+        get: function (key, unsetValue) {
+            return this._preferences.get(key, unsetValue);
+        },
+
+        /**
          * Load persisted preferences and initialize the preferences table.
          *
          * @private

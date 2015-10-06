@@ -114,8 +114,59 @@ define(function (require, exports) {
         }
     };
 
+    /**
+     * Parses the given refPoint string and returns the keys to be passed into
+     * a bounds object
+     *
+     * @param {string} refPoint Two character string denoting the active reference point [lmr][tcb]
+     *
+     * @return {{x: string, y: string}} Keys referring to the value in Bounds object 
+     * to get the desired reference point
+     */
+    var getPositionKeysByRefPoint = function (refPoint) {
+        if (refPoint.length !== 2) {
+            throw new Error("Invalid reference point provided: " + refPoint);
+        }
+
+        var xKey, yKey;
+
+        switch (refPoint[0]) {
+            case "l":
+                xKey = "left";
+                break;
+            case "m":
+                xKey = "xCenter";
+                break;
+            case "r":
+                xKey = "right";
+                break;
+            default:
+                throw new Error("Invalid reference point provided: " + refPoint);
+        }
+
+        switch (refPoint[1]) {
+            case "t":
+                yKey = "top";
+                break;
+            case "c":
+                yKey = "yCenter";
+                break;
+            case "b":
+                yKey = "bottom";
+                break;
+            default:
+                throw new Error("Invalid reference point provided: " + refPoint);
+        }
+
+        return {
+            x: xKey,
+            y: yKey
+        };
+    };
+
     exports.getNameBadgeBounds = getNameBadgeBounds;
     exports.hitTestLayers = hitTestLayers;
     exports.colorAtPoint = colorAtPoint;
     exports.openURL = openURL;
+    exports.getPositionKeysByRefPoint = getPositionKeysByRefPoint;
 });
