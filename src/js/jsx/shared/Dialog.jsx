@@ -169,6 +169,23 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Dismiss the dialog on mouse wheel events.
+         *
+         * @private
+         */
+        _handleMouseWheel: function () {
+            if (!this.state.open) {
+                return;
+            }
+
+            var id = this.props.id,
+                flux = this.getFlux();
+
+            this._target = null;
+            flux.actions.dialog.closeDialogThrottled(id);
+        },
+
+        /**
          * Handle window resize events, closing the open dialog.
          *
          * @param {Event} event
@@ -227,8 +244,11 @@ define(function (require, exports, module) {
         _addListeners: function () {
             if (this.props.dismissOnWindowClick) {
                 window.addEventListener("click", this._handleWindowClick);
-            } else if (this.props.dismissOnCanvasClick) {
+            }
+
+            if (this.props.dismissOnCanvasClick) {
                 os.once(os.eventKind.EXTERNAL_MOUSE_DOWN, this.toggle);
+                os.once("externalMouseWheel", this._handleMouseWheel);
             }
 
             if (this.props.dismissOnWindowResize) {
@@ -250,6 +270,11 @@ define(function (require, exports, module) {
         _removeListeners: function () {
             if (this.props.dismissOnWindowClick) {
                 window.removeEventListener("click", this._handleWindowClick);
+            }
+
+            if (this.props.dismissOnCanvasClick) {
+                os.removeListener(os.eventKind.EXTERNAL_MOUSE_DOWN, this.toggle);
+                os.removeListener("externalMouseWheel", this._handleMouseWheel);
             }
 
             if (this.props.dismissOnWindowResize) {
