@@ -303,16 +303,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Update the export store with the new service availability flag;
-     *
-     * @param {boolean} available
-     * @return {Promise}
-     */
-    var _setServiceAvailable = function (available) {
-        return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: !!available });
-    };
-
-    /**
      * Update the export store with the new service busy flag;
      *
      * @param {boolean} busy
@@ -629,6 +619,18 @@ define(function (require, exports) {
     setLayerExportEnabled.transfers = [addAsset];
 
     /**
+     * Update the export store with the new service availability flag;
+     *
+     * @param {boolean} available
+     * @return {Promise}
+     */
+    var setServiceAvailable = function (available) {
+        return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: !!available });
+    };
+    setServiceAvailable.reads = [];
+    setServiceAvailable.writes = [locks.JS_EXPORT];
+
+    /**
      * Prompt the user to choose a folder by opening an OS dialog.
      * Keyboard policies are temporarily disabled while the dialog is open.
      * Rejects with ExportService.CancelPromptError if user cancels
@@ -675,7 +677,7 @@ define(function (require, exports) {
         }
 
         if (!_exportService || !_exportService.ready()) {
-            return _setServiceAvailable.call(this, false);
+            return this.transfer(setServiceAvailable, false);
         }
 
         var documentID = document.id,
@@ -736,7 +738,7 @@ define(function (require, exports) {
     };
     exportLayerAssets.reads = [locks.JS_DOC];
     exportLayerAssets.writes = [locks.JS_EXPORT, locks.GENERATOR];
-    exportLayerAssets.transfers = [promptForFolder, addAsset];
+    exportLayerAssets.transfers = [promptForFolder, addAsset, setServiceAvailable];
 
     /**
      * Export all document-level assets for the given document
@@ -750,7 +752,7 @@ define(function (require, exports) {
         }
 
         if (!_exportService || !_exportService.ready()) {
-            return _setServiceAvailable.call(this, false);
+            return this.transfer(setServiceAvailable, false);
         }
 
         var documentExports = this.flux.stores.export.getDocumentExports(document.id, true),
@@ -791,7 +793,7 @@ define(function (require, exports) {
     };
     exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
     exportDocumentAssets.writes = [locks.GENERATOR];
-    exportDocumentAssets.transfers = [promptForFolder, addAsset];
+    exportDocumentAssets.transfers = [promptForFolder, addAsset, setServiceAvailable];
     
     /**
      * Copy file from one location to another.
@@ -802,13 +804,14 @@ define(function (require, exports) {
      */
     var copyFile = function (sourcePath, targetPath) {
         if (!_exportService || !_exportService.ready()) {
-            return _setServiceAvailable.call(this, false);
+            return this.transfer(setServiceAvailable, false);
         }
 
         return _exportService.copyFile(sourcePath, targetPath);
     };
     copyFile.reads = [];
     copyFile.writes = [locks.GENERATOR];
+    copyFile.transfers = [setServiceAvailable];
     
     /**
      * Delete files at specific locations.
@@ -818,13 +821,14 @@ define(function (require, exports) {
      */
     var deleteFiles = function (filePaths) {
         if (!_exportService || !_exportService.ready()) {
-            return _setServiceAvailable.call(this, false);
+            return this.transfer(setServiceAvailable, false);
         }
 
         return _exportService.deleteFiles(filePaths);
     };
     deleteFiles.reads = [];
     deleteFiles.writes = [locks.GENERATOR];
+    deleteFiles.transfers = [setServiceAvailable];
 
     /**
      * Update the both the store state, and the preferences, with useArtboardPrefix
@@ -856,7 +860,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     log.debug("Export: Generator plugin connection established");
-                    return _setServiceAvailable.call(this, true);
+                    return this.flux.actions.export.setServiceAvailable(true);
                 })
                 .return(true);
         }.bind(this);
@@ -932,7 +936,7 @@ define(function (require, exports) {
             });
     };
     afterStartup.reads = [];
-    afterStartup.writes = [locks.JS_EXPORT, locks.GENERATOR];
+    afterStartup.writes = [locks.GENERATOR];
 
     /**
      * Handle the standard onReset action
@@ -965,6 +969,7 @@ define(function (require, exports) {
     exports.addDefaultAsset = addDefaultAsset;
     exports.deleteExportAsset = deleteExportAsset;
     exports.setLayerExportEnabled = setLayerExportEnabled;
+    exports.setServiceAvailable = setServiceAvailable;
     exports.promptForFolder = promptForFolder;
     exports.exportLayerAssets = exportLayerAssets;
     exports.exportDocumentAssets = exportDocumentAssets;
