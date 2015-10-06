@@ -37,10 +37,12 @@ define(function (require, exports, module) {
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        searchStore = require("js/stores/search"),
+        exportStore = require("js/stores/export");
 
     var DocumentHeader = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("application", "document")],
+        mixins: [FluxMixin, StoreWatchMixin("application", "document", "tool", "dialog")],
 
         getInitialState: function () {
             return {};
@@ -50,7 +52,14 @@ define(function (require, exports, module) {
          * Get the active document from flux and add it to the state.
          */
         getStateFromFlux: function () {
-            var applicationStore = this.getFlux().store("application"),
+            var flux = this.getFlux(),
+                dialogStore = flux.store("dialog"),
+                dialogState = dialogStore.getState(),
+                exportActive = dialogState.openDialogs.has(exportStore.EXPORT_DIALOG_ID),
+                searchActive = dialogState.openDialogs.has(searchStore.SEARCH_BAR_DIALOG_ID),
+                toolStore = flux.store("tool"),
+                toolState = toolStore.getState(),
+                applicationStore = flux.store("application"),
                 applicationState = applicationStore.getState(),
                 documentIDs = applicationState.documentIDs,
                 document = applicationStore.getCurrentDocument(),
@@ -59,7 +68,10 @@ define(function (require, exports, module) {
             return {
                 document: document,
                 documentIDs: documentIDs,
-                count: count
+                count: count,
+                maskModeActive: toolState.vectorMaskMode,
+                searchActive: searchActive,
+                exportActive: exportActive
             };
         },
 
@@ -109,6 +121,9 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             return this.state.count !== nextState.count ||
                 this.state.headerWidth !== nextState.headerWidth ||
+                this.state.searchActive !== nextState.searchActive ||
+                this.state.exportActive !== nextState.exportActive ||
+                this.state.maskModeActive !== nextState.maskModeActive ||
                 !Immutable.is(this.state.documentIDs, nextState.documentIDs) ||
                 !Immutable.is(this.state.document, nextState.document);
         },
@@ -174,13 +189,37 @@ define(function (require, exports, module) {
             this.getFlux().actions.export.openExportPanel();
         },
 
+        /**
+         * Toggles search feature
+         */
+        _toggleSearch: function () {
+            this.getFlux().actions.search.toggleSearchBar();
+        },
+
+        /**
+         * Changes mask mode 
+         */
+        _changeMaskMode: function () {
+            this.getFlux().actions.tools.changeVectorMaskMode(!this.state.maskModeActive);
+        },
+
         render: function () {
             var documentStore = this.getFlux().store("document"),
                 document = this.state.document,
                 smallTab = this.state.headerWidth / this.state.documentIDs.size < 175;
             // Above: This number tunes when tabs should be shifted to small tabs
 
-            var exportDisabled = !document || document.unsupported;
+            var exportDisabled = !document || document.unsupported,
+                maskDisabled = !document || document.unsupported ||
+                    document.layers.selected.isEmpty();
+
+            if (!maskDisabled) {
+                var firstLayer = document.layers.selected.first();
+                maskDisabled = maskDisabled ||
+                    firstLayer.locked ||
+                    firstLayer.kind === firstLayer.layerKinds.VECTOR ||
+                    firstLayer.isBackground;
+            }
 
             var documentTabs = this.state.documentIDs.map(function (docID) {
                 var doc = documentStore.getDocument(docID);
@@ -204,12 +243,30 @@ define(function (require, exports, module) {
                     <div className="document-header" ref="tabContainer">
                             {documentTabs}
                     </div>
-                    <div className="export-header">
-                        <div className="export-header-buttons">
+                    <div className="icon-header">
+                        <div className="icon-header-buttons">
                             <Button
-                                className="button-plus button-simple"
+                                className="button-plus"
+                                title={strings.TOOLTIPS.SEARCH}
+                                onClick={this._toggleSearch}
+                                active={this.state.searchActive}>
+                                <SVGIcon
+                                    CSSID="layer-search-app" />
+                            </Button>
+                            <Button
+                                className="button-plus"
+                                title={strings.TOOLTIPS.VECTOR_MASK_MODE}
+                                onClick={this._changeMaskMode}
+                                disabled={maskDisabled}
+                                active={this.state.maskModeActive}>
+                                <SVGIcon
+                                    CSSID="tool-maskmode" />
+                            </Button>
+                            <Button
+                                className="button-plus"
                                 title={strings.TOOLTIPS.EXPORT_DIALOG}
                                 disabled={exportDisabled}
+                                active={this.state.exportActive}
                                 onClick={this._openExportPanel}>
                                 <SVGIcon
                                     CSSID="extract-all" />

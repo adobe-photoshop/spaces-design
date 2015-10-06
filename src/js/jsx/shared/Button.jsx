@@ -65,7 +65,8 @@ define(function (require, exports, module) {
         render: function () {
             var classNameSet = {
                 "button-simple": true,
-                "button-simple__disabled": this.props.disabled
+                "button-simple__disabled": this.props.disabled,
+                "button-simple__active": this.props.active
             };
 
             var className = classnames(classNameSet, this.props.className);

@@ -57,9 +57,8 @@
 }
 
 .document-title__mask {
-    padding-left: 1rem;
-    padding-right: 1rem;
-    color: rgba(70,160,245,255);
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
 .document-header {
@@ -70,18 +69,19 @@
     overflow: hidden;
     display: flex;
     flex-shrink: 1;
+    overflow-x: scroll;
 }
 
-.export-header {
+.icon-header {
     height: @no-border-for-canvas-height;
     line-height: @toolbar-button-size;
-    max-width: 5rem;
-    width: 5rem;
+    max-width: 13rem;
+    width: 13rem;
     display: flex;
     flex-grow: 1;
 }
 
-.export-header-buttons { 
+.icon-header-buttons { 
     height: 100%;
     width: 100%;
     display: flex;
@@ -90,20 +90,33 @@
     justify-content: flex-end;
 }
 
-.export-header-buttons .button-simple.button-plus {
+.icon-header-buttons .button-simple.button-plus {
+    // When a button is enabled and inactive (default)
+    fill: @icon-inactive;
     margin-right: 2rem;
 
-    & svg:hover {
-        fill: @item;
+    &:hover {
+        fill: @icon-inactive;
     }
 
-    &.button-simple__disabled svg{
-        fill: @item-disabled;
+    // When a button is disabled (cannot be clicked)
+    &.button-simple__disabled svg {
+        fill: @icon-disabled;
 
         &:hover {
-            fill: @item-disabled;
+            fill: @icon-disabled;
         }
     }
+
+    // When a button is enabled and active
+    &.button-simple__active svg {
+        fill: @focus-highlight;
+
+        &:hover {
+            fill: @focus-highlight;
+        }
+    }
+
 }
 
 .document-container {
