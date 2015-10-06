@@ -737,7 +737,7 @@ define(function (require, exports) {
             });
     };
     exportLayerAssets.reads = [locks.JS_DOC];
-    exportLayerAssets.writes = [locks.JS_EXPORT, locks.GENERATOR];
+    exportLayerAssets.writes = [locks.JS_EXPORT];
     exportLayerAssets.transfers = [promptForFolder, addAsset, setServiceAvailable];
 
     /**
@@ -792,7 +792,7 @@ define(function (require, exports) {
             });
     };
     exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
-    exportDocumentAssets.writes = [locks.GENERATOR];
+    exportDocumentAssets.writes = [];
     exportDocumentAssets.transfers = [promptForFolder, addAsset, setServiceAvailable];
     
     /**
@@ -810,7 +810,7 @@ define(function (require, exports) {
         return _exportService.copyFile(sourcePath, targetPath);
     };
     copyFile.reads = [];
-    copyFile.writes = [locks.GENERATOR];
+    copyFile.writes = [];
     copyFile.transfers = [setServiceAvailable];
     
     /**
@@ -827,7 +827,7 @@ define(function (require, exports) {
         return _exportService.deleteFiles(filePaths);
     };
     deleteFiles.reads = [];
-    deleteFiles.writes = [locks.GENERATOR];
+    deleteFiles.writes = [];
     deleteFiles.transfers = [setServiceAvailable];
 
     /**
@@ -936,7 +936,7 @@ define(function (require, exports) {
             });
     };
     afterStartup.reads = [];
-    afterStartup.writes = [locks.GENERATOR];
+    afterStartup.writes = [];
 
     /**
      * Handle the standard onReset action
