@@ -180,23 +180,32 @@ define(function (require, exports) {
 
         return _exportService.exportAsset(document, layer, asset, fileName, baseDir)
             .bind(this)
-            .then(function (pathArray) {
-                // Do we need to be aware of exports that return >1 file path?
-                var assetProps = {
-                    filePath: pathArray[0],
-                    status: ExportAsset.STATUS.STABLE
-                };
-                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps, true);
-            })
+            .then(
+                function (pathArray) {
+                    // Do we need to be aware of exports that return >1 file path?
+                    var assetProps = {
+                        filePath: pathArray[0],
+                        status: ExportAsset.STATUS.STABLE
+                    };
+                    return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps,
+                        true, true);
+                },
+                function (e) {
+                    log.error("Export Failed for asset %d of layerID %d, documentID %d, with error: ",
+                        assetIndex, layer && layer.id, document.id, e);
+
+                    var assetProps = {
+                        filePath: "",
+                        status: ExportAsset.STATUS.ERROR
+                    };
+
+                    return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps,
+                        true, true);
+                })
             .catch(function (e) {
-                log.error("Export Failed for asset %d of layerID %d, documentID %d, with error",
+                log.error("Export Failed to update asset after export: %d of layerID %d, documentID %d, with error: ",
                     assetIndex, layer && layer.id, document.id, e);
-                var assetProps = {
-                    filePath: "",
-                    status: ExportAsset.STATUS.ERROR
-                };
-                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps, true);
-            }) ;
+            });
     };
 
     /**
@@ -347,9 +356,10 @@ define(function (require, exports) {
      * @param {number} assetIndex index of this asset within the layer's list to append props 
      * @param {object|Array.<object>} props ExportAsset-like properties to be merged, or an array thereof
      * @param {boolean=} suppressHistory Optional, if truthy then do not supply photoshop with historyStateInfo
+     * @param {boolean=} suppressErrors Optional, if truthy then swallow any errors
      * @return {Promise}
      */
-    var updateExportAsset = function (document, layers, assetIndex, props, suppressHistory) {
+    var updateExportAsset = function (document, layers, assetIndex, props, suppressHistory, suppressErrors) {
         var documentID = document.id,
             layerIDs = layers && layers.size > 0 && collection.pluck(layers, "id") || undefined,
             assetPropsArray = Array.isArray(props) ? props : [props],
@@ -373,6 +383,14 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 return _syncExportMetadata.call(this, documentID, layerIDs, suppressHistory);
+            })
+            .catch(function (e) {
+                if (suppressErrors) {
+                    log.debug("updateExportAsset failed, but ignoring it", e);
+                } else {
+                    var message = e instanceof Error ? (e.stack || e.message) : e;
+                    throw new Error("Failed to update asset: " + message);
+                }
             });
     };
     updateExportAsset.reads = [locks.JS_DOC];
