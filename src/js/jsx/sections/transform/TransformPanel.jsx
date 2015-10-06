@@ -128,31 +128,49 @@ define(function (require, exports, module) {
                                     L14.000,9.000 L14.000,14.000 L9.000,14.000 L9.000,9.000 ZM10.000,13.000
                                     L13.000,13.000 L13.000,10.000 L10.000,10.000 L10.000,13.000 Z" />
                                     <rect className={getReferenceClasses("rb")} id="rb"
-                                        x="16" y="16" width="5" height="5"
+                                        x="16" y="16" width="5" height="5"/>
+                                    <rect className={getReferenceClasses()} id="rb_hit"
+                                        x="16" y="16" width="8" height="8"
                                         onClick={this._handleReferenceClick.bind(this, "rb")}/>
                                     <rect className={getReferenceClasses("mb")} id="mb"
-                                        x="9" y="16" width="5" height="5"
+                                        x="9" y="16" width="5" height="5"/>
+                                    <rect className={getReferenceClasses()} id="mb_hit"
+                                        x="9" y="16" width="8" height="8"
                                         onClick={this._handleReferenceClick.bind(this, "mb")}/>
                                     <rect className={getReferenceClasses("lb")} id="lb"
-                                        x="2" y="16" width="5" height="5"
+                                        x="2" y="16" width="5" height="5"/>
+                                    <rect className={getReferenceClasses()} id="lb_hit"
+                                        x="2" y="16" width="8" height="8"
                                         onClick={this._handleReferenceClick.bind(this, "lb")}/>
                                     <rect className={getReferenceClasses("rc")} id="rc"
-                                        x="16" y="9" width="5" height="5"
+                                        x="16" y="9" width="5" height="5"/>
+                                    <rect className={getReferenceClasses()} id="rc_hit"
+                                        x="16" y="9" width="8" height="8"
                                         onClick={this._handleReferenceClick.bind(this, "rc")}/>
                                     <rect className={getReferenceClasses("mc")} id="mc"
-                                        x="9" y="9" width="5" height="5"
+                                        x="9" y="9" width="5" height="5"/>
+                                    <rect className={getReferenceClasses()} id="mc_hit"
+                                        x="9" y="9" width="8" height="8"
                                         onClick={this._handleReferenceClick.bind(this, "mc")}/>
                                     <rect className={getReferenceClasses("lc")} id="lc"
-                                        x="2" y="9" width="5" height="5"
+                                        x="2" y="9" width="5" height="5"/>
+                                    <rect className={getReferenceClasses()} id="lc_hit"
+                                        x="2" y="9" width="8" height="8"
                                         onClick={this._handleReferenceClick.bind(this, "lc")}/>
                                     <rect className={getReferenceClasses("rt")} id="rt"
-                                        x="16" y="2" width="5" height="5"
+                                        x="16" y="2" width="5" height="5"/>
+                                    <rect className={getReferenceClasses()} id="rt_hit"
+                                        x="16" y="2" width="8" height="8"
                                         onClick={this._handleReferenceClick.bind(this, "rt")}/>
                                     <rect className={getReferenceClasses("mt")} id="mt"
-                                        x="9" y="2" width="5" height="5"
+                                        x="9" y="2" width="5" height="5"/>
+                                    <rect className={getReferenceClasses()} id="mt_hit"
+                                        x="9" y="2" width="8" height="8"
                                         onClick={this._handleReferenceClick.bind(this, "mt")}/>
                                     <rect className={getReferenceClasses("lt")} id="lt"
-                                        x="2" y="2" width="5" height="5"
+                                        x="2" y="2" width="5" height="5"/>
+                                    <rect className={getReferenceClasses()} id="lt_hit"
+                                        x="2" y="2" width="8" height="8"
                                         onClick={this._handleReferenceClick.bind(this, "lt")}/>
                                 </svg>
                             </div>
