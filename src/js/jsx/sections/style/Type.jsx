@@ -566,7 +566,7 @@ define(function (require, exports, module) {
                             <ColorInput
                                 id={colorPickerID}
                                 ref="color"
-                                className="type"
+                                className="color-picker__type"
                                 context={collection.pluck(this.props.document.layers.selected, "id")}
                                 title={strings.TOOLTIPS.SET_TYPE_COLOR}
                                 editable={!this.props.disabled}
