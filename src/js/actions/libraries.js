@@ -629,7 +629,7 @@ define(function (require, exports) {
             })
             .then(function () {
                 return this.transfer(preferencesActions.setPreference,
-                    _EDIT_STATUS_PREF, this.flux.stores.library.getEditStatus(true));
+                    _EDIT_STATUS_PREF, this.flux.stores.library.getState().editStatus);
             })
             .catch(function (e) {
                 log.warn("[CC Lib] openGraphicForEdit:" + e);
@@ -649,7 +649,8 @@ define(function (require, exports) {
      */
     var updateGraphicContent = function (documentID) {
         var libraryStore = this.flux.stores.library,
-            editStatus = libraryStore.getEditStatus().get(documentID);
+            libraryState = libraryStore.getState(),
+            editStatus = libraryState.editStatus.get(documentID);
             
         if (!editStatus) {
             return Promise.resolve();
@@ -668,7 +669,7 @@ define(function (require, exports) {
             
         // Check if the library exists - if it was deleted, switch to the current library
         if (!library || library.deletedLocally) {
-            library = libraryStore.getState().currentLibrary;
+            library = libraryState.currentLibrary;
 
             if (!library) {
                 // There's no current library, so don't do anything
@@ -723,7 +724,8 @@ define(function (require, exports) {
      */
     var deleteGraphicTempFiles = function (documentID, isDocumentSaved) {
         var libraryStore = this.flux.stores.library,
-            editStatus = libraryStore.getEditStatus().get(documentID);
+            libraryState = libraryStore.getState(),
+            editStatus = libraryState.editStatus.get(documentID);
             
         if (!editStatus || editStatus.isUpdatingContent) {
             return Promise.resolve();
@@ -741,7 +743,7 @@ define(function (require, exports) {
                 this.dispatch(events.libraries.DELETED_GRAPHIC_TEMP_FILES, { documentID: documentID });
                 
                 return this.transfer(preferencesActions.setPreference,
-                    _EDIT_STATUS_PREF, this.flux.stores.library.getEditStatus(true));
+                    _EDIT_STATUS_PREF, this.flux.stores.library.getState().editStatus);
             });
     };
     deleteGraphicTempFiles.reads = [];

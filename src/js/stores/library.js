@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
     var events = require("../events"),
-        log = require("js/util/log");
+        log = require("js/util/log"),
+        math = require("js/util/math");
     
     /**
      * Regular expression for removing invalid characters in graphic asset's temp filename.
@@ -136,6 +137,7 @@ define(function (require, exports, module) {
          * @property {?AdobeLibraryCollection} libraryCollection
          * @property {?string} currentLibraryID
          * @property {?AdobeLibraryComposite} currentLibrary
+         * @property {Immutable.Map.<number, EditStatus>} editStatus
          * @property {boolean} isConnected
          * @property {boolean} isSyncing
          * @property {boolean} isPlacingGraphic - ture if DS is in placing graphic mode.
@@ -150,6 +152,7 @@ define(function (require, exports, module) {
                 libraryCollection: this._libraryCollection,
                 currentLibraryID: this._selectedLibraryID,
                 currentLibrary: this.getLibraryByID(this._selectedLibraryID),
+                editStatus: this._editStatusByDocumentID,
                 isConnected: this._serviceConnected,
                 isSyncing: this._isSyncing,
                 isPlacingGraphic: this._isPlacingGraphic,
@@ -196,9 +199,25 @@ define(function (require, exports, module) {
             this._libraryCollection = payload.collection;
             this._updateLibraries(payload.lastSelectedLibraryID);
             
-            var editStatusArray = _.map(payload.editStatus, function (status, documentID) {
-                return [parseInt(documentID), status];
-            });
+            var editStatusArray = _.reduce(payload.editStatus, function (result, status, documentIDStr) {
+                // Remove orphan edit status that are not associate with any open documents.
+
+                var documentID = math.parseNumber(documentIDStr);
+                
+                if (!documentID) {
+                    return result;
+                }
+                
+                var document = this.flux.stores.document.getDocument(documentID),
+                    documentName = document ? document.name : "";
+                
+                if (documentName.indexOf(status.elementID) !== -1) {
+                    result.push([documentID, status]);
+                }
+                
+                return result;
+            }.bind(this), []);
+            
             this._editStatusByDocumentID = new Immutable.Map(editStatusArray);
             
             this.emit("change");
@@ -513,25 +532,6 @@ define(function (require, exports, module) {
             return this._editStatusByDocumentID.find(function (status) {
                 return status.elementReference === element.getReference();
             });
-        },
-        
-        /**
-         * Get graphic asset's edit status.
-         *
-         * @param {boolean=} removeOrphanEditStatus
-         * @return {Immutable.Map.<number, EditStatus>}
-         */
-        getEditStatus: function (removeOrphanEditStatus) {
-            if (!removeOrphanEditStatus) {
-                return this._editStatusByDocumentID;
-            }
-            
-            return this._editStatusByDocumentID.filter(function (status, documentID) {
-                var document = this.flux.stores.document.getDocument(documentID),
-                    documentName = document ? document.name : "";
-                    
-                return documentName.indexOf(status.elementID) !== -1;
-            }.bind(this));
         },
         
         /**

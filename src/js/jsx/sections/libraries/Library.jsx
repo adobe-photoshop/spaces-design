@@ -112,10 +112,10 @@ define(function (require, exports, module) {
                 this.lastLocallyCreatedElement = this.props.lastLocallyCreatedElement;
                 scrollTo(this.lastLocallyCreatedElement);
             }
-            
-            if (this.lastLocallyUpdatedGraphic &&
-                (this.lastLocallyUpdatedGraphic !== this.props.lastLocallyUpdatedGraphic ||
-                 this.lastLocallyUpdatedGraphicModified !== this.props.lastLocallyUpdatedGraphic.modified)) {
+
+            if (this.props.lastLocallyUpdatedGraphic &&
+                    (this.lastLocallyUpdatedGraphic !== this.props.lastLocallyUpdatedGraphic ||
+                    this.lastLocallyUpdatedGraphicModified !== this.props.lastLocallyUpdatedGraphic.modified)) {
                 this.lastLocallyUpdatedGraphic = this.props.lastLocallyUpdatedGraphic;
                 this.lastLocallyUpdatedGraphicModified = this.props.lastLocallyUpdatedGraphic.modified;
                 
