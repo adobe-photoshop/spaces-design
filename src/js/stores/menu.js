@@ -82,6 +82,7 @@ define(function (require, exports, module) {
                 events.document.history.optimistic.DELETE_LAYERS, this._updateMenuItems,
                 events.document.history.nonOptimistic.DELETE_LAYERS, this._updateMenuItems,
                 events.document.history.optimistic.GROUP_SELECTED, this._updateMenuItems,
+                events.document.history.nonOptimistic.UNGROUP_SELECTED, this._updateMenuItems,
                 events.document.history.optimistic.REPOSITION_LAYERS, this._updateMenuItems,
                 events.document.REPOSITION_LAYERS, this._updateMenuItems,
                 events.document.history.optimistic.RESIZE_LAYERS, this._updateMenuItems,
