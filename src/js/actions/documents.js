@@ -626,14 +626,16 @@ define(function (require, exports) {
                     .then(function () {
                         var initPromise = this.transfer(initActiveDocument),
                             uiPromise = this.transfer(ui.updateTransform),
-                            recentFilesPromise = this.transfer(application.updateRecentFiles),
-                            disableMaskPromise = this.transfer(toolActions.changeVectorMaskMode, false);
+                            recentFilesPromise = this.transfer(application.updateRecentFiles);
 
-                        return Promise.join(initPromise, uiPromise, recentFilesPromise, disableMaskPromise);
+                        return Promise.join(initPromise, uiPromise, recentFilesPromise);
                     }, function () {
                         // If file doesn't exist anymore, user will get an Open dialog
                         // If user cancels out of open dialog, PS will throw, so catch it here
                         this.transfer(menu.native, { commandID: _OPEN_DOCUMENT, waitForCompletion: true });
+                    })
+                    .then(function () {
+                        return this.transfer(toolActions.changeVectorMaskMode, false);
                     });
             });
     };
