@@ -665,7 +665,8 @@ define(function (require, exports) {
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
-        var closeObj = documentLib.close(document.id),
+        var docRef = documentLib.referenceBy.id(document.id),
+            closeObj = documentLib.close(docRef),
             playOptions = {
                 interactionMode: descriptor.interactionMode.DISPLAY
             };
