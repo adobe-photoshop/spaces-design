@@ -140,7 +140,6 @@ define(function (require, exports, module) {
             return (
                 <div className={containerClasses}>
                     <LibraryList
-                        document={this.props.document}
                         libraries={libraries}
                         selected={currentLibrary}
                         onLibraryChange={this._handleLibraryChange}

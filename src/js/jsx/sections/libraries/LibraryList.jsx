@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        _ = require("lodash"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
         
@@ -71,10 +72,23 @@ define(function (require, exports, module) {
                 command: null
             };
         },
+        
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.props.libraries !== nextProps.libraries ||
+                   this.props.selected !== nextProps.selected ||
+                   this.props.disabled !== nextProps.disabled ||
+                   this.props.onLibraryChange !== nextProps.onLibraryChange ||
+                   !_.isEqual(this.state, nextState);
+        },
 
         componentDidUpdate: function () {
-            if (this.refs.input) {
-                this.refs.input.getDOMNode().focus();
+            var renameInput = this.refs.input;
+            
+            if (renameInput) {
+                window.setTimeout(function () {
+                    renameInput.acquireFocus();
+                    renameInput.getDOMNode().focus();
+                }, 250);
             }
         },
 
@@ -273,8 +287,7 @@ define(function (require, exports, module) {
                 listOptions = libraryOptions.concat(libraryCommandOptions),
                 selectedLibrary = this.props.selected,
                 selectedLibraryName = selectedLibrary && selectedLibrary.name,
-                selectedLibraryID = selectedLibrary && selectedLibrary.id,
-                listID = "libraries-" + this.props.document.id;
+                selectedLibraryID = selectedLibrary && selectedLibrary.id;
 
             var isSharedLibrary = false,
                 libraryLink,
@@ -291,7 +304,7 @@ define(function (require, exports, module) {
             return (<div className="libraries__bar__top__content">
                 <Datalist
                     ref="list"
-                    list={listID}
+                    list="libraries"
                     className="dialog-libraries"
                     options={listOptions}
                     value={selectedLibraryName}
