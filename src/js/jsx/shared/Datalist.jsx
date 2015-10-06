@@ -48,6 +48,8 @@ define(function (require, exports, module) {
             value: React.PropTypes.string,
             // Callback to handle change of selection. Return false will cancel the selection.
             onChange: React.PropTypes.func,
+            // Callback to handle change of input
+            onInputChange: React.PropTypes.func,
             // If true, mouse over selection will fire invoke the onChange callback.
             live: React.PropTypes.bool,
             // If true, text input will get focus when Datalist is mounted or reset
@@ -406,6 +408,10 @@ define(function (require, exports, module) {
 
             if (this.state.filter !== value) {
                 this._updateAutofill(value);
+            }
+            
+            if (this.props.onInputChange) {
+                this.props.onInputChange(value);
             }
         },
 

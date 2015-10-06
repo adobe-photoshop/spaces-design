@@ -104,7 +104,8 @@ define(function (require, exports, module) {
                 // The currently applied filter
                 filter: [],
                 // SVG class for icon for the currently applied filter
-                icon: null
+                icon: null,
+                hasInputValue: null
             };
         },
 
@@ -415,6 +416,19 @@ define(function (require, exports, module) {
                 }
             }
         },
+        
+        /**
+         * Handle input change. 
+         *
+         * @param {string} value
+         */
+        _handleInputChange: function (value) {
+            var nextHasInputValue = value.length !== 0;
+            
+            if (nextHasInputValue !== this.state.hasInputValue) {
+                this.setState({ hasInputValue: nextHasInputValue });
+            }
+        },
 
         /** @ignore */
         _handleKeyDown: function (event) {
@@ -445,6 +459,7 @@ define(function (require, exports, module) {
         _clearInput: function () {
             this._updateFilter(null);
             this._updateDatalistInput(null);
+            this.setState({ hasInputValue: false });
         },
 
         render: function () {
@@ -456,7 +471,8 @@ define(function (require, exports, module) {
                 };
 
             var filter = this.state.filter,
-                placeholderText;
+                placeholderText,
+                clearInputBtn;
 
             // If we have applied a filter, change the placeholder text
             if (filter.length > 0) {
@@ -469,6 +485,17 @@ define(function (require, exports, module) {
                 placeholderText = searchStrings.PLACEHOLDER_INITIALIZING;
             } else {
                 placeholderText = searchStrings.PLACEHOLDER;
+            }
+            
+            if (this.state.hasInputValue) {
+                clearInputBtn = (
+                    <Button
+                        title="Clear Search Input"
+                        className="button-clear-search"
+                        onClick={this._clearInput} >
+                        &times;
+                    </Button>
+                );
             }
 
             return (
@@ -490,14 +517,10 @@ define(function (require, exports, module) {
                         neverSelectAllInput={true}
                         changeOnBlur={false}
                         onChange={this._handleChange}
+                        onInputChange={this._handleInputChange}
                         onClick={this._handleDialogClick}
                         onKeyDown={this._handleKeyDown} />
-                    <Button
-                        title="Clear Search Input"
-                        className="button-clear-search"
-                        onClick={this._clearInput} >
-                        &times;
-                    </Button>
+                    {clearInputBtn}
                 </div>
             );
         }
