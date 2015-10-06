@@ -1604,7 +1604,8 @@ define(function (require, exports, module) {
 
             // .set is used here instead of merge to eliminate the other styles
             var nextText = layer.text.set(styleProperty, nextStyle),
-                nextLayer = layer.set("text", nextText);
+                tmpLayer = layer.set("text", nextText),
+                nextLayer = tmpLayer.set("textWarningLevel", 0);
 
             return map.set(layerID, nextLayer);
         }, new Map(), this));

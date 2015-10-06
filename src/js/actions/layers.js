@@ -95,7 +95,8 @@ define(function (require, exports) {
         "smartObject",
         "layerSectionExpanded",
         "vectorMaskEnabled",
-        "vectorMaskEmpty"
+        "vectorMaskEmpty",
+        "textWarningLevel"
     ];
 
     /**
