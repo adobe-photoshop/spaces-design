@@ -160,7 +160,8 @@ define(function (require, exports, module) {
         },
         menus: {
             INIT_MENUS: "initMenus",
-            UPDATE_MENUS: "updateMenus"
+            UPDATE_MENUS: "updateMenus",
+            PLACE_COMMAND: "placeCommand"
         },
         preferences: {
             SET_PREFERENCE: "setPreference",

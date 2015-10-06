@@ -28,7 +28,8 @@ define(function (require, exports) {
 
     var adapter = require("adapter"),
         ps = require("adapter/ps"),
-        ui = require("adapter/ps/ui");
+        ui = require("adapter/ps/ui"),
+        descriptor = require("adapter/ps/descriptor");
 
     var events = require("js/events"),
         locks = require("js/locks"),
@@ -36,6 +37,7 @@ define(function (require, exports) {
         log = require("js/util/log"),
         global = require("js/util/global"),
         headlights = require("js/util/headlights"),
+        policyActions = require("./policy"),
         preferencesActions = require("./preferences"),
         searchActions = require("./search/menucommands");
 
@@ -52,6 +54,15 @@ define(function (require, exports) {
         rawTemplates = JSON.parse(templatesJSON);
 
     /**
+     * List of place command menu IDs.
+     *
+     * @private
+     * @type {number}
+     */
+    var _PLACE_LINKED_MENU_ID = 3090,
+        _PLACE_EMBEDDED_MENU_ID = 1032;
+
+    /**
      * Execute a native Photoshop menu command.
      * 
      * @param {{commandID: number, waitForCompletion: boolean=}} payload
@@ -63,18 +74,40 @@ define(function (require, exports) {
             return Promise.reject(error);
         }
 
-        // Photoshop expects commandId with a lower case d, so convert here
-        payload.commandId = payload.commandID;
-
-        return ps.performMenuCommand(payload).then(function (success) {
-            // FIXME: After the M2 release, remove the debug conjunct
-            if (global.debug && !success) {
-                throw new Error("Menu command not available: " + payload.commandID);
-            }
-        });
+        var isPlaceCommand = payload.commandID === _PLACE_LINKED_MENU_ID ||
+                payload.commandID === _PLACE_EMBEDDED_MENU_ID;
+        
+        return Promise.bind(this)
+            .then(function () {
+                if (isPlaceCommand) {
+                    this.dispatch(events.menus.PLACE_COMMAND, { executing: true });
+                    
+                    return this.transfer(policyActions.suspendAllPolicies);
+                }
+            })
+            .then(function () {
+                // Photoshop expects commandId with a lower case d, so convert here
+                payload.commandId = payload.commandID;
+                
+                return ps.performMenuCommand(payload);
+            })
+            .then(function (success) {
+                // FIXME: After the M2 release, remove the debug conjunct
+                if (global.debug && !success) {
+                    throw new Error("Menu command not available: " + payload.commandID);
+                }
+            })
+            .catch(function () {
+                if (isPlaceCommand) {
+                    // Call the handler for any exceptions to make sure
+                    // the policies are restored and relevent event is dispatched.
+                    return this.transfer(handleExecutedPlaceCommand);
+                }
+            });
     };
     native.reads = locks.ALL_NATIVE_LOCKS;
     native.writes = locks.ALL_NATIVE_LOCKS;
+    native.transfers = [policyActions.suspendAllPolicies, "menu.handleExecutedPlaceCommand"];
 
     /**
      * Execute a native Photoshop menu command modally.
@@ -288,6 +321,25 @@ define(function (require, exports) {
     togglePostconditions.reads = [];
     togglePostconditions.writes = [locks.JS_PREF];
     togglePostconditions.transfers = [preferencesActions.setPreference];
+    
+    /**
+     * This handler will be triggered when the user confirm or cancel the new layer 
+     * created from the place-linked or place-embedded menu item.
+     *
+     * @return {Promise}
+     */
+    var handleExecutedPlaceCommand = function () {
+        return this.dispatchAsync(events.menus.PLACE_COMMAND, { executing: false })
+            .bind(this)
+            .then(function () {
+                if (this.flux.store("policy").areAllSuspended) {
+                    return this.transfer(policyActions.restoreAllPolicies);
+                }
+            });
+    };
+    handleExecutedPlaceCommand.reads = [];
+    handleExecutedPlaceCommand.writes = [locks.JS_MENU, locks.PS_MENU];
+    handleExecutedPlaceCommand.transfers = [policyActions.restoreAllPolicies];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -296,7 +348,8 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _menuChangeHandler,
-        _adapterMenuHandler;
+        _adapterMenuHandler,
+        _toolModalStateChangedHandler;
 
     /**
      * Loads menu descriptors, installs menu handlers and a menu store listener
@@ -338,6 +391,16 @@ define(function (require, exports) {
             _playMenuCommand.call(this, payload.command);
         }.bind(this);
         ui.on("menu", _adapterMenuHandler);
+        
+        _toolModalStateChangedHandler = function (event) {
+            var isExecutingPlaceCommand = this.flux.store("menu").getState().isExecutingPlaceCommand,
+                modalStateEnded = event.state && event.state._value === "exit";
+
+            if (isExecutingPlaceCommand && modalStateEnded) {
+                this.flux.actions.menu.handleExecutedPlaceCommand();
+            }
+        }.bind(this);
+        descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         return Promise.resolve();
     };
@@ -366,6 +429,7 @@ define(function (require, exports) {
     var onReset = function () {
         ui.removeListener("menu", _adapterMenuHandler);
         this.flux.store("menu").removeListener("change", _menuChangeHandler);
+        descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         // For debugging purposes only
         if (_failOnReset) {
@@ -385,6 +449,7 @@ define(function (require, exports) {
     exports.resetFailure = resetFailure;
     exports.corruptModel = corruptModel;
     exports.resetRecess = resetRecess;
+    exports.handleExecutedPlaceCommand = handleExecutedPlaceCommand;
     exports._playMenuCommand = _playMenuCommand;
 
     exports.togglePolicyFrames = togglePolicyFrames;

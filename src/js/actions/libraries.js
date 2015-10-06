@@ -160,15 +160,6 @@ define(function (require, exports) {
      * @type {LibrarySyncStatus}
      */
     var _librarySyncStatus;
-    
-    /**
-     * Event handlers initialized in beforeStartup.
-     *
-     * @private
-     * @type {function()}
-     */
-    var _placeEventHandler,
-        _toolModalStateChangedHandler;
 
     /**
      * Finds a usable representation for the image element that PS will accept
@@ -1186,6 +1177,14 @@ define(function (require, exports) {
         
         this.flux.actions.preferences.setPreference(_LAST_SELECTED_LIBRARY_ID_PREF, libraryState.currentLibraryID);
     };
+    
+    /**
+     * Event handlers initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _toolModalStateChangedHandler;
 
     var beforeStartup = function () {
         var dependencies = {
@@ -1212,19 +1211,12 @@ define(function (require, exports) {
                 ELEMENT_COLORTHEME_TYPE
             ]
         });
-        
-        _placeEventHandler = function () {
-            if (this.flux.store("library").getState().isPlacingGraphic) {
-                this.flux.actions.libraries.handleCompletePlacingGraphic();
-            }
-        }.bind(this);
-        descriptor.addListener("placeEvent", _placeEventHandler);
 
         _toolModalStateChangedHandler = function (event) {
             var isPlacingGraphic = this.flux.store("library").getState().isPlacingGraphic,
-                modalStateCancelled = event.reason && event.reason._value === "cancel";
+                modalStateEnded = event.state && event.state._value === "exit";
 
-            if (isPlacingGraphic && modalStateCancelled) {
+            if (isPlacingGraphic && modalStateEnded) {
                 this.flux.actions.libraries.handleCompletePlacingGraphic();
             }
         }.bind(this);
@@ -1259,7 +1251,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onReset = function () {
-        descriptor.removeListener("placeEvent", _placeEventHandler);
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         return Promise.resolve();
