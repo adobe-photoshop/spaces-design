@@ -232,7 +232,14 @@ define(function (require, exports, module) {
          *
          * @type {boolean}
          */
-        initialized: false
+        initialized: false,
+
+        /** 
+         * indicates if the vector mask has any path components.
+         *
+         * @type {bounds}
+         */
+        vectorMaskEmpty: true
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -270,7 +277,8 @@ define(function (require, exports, module) {
                 isArtboard: this.isArtboard,
                 isBackground: this.isBackground,
                 isLinked: this.isLinked,
-                vectorMaskEnabled: this.vectorMaskEnabled
+                vectorMaskEnabled: this.vectorMaskEnabled,
+                vectorMaskEmpty: this.vectorMaskEmpty
             });
         },
         /**
@@ -487,6 +495,7 @@ define(function (require, exports, module) {
             bounds: isArtboard ? new Bounds(boundsDescriptor) : null,
             isLinked: false,
             vectorMaskEnabled: false,
+            vectorMaskEmpty: true,
             initialized: true
         });
     };
@@ -538,6 +547,7 @@ define(function (require, exports, module) {
             isArtboard: layerDescriptor.artboardEnabled,
             vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
             exportEnabled: exportEnabled,
+            vectorMaskEmpty: layerDescriptor.vectorMaskEmpty,
             isLinked: _extractIsLinked(layerDescriptor),
             initialized: initialized || selected
             // if not explicitly marked as initialized, then it is initialized iff it is selected
@@ -579,6 +589,7 @@ define(function (require, exports, module) {
                 isArtboard: layerDescriptor.artboardEnabled,
                 vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
                 exportEnabled: exportEnabled,
+                vectorMaskEmpty: layerDescriptor.vectorMaskEmpty,
                 isLinked: _extractIsLinked(layerDescriptor),
                 initialized: true
             };

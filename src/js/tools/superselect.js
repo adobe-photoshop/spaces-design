@@ -60,9 +60,11 @@ define(function (require, exports, module) {
             };
 
         var toolStore = this.flux.store("tool"),
+            applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
             vectorMode = toolStore.getVectorMode() || false;
 
-        if (!vectorMode) {
+        if (!vectorMode || !currentDocument) {
             return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
                 .then(function () {
                     UI.setPointerPropagationMode({
@@ -70,19 +72,26 @@ define(function (require, exports, module) {
                     });
                 });
         } else {
-            return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
-                .then(function () {
-                    descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
-                        { synchronous: false });
-                })
-                .then(function () {
-                    var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                        OS.eventKind.LEFT_MOUSE_DOWN);
-                    return this.transfer(policy.addPointerPolicies, pointerPolicy);
-                })
-                .catch(function () {
-                    // Silence the errors here
-                });
+            var currentLayers = currentDocument.layers.selected,
+                currentLayer = currentLayers.first();
+            
+            if (currentLayer.vectorMaskEnabled && !currentLayer.vectorMaskEmpty) {
+                return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
+                    .bind(this)
+                    .then(function () {
+                        var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                            OS.eventKind.LEFT_MOUSE_DOWN);
+                        return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
+                    })
+                    .then(function () {
+                        return descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
+                            { synchronous: false });
+                    });
+            } else {
+                var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                    OS.eventKind.LEFT_MOUSE_DOWN);
+                return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
+            }
         }
     };
 

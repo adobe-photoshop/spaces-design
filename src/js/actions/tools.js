@@ -40,6 +40,7 @@ define(function (require, exports) {
 
     var events = require("../events"),
         guides = require("./guides"),
+        layers = require("./layers"),
         locks = require("js/locks"),
         policy = require("./policy"),
         ui = require("./ui"),
@@ -559,6 +560,7 @@ define(function (require, exports) {
 
         var initPromise,
             dispatchPromise,
+            removePromise,
             policyPromise;
 
         // if we are swtiching to vector mask mode, make sure the layer has a vector mask
@@ -602,7 +604,32 @@ define(function (require, exports) {
                 .then(function (policyID) {
                     this.dispatch(events.tool.VECTOR_MASK_POLICY_CHANGE, policyID);
                 });
+            removePromise = Promise.resolve();
         } else {
+            // delete empty masks when leaving mask mode
+            removePromise = this.transfer(layers.resetLayers, currentDocument, currentLayer)
+                .bind(this)
+                .then(function () {
+                    currentLayer = appStore.getCurrentDocument().layers.selected.first();
+
+                    if (currentLayer.vectorMaskEnabled && currentLayer.vectorMaskEmpty) {
+                        return descriptor.playObject(vectorMaskLib.deleteVectorMask())
+                            .bind(this)
+                            .then(function () {
+                                var payload = {
+                                        documentID: currentDocument.id,
+                                        layerIDs: Immutable.List.of(currentLayer.id),
+                                        vectorMaskEnabled: false
+                                    },
+                                    event = events.document.history.optimistic.REMOVE_VECTOR_MASK_FROM_LAYER;
+
+                                return this.dispatch(event, payload);
+                            });
+                    } else {
+                        return Promise.resolve();
+                    }
+                });
+
             var pointerPolicyID = toolStore.getVectorMaskPolicyID();
          
             if (pointerPolicyID) {
@@ -623,44 +650,53 @@ define(function (require, exports) {
                     currentTool.nativeToolName());
 
                 firstLaunch = false;
-                return Promise.join(initPromise, defaultPromise, resetPromise, dispatchPromise, policyPromise);
+                return Promise.join(initPromise, defaultPromise, resetPromise, dispatchPromise, policyPromise,
+                    removePromise);
             } else if (!vectorMaskMode) {
-                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise);
+                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise, removePromise);
             } else {
-                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise)
+                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise, removePromise)
                 .then(function () {
                     return UI.setSuppressTargetPaths(false);
                 })
                 .then(function () {
-                    return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+                    if (!currentLayer.vectorMaskEmpty) {
+                        return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+                    } else {
+                        return Promise.resolve();
+                    }
                 });
             }
         } else if (currentTool.id === "newSelect" || currentTool.id === "superselectVector") {
             if (!vectorMaskMode) {
                 return this.transfer(selectTool, toolStore.getToolByID("newSelect"))
                 .then(function () {
-                    return Promise.join(initPromise, dispatchPromise, policyPromise);
+                    return Promise.join(initPromise, dispatchPromise, policyPromise, removePromise);
                 });
             } else {
                 return this.transfer(selectTool, toolStore.getToolByID("superselectVector"))
                 .then(function () {
-                    return Promise.join(initPromise, dispatchPromise, policyPromise);
+                    return Promise.join(initPromise, dispatchPromise, policyPromise, removePromise);
                 })
                 .then(function () {
-                    return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
-                })
-                .then(function () {
-                    descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
-                        { synchronous: false });
+                    if (!currentLayer.vectorMaskEmpty) {
+                        return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
+                            .then(function () {
+                                return descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
+                                    { synchronous: false });
+                            });
+                    } else {
+                        return Promise.resolve();
+                    }
                 });
             }
         }
     };
-    changeVectorMaskMode.reads = [locks.JS_APP, locks.JS_TOOL];
-    changeVectorMaskMode.writes = [locks.JS_TOOL];
+    changeVectorMaskMode.reads = [locks.JS_APP, locks.JS_TOOL, locks.PS_DOC, locks.PS_TOOL];
+    changeVectorMaskMode.writes = [locks.JS_TOOL, locks.PS_DOC];
     changeVectorMaskMode.modal = true;
     changeVectorMaskMode.transfers = [selectTool, policy.addPointerPolicies, policy.removePointerPolicies,
-        installShapeDefaults];
+        installShapeDefaults, "layers.resetLayers"];
 
     /**
      * Register event listeners for native tool selection change events, register

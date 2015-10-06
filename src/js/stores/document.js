@@ -101,7 +101,8 @@ define(function (require, exports, module) {
                 events.document.history.nonOptimistic.GUIDE_SET, this._handleGuideSet,
                 events.document.history.nonOptimistic.GUIDE_DELETED, this._handleGuideDeleted,
                 events.document.history.nonOptimistic.GUIDES_CLEARED, this._handleGuidesCleared,
-                events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, this._handleAddVectorMask
+                events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, this._handleVectorMask,
+                events.document.history.optimistic.REMOVE_VECTOR_MASK_FROM_LAYER, this._handleVectorMask
             );
 
             this._handleReset();
@@ -1157,7 +1158,7 @@ define(function (require, exports, module) {
          * @private
          * @param {{documentID: number, layerIDs: Array.<number>, vectorMaskEnabled: boolean}} payload
          */
-        _handleAddVectorMask: function (payload) {
+        _handleVectorMask: function (payload) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
                 vectorMaskEnabled = payload.vectorMaskEnabled,

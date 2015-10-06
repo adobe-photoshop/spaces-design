@@ -94,7 +94,8 @@ define(function (require, exports) {
         "artboardEnabled",
         "smartObject",
         "layerSectionExpanded",
-        "vectorMaskEnabled"
+        "vectorMaskEnabled",
+        "vectorMaskEmpty"
     ];
 
     /**
