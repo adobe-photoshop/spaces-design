@@ -839,6 +839,19 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Determine whether a vector mask can be created on a layer 
+     *
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "canHaveVectorMask", objUtil.cachedLookupSpec(function (layer) {
+        return layer.kind !== layer.layerKinds.GROUPEND &&
+            layer.kind !== layer.layerKinds.VECTOR &&
+            layer.kind !== layer.layerKinds.BACKGROUND &&
+            !layer.locked;
+    }));
+
+    /**
      * Calculate the child-encompassing bounds of the given layer. Returns null
      * for end-group layers and otherwise-empty groups. If layer is artboard, returns the bounds of it
      *
