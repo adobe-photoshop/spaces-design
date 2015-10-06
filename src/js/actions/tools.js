@@ -678,11 +678,11 @@ define(function (require, exports) {
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         // Setup tool activation keyboard shortcuts
-        var shortcutPromises = tools.reduce(function (promises, tool) {
+        var shortcutSpecs = tools.reduce(function (specs, tool) {
             var activationKey = tool.activationKey;
 
             if (!activationKey) {
-                return promises;
+                return specs;
             }
 
             var activateTool = function () {
@@ -695,37 +695,43 @@ define(function (require, exports) {
                 }
             };
 
-            var promise = this.transfer(shortcuts.addShortcut, activationKey, {}, activateTool);
-
-            promises.push(promise);
+            specs.push({
+                key: activationKey,
+                modifiers: {},
+                fn: activateTool
+            });
 
             // Add U as another shortcut for rectangle tool, hidden in here for now
             // FIXME: Change tool architecture to support multiple shortcuts for 1.1 - Barkin
             if (tool.id === "rectangle") {
-                var extraPromise = this.transfer(shortcuts.addShortcut, "U", {}, activateTool);
-                promises.push(extraPromise);
+                specs.push({
+                    key: "U",
+                    modifiers: {},
+                    fn: activateTool
+                });
             }
 
-            return promises;
+            return specs;
         }.bind(this), []);
     
         _vectorMaskHandler = function () {
             var toolStore = this.flux.store("tool"),
                 vectorMode = toolStore.getVectorMode() || false;
             
-            return this.transfer(changeVectorMaskMode, !vectorMode);
+            this.flux.actions.tools.changeVectorMaskMode(!vectorMode);
         }.bind(this);
 
-        var vectorMaskPromise = this.transfer(shortcuts.addShortcut,
-                utilShortcuts.GLOBAL.TOOLS.MASK_SELECT, {}, _vectorMaskHandler, "vectorModeSwitch");
+        shortcutSpecs.push({
+            key: utilShortcuts.GLOBAL.TOOLS.MASK_SELECT,
+            modifiers: {},
+            fn: _vectorMaskHandler
+        });
 
-        var endModalPromise = adapterPS.endModalToolState(true);
+        var shortcutsPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),
+            endModalPromise = adapterPS.endModalToolState(true),
+            initToolPromise = this.transfer(initTool); // Initialize the current tool
 
-        // Initialize the current tool
-        var initToolPromise = this.transfer(initTool),
-            shortcutsPromise = Promise.all(shortcutPromises);
-
-        return Promise.join(endModalPromise, initToolPromise, shortcutsPromise, vectorMaskPromise)
+        return Promise.join(endModalPromise, initToolPromise, shortcutsPromise)
             .bind(this)
             .then(function () {
                 return this.transfer(changeModalState, false);
@@ -734,7 +740,7 @@ define(function (require, exports) {
     beforeStartup.modal = true;
     beforeStartup.reads = [locks.JS_APP, locks.JS_TOOL];
     beforeStartup.writes = [locks.PS_TOOL];
-    beforeStartup.transfers = [shortcuts.addShortcut, initTool, changeModalState, changeVectorMaskMode];
+    beforeStartup.transfers = [shortcuts.addShortcuts, initTool, changeModalState, changeVectorMaskMode];
 
     /**
      * Remove event handlers.

@@ -24,13 +24,17 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
+    var Promise = require("bluebird"),
+        _ = require("lodash");
 
-    var os = require("adapter/os");
+    var os = require("adapter/os"),
+        ui = require("adapter/ps/ui");
 
     var events = require("js/events"),
         locks = require("js/locks"),
-        policy = require("js/actions/policy");
+        policy = require("js/actions/policy"),
+        EventPolicy = require("js/models/eventpolicy"),
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     /**
      * Add a keyboard shortcut command. Registers the handler function and sets
@@ -75,6 +79,54 @@ define(function (require, exports) {
     addShortcut.writes = [locks.JS_SHORTCUT];
     addShortcut.transfers = [policy.addKeydownPolicy];
     addShortcut.modal = true;
+
+    /**
+     * Add keyboard shortcuts in bulk.
+     *
+     * @see addShortcut
+     * @param {Array.<{key: number|string, modifiers: object, fn: function, id: string=, capture: boolean=}>} specs
+     * @return {Promise}
+     */
+    var addShortcuts = function (specs) {
+        var shortcutStore = this.flux.store("shortcut");
+
+        var duplicateShortcut = _.find(specs, function (spec) {
+            if (shortcutStore.getByID(spec.id)) {
+                return spec.id;
+            }
+        });
+
+        if (duplicateShortcut) {
+            return Promise.reject("Shortcut already exists: " + duplicateShortcut);
+        }
+
+        var keyboardPolicies = specs.map(function (spec) {
+            var policyAction = ui.policyAction.NEVER_PROPAGATE,
+                eventKind = os.eventKind.KEY_DOWN,
+                modifiers = spec.modifiers,
+                key = spec.key;
+
+            spec.capture = !!spec.capture;
+
+            return new KeyboardEventPolicy(policyAction, eventKind, modifiers, key);
+        });
+
+        return this.transfer(policy.addKeyboardPolicies, keyboardPolicies)
+            .bind(this)
+            .then(function (policyID) {
+                var payload = {
+                    specs: specs
+                };
+
+                this.dispatch(events.shortcut.ADD_SHORTCUTS, payload);
+
+                return policyID;
+            });
+    };
+    addShortcuts.reads = [];
+    addShortcuts.writes = [locks.JS_SHORTCUT];
+    addShortcuts.transfers = [policy.addKeyboardPolicies];
+    addShortcuts.modal = true;
 
     /**
      * Remove a keyboard shortcut command. Unregisters the handler function and unsets
@@ -195,6 +247,7 @@ define(function (require, exports) {
     onReset.modal = true;
 
     exports.addShortcut = addShortcut;
+    exports.addShortcuts = addShortcuts;
     exports.removeShortcut = removeShortcut;
 
     exports.beforeStartup = beforeStartup;

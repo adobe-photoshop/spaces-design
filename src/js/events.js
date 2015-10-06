@@ -140,6 +140,7 @@ define(function (require, exports, module) {
         },
         shortcut: {
             ADD_SHORTCUT: "addShortcut",
+            ADD_SHORTCUTS: "addShortcuts",
             REMOVE_SHORTCUT: "removeShortcut"
         },
         style: {

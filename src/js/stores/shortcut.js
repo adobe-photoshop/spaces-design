@@ -44,6 +44,7 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.RESET, this._handleReset,
                 events.shortcut.ADD_SHORTCUT, this._handleAddShortcut,
+                events.shortcut.ADD_SHORTCUTS, this._handleAddShortcuts,
                 events.shortcut.REMOVE_SHORTCUT, this._handleRemoveShortcut
             );
 
@@ -68,7 +69,8 @@ define(function (require, exports, module) {
          *    key: number|string,
          *    modifiers: object,
          *    fn: function,
-         *    capture: boolean: policy: number }
+         *    capture: boolean,
+         *    policy: number }
          */
         _handleAddShortcut: function (payload) {
             if (!payload.id) {
@@ -76,6 +78,16 @@ define(function (require, exports, module) {
             }
 
             this._shortcuts.push(payload);
+        },
+
+        /**
+         * Handler for the ADD_SHORTCUTS event.
+         * 
+         * @private
+         * @param {{specs: Array.<Shortcut>}} payload 
+         */
+        _handleAddShortcuts: function (payload) {
+            payload.specs.forEach(this._handleAddShortcut, this);
         },
 
         /**
