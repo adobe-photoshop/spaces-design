@@ -30,6 +30,13 @@ define(function (require, exports, module) {
     var Shadow = require("./shadow"),
         Stroke = require("./stroke"),
         ColorOverlay = require("./coloroverlay");
+
+    /**
+     * Map of layer effects map by effect types. A complete list of all types is defined in LayerEffect.TYPES. 
+     * Empty effect types will have an empty immutable list as default value. 
+     * 
+     * @typedef {Immutable.Map.< string, Immutable.List<?(Shadow|ColorOverlay|Stroke|LayerEffect)> >} LayerEffectsMap
+     */
     
     /**
      * Model for a layer's unsupported effects.
@@ -153,7 +160,7 @@ define(function (require, exports, module) {
      * Layer effect types to empty immutable list. This is the default value for LayerEffect.fromLayerDescriptor
      *
      * @const
-     * @type { Immutable.Map.<string, Immutable.List>}
+     * @type {LayerEffectsMap}
      */
     LayerEffect.EMPTY_EFFECTS = new Immutable.Map(LayerEffect.TYPES.toJS().reduce(function (result, type) {
         result[type] = new Immutable.List();
@@ -177,7 +184,7 @@ define(function (require, exports, module) {
      * For those layer effects that a layer does not have, they will assign with an empty immutable list.
      *
      * @param {object} layerDescriptor
-     * @return {Immutable.Map.<string, Immutable.List<LayerEffect|Shadow>>}
+     * @return {LayerEffectsMap}
      */
     LayerEffect.fromLayerDescriptor = function (layerDescriptor) {
         var layerEffects = layerDescriptor.layerEffects;
