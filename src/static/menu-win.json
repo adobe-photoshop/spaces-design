@@ -705,6 +705,10 @@
                     "debug": true
                 },
                 {
+                    "id": "RESET_FAILURE",
+                    "debug": true
+                },
+                {
                     "id": "CORRUPT_MODEL",
                     "debug": true
                 },
@@ -746,6 +750,10 @@
                 },
                 {
                     "id": "TOGGLE_POSTCONDITIONS",
+                    "debug": true
+                },
+                {
+                    "id": "TOGGLE_ACTION_TRANSFER_LOGGING",
                     "debug": true
                 }
             ]

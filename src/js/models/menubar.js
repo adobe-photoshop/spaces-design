@@ -464,7 +464,8 @@ define(function (require, exports, module) {
         if (global.debug) {
             return updatedMenu.updateSubmenuItems("HELP", {
                 "TOGGLE_POLICY_FRAMES": { "checked": (preferences.get("policyFramesEnabled", false) ? 1 : 0) },
-                "TOGGLE_POSTCONDITIONS": { "checked": (preferences.get("postConditionsEnabled", false) ? 1 : 0) }
+                "TOGGLE_POSTCONDITIONS": { "checked": (preferences.get("postConditionsEnabled", false) ? 1 : 0) },
+                "TOGGLE_ACTION_TRANSFER_LOGGING": { "checked": (preferences.get("logActionTransfers", false) ? 1 : 0) }
             });
         } else {
             return updatedMenu;

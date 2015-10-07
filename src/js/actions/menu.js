@@ -173,6 +173,23 @@ define(function (require, exports) {
     actionFailure.writes = [];
 
     /**
+     * An action with a transfer that always fails, for testing purposes.
+     *
+     * @private
+     * @return {Promise}
+     */
+    var transferFailure = function () {
+        return this.transfer(actionFailure)
+            .catch(function () {
+                // Failed transfers always cause a controller reset, so
+                // catching these failures doesn't really help.
+            });
+    };
+    transferFailure.reads = [];
+    transferFailure.writes = [];
+    transferFailure.transfers = [actionFailure];
+
+    /**
      * A flag for testing purposes which, if set, will cause onReset to fail.
      * 
      * @private
@@ -342,6 +359,26 @@ define(function (require, exports) {
     handleExecutedPlaceCommand.transfers = [policyActions.restoreAllPolicies];
 
     /**
+     * Debug-only method to toggle action transfer logging
+     *
+     * @return {Promise}
+     */
+    var toggleActionTransferLogging = function () {
+        if (!global.debug) {
+            return Promise.resolve();
+        }
+
+        var preferencesStore = this.flux.store("preferences"),
+            preferences = preferencesStore.getState(),
+            enabled = preferences.get("logActionTransfers");
+
+        return this.transfer(preferencesActions.setPreference, "logActionTransfers", !enabled);
+    };
+    toggleActionTransferLogging.reads = [];
+    toggleActionTransferLogging.writes = [locks.JS_PREF];
+    toggleActionTransferLogging.transfers = [preferencesActions.setPreference];
+
+    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
@@ -446,6 +483,7 @@ define(function (require, exports) {
     exports.openURL = openURL;
     exports.runTests = runTests;
     exports.actionFailure = actionFailure;
+    exports.transferFailure = transferFailure;
     exports.resetFailure = resetFailure;
     exports.corruptModel = corruptModel;
     exports.resetRecess = resetRecess;
@@ -454,6 +492,7 @@ define(function (require, exports) {
 
     exports.togglePolicyFrames = togglePolicyFrames;
     exports.togglePostconditions = togglePostconditions;
+    exports.toggleActionTransferLogging = toggleActionTransferLogging;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
