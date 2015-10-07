@@ -45,6 +45,12 @@ define(function (require, exports, module) {
          * @type {MenuBar}
          */
         _applicationMenu: null,
+        
+        /**
+         * @private
+         * @type {boolean}
+         */
+        _isExecutingPlaceCommand: null,
 
         /**
          * Initialize the policy sets
@@ -56,6 +62,7 @@ define(function (require, exports, module) {
                 events.application.UPDATE_RECENT_FILES, this._updateRecentFiles,
                 events.menus.INIT_MENUS, this._handleMenuInitialize,
                 events.menus.UPDATE_MENUS, this._updateMenuItems,
+                events.menus.PLACE_COMMAND, this._handlePlaceCommand,
 
                 events.document.SELECT_DOCUMENT, this._updateMenuItems,
                 events.document.DOCUMENT_UPDATED, this._updateMenuItems,
@@ -124,6 +131,13 @@ define(function (require, exports, module) {
          */
         _handleReset: function () {
             this._applicationMenu = new MenuBar();
+            this._isExecutingPlaceCommand = false;
+        },
+        
+        getState: function () {
+            return {
+                isExecutingPlaceCommand: this._isExecutingPlaceCommand
+            };
         },
 
         /**
@@ -206,6 +220,17 @@ define(function (require, exports, module) {
         _updateMenuItems: function () {
             this.waitFor(["document", "application", "dialog", "preferences", "history", "export"],
                 this._updateMenuItemsHelper);
+        },
+        
+        /**
+         * Handle status update of place command.
+         *
+         * @private
+         * @param {object} payload
+         * @param {boolean} payload.executing
+         */
+        _handlePlaceCommand: function (payload) {
+            this._isExecutingPlaceCommand = payload.executing;
         },
 
         /**
