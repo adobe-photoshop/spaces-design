@@ -571,8 +571,6 @@ define(function (require, exports, module) {
                 format: nextFormat
             });
 
-            this.getFlux().actions.preferences.setPreference(COLOR_PICKER_FORMAT, nextFormat);
-
             event.preventDefault();
         },
 
