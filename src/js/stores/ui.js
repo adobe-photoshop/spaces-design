@@ -403,15 +403,15 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Converts a pixel value to a rem value based on
+         * Converts a rem value to a pixel value based on
          * root font size
          * 16 px is 1 rem, so if our font-size is 62.5% (10px)
          * all our UI should be shrunk to that as well
          * 
          * @return {number}
          */
-        pxToRem: function (px) {
-            return px * this._rootSize / 16;
+        remToPx: function (rem) {
+            return rem * this._rootSize;
         },
 
         /**

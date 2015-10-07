@@ -269,18 +269,18 @@ define(function (require, exports, module) {
             var samples = _.filter(this.state.sampleTypes, "value"),
                 mouseX = this.state.samplePoint.x,
                 mouseY = this.state.samplePoint.y,
-                pxToRem = this.getFlux().store("ui").pxToRem;
+                remToPx = this.getFlux().store("ui").remToPx;
             
             if (samples.length === 0) {
                 return;
             }
 
             // Constants
-            var sampleSize = pxToRem(40),
+            var sampleSize = remToPx(2.5),
                 rectWidth = (sampleSize * samples.length) + (sampleSize / 3),
                 rectHeight = Math.round(sampleSize * 1.25),
                 rectTLXOffset = -rectWidth / 2,
-                rectTLYOffset = -sampleSize - pxToRem(26),
+                rectTLYOffset = -sampleSize - remToPx(1.625),
                 rectRound = sampleSize / 6;
 
             var rectTLX = Math.round(mouseX + rectTLXOffset),
@@ -292,7 +292,7 @@ define(function (require, exports, module) {
                 { x: mouseX - sampleSize * 0.20833, y: mouseY - sampleSize * 0.5 },
                 { x: mouseX + sampleSize * 0.20833, y: mouseY - sampleSize * 0.5 },
                 { x: mouseX + sampleSize * 0.20833, y: mouseY - sampleSize * 0.4166666667 },
-                { x: mouseX, y: mouseY - pxToRem(5) }
+                { x: mouseX, y: mouseY - remToPx(0.3125) }
             ];
 
             var lineFunction = d3.svg.line()

@@ -526,6 +526,9 @@ define(function (require, exports) {
     zoomInOut.writes = [];
     zoomInOut.transfers = [zoom];
 
+    /**
+     * Emit a DISPLAY_CHANGED event.
+     */
     var handleDisplayConfigurationChanged = function () {
         return this.dispatchAsync(events.ui.DISPLAY_CHANGED);
     };
