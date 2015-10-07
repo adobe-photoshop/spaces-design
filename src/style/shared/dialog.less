@@ -232,3 +232,19 @@ dialog::backdrop {
 .select {
     width: 100%;
 }
+
+.dialog-pointer(@left) {
+    content: "";
+    position: absolute;
+    top: -0.9rem;
+    left: @left;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: @bg-border;
+    border: none;
+    border-left: @hairline*1.5 solid @underlines;
+    border-top: @hairline*1.5 solid @underlines;
+    border-top-left-radius: 0.2rem;
+    transform: rotate(45deg);
+    -webkit-clip-path: polygon(0% 0%, 1.8rem 0%, 0% 1.8rem);
+}
