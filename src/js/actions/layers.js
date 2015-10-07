@@ -882,10 +882,7 @@ define(function (require, exports) {
         var dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
                 .bind(this)
                 .then(function () {
-                    var policiesPromise = this.transfer(tools.resetBorderPolicies),
-                        initializePromise = this.transfer(initializeLayers, document, nextSelected);
-
-                    return Promise.join(policiesPromise, initializePromise);
+                    return this.transfer(initializeLayers, document, nextSelected);
                 }),
             revealPromise = this.transfer(revealLayers, document, nextSelected);
 
@@ -907,8 +904,7 @@ define(function (require, exports) {
     };
     select.reads = [];
     select.writes = [locks.PS_DOC, locks.JS_DOC];
-    select.transfers = [revealLayers, resetSelection, tools.resetBorderPolicies,
-        initializeLayers, tools.changeVectorMaskMode];
+    select.transfers = [revealLayers, resetSelection, initializeLayers, tools.changeVectorMaskMode];
     select.post = [_verifyLayerSelection];
 
     /**
