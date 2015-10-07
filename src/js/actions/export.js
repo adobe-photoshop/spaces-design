@@ -45,7 +45,8 @@ define(function (require, exports) {
         global = require("js/util/global"),
         ExportAsset = require("js/models/exportasset"),
         ExportService = require("js/util/exportservice"),
-        policyActions = require("js/actions/policy");
+        policyActions = require("js/actions/policy"),
+        exportStore = require("js/stores/export");
 
     /**
      * An instance of the ExportService utility used to communicate with the generator plugin
@@ -327,7 +328,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var openExportPanel = function () {
-        return this.transfer(dialog.openDialog, "exports-panel-dialog");
+        return this.transfer(dialog.openDialog, exportStore.EXPORT_DIALOG_ID);
     };
     openExportPanel.reads = [];
     openExportPanel.writes = [];
@@ -339,7 +340,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var closeExportPanel = function () {
-        return this.transfer(dialog.closeDialog, "exports-panel-dialog");
+        return this.transfer(dialog.closeDialog, exportStore.EXPORT_DIALOG_ID);
     };
     closeExportPanel.reads = [];
     closeExportPanel.writes = [];

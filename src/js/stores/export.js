@@ -32,6 +32,14 @@ define(function (require, exports, module) {
         events = require("../events");
 
     /**
+     * ID of the Export dialog.
+     *
+     * @const
+     * @type {string}
+     */
+    var EXPORT_DIALOG_ID = "exports-panel-dialog";
+
+    /**
      * Holding cell for various state properties
      *
      * @type {Immutable.Record}
@@ -330,6 +338,8 @@ define(function (require, exports, module) {
             }
         }
     });
+
+    ExportStore.EXPORT_DIALOG_ID = EXPORT_DIALOG_ID;
 
     module.exports = ExportStore;
 });

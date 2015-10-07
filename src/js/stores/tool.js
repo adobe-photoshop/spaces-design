@@ -168,7 +168,8 @@ define(function (require, exports, module) {
         getState: function () {
             return {
                 current: this._currentTool,
-                previous: this._previousTool
+                previous: this._previousTool,
+                vectorMaskMode: this._inVectorMode
             };
         },
 
