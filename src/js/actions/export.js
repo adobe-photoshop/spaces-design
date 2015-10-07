@@ -180,23 +180,32 @@ define(function (require, exports) {
 
         return _exportService.exportAsset(document, layer, asset, fileName, baseDir)
             .bind(this)
-            .then(function (pathArray) {
-                // Do we need to be aware of exports that return >1 file path?
-                var assetProps = {
-                    filePath: pathArray[0],
-                    status: ExportAsset.STATUS.STABLE
-                };
-                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps, true);
-            })
+            .then(
+                function (pathArray) {
+                    // Do we need to be aware of exports that return >1 file path?
+                    var assetProps = {
+                        filePath: pathArray[0],
+                        status: ExportAsset.STATUS.STABLE
+                    };
+                    this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps,
+                        true, true);
+                },
+                function (e) {
+                    log.error("Export Failed for asset %d of layerID %d, documentID %d, with error: ",
+                        assetIndex, layer && layer.id, document.id, e);
+
+                    var assetProps = {
+                        filePath: "",
+                        status: ExportAsset.STATUS.ERROR
+                    };
+
+                    this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps,
+                        true, true);
+                })
             .catch(function (e) {
-                log.error("Export Failed for asset %d of layerID %d, documentID %d, with error",
+                log.error("Export Failed to update asset after export: %d of layerID %d, documentID %d, with error: ",
                     assetIndex, layer && layer.id, document.id, e);
-                var assetProps = {
-                    filePath: "",
-                    status: ExportAsset.STATUS.ERROR
-                };
-                return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps, true);
-            }) ;
+            });
     };
 
     /**
@@ -303,16 +312,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Update the export store with the new service availability flag;
-     *
-     * @param {boolean} available
-     * @return {Promise}
-     */
-    var _setServiceAvailable = function (available) {
-        return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: !!available });
-    };
-
-    /**
      * Update the export store with the new service busy flag;
      *
      * @param {boolean} busy
@@ -357,9 +356,10 @@ define(function (require, exports) {
      * @param {number} assetIndex index of this asset within the layer's list to append props 
      * @param {object|Array.<object>} props ExportAsset-like properties to be merged, or an array thereof
      * @param {boolean=} suppressHistory Optional, if truthy then do not supply photoshop with historyStateInfo
+     * @param {boolean=} suppressErrors Optional, if truthy then swallow any errors
      * @return {Promise}
      */
-    var updateExportAsset = function (document, layers, assetIndex, props, suppressHistory) {
+    var updateExportAsset = function (document, layers, assetIndex, props, suppressHistory, suppressErrors) {
         var documentID = document.id,
             layerIDs = layers && layers.size > 0 && collection.pluck(layers, "id") || undefined,
             assetPropsArray = Array.isArray(props) ? props : [props],
@@ -383,6 +383,14 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 return _syncExportMetadata.call(this, documentID, layerIDs, suppressHistory);
+            })
+            .catch(function (e) {
+                if (suppressErrors) {
+                    log.debug("updateExportAsset failed, but ignoring it", e);
+                } else {
+                    var message = e instanceof Error ? (e.stack || e.message) : e;
+                    throw new Error("Failed to update asset: " + message);
+                }
             });
     };
     updateExportAsset.reads = [locks.JS_DOC];
@@ -629,6 +637,18 @@ define(function (require, exports) {
     setLayerExportEnabled.transfers = [addAsset];
 
     /**
+     * Update the export store with the new service availability flag;
+     *
+     * @param {boolean} available
+     * @return {Promise}
+     */
+    var setServiceAvailable = function (available) {
+        return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: !!available });
+    };
+    setServiceAvailable.reads = [];
+    setServiceAvailable.writes = [locks.JS_EXPORT];
+
+    /**
      * Prompt the user to choose a folder by opening an OS dialog.
      * Keyboard policies are temporarily disabled while the dialog is open.
      * Rejects with ExportService.CancelPromptError if user cancels
@@ -675,7 +695,7 @@ define(function (require, exports) {
         }
 
         if (!_exportService || !_exportService.ready()) {
-            return _setServiceAvailable.call(this, false);
+            return this.transfer(setServiceAvailable, false);
         }
 
         var documentID = document.id,
@@ -735,8 +755,8 @@ define(function (require, exports) {
             });
     };
     exportLayerAssets.reads = [locks.JS_DOC];
-    exportLayerAssets.writes = [locks.JS_EXPORT, locks.GENERATOR];
-    exportLayerAssets.transfers = [promptForFolder, addAsset];
+    exportLayerAssets.writes = [locks.JS_EXPORT];
+    exportLayerAssets.transfers = [promptForFolder, addAsset, setServiceAvailable];
 
     /**
      * Export all document-level assets for the given document
@@ -750,7 +770,7 @@ define(function (require, exports) {
         }
 
         if (!_exportService || !_exportService.ready()) {
-            return _setServiceAvailable.call(this, false);
+            return this.transfer(setServiceAvailable, false);
         }
 
         var documentExports = this.flux.stores.export.getDocumentExports(document.id, true),
@@ -790,8 +810,8 @@ define(function (require, exports) {
             });
     };
     exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
-    exportDocumentAssets.writes = [locks.GENERATOR];
-    exportDocumentAssets.transfers = [promptForFolder, addAsset];
+    exportDocumentAssets.writes = [];
+    exportDocumentAssets.transfers = [promptForFolder, addAsset, setServiceAvailable];
     
     /**
      * Copy file from one location to another.
@@ -802,13 +822,14 @@ define(function (require, exports) {
      */
     var copyFile = function (sourcePath, targetPath) {
         if (!_exportService || !_exportService.ready()) {
-            return _setServiceAvailable.call(this, false);
+            return this.transfer(setServiceAvailable, false);
         }
 
         return _exportService.copyFile(sourcePath, targetPath);
     };
     copyFile.reads = [];
-    copyFile.writes = [locks.GENERATOR];
+    copyFile.writes = [];
+    copyFile.transfers = [setServiceAvailable];
     
     /**
      * Delete files at specific locations.
@@ -818,13 +839,14 @@ define(function (require, exports) {
      */
     var deleteFiles = function (filePaths) {
         if (!_exportService || !_exportService.ready()) {
-            return _setServiceAvailable.call(this, false);
+            return this.transfer(setServiceAvailable, false);
         }
 
         return _exportService.deleteFiles(filePaths);
     };
     deleteFiles.reads = [];
-    deleteFiles.writes = [locks.GENERATOR];
+    deleteFiles.writes = [];
+    deleteFiles.transfers = [setServiceAvailable];
 
     /**
      * Update the both the store state, and the preferences, with useArtboardPrefix
@@ -856,7 +878,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     log.debug("Export: Generator plugin connection established");
-                    return _setServiceAvailable.call(this, true);
+                    this.flux.actions.export.setServiceAvailable(true);
                 })
                 .return(true);
         }.bind(this);
@@ -932,7 +954,7 @@ define(function (require, exports) {
             });
     };
     afterStartup.reads = [];
-    afterStartup.writes = [locks.JS_EXPORT, locks.GENERATOR];
+    afterStartup.writes = [];
 
     /**
      * Handle the standard onReset action
@@ -965,6 +987,7 @@ define(function (require, exports) {
     exports.addDefaultAsset = addDefaultAsset;
     exports.deleteExportAsset = deleteExportAsset;
     exports.setLayerExportEnabled = setLayerExportEnabled;
+    exports.setServiceAvailable = setServiceAvailable;
     exports.promptForFolder = promptForFolder;
     exports.exportLayerAssets = exportLayerAssets;
     exports.exportDocumentAssets = exportDocumentAssets;
