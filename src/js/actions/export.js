@@ -187,7 +187,7 @@ define(function (require, exports) {
                         filePath: pathArray[0],
                         status: ExportAsset.STATUS.STABLE
                     };
-                    return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps,
+                    this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps,
                         true, true);
                 },
                 function (e) {
@@ -199,7 +199,7 @@ define(function (require, exports) {
                         status: ExportAsset.STATUS.ERROR
                     };
 
-                    return this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps,
+                    this.flux.actions.export.updateExportAsset(document, _layers, assetIndex, assetProps,
                         true, true);
                 })
             .catch(function (e) {
@@ -878,7 +878,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     log.debug("Export: Generator plugin connection established");
-                    return this.flux.actions.export.setServiceAvailable(true);
+                    this.flux.actions.export.setServiceAvailable(true);
                 })
                 .return(true);
         }.bind(this);
