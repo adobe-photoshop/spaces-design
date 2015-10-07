@@ -82,9 +82,9 @@ define(function (require, exports, module) {
                         "document-title__mask": this.state.vectorMode && this.props.current
                     })}
                     onClick={this.props.onClick}>
+                    {warning}
                     {this.props.dirty ? "*" : ""}
                     {this.props.name}
-                    {warning}
                 </div>
             );
         }
