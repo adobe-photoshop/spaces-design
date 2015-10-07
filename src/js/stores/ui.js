@@ -163,6 +163,7 @@ define(function (require, exports, module) {
                 events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart,
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
                 events.ui.REFERENCE_POINT_CHANGED, this._handleReferencePointChanged,
+                events.ui.DISPLAY_CHANGED, this._handleDisplayChanged,
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated,
                 events.document.RESET_BOUNDS, this._handleLayersUpdated,
@@ -402,15 +403,15 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Converts a pixel value to a rem value based on
+         * Converts a rem value to a pixel value based on
          * root font size
          * 16 px is 1 rem, so if our font-size is 62.5% (10px)
          * all our UI should be shrunk to that as well
          * 
          * @return {number}
          */
-        pxToRem: function (px) {
-            return px * this._rootSize / 16;
+        remToPx: function (rem) {
+            return rem * this._rootSize;
         },
 
         /**
@@ -539,7 +540,16 @@ define(function (require, exports, module) {
          */
         _handleReferencePointChanged: function (payload) {
             this._referencePoint = payload.referencePoint;
+            this.emit("change");
+        },
 
+        /**
+         * Re-set the root font size when the display changes.
+         *
+         * @private
+         */
+        _handleDisplayChanged: function () {
+            this._setRootSize();
             this.emit("change");
         }
     });
