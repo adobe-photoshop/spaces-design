@@ -326,7 +326,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
         
-        return this.transfer(layerFXActions.duplicateLayerEffects, doc, selectedLayers, sourceLayer);
+        return this.transfer(layerFXActions.duplicateLayerEffects, doc, selectedLayers, sourceLayer.effects);
     };
 
     /**

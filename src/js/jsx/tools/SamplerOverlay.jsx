@@ -407,6 +407,25 @@ define(function (require, exports, module) {
                             d3.event.stopPropagation();
                         }.bind(this));
                 } else if (sample.type === "typeStyle") {
+                    var applyTypeStyleFunc = function () {
+                        if (sample.value) {
+                            // Apply the type style to selected layers
+                            fluxActions.type.applyTextStyle(this.state.document, null, sample.value);
+                        }
+                        d3.event.stopPropagation();
+                    }.bind(this);
+                    
+                    // background rectangle for the icon so it's clickable easier
+                    this._hudGroup
+                        .append("rect")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .classed("sampler-hud-background", true)
+                        .classed("sampler-hud-icon-disabled", !sample.value)
+                        .on("click", applyTypeStyleFunc);
+                        
                     this._hudGroup
                         .append("use")
                         .attr("xlink:href", "img/ico-sampler-charStyle.svg#sampler-charStyle")
@@ -416,13 +435,7 @@ define(function (require, exports, module) {
                         .attr("height", iconSize)
                         .classed("sampler-hud", true)
                         .classed("sampler-hud-icon-disabled", !sample.value)
-                        .on("click", function () {
-                            if (sample.value) {
-                                // Apply the type style to selected layers
-                                fluxActions.type.applyTextStyle(this.state.document, null, sample.value);
-                            }
-                            d3.event.stopPropagation();
-                        }.bind(this));
+                        .on("click", applyTypeStyleFunc);
                 } else if (sample.type === "layerEffects") {
                     // background rectangle for the icon so it's clickable easier
                     this._hudGroup

@@ -393,7 +393,7 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {?Immutable.Iterable.<Layer>} targetLayers Default is selected in the document
-     * @param {Layer} source
+     * @param {LayerEffectsMap} source
      * @param {object} options
      * @return {Promise}
      */

@@ -165,7 +165,7 @@ define(function (require, exports, module) {
          * For effect types that the layer does not have, they will assign with an 
          * empty immutable list as default value.
          * 
-         * @type {Immutable.Map.< string, Immutable.List<LayerEffect|Shadow> >}
+         * @type {LayerEffectsMap}
          */
         effects: null,
 
