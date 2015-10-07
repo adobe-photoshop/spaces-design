@@ -71,6 +71,14 @@ define(function (require, exports, module) {
     var strings = require("i18n!nls/strings");
 
     /**
+     * The list of valid color expression types.
+     *
+     * @const
+     * @type {Array.<string>}
+     */
+    var COLOR_FORMATS = ["rgb", "hsv", "hsl", "hex", "name"];
+
+    /**
      * Internal HSVA representation of color. Needed to disambiguate slider
      * positions for completely de-saturated colors.
      * 
@@ -523,15 +531,71 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Returns either the next or previous format relative to the supplied format.
+         *
+         * @param {string} format The current color format
+         * @param {boolean} next Whether to go to the next or previous color format.
+         * @return {string} The next color format
+         */
+        _getNextColorFormat: function (format, next) {
+            var index = COLOR_FORMATS.indexOf(format),
+                increment = next ? 1 : -1;
+
+            if (!next && index === 0) {
+                index = COLOR_FORMATS.length;
+            }
+            index = (index + increment) % COLOR_FORMATS.length;
+
+            return COLOR_FORMATS[index];
+        },
+
+        /**
+         * Cycle through the various color formats.
+         *
+         * @param {boolean} next Whether to go to the next or previous color format.
+         * @param {SyntheticEvent} event
+         */
+        _cycleColorFormat: function (next, event) {
+            var nextFormat = this._getNextColorFormat(this.state.format, next);
+
+            if (nextFormat === "name") {
+                var color = this.props.color && tinycolor(this.props.color.toJS());
+
+                if (!color || !color.toName()) {
+                    // Skip "name" if the color doesn't have a name
+                    nextFormat = this._getNextColorFormat(nextFormat, next);
+                }
+            }
+
+            this.setState({
+                format: nextFormat
+            });
+
+            this.getFlux().actions.preferences.setPreference(COLOR_PICKER_FORMAT, nextFormat);
+
+            event.preventDefault();
+        },
+
+        /**
          * Special case handler for shift_tab to focus back on opacity input
          *
          * @private
          * @param {KeyboardEvent} event
          */
         _handleKeyDown: function (event) {
-            if (event.shiftKey && event.key === "Tab") {
+            var key = event.key;
+
+            switch (key) {
+            case "Tab":
                 this.props.onShiftTabPress();
                 event.preventDefault();
+                break;
+            case "ArrowDown":
+                this._cycleColorFormat(true, event);
+                break;
+            case "ArrowUp":
+                this._cycleColorFormat(false, event);
+                break;
             }
         },
 
