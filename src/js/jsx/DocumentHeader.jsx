@@ -63,7 +63,8 @@ define(function (require, exports, module) {
                 applicationState = applicationStore.getState(),
                 documentIDs = applicationState.documentIDs,
                 document = applicationStore.getCurrentDocument(),
-                count = applicationStore.getDocumentCount();
+                count = applicationStore.getDocumentCount(),
+                inactiveDocumentsInitialized = applicationState.inactiveDocumentsInitialized;
 
             return {
                 document: document,
@@ -71,7 +72,8 @@ define(function (require, exports, module) {
                 count: count,
                 maskModeActive: toolState.vectorMaskMode,
                 searchActive: searchActive,
-                exportActive: exportActive
+                exportActive: exportActive,
+                inactiveDocumentsInitialized: inactiveDocumentsInitialized
             };
         },
 
@@ -119,7 +121,18 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            return this.state.count !== nextState.count ||
+            // Don't re-render if we're just going temporarily inactive so that
+            // the UI doesn't blink unnecessarily.
+            if (this.props.active && !nextProps.active) {
+                return false;
+            }
+
+            if (!nextState.inactiveDocumentsInitialized) {
+                return false;
+            }
+
+            return this.state.inactiveDocumentsInitialized !== nextState.inactiveDocumentsInitialized ||
+                this.state.count !== nextState.count ||
                 this.state.headerWidth !== nextState.headerWidth ||
                 this.state.searchActive !== nextState.searchActive ||
                 this.state.exportActive !== nextState.exportActive ||
