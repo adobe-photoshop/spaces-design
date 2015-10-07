@@ -1067,14 +1067,13 @@ define(function (require, exports) {
         searchActions.registerCurrentDocumentSearch.call(this);
         searchActions.registerRecentDocumentSearch.call(this);
 
-        if (payload) {
-            return this.transfer(initInactiveDocuments, payload.currentIndex, payload.docCount);
-        } else {
-            return Promise.resolve();
-        }
+        var currentIndex = payload && payload.currentIndex,
+            docCount = payload ? payload.docCount : 0;
+
+        return this.transfer(initInactiveDocuments, currentIndex, docCount);
     };
     afterStartup.reads = [locks.PS_DOC];
-    afterStartup.writes = [locks.JS_DOC];
+    afterStartup.writes = [locks.JS_DOC, locks.JS_SEARCH];
     afterStartup.transfers = [initInactiveDocuments];
 
     /**
