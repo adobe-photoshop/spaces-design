@@ -99,6 +99,7 @@ define(function (require, exports, module) {
             return {
                 hostVersion: this._hostVersion,
                 activeDocumentInitialized: this._initialized.get("activeDocument"),
+                inactiveDocumentsInitialized: this._initialized.get("inactiveDocuments"),
                 recentFilesInitialized: this._initialized.get("recentFiles"),
                 documentIDs: this._documentIDs,
                 selectedDocumentIndex: this._selectedDocumentIndex,

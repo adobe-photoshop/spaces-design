@@ -293,7 +293,11 @@ define(function (require, exports) {
                     });
             }, this);
 
-        return Promise.all(otherDocPromises);
+        return Promise.all(otherDocPromises)
+            .bind(this)
+            .then(function () {
+                this.dispatch(events.application.INITIALIZED, { item: "inactiveDocuments" });
+            });
     };
     initInactiveDocuments.reads = [locks.PS_DOC];
     initInactiveDocuments.writes = [locks.JS_DOC];
