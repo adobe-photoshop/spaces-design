@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         Bounds = require("./bounds"),
         Radii = require("./radii"),
         Stroke = require("./stroke"),
+        SmartObject = require("./smartobject"),
         Fill = require("./fill"),
         LayerEffect = require("./effects/layereffect"),
         Text = require("./text");
@@ -555,7 +556,10 @@ define(function (require, exports, module) {
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
         object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
-        object.assignIf(model, "smartObject", layerDescriptor.smartObject);
+
+        if (layerDescriptor.smartObject) {
+            model.smartObject = SmartObject.fromDescriptor(layerDescriptor.smartObject);
+        }
         
         return new Layer(model);
     };
@@ -596,7 +600,10 @@ define(function (require, exports, module) {
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
         object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
-        object.assignIf(model, "smartObject", layerDescriptor.smartObject);
+
+        if (layerDescriptor.smartObject) {
+            model.smartObject = SmartObject.fromDescriptor(layerDescriptor.smartObject);
+        }
 
         return this.merge(model);
     };
