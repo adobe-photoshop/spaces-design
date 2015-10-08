@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         exportStore = require("js/stores/export");
 
     var DocumentHeader = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("application", "document", "tool", "dialog")],
+        mixins: [FluxMixin, StoreWatchMixin("application", "document", "tool", "dialog", "preferences")],
 
         getInitialState: function () {
             return {};
@@ -61,10 +61,14 @@ define(function (require, exports, module) {
                 toolState = toolStore.getState(),
                 applicationStore = flux.store("application"),
                 applicationState = applicationStore.getState(),
+                preferencesState = flux.store("preferences").getState(),
+                components = flux.store("ui").components,
                 documentIDs = applicationState.documentIDs,
                 document = applicationStore.getCurrentDocument(),
                 count = applicationStore.getDocumentCount(),
-                inactiveDocumentsInitialized = applicationState.inactiveDocumentsInitialized;
+                inactiveDocumentsInitialized = applicationState.inactiveDocumentsInitialized,
+                panelColumnCount = (preferencesState.get(components.LAYERS_LIBRARY_COL) ? 1 : 0) +
+                    (preferencesState.get(components.PROPERTIES_COL) ? 1 : 0);
 
             return {
                 document: document,
@@ -73,7 +77,8 @@ define(function (require, exports, module) {
                 maskModeActive: toolState.vectorMaskMode,
                 searchActive: searchActive,
                 exportActive: exportActive,
-                inactiveDocumentsInitialized: inactiveDocumentsInitialized
+                inactiveDocumentsInitialized: inactiveDocumentsInitialized,
+                panelColumnCount: panelColumnCount
             };
         },
 
@@ -137,16 +142,14 @@ define(function (require, exports, module) {
                 this.state.searchActive !== nextState.searchActive ||
                 this.state.exportActive !== nextState.exportActive ||
                 this.state.maskModeActive !== nextState.maskModeActive ||
+                this.state.panelColumnCount !== nextState.panelColumnCount ||
                 !Immutable.is(this.state.documentIDs, nextState.documentIDs) ||
                 !Immutable.is(this.state.document, nextState.document);
         },
 
         componentDidMount: function () {
             this._updateTabContainerScroll();
-
-            this.setState({
-                headerWidth: React.findDOMNode(this).clientWidth
-            });
+            this._updateTabContainerWidth();
 
             this._updatePanelSizesDebounced = synchronization.debounce(this._updatePanelSizes, this, 500);
             os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
@@ -163,6 +166,19 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function () {
             this._updateTabContainerScroll();
+            this._updateTabContainerWidth();
+        },
+        
+        /**
+         * Update the state with the width of the tab container. 
+         *
+         * @private
+         * @param  {function=} handler - React setState handler
+         */
+        _updateTabContainerWidth: function (handler) {
+            this.setState({
+                headerWidth: this.refs.tabContainer.getDOMNode().clientWidth
+            }, handler);
         },
 
         /**
@@ -173,9 +189,7 @@ define(function (require, exports, module) {
          */
         _handleWindowResize: function () {
             return new Promise(function (resolve) {
-                this.setState({
-                    headerWidth: React.findDOMNode(this).clientWidth
-                }, resolve);
+                this._updateTabContainerWidth(resolve);
             }.bind(this));
         },
 
@@ -219,8 +233,7 @@ define(function (require, exports, module) {
         render: function () {
             var documentStore = this.getFlux().store("document"),
                 document = this.state.document,
-                smallTab = this.state.headerWidth / this.state.documentIDs.size < 175;
-            // Above: This number tunes when tabs should be shifted to small tabs
+                smallTab = this.state.documentIDs.size > this.state.headerWidth / 90;
 
             var exportDisabled = !document || document.unsupported,
                 maskDisabled = !document || document.unsupported ||
