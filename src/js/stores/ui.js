@@ -298,7 +298,9 @@ define(function (require, exports, module) {
                 right = (columns !== undefined && singleColumn) ? 0 :
                     this._iconBarWidth;
 
-            if (columns === undefined || columns === this._columnCount) {
+            if (singleColumn) {
+                right += this._panelWidth;
+            } else if (columns === undefined || columns === this._columnCount) {
                 right += this._panelWidth;
             } else if (columns > 0) {
                 if (columns === 1 && this._columnCount === 2) {
