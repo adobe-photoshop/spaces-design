@@ -319,3 +319,21 @@
         stroke: none;
     }
 }
+
+.face {
+    .face__kind {
+        &.face__kind__error,
+        &.face__kind__error:hover {
+            svg {
+                fill: @label-error-color;
+            }
+        }
+
+        &.face__kind__warning,
+        &.face__kind__warning:hover {
+            svg {
+                fill: @label-warning-color;
+            }
+        }        
+    }    
+}

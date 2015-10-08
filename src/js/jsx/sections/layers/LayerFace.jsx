@@ -315,7 +315,20 @@ define(function (require, exports, module) {
                         selected={!layer.visible}
                         onClick={this._handleVisibilityToggle}>
                     </ToggleButton>
-                );
+                ),
+                iconClassModifier;
+
+            if (layer.isSmartObject()) {
+                if (layer.smartObject.linkMissing) {
+                    tooltipTitle += " : " + strings.LAYER_KIND_ALERTS.LINK_MISSING;
+                    iconClassModifier = "face__kind__error";
+                }
+
+                if (layer.smartObject.linkChanged) {
+                    tooltipTitle += " : " + strings.LAYER_KIND_ALERTS.LINK_CHANGED;
+                    iconClassModifier = "face__kind__warning";
+                }
+            }
 
             return (
                 <li className={classnames(layerClasses)}>
@@ -329,7 +342,7 @@ define(function (require, exports, module) {
                         <Button
                             title={tooltipTitle + tooltipPadding}
                             disabled={this.props.disabled}
-                            className="face__kind"
+                            className={classnames("face__kind", iconClassModifier)}
                             data-kind={layer.isArtboard ? "artboard" : layer.kind}
                             onClick={this._handleIconClick}
                             onDoubleClick={this._handleLayerEdit}>

@@ -282,6 +282,10 @@
         "13": "Groupend Layer",
         "ARTBOARD": "Artboard"
     },
+    "LAYER_KIND_ALERTS": {
+        "LINK_MISSING": "Missing Linked Object",
+        "LINK_CHANGED": "Linked Object Updated"
+    },
     "COLOR_PICKER": {
         "FORMAT": "Format",
         "RGB_MODEL": {
