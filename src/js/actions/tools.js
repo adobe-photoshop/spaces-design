@@ -42,7 +42,6 @@ define(function (require, exports) {
         guides = require("./guides"),
         layers = require("./layers"),
         locks = require("js/locks"),
-        log = require("js/util/log"),
         policy = require("./policy"),
         ui = require("./ui"),
         shortcuts = require("./shortcuts"),
@@ -717,7 +716,6 @@ define(function (require, exports) {
         descriptor.batchPlayObjects([vectorMaskLib.enterFreeTransformPathMode()],
                 { synchronous: false })
             .catch(function () {
-                log.error("Photoshop returned from free transform path modal state with an error");
                 // Silence the errors here since we cannot guarantee that PS will not throw an error
                 // when we end the modal tool state in a valid case
             });
