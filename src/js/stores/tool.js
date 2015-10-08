@@ -96,7 +96,7 @@ define(function (require, exports, module) {
          * @private
          * @type {boolean}
          */
-        _inVectorMode: null,
+        _inVectorMode: false,
 
         /**
          * stored ID of pointer policy created while in vector mask mode
@@ -152,7 +152,7 @@ define(function (require, exports, module) {
 
             this._allTools = Object.defineProperties({}, toolSpec);
             this._inModalToolState = null;
-            this._inVectorMode = null;
+            this._inVectorMode = false;
             this._vectorMaskPolicyID = null;
             this._currentKeyboardPolicyID = null;
             this._currentPointerPolicyID = null;
