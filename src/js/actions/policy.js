@@ -320,29 +320,20 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartup = function () {
-        var keyboardMode = adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
-            keyboardDescriptor = {
-                defaultMode: keyboardMode
-            },
-            keyboardModePromise = adapterUI.setKeyboardPropagationMode(keyboardDescriptor)
-                .bind(this)
-                .then(function () {
-                    this.dispatch(events.policies.MODE_CHANGED, {
-                        kind: PolicyStore.eventKind.KEYBOARD,
-                        mode: keyboardMode
-                    });
-                }),
-            pointerMode = adapterUI.pointerPropagationMode.ALPHA_PROPAGATE,
-            // Alpha is the default pointer mode, so we don't need to change it here
-            pointerModePromise = this.dispatchAsync(events.policies.MODE_CHANGED, {
-                kind: PolicyStore.eventKind.POINTER,
-                mode: pointerMode
-            });
+        var defaultKeyboardMode = adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
+            keyboardModePromise = this.transfer(setMode, PolicyStore.eventKind.KEYBOARD,
+                defaultKeyboardMode),
+            defaultPointerMode = adapterUI.pointerPropagationMode.ALPHA_PROPAGATE,
+            // Alpha is the default pointer mode, but we set it here anyway so that we can reset 
+            // to the correct default mode when error occurs.
+            pointerModePromise = this.transfer(setMode, PolicyStore.eventKind.POINTER,
+                defaultPointerMode);
 
         return Promise.join(keyboardModePromise, pointerModePromise);
     };
     beforeStartup.reads = [];
     beforeStartup.writes = [locks.PS_APP, locks.JS_POLICY];
+    beforeStartup.transfers = ["policy.setMode"];
 
     exports.syncPolicies = syncPolicies;
     exports.setMode = setMode;

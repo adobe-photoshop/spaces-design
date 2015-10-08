@@ -41,6 +41,7 @@ define(function (require, exports, module) {
         shortcuts = require("js/util/shortcuts"),
         SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay"),
         EventPolicy = require("js/models/eventpolicy"),
+        PolicyStore = require("js/stores/policy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
@@ -66,10 +67,10 @@ define(function (require, exports, module) {
 
         if (!vectorMode || !currentDocument) {
             return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
+                .bind(this)
                 .then(function () {
-                    UI.setPointerPropagationMode({
-                        defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY
-                    });
+                    return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
+                        UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY);
                 });
         } else {
             var currentLayers = currentDocument.layers.selected,
@@ -99,9 +100,8 @@ define(function (require, exports, module) {
      * @private
      */
     var _deselectHandler = function () {
-        return UI.setPointerPropagationMode({
-            defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
-        });
+        return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
+            UI.pointerPropagationMode.ALPHA_PROPAGATE);
     };
 
     /**
