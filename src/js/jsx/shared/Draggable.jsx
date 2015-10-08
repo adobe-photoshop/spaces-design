@@ -137,7 +137,6 @@ define(function (require, exports, module) {
                 }
             },
             
-            
             /**
              * Handle the "change" event of draganddrop store.
              * @private

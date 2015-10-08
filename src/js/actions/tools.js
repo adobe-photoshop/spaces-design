@@ -62,7 +62,6 @@ define(function (require, exports) {
      * @type {number}
      */
     var _currentTransformPolicyID = null;
-        
 
     /**
      * Installs the defaults on a given shape tool

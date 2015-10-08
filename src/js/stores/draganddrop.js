@@ -146,7 +146,6 @@ define(function (require, exports, module) {
             dropTargets.set(key, droppable);
             dropTargetOrderings.push(key);
         },
-    
 
         /**
          * Remove a drop target (by key) from the given drop zone.

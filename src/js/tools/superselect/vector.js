@@ -140,7 +140,6 @@ define(function (require, exports, module) {
             arrowDownPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN);
             
-            
         this.keyboardPolicyList = [
             escapeKeyPolicy, // Switch back to newSelect
             enterKeyPolicy, // Switch back to newSelect

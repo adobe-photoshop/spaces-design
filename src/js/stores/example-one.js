@@ -48,7 +48,6 @@ define(function (require, exports, module) {
             this.elapsedTime = null;
             this.startTime = new Date().getTime();
         },
-
         
         /** @ignore */
         success: function () {

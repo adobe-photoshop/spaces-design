@@ -2213,7 +2213,6 @@ define(function (require, exports) {
 
         this.dispatch(events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, payload);
 
-       
         return descriptor.batchPlayObjects([vectorMaskLib.makeBoundsWorkPath(bounds),
             vectorMaskLib.makeVectorMaskFromWorkPath(),
             vectorMaskLib.deleteWorkPath()]);
