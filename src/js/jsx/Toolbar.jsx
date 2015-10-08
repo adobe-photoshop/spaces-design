@@ -98,13 +98,13 @@ define(function (require, exports, module) {
 
         // On startup, we want to make sure center offsets take pinned toolbar
         componentDidMount: function () {
-            this._updateToolbarWidthDebounced = synchronization.debounce(this._updateToolbarWidth, this, 500);
-            os.addListener("displayConfigurationChanged", this._updateToolbarWidthDebounced);
-            this._updateToolbarWidth();
+            this._updatePanelSizesDebounced = synchronization.debounce(this._updatePanelSizes, this, 500);
+            os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
+            this._updatePanelSizes();
         },
 
         componentWillUnmount: function () {
-            os.removeListener("displayConfigurationChanged", this._updateToolbarWidthDebounced);
+            os.removeListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
         },
 
         componentWillUpdate: function (nextProps, nextState) {
@@ -125,7 +125,7 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function (prevProps, prevState) {
             if (prevState.pinned !== this.state.pinned) {
-                this._updateToolbarWidth();
+                this._updatePanelSizes();
             }
         },
 
@@ -249,19 +249,21 @@ define(function (require, exports, module) {
          * @private
          * @return {Promise}
          */
-        _updateToolbarWidth: function () {
+        _updatePanelSizes: function () {
             var flux = this.getFlux(),
                 newWidth = this.getToolbarWidth();
 
-            return flux.actions.ui.updateToolbarWidth(newWidth);
+            return flux.actions.ui.updatePanelSizes({
+                toolbarWidth: newWidth
+            });
         },
 
         /**
-         * Debounced version of _updateToolbarWidth
+         * Debounced version of _updatePanelSizes
          *
          * @private
          */
-        _updateToolbarWidthDebounced: null
+        _updatePanelSizesDebounced: null
     });
     
     module.exports = Toolbar;

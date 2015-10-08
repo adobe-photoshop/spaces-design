@@ -238,6 +238,16 @@ define(function (require, exports) {
     };
     cloak.reads = [locks.JS_UI];
     cloak.writes = [locks.PS_APP];
+    cloak.modal = true;
+
+    var setOverlayOffsets = function () {
+        var centerOffsets = this.flux.store("ui").getState().centerOffsets;
+        return adapterUI.setOverlayOffsets(centerOffsets);
+    };
+    setOverlayOffsets.reads = [locks.JS_UI];
+    setOverlayOffsets.writes = [locks.PS_APP];
+    setOverlayOffsets.transfers = [];
+    setOverlayOffsets.modal = true;
 
     /**
      * Directly emit a TRANSFORM_UPDATED event with the given value.
@@ -280,15 +290,12 @@ define(function (require, exports) {
                 return this.transfer(updateTransform);
             })
             .then(function () {
-                var centerOffsets = this.flux.store("ui").getState().centerOffsets;
-                return adapterUI.setOverlayOffsets(centerOffsets);
-            })
-            .then(function () {
-                return this.transfer(setOverlayCloaking);
+                this.flux.actions.ui.setOverlayCloakingThrottled();
+                this.flux.actions.ui.setOverlayOffsetsThrottled();
             });
     };
     updatePanelSizes.reads = [];
-    updatePanelSizes.writes = [locks.JS_UI, locks.PS_APP];
+    updatePanelSizes.writes = [locks.JS_UI];
     updatePanelSizes.transfers = [setOverlayCloaking, updateTransform];
     updatePanelSizes.modal = true;
 
@@ -328,20 +335,6 @@ define(function (require, exports) {
     setOverlayOffsetsForFirstDocument.reads = [locks.JS_PREF, locks.JS_APP];
     setOverlayOffsetsForFirstDocument.writes = [locks.PS_APP];
     setOverlayOffsetsForFirstDocument.transfers = [];
-
-    /**
-     * Updates the center offsets being sent to PS
-     *
-     * @param {number} toolbarWidth
-     * @return {Promise}
-     */
-    var updateToolbarWidth = function (toolbarWidth) {
-        return this.transfer(updatePanelSizes, { toolbarWidth: toolbarWidth });
-    };
-    updateToolbarWidth.reads = [];
-    updateToolbarWidth.writes = [];
-    updateToolbarWidth.transfers = [updatePanelSizes];
-    updateToolbarWidth.modal = true;
 
     /**
      * Calculates the panZoom descriptor given bounds, panel width, zoom and uiFactor
@@ -676,10 +669,10 @@ define(function (require, exports) {
     exports.updateTransform = updateTransform;
     exports.setTransform = setTransform;
     exports.setOverlayCloaking = setOverlayCloaking;
+    exports.setOverlayOffsets = setOverlayOffsets;
     exports.cloak = cloak;
     exports.updatePanelSizes = updatePanelSizes;
     exports.setOverlayOffsetsForFirstDocument = setOverlayOffsetsForFirstDocument;
-    exports.updateToolbarWidth = updateToolbarWidth;
     exports.centerBounds = centerBounds;
     exports.centerOn = centerOn;
     exports.zoomInOut = zoomInOut;
