@@ -687,6 +687,7 @@ define(function (require, exports) {
                 .then(function () {
                     return Promise.join(initPromise, dispatchPromise, policyPromise, removePromise);
                 })
+                .bind(this)
                 .then(function () {
                     if (!currentLayer.vectorMaskEmpty) {
                         return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
