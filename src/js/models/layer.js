@@ -238,9 +238,17 @@ define(function (require, exports, module) {
         /** 
          * indicates if the vector mask has any path components.
          *
-         * @type {bounds}
+         * @type {boolean}
          */
-        vectorMaskEmpty: true
+        vectorMaskEmpty: true,
+
+        /** 
+         *indicates if a Font on a text layer is missing with 0 being a non missing font. 
+         * 
+         * @type {number}
+         */
+        textWarningLevel: 0
+ 
     });
 
     Layer.layerKinds = layerLib.layerKinds;
@@ -279,7 +287,8 @@ define(function (require, exports, module) {
                 isBackground: this.isBackground,
                 isLinked: this.isLinked,
                 vectorMaskEnabled: this.vectorMaskEnabled,
-                vectorMaskEmpty: this.vectorMaskEmpty
+                vectorMaskEmpty: this.vectorMaskEmpty,
+                textWarningLevel: this.textWarningLevel
             });
         },
         /**
@@ -497,6 +506,7 @@ define(function (require, exports, module) {
             isLinked: false,
             vectorMaskEnabled: false,
             vectorMaskEmpty: true,
+            textWarningLevel: 0,
             initialized: true
         });
     };
@@ -549,6 +559,7 @@ define(function (require, exports, module) {
             vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
             exportEnabled: exportEnabled,
             vectorMaskEmpty: layerDescriptor.vectorMaskEmpty,
+            textWarningLevel: layerDescriptor.textWarningLevel,
             isLinked: _extractIsLinked(layerDescriptor),
             initialized: initialized || selected
             // if not explicitly marked as initialized, then it is initialized iff it is selected
@@ -594,6 +605,7 @@ define(function (require, exports, module) {
                 vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
                 exportEnabled: exportEnabled,
                 vectorMaskEmpty: layerDescriptor.vectorMaskEmpty,
+                textWarningLevel: layerDescriptor.textWarningLevel,
                 isLinked: _extractIsLinked(layerDescriptor),
                 initialized: true
             };

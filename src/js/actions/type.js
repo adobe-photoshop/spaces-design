@@ -132,15 +132,24 @@ define(function (require, exports) {
             setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
             updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
 
-        return Promise.join(updatePromise, setFacePromise).bind(this).then(function () {
-            if (!modal) {
-                return this.transfer(layerActions.resetBounds, document, layers);
-            }
-        });
+        return Promise.join(updatePromise, setFacePromise)
+            .bind(this)
+            .then(function () {
+                if (!modal) {
+                    var anylayerTextWarning = layers.some(function (layer) {
+                        return layer.textWarningLevel > 0;
+                    });
+                    if (anylayerTextWarning) {
+                        return this.transfer(layerActions.resetLayers, document, layers, true);
+                    } else {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }
+                }
+            });
     };
     setPostScript.reads = [locks.JS_DOC];
     setPostScript.writes = [locks.PS_DOC, locks.JS_UI];
-    setPostScript.transfers = [updatePostScript, layerActions.resetBounds];
+    setPostScript.transfers = [updatePostScript, layerActions.resetBounds, layerActions.resetLayers];
     setPostScript.modal = true;
 
     /**
@@ -188,15 +197,24 @@ define(function (require, exports) {
             setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
             updatePromise = this.transfer(updateFace, document, layers, family, style);
 
-        return Promise.join(updatePromise, setFacePromise).bind(this).then(function () {
-            if (!modal) {
-                return this.transfer(layerActions.resetBounds, document, layers);
-            }
-        });
+        return Promise.join(updatePromise, setFacePromise)
+            .bind(this)
+            .then(function () {
+                if (!modal) {
+                    var anylayerTextWarning = layers.some(function (layer) {
+                        return layer.textWarningLevel > 0;
+                    });
+                    if (anylayerTextWarning) {
+                        return this.transfer(layerActions.resetLayers, document, layers, true);
+                    } else {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }
+                }
+            });
     };
     setFace.reads = [locks.JS_DOC];
     setFace.writes = [locks.JS_UI, locks.PS_DOC];
-    setFace.transfers = [updateFace, layerActions.resetBounds];
+    setFace.transfers = [updateFace, layerActions.resetBounds, layerActions.resetLayers];
     setFace.modal = true;
 
     /**
@@ -278,11 +296,22 @@ define(function (require, exports) {
         var updatePromise = this.transfer(updateColor, document, layers, color, modal, options),
             setColorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, playObject, true, typeOptions);
 
-        return Promise.join(updatePromise, setColorPromise);
+        return Promise.join(updatePromise, setColorPromise)
+            .bind(this)
+            .then(function () {
+                if (!modal) {
+                    var anylayerTextWarning = layers.some(function (layer) {
+                        return layer.textWarningLevel > 0;
+                    });
+                    if (anylayerTextWarning) {
+                        return this.transfer(layerActions.resetLayers, document, layers, true);
+                    }
+                }
+            });
     };
     setColor.reads = [locks.JS_DOC];
     setColor.writes = [locks.PS_DOC];
-    setColor.transfers = [updateColor];
+    setColor.transfers = [updateColor, layerActions.resetLayers];
     setColor.modal = true;
 
     /**
@@ -329,15 +358,24 @@ define(function (require, exports) {
             setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions),
             updatePromise = this.transfer(updateSize, document, layers, size);
 
-        return Promise.join(updatePromise, setSizePromise).bind(this).then(function () {
-            if (!modal) {
-                return this.transfer(layerActions.resetBounds, document, layers);
-            }
-        });
+        return Promise.join(updatePromise, setSizePromise)
+            .bind(this)
+            .then(function () {
+                if (!modal) {
+                    var anylayerTextWarning = layers.some(function (layer) {
+                        return layer.textWarningLevel > 0;
+                    });
+                    if (anylayerTextWarning) {
+                        return this.transfer(layerActions.resetLayers, document, layers, true);
+                    } else {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }
+                }
+            });
     };
     setSize.reads = [locks.JS_DOC];
     setSize.writes = [locks.JS_UI, locks.PS_DOC];
-    setSize.transfers = [updateSize, layerActions.resetBounds];
+    setSize.transfers = [updateSize, layerActions.resetBounds, layerActions.resetLayers];
     setSize.modal = true;
     
     /**
@@ -382,15 +420,24 @@ define(function (require, exports) {
             setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions),
             updatePromise = this.transfer(updateTracking, document, layers, tracking);
 
-        return Promise.join(updatePromise, setTrackingPromise).bind(this).then(function () {
-            if (!modal) {
-                return this.transfer(layerActions.resetBounds, document, layers);
-            }
-        });
+        return Promise.join(updatePromise, setTrackingPromise)
+            .bind(this)
+            .then(function () {
+                if (!modal) {
+                    var anylayerTextWarning = layers.some(function (layer) {
+                        return layer.textWarningLevel > 0;
+                    });
+                    if (anylayerTextWarning) {
+                        return this.transfer(layerActions.resetLayers, document, layers, true);
+                    } else {
+                        return this.transfer(layerActions.resetBounds, document, layers);
+                    }
+                }
+            });
     };
     setTracking.reads = [locks.JS_DOC];
     setTracking.writes = [locks.PS_DOC, locks.JS_UI];
-    setTracking.transfers = [updateTracking, layerActions.resetBounds];
+    setTracking.transfers = [updateTracking, layerActions.resetBounds, layerActions.resetLayers];
     setTracking.modal = true;
 
     /**
@@ -441,13 +488,20 @@ define(function (require, exports) {
 
         return Promise.join(updatePromise, setLeadingPromise).bind(this).then(function () {
             if (!modal) {
-                return this.transfer(layerActions.resetBounds, document, layers);
+                var anylayerTextWarning = layers.some(function (layer) {
+                    return layer.textWarningLevel > 0;
+                });
+                if (anylayerTextWarning) {
+                    return this.transfer(layerActions.resetLayers, document, layers, true);
+                } else {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                }
             }
         });
     };
     setLeading.reads = [locks.JS_DOC];
     setLeading.writes = [locks.PS_DOC, locks.JS_UI];
-    setLeading.transfers = [updateLeading, layerActions.resetBounds];
+    setLeading.transfers = [updateLeading, layerActions.resetBounds, layerActions.resetLayers];
     setLeading.modal = true;
 
     /**
@@ -495,13 +549,20 @@ define(function (require, exports) {
 
         return Promise.join(transferPromise, setAlignmentPromise).bind(this).then(function () {
             if (!modal) {
-                return this.transfer(layerActions.resetBounds, document, layers);
+                var anylayerTextWarning = layers.some(function (layer) {
+                    return layer.textWarningLevel > 0;
+                });
+                if (anylayerTextWarning) {
+                    return this.transfer(layerActions.resetLayers, document, layers, true);
+                } else {
+                    return this.transfer(layerActions.resetBounds, document, layers);
+                }
             }
         });
     };
     setAlignment.reads = [locks.JS_DOC];
     setAlignment.writes = [locks.PS_DOC, locks.JS_UI];
-    setAlignment.transfers = [updateAlignment, layerActions.resetBounds];
+    setAlignment.transfers = [updateAlignment, layerActions.resetBounds, layerActions.resetLayers];
     setAlignment.modal = true;
 
     /**
