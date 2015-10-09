@@ -254,7 +254,9 @@ define(function (require, exports, module) {
                             key: documentID,
                             disabled: disabled,
                             document: document,
-                            active: current
+                            active: current,
+                            shouldPanelGrow: !this.state[components.LAYERS_PANEL] &&
+                                !this.state[components.LIBRARIES_PANEL]
                         };
                         
                     documentProperties.transformPanels.push(

@@ -426,9 +426,21 @@
         flex-basis: 20rem;
     }
 
-    .layers, .libraries, .export, .effects {
-        min-height: 7rem;
+    .export, .effects {
+        height: 15%;
+        flex-grow: 0;
+        min-height: 0;
+        
+        &.section__expand {
+            height: auto;
+        }
+    }
 
+    .layers, .libraries {
+        min-height: 7rem;
+    }
+
+    .layers, .libraries, .export, .effects {
         &.section__collapsed {
             min-height: 3.2rem;
             flex-basis: 0;
