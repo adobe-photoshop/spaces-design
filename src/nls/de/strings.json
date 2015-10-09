@@ -260,7 +260,10 @@
         "EXPORT_REMOVE_ASSET": "Elementkonfiguration entfernen",
         "EXPORT_IOS_PRESETS": "3 iOS-Elemente + SVG hinzufügen",
         "EXPORT_HDPI_PRESETS": "6 HDPI-Elemente + SVG hinzufügen",
-        "EXPORT_DIALOG": "Exportieren..."
+        "EXPORT_DIALOG": "Exportieren",
+        "REFERENCE_POINT_TOOL": "Referenzpunkt setzen",
+        "VECTOR_MASK_MODE": "Maskierungsmodus",
+        "SEARCH": "Suchen"
     },
     "LAYER_KIND": {
         "0": "Beliebige Ebene",
@@ -278,6 +281,10 @@
         "12": "Hintergrundebene",
         "13": "Gruppenende-Ebene",
         "ARTBOARD": "Zeichenfläche"
+    },
+    "LAYER_KIND_ALERTS": {
+        "LINK_MISSING": "[8495445] ü_Missing Linked Object",
+        "LINK_CHANGED": "[8495446] ü_Linked Object Updated"
     },
     "COLOR_PICKER": {
         "FORMAT": "Format",
@@ -438,6 +445,7 @@
         "IPHONE_5": "iPhone 5",
         "IPAD_12": "iPad mini",
         "IPAD_34": "iPad Retina",
+        "IPAD_PRO": "iPad Pro",
         "ANDROID_1080P": "Android 1080p",
         "MS_SURFACE_PRO_3": "Microsoft Surface Pro 3",
         "APPLE_WATCH_38MM": "Apple Watch 38 mm",
@@ -447,19 +455,20 @@
     },
     "SEARCH": {
         "PLACEHOLDER": "Suchen, öffnen und auswählen",
+        "PLACEHOLDER_INITIALIZING": "Initialisierung…",
         "PLACEHOLDER_FILTER": "Suchen ",
         "NO_OPTIONS": "Keine übereinstimmenden Ergebnisse für Ihre Suche",
         "HEADERS": {
             "ALL_LAYER": "Ebenen",
             "CURRENT_LAYER": "Ebenen",
-            "CURRENT_DOC": "Aktuelle Dokumente",
+            "CURRENT_DOC": "Geöffnete Dokumente",
             "RECENT_DOC": "Zuletzt verwendete Dokumente",
             "MENU_COMMAND": "Menübefehle",
             "LIBRARY": "Alle Bibliotheken",
-            "FILTER": "Suche beschränken auf..."
+            "FILTER": "Suche beschränken auf…"
         },
         "CATEGORIES": {
-            "CURRENT_DOC": "Aktuelle Dokumente",
+            "CURRENT_DOC": "Geöffnete Dokumente",
             "RECENT_DOC": "Zuletzt verwendete Dokumente",
             "MENU_COMMAND": "Menübefehle",
             "ALL_LAYER": "Ebenen",
