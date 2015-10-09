@@ -656,7 +656,7 @@ define(function (require, exports, module) {
 
         if (!this.smartObject.linked) {
             return smartObjectTypes.EMBEDDED;
-        } else if (this.smartObject.link._obj === "ccLibrariesElement") {
+        } else if (this.smartObject.link && this.smartObject.link._obj === "ccLibrariesElement") {
             return smartObjectTypes.CLOUD_LINKED;
         } else {
             return smartObjectTypes.LOCAL_LINKED;
