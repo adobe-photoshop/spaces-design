@@ -69,6 +69,16 @@ define(function (require, exports, module) {
         linked: null,
 
         /**
+         * @type {boolean}
+         */
+        linkMissing: false,
+
+        /**
+         * @type {boolean}
+         */
+        linkChanged: false,
+
+        /**
          * @type {Link}
          */
         link: null

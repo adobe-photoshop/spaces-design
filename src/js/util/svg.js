@@ -41,7 +41,15 @@ define(function (require, exports) {
         } else if (layer.kind === layer.layerKinds.BACKGROUND) {
             iconID += layer.layerKinds.PIXEL;
         } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
-            iconID += layer.kind + "-linked";
+            if (layer.isCloudLinkedSmartObject()) {
+                iconID += "cloud-linked";
+            } else {
+                iconID += layer.kind + "-linked";
+            }
+
+            if (layer.smartObject.linkMissing) {
+                iconID += "-alert";
+            }
         } else {
             iconID += layer.kind;
         }
