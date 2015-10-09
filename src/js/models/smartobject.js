@@ -93,7 +93,7 @@ define(function (require, exports, module) {
     SmartObject.fromDescriptor = function (descriptor) {
         var nextSmartObject = new SmartObject(_.omit(descriptor, "link"));
 
-        if (descriptor.link) {
+        if (descriptor.link && _.isObject(descriptor.link)) {
             return nextSmartObject.set("link", new Link(descriptor.link));
         } else {
             return nextSmartObject;
