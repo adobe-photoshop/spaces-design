@@ -745,6 +745,43 @@ define(function (require, exports) {
     enterPathModalState.modal = true;
 
     /**
+     * recreate pointer policies if we're in Vector Mask Mode on UI Store change events
+     *
+     * return {Promise}
+     */
+    var handleVectorMaskUIChange = function () {
+        var toolStore = this.flux.store("tool"),
+            vectorMaskMode = toolStore.getVectorMode();
+
+        if (vectorMaskMode) {
+            var pointerPolicyID = toolStore.getVectorMaskPolicyID();
+
+            if (pointerPolicyID) {
+                return this.transfer(policy.removePointerPolicies, pointerPolicyID)
+                    .bind(this)
+                    .then(function () {
+                        var area = _getVectorMaskPolicyBounds.call(this),
+                            pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
+                                OS.eventKind.LEFT_MOUSE_DOWN,
+                                {},
+                                area);
+                    
+                        return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
+                    })
+                    .then(function (policyID) {
+                        this.dispatch(events.tool.VECTOR_MASK_POLICY_CHANGE, policyID);
+                    });
+            }
+        } else {
+            return Promise.resolve();
+        }
+    };
+    handleVectorMaskUIChange.reads = [locks.JS_UI, locks.JS_TOOL];
+    handleVectorMaskUIChange.writes = [locks.JS_TOOL];
+    handleVectorMaskUIChange.transfers = [policy.removePointerPolicies, policy.addPointerPolicies];
+    handleVectorMaskUIChange.modal = true;
+
+    /**
      * Register event listeners for native tool selection change events, register
      * tool keyboard shortcuts, and initialize the currently selected tool.
      * 
@@ -808,34 +845,18 @@ define(function (require, exports) {
             modifiers: {},
             fn: _vectorMaskHandler
         });
-        var DEBOUNCE_DELAY = 200;
-        _vectorMaskPolicyHandler = synchronization.debounce(function () {
+
+        var DEBOUNCE_DELAY = 200,
+            debouncedHandleVectorMaskUIChange = synchronization.debounce(
+                this.flux.actions.tools.handleVectorMaskUIChange, this, DEBOUNCE_DELAY, false);
+
+        _vectorMaskPolicyHandler = function () {
             var vectorMaskMode = toolStore.getVectorMode();
 
             if (vectorMaskMode) {
-                var pointerPolicyID = toolStore.getVectorMaskPolicyID();
-         
-                if (pointerPolicyID) {
-                    return this.transfer(policy.removePointerPolicies, pointerPolicyID)
-                        .bind(this)
-                        .then(function () {
-                            var area = _getVectorMaskPolicyBounds.call(this),
-                                pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                                    OS.eventKind.LEFT_MOUSE_DOWN,
-                                    {},
-                                    area);
-                        
-                            return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
-                        })
-                        .then(function (policyID) {
-                            this.dispatch(events.tool.VECTOR_MASK_POLICY_CHANGE, policyID);
-                        });
-                }
-            } else {
-                return Promise.resolve();
+                debouncedHandleVectorMaskUIChange();
             }
-        }.bind(this), this, DEBOUNCE_DELAY, false);
-
+        };
         uiStore.addListener("change", _vectorMaskPolicyHandler);
 
         var shortcutsPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),
@@ -851,8 +872,7 @@ define(function (require, exports) {
     beforeStartup.modal = true;
     beforeStartup.reads = [locks.JS_APP, locks.JS_TOOL];
     beforeStartup.writes = [locks.PS_TOOL];
-    beforeStartup.transfers = [shortcuts.addShortcuts, policy.removePointerPolicies,
-        policy.addPointerPolicies, initTool, changeModalState, changeVectorMaskMode];
+    beforeStartup.transfers = [shortcuts.addShortcuts, initTool, changeModalState, changeVectorMaskMode];
 
     /**
      * Remove event handlers.
@@ -880,6 +900,7 @@ define(function (require, exports) {
     exports.handleToolModalStateChanged = handleToolModalStateChanged;
     exports.changeModalState = changeModalState;
     exports.enterPathModalState = enterPathModalState;
+    exports.handleVectorMaskUIChange = handleVectorMaskUIChange;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
