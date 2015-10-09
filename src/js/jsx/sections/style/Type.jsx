@@ -683,6 +683,7 @@ define(function (require, exports, module) {
                                 disabled={locked}
                                 min={MIN_TRACKING}
                                 max={MAX_TRACKING}
+                                size="column-5"
                                 onChange={this._handleTrackingChange}
                                 valueType="size" />
                         </div>
@@ -696,6 +697,7 @@ define(function (require, exports, module) {
                             <NumberInput
                                 value={locked ? null : leadings}
                                 precision={2}
+                                size="column-5"
                                 min={toPixels(MIN_LEADING_PTS)}
                                 max={toPixels(MAX_LEADING_PTS)}
                                 disabled={locked}
