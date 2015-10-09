@@ -408,11 +408,15 @@ define(function (require, exports) {
                     naiveLayerCount = document.layers.all.size + layerSpec.length;
 
                 return nextLayerCount !== naiveLayerCount;
+            })
+            .tap(function () {
+                return this.transfer(tools.resetBorderPolicies);
             });
     };
     addLayers.modal = true;
     addLayers.reads = [locks.PS_DOC];
     addLayers.writes = [locks.JS_DOC];
+    addLayers.transfers = [tools.resetBorderPolicies];
     addLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**

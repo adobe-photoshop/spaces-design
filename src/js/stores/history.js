@@ -84,6 +84,7 @@ define(function (require, exports, module) {
                 events.history.LOAD_HISTORY_STATE, this._loadHistoryState,
                 events.history.LOAD_HISTORY_STATE_REVERT, this._loadLastSavedHistoryState,
                 events.history.ADJUST_HISTORY_STATE, this._adjustHistoryState,
+                events.history.FINALIZE_HISTORY_STATE, this._handlePostHistoryEvent,
                 events.history.DELETE_DOCUMENT_HISTORY, this._deleteHistory,
                 events.document.CLOSE_DOCUMENT, this._deleteHistory,
                 events.document.DOCUMENT_RENAMED, this._deleteHistory,
@@ -544,7 +545,7 @@ define(function (require, exports, module) {
 
         /**
          * A tracked-change has occurred, so we push the current state onto our history stack
-         * ad update the current pointer.  This allows for the possibility of a rogue state
+         * and update the current pointer.  This allows for the possibility of a rogue state
          * having been pushed prior, in which case this will merge instead of push.
          *
          * @param {object} payload
