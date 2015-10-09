@@ -1084,22 +1084,38 @@ define(function (require, exports) {
                 });
         }, this);
 
-        _layerTransformHandler = synchronization.debounce(function (event) {
+        _layerTransformHandler = function (event) {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-            
+
             var appStore = this.flux.store("application"),
-                currentDoc = appStore.getCurrentDocument(),
-                artboardsSelected = currentDoc.layers.selected.some(function (layer) {
+                currentDoc = appStore.getCurrentDocument();
+
+            // Handle the normal move events with a debounced function
+            var debouncedMoveHandler = synchronization.debounce(function () {
+                var artboardsSelected = currentDoc.layers.selected.some(function (layer) {
                     return layer.isArtboard;
                 });
-                
-            // If it was a simple click/didn't move anything, there is no need to update bounds
-            // But, if we're moving multiple artboards, we get one event with 0,0, which means
-            // we hit this and we have to update bounds
-            if (event.trackerEndedWithoutBreakingHysteresis && !artboardsSelected) {
-                return Promise.resolve();
-            }
 
+                // If it was a simple click/didn't move anything, there is no need to update bounds
+                // But, if we're moving multiple artboards, we get one event with 0,0, which means
+                // we hit this and we have to update bounds
+                if (event.trackerEndedWithoutBreakingHysteresis && !artboardsSelected) {
+                    return Promise.resolve();
+                } else {
+                    var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
+                            // Reset these layers completely because their impliedFontSize may have changed
+                            return layer.kind === layer.layerKinds.TEXT;
+                        }),
+                        otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
+                            return layer.kind === layer.layerKinds.TEXT;
+                        }),
+                        textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
+                        otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers);
+                    return Promise.join(textLayersPromise, otherLayersPromise);
+                }
+            }, this, 200);
+
+            // newDuplicateSheets move events should be processed immediately, not debounced
             if (event.newDuplicateSheets) {
                 var duplicateInfo = event.newDuplicateSheets,
                     newSheetIDlist = duplicateInfo.newSheetIDlist,
@@ -1112,19 +1128,9 @@ define(function (require, exports) {
                 // existing layers.
                 return this.flux.actions.layers.addLayers(currentDoc, toIDs, true, false);
             } else {
-                var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
-                        // Reset these layers completely because their impliedFontSize may have changed
-                        return layer.kind === layer.layerKinds.TEXT;
-                    }),
-                    otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
-                        return layer.kind === layer.layerKinds.TEXT;
-                    }),
-                    textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
-                    otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers);
-
-                return Promise.join(textLayersPromise, otherLayersPromise);
+                return debouncedMoveHandler();
             }
-        }, this);
+        }.bind(this);
 
         _moveToArtboardHandler = synchronization.debounce(function () {
             // Undefined makes it use the most recent document model
