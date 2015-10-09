@@ -139,14 +139,14 @@ define(function (require, exports) {
     var isEditableGraphic = function (element) {
         var representation = element.getPrimaryRepresentation();
         
-        return libraryActions.EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type);
+        return !!representation && libraryActions.EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type);
     };
     
     /**
      * Return the file extension of the element's primary representation.
      * 
      * @param {AdobeLibraryElement} element
-     * @return {?string}
+     * @return {string|undefined}
      */
     var getExtension = function (element) {
         if (!_REPRESENTATION_TO_EXTENSION_MAP) {
@@ -155,7 +155,7 @@ define(function (require, exports) {
         
         var representation = element.getPrimaryRepresentation();
             
-        return _REPRESENTATION_TO_EXTENSION_MAP[representation.type];
+        return representation && _REPRESENTATION_TO_EXTENSION_MAP[representation.type];
     };
 
     exports.formatCharStyle = formatCharStyle;

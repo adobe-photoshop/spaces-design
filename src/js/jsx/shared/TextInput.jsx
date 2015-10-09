@@ -138,6 +138,15 @@ define(function (require, exports, module) {
                 });
             }
         },
+        
+        /**
+         * Return the text input's current value
+         * 
+         * @return {string}
+         */
+        getValue: function () {
+            return this.state.value;
+        },
 
         /**
          * Update the value of the text input.

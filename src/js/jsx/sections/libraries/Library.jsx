@@ -129,6 +129,7 @@ define(function (require, exports, module) {
             // Library's modified time reflects itself and its elements, so there is no need to check its element's 
             // modified time.
             return this.props.library !== nextProps.library ||
+                this.props.className !== nextProps.className ||
                 this._libraryLastModified !== nextProps.library.modified ||
                 !_.isEqual(this.state, nextState);
         },
@@ -256,7 +257,7 @@ define(function (require, exports, module) {
 
             if (!library || library.elements.length === 0) {
                 return (
-                    <div className="libraries__content panel__info">
+                    <div className={classnames("libraries__content panel__info", this.props.className)}>
                         <div className="panel__info__title">
                             {strings.LIBRARIES.INTRO_TITLE}
                         </div>
@@ -279,7 +280,7 @@ define(function (require, exports, module) {
                 graphicAssets = this._renderAssets("graphic", strings.LIBRARIES.GRAPHICS, Graphic),
                 brushAssets = this._renderAssets("brush", strings.LIBRARIES.BRUSHES);
             
-            var classNames = classnames("libraries__content", {
+            var classNames = classnames("libraries__content", this.props.className, {
                 "libraries__content-drag": this.state.hasDraggedItem
             });
 

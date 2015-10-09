@@ -95,6 +95,18 @@ define(function (require, exports, module) {
         _handleLibraryRemove: function () {
             this.getFlux().actions.libraries.removeCurrentLibrary();
         },
+        
+        /**
+         * Handle create new library.
+         *
+         * @private
+         * @param {boolean} isCreating - whether or not the LibraryList is in create library mode.
+         */
+        _handleCreateLibrary: function (isCreating) {
+            this.setState({
+                isCreatingLibrary: isCreating
+            });
+        },
 
         /**
          * Return library panel content based on the connection status of CC Library.
@@ -116,6 +128,7 @@ define(function (require, exports, module) {
             if (connected) {
                 containerContents = (
                 <Library
+                    className={this.state.isCreatingLibrary && "libraries__content__hidden"}
                     addElement={this._handleAddElement}
                     lastLocallyCreatedElement={this.state.lastLocallyCreatedElement}
                     lastLocallyUpdatedGraphic={this.state.lastLocallyUpdatedGraphic}
@@ -143,6 +156,7 @@ define(function (require, exports, module) {
                         libraries={libraries}
                         selected={currentLibrary}
                         onLibraryChange={this._handleLibraryChange}
+                        onCreateLibrary={this._handleCreateLibrary}
                         disabled={!connected} />
                     {containerContents}
                     <LibraryBar
