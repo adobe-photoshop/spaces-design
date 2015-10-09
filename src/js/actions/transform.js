@@ -1092,14 +1092,8 @@ define(function (require, exports) {
 
             // Handle the normal move events with a debounced function
             var debouncedMoveHandler = synchronization.debounce(function () {
-                var artboardsSelected = currentDoc.layers.selected.some(function (layer) {
-                    return layer.isArtboard;
-                });
-
-                // If it was a simple click/didn't move anything, there is no need to update bounds
-                // But, if we're moving multiple artboards, we get one event with 0,0, which means
-                // we hit this and we have to update bounds
-                if (event.trackerEndedWithoutBreakingHysteresis && !artboardsSelected) {
+                // short circuit based on this trackerEndedWithoutBreakingHysteresis event flag
+                if (event.trackerEndedWithoutBreakingHysteresis) {
                     return Promise.resolve();
                 } else {
                     var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
