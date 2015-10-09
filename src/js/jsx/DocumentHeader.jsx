@@ -143,13 +143,14 @@ define(function (require, exports, module) {
                 this.state.exportActive !== nextState.exportActive ||
                 this.state.maskModeActive !== nextState.maskModeActive ||
                 this.state.panelColumnCount !== nextState.panelColumnCount ||
+                this.state.useSmallTab !== nextState.useSmallTab ||
                 !Immutable.is(this.state.documentIDs, nextState.documentIDs) ||
                 !Immutable.is(this.state.document, nextState.document);
         },
 
         componentDidMount: function () {
             this._updateTabContainerScroll();
-            this._updateTabContainerWidth();
+            this._updateTabSize();
 
             this._updatePanelSizesDebounced = synchronization.debounce(this._updatePanelSizes, this, 500);
             os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
@@ -166,30 +167,30 @@ define(function (require, exports, module) {
 
         componentDidUpdate: function () {
             this._updateTabContainerScroll();
-            this._updateTabContainerWidth();
+            this._updateTabSize();
         },
         
         /**
-         * Update the state with the width of the tab container. 
-         *
+         * In the document header, we render the document title container twice, and the second container is always
+         * rendered with regular tab size and is invisible to the user. Then, we detect whether the second container 
+         * is packed. If so, we re-render the first container with small tab size.
+         * 
          * @private
-         * @param  {function=} handler - React setState handler
+         * @param  {function=} callback
          */
-        _updateTabContainerWidth: function (handler) {
-            this.setState({
-                headerWidth: this.refs.tabContainer.getDOMNode().clientWidth
-            }, handler);
+        _updateTabSize: function (callback) {
+            var hasEnoughRoomForRegularTab = this.refs.spaceStub.getDOMNode().clientWidth > 0;
+            this.setState({ useSmallTab: !hasEnoughRoomForRegularTab }, callback);
         },
 
         /**
          * Update the state with the size of the header element on resize
          *
          * @private
-         * @return {Promise}
          */
         _handleWindowResize: function () {
             return new Promise(function (resolve) {
-                this._updateTabContainerWidth(resolve);
+                this._updateTabSize(resolve);
             }.bind(this));
         },
 
@@ -232,8 +233,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var documentStore = this.getFlux().store("document"),
-                document = this.state.document,
-                smallTab = this.state.documentIDs.size > this.state.headerWidth / 90;
+                document = this.state.document;
 
             var exportDisabled = !document || document.unsupported,
                 maskDisabled = !document || document.unsupported ||
@@ -246,28 +246,45 @@ define(function (require, exports, module) {
                     firstLayer.kind === firstLayer.layerKinds.VECTOR ||
                     firstLayer.isBackground;
             }
-
-            var documentTabs = this.state.documentIDs.map(function (docID) {
+ 
+            var documentTabs = [],
+                documentRegularTabs = [];
+                
+            this.state.documentIDs.forEach(function (docID) {
                 var doc = documentStore.getDocument(docID);
 
                 if (doc) {
-                    return (
+                    var tabAttrs = {
+                        key: "docheader" + docID,
+                        name: doc.name,
+                        dirty: doc.dirty,
+                        unsupported: doc.unsupported,
+                        current: document && docID === document.id
+                    };
+                    
+                    documentTabs.push(
                         <DocumentHeaderTab
-                            key={"docheader" + docID}
-                            smallTab={smallTab}
-                            name={doc.name}
-                            dirty={doc.dirty}
-                            unsupported={doc.unsupported}
-                            onClick={this._handleTabClick.bind(this, docID)}
-                            current={document && docID === document.id} />
+                            {...tabAttrs}
+                            smallTab={this.state.useSmallTab}
+                            onClick={this._handleTabClick.bind(this, docID)}/>
+                    );
+                    
+                    documentRegularTabs.push(
+                        <DocumentHeaderTab {...tabAttrs}/>
                     );
                 }
             }, this);
 
             return (
                 <div className="document-container">
-                    <div className="document-header" ref="tabContainer">
+                    <div className="document-header-container" ref="tabContainer">
+                        <div className="document-header">
                             {documentTabs}
+                        </div>
+                        <div className="document-header__hidden">
+                            {documentRegularTabs}
+                            <div className="document-title__stub" ref="spaceStub"/>
+                        </div>
                     </div>
                     <div className="icon-header">
                         <div className="icon-header-buttons">
