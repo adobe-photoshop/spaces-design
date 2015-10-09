@@ -545,7 +545,7 @@ define(function (require, exports) {
         
         var representation = element.getPrimaryRepresentation();
         
-        if (!EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type)) {
+        if (representation && !EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type)) {
             log.debug("[CC Lib] openGraphicForEdit: unsupported graphic type: " + representation.type);
             return Promise.resolve();
         }
@@ -895,13 +895,12 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument(),
             selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
-            selectedUnlockedLayers = selectedLayers.filter(function (l) { return !l.locked; });
+            selectedUnlockedLayers = selectedLayers.filter(function (l) { return !l.locked; }),
+            representation = element.getPrimaryRepresentation();
 
-        if (selectedUnlockedLayers.isEmpty()) {
+        if (selectedUnlockedLayers.isEmpty() || !representation) {
             return Promise.resolve();
         }
-
-        var representation = element.getPrimaryRepresentation();
 
         return Promise.fromNode(function (done) {
                 representation.getContentPath(done);

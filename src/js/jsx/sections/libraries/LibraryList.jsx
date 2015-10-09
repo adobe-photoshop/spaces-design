@@ -26,6 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         _ = require("lodash"),
+        Promise = require("bluebird"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
         
@@ -82,39 +83,40 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function () {
-            var renameInput = this.refs.input;
-            
-            if (renameInput) {
+            if (this.refs.libraryNameInput) {
                 window.setTimeout(function () {
-                    renameInput.acquireFocus();
-                    renameInput.getDOMNode().focus();
-                }, 250);
+                    var libraryNameInput = this.refs.libraryNameInput;
+                    
+                    // Check the existence of the input again, in case it is unmounted after the timeout.
+                    if (libraryNameInput) {
+                        libraryNameInput.acquireFocus();
+                        libraryNameInput.getDOMNode().focus();
+                    }
+                }.bind(this), 250);
             }
         },
 
         /**
-         * Handles the item selection
-         * Later on, we'll have "add new library" item in this list
+         * Handles the list item selection. 
          *
          * @private
-         * @param {string} libraryID Selected item ID
+         * @param {string} itemID - either libraryID or one of _LIBRARY_COMMANDS.
          * @return {boolean}
          */
-        _handleChangeLibrary: function (libraryID) {
-            if (_LIBRARY_COMMANDS.indexOf(libraryID) === -1) {
-                this.props.onLibraryChange(libraryID);
+        _handleSelectListItem: function (itemID) {
+            if (_LIBRARY_COMMANDS.indexOf(itemID) === -1) {
+                // itemID is libraryID.
+                this.props.onLibraryChange(itemID);
                 return true;
             }
 
-            var selectedCommand = libraryID,
-                newLibraryName = selectedCommand === _RENAME_LIBRARY ? this.props.selected.name : "";
+            this.setState({ command: itemID });
+            
+            if (itemID === _CREATE_LIBRARY && this.props.onCreateLibrary) {
+                this.props.onCreateLibrary(true);
+            }
 
-            this.setState({
-                command: selectedCommand,
-                newLibraryName: newLibraryName
-            });
-
-            // Cancel Datalist selection
+            // Return false to cancel the current selection.
             return false;
         },
 
@@ -182,52 +184,61 @@ define(function (require, exports, module) {
 
             return options;
         },
-
+        
         /**
-         * Handle change of current library's name. The new name is not committed yet.
+         * Handle text input keydown event. If the key is Return/Enter, we call the onConfirm handler to either
+         * create or rename a library.
          *
          * @private
-         * @param  {SyntheticEvent} event
-         * @param  {string} newName
+         * @param {SyntheticEvent} event
          */
-        _handleChangeName: function (event, newName) {
-            this.setState({
-                newLibraryName: newName
-            });
-        },
-
-        /**
-         * Invoke libraries action to change the current library's name.
-         *
-         * @private
-         */
-        _handleRename: function () {
-            if (this.state.newLibraryName.length !== 0) {
-                this.getFlux().actions.libraries.renameLibrary(this.props.selected.id, this.state.newLibraryName);
-                this.setState({ command: null });
+        _handleLibraryNameInputKeydown: function (event) {
+            if (event.key === "Return" || event.key === "Enter") {
+                this._handleConfirmCommand();
+            } else if (event.key === "Escape") {
+                this._handleCancelCommand();
             }
         },
-
+        
         /**
-         * Invoke libraries action to create a library
-         *
+         * Handle confirmation of current library commands (create / rename / delete).
+         * 
          * @private
          */
-        _handleCreate: function () {
-            if (this.state.newLibraryName.length !== 0) {
-                this.getFlux().actions.libraries.createLibrary(this.state.newLibraryName);
-                this.setState({ command: null });
+        _handleConfirmCommand: function () {
+            var libraryName = this.refs.libraryNameInput ? this.refs.libraryNameInput.getValue() : "",
+                libraryActions = this.getFlux().actions.libraries,
+                commandPromise = Promise.resolve();
+            
+            switch (this.state.command) {
+                case _CREATE_LIBRARY:
+                    if (libraryName.length !== 0) {
+                        commandPromise = libraryActions.createLibrary(libraryName)
+                            .bind(this)
+                            .then(function () {
+                                if (this.props.onCreateLibrary) {
+                                    this.props.onCreateLibrary(false);
+                                }
+                            });
+                    }
+                    break;
+                
+                case _RENAME_LIBRARY:
+                    if (libraryName.length !== 0) {
+                        commandPromise = libraryActions.renameLibrary(this.props.selected.id, libraryName);
+                    }
+                    break;
+                
+                case _DELETE_LIBRARY:
+                    commandPromise = libraryActions.removeLibrary(this.props.selected.id);
+                    break;
             }
-        },
-
-        /**
-         * Invoke libraries action to delete the current library
-         *
-         * @private
-         */
-        _handleDelete: function () {
-            this.getFlux().actions.libraries.removeLibrary(this.props.selected.id);
-            this.setState({ command: null });
+            
+            commandPromise
+                .bind(this)
+                .then(function () {
+                    this.setState({ command: null });
+                });
         },
 
         /**
@@ -235,7 +246,11 @@ define(function (require, exports, module) {
          *
          * @private
          */
-        _handleCancel: function () {
+        _handleCancelCommand: function () {
+            if (this.state.command === _CREATE_LIBRARY && this.props.onCreateLibrary) {
+                this.props.onCreateLibrary(false);
+            }
+            
             this.setState({ command: null });
         },
 
@@ -267,8 +282,8 @@ define(function (require, exports, module) {
                 body={body}
                 confirm={confirmBtn}
                 cancel={cancelBtn}
-                onConfirm={this._handleDelete}
-                onCancel={this._handleCancel}/>);
+                onConfirm={this._handleConfirmCommand}
+                onCancel={this._handleCancelCommand}/>);
         },
 
         /**
@@ -310,7 +325,7 @@ define(function (require, exports, module) {
                     value={selectedLibraryName}
                     live={false}
                     autoSelect={false}
-                    onChange={this._handleChangeLibrary}
+                    onChange={this._handleSelectListItem}
                     releaseOnBlur={true}
                     defaultSelected={selectedLibraryID}
                     disabled={this.props.disabled} />
@@ -349,25 +364,25 @@ define(function (require, exports, module) {
             }
 
             var isInRenameMode = command === _RENAME_LIBRARY,
-                onConfirmHandler = isInRenameMode ? this._handleRename : this._handleCreate,
+                inputDefaultValue = isInRenameMode ? this.props.selected.name : "",
                 confirmBtnText = isInRenameMode ? strings.LIBRARIES.BTN_RENAME : strings.LIBRARIES.BTN_CREATE;
 
             return (<div className="libraries__bar__top__content libraries__bar__top__content-input">
                 <TextInput
-                    ref="input"
+                    ref="libraryNameInput"
                     type="text"
                     live={true}
                     continuous={true}
                     className="libraires__bar__input"
-                    value={this.state.newLibraryName}
+                    value={inputDefaultValue}
                     placeholderText={strings.LIBRARIES.LIBRARY_NAME}
-                    onChange={this._handleChangeName}/>
+                    onKeyDown={this._handleLibraryNameInputKeydown}/>
                 <div className="libraries__bar__btn-cancel"
-                     onClick={this._handleCancel}>
+                     onClick={this._handleCancelCommand}>
                     {strings.LIBRARIES.BTN_CANCEL}
                 </div>
                 <div className="libraries__bar__btn-confirm"
-                     onClick={onConfirmHandler}>
+                     onClick={this._handleConfirmCommand}>
                     {confirmBtnText}
                 </div>
             </div>);
