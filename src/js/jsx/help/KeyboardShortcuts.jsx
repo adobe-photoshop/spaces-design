@@ -28,7 +28,9 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var system = require("js/util/system"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        Button = require("jsx!js/jsx/shared/Button"),
+        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
         
     var KeyboardShortcuts = React.createClass({
 
@@ -63,7 +65,10 @@ define(function (require, exports, module) {
                     shortcuts.SELECT_TOOL.TARGET_LAYER_WIN,
                 searchInstruction = system.isMac ?
                     shortcuts.TOOLS.SEARCH_INSTRUCTION_MAC :
-                    shortcuts.TOOLS.SEARCH_INSTRUCTION_WIN;
+                    shortcuts.TOOLS.SEARCH_INSTRUCTION_WIN,
+                exportInstruction = system.isMac ?
+                    shortcuts.TOOLS.EXPORT_INSTRUCTION_MAC :
+                    shortcuts.TOOLS.EXPORT_INSTRUCTION_WIN;
             
             return (
                 <div className="keyboard-shortcut__content" onClick={this._dismissDialog}>
@@ -71,33 +76,92 @@ define(function (require, exports, module) {
                         <h2 className="keyboard-shortcut__title">{shortcuts.TOOLS_TITLE}</h2>
                         <ul className="keyboard-shortcut__list">
                             <li>
-                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.SELECT}</span>
+                                <Button>
+                                    <SVGIcon CSSID="tool-newSelect" />
+                                </Button>
+                                <span className="keyboard-shortcut__name">
+                                    
+                                    {shortcuts.TOOLS.SELECT}
+                                </span>
                                 <span className="keyboard-shortcut__instr">V</span>
                             </li>
                             <li>
+                                <Button>
+                                    <SVGIcon CSSID="tool-rectangle" />
+                                </Button>
                                 <span className="keyboard-shortcut__name">{shortcuts.TOOLS.RECTANGLE}</span>
                                 <span className="keyboard-shortcut__instr">R</span>
                             </li>
                             <li>
+                                <Button>
+                                    <SVGIcon CSSID="tool-ellipse" />
+                                </Button>
                                 <span className="keyboard-shortcut__name">{shortcuts.TOOLS.ELLIPSE}</span>
                                 <span className="keyboard-shortcut__instr">E</span>
                             </li>
                             <li>
+                                <Button>
+                                    <SVGIcon CSSID="tool-pen" />
+                                </Button>
                                 <span className="keyboard-shortcut__name">{shortcuts.TOOLS.PEN}</span>
                                 <span className="keyboard-shortcut__instr">P</span>
                             </li>
                             <li>
+                                <Button>
+                                    <SVGIcon CSSID="tool-typeCreateOrEdit" />
+                                </Button>
                                 <span className="keyboard-shortcut__name">{shortcuts.TOOLS.TYPE}</span>
                                 <span className="keyboard-shortcut__instr">T</span>
                             </li>
                             <li>
+                                <Button>
+                                    <SVGIcon CSSID="tool-eyedropper" />
+                                </Button>
                                 <span className="keyboard-shortcut__name">{shortcuts.TOOLS.SAMPLER}</span>
                                 <span className="keyboard-shortcut__instr">I</span>
                             </li>
                             <li>
+                                <span className="keyboard-shortcut__name">
+                                    &nbsp;&nbsp;&nbsp;&nbsp;{shortcuts.TOOLS.SAMPLER_EFFECTS}
+                                </span>
+                                <span className="keyboard-shortcut__instr">
+                                    {shortcuts.TOOLS.SAMPLER_INSTRUCTION_EFFECTS}
+                                </span>
+                            </li>
+                            <li>
+                                <span className="keyboard-shortcut__name">
+                                    &nbsp;&nbsp;&nbsp;&nbsp;{shortcuts.TOOLS.SAMPLER_HUD}
+                                </span>
+                                <span className="keyboard-shortcut__instr">
+                                    {shortcuts.TOOLS.SAMPLER_INSTRUCTION_HUD}
+                                </span>
+                            </li>
+                        </ul>
+                        <h2 className="keyboard-shortcut__title">{shortcuts.MORE_TITLE}</h2>
+                        <ul className="keyboard-shortcut__list">
+                            <li>
+                                <Button>
+                                    <SVGIcon CSSID="layer-search-app" />
+                                </Button>
                                 <span className="keyboard-shortcut__name">{shortcuts.TOOLS.SEARCH}</span>
                                 <span className="keyboard-shortcut__instr">
                                     {searchInstruction}
+                                </span>
+                            </li>
+                            <li>
+                                <Button>
+                                    <SVGIcon CSSID="tool-maskmode" />
+                                </Button>
+                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.MASKMODE}</span>
+                                <span className="keyboard-shortcut__instr">m</span>
+                            </li>
+                            <li>
+                                <Button>
+                                    <SVGIcon CSSID="extract-all" />
+                                </Button>
+                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.EXPORT}</span>
+                                <span className="keyboard-shortcut__instr">
+                                    {exportInstruction}
                                 </span>
                             </li>
                         </ul>

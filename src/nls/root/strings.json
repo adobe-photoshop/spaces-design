@@ -99,6 +99,7 @@
     },
     "KEYBOARD_SHORTCUTS": {
         "TOOLS_TITLE": "Tools",
+        "MORE_TITLE": "More",
         "SELECT_TITLE": "Select Tool",
         "TOOLS": {
             "SELECT": "Select",
@@ -107,9 +108,17 @@
             "PEN": "Pen",
             "TYPE": "Type",
             "SAMPLER": "Sampler",
+            "SAMPLER_EFFECTS": "Sample Effects",
+            "SAMPLER_INSTRUCTION_EFFECTS": "Shift + Click",
+            "SAMPLER_HUD": "Sample Options HUD",
+            "SAMPLER_INSTRUCTION_HUD": "Spacebar",
             "SEARCH": "Search",
             "SEARCH_INSTRUCTION_MAC": "Cmd + F",
-            "SEARCH_INSTRUCTION_WIN": "Ctrl + F"
+            "SEARCH_INSTRUCTION_WIN": "Ctrl + F",
+            "EXPORT": "Export",
+            "EXPORT_INSTRUCTION_MAC": "Cmd + E",
+            "EXPORT_INSTRUCTION_WIN": "Ctrl + E",
+            "MASKMODE": "Mask Mode"
         },
         "SELECT_TOOL": {
             "TARGET": "Target Nested Group / Layers",

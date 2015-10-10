@@ -37,9 +37,8 @@
 .keyboard-shortcut__content {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-left: 5rem;
-    margin-right: 5rem;
+    align-items: flex-start;
+    margin: 2.4rem 4.8rem 4.8rem 4.8rem;
     width: 76rem;
     font-size: 1.5rem;
 
@@ -49,13 +48,21 @@
         height: 4.5rem;
         border-bottom: @hairline solid @bg-alt;
         color: @warm-gray;
+        
+        .button-simple {
+            display: inline-block;
+            padding-top: .3rem;
+            height: 4.2rem;
+            float: left;
+            margin-right: 1rem;
+        }
     }
 }
 
 .keyboard-shortcut__title {
-    padding-bottom: 1rem;
     border-bottom: @hairline solid @warm-gray;
     font-size: 1.8rem;
+    line-height: 4.8rem;
 }
 
 .keyboard-shortcut__column-1, .keyboard-shortcut__column-2 {
