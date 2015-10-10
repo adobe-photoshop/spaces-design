@@ -90,7 +90,7 @@ define(function (require, exports, module) {
                 defaultSelected: null,
                 live: true,
                 startFocused: false,
-                placeholderText: "",
+                placeholderText: "[missing font]",
                 useAutofill: false,
                 neverSelectAllInput: false,
                 dontCloseDialogIDs: [],

@@ -625,17 +625,17 @@ define(function (require, exports, module) {
                                 disabled={locked} />
                         </div>
                         <div className={"control-group control-group__vertical"}>
-                        <Datalist
-                            className="dialog-type-weights"
-                            sorted={true}
-                            title={styleTitle}
-                            list={weightListID}
-                            disabled={locked || !styleTitle}
-                            value={styleTitle}
-                            defaultSelected={postScriptFamilyName}
-                            options={familyFontOptions}
-                            onChange={this._handleTypefaceChange}
-                            size="column-22" />
+                            <Datalist
+                                className="dialog-type-weights"
+                                sorted={true}
+                                title={styleTitle}
+                                list={weightListID}
+                                disabled={locked || !styleTitle}
+                                value={styleTitle}
+                                defaultSelected={postScriptFamilyName}
+                                options={familyFontOptions}
+                                onChange={this._handleTypefaceChange}
+                                size="weights column-22" />
                         </div>
                     </div>
                     <div className="formline formline__space-between">
