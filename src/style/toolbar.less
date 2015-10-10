@@ -22,6 +22,7 @@
  */
 
 @toolbar-button-size: 4.8rem;
+@toolbar-button-size-retina-fix: 5.0rem;
 @icon-dim: 2.5rem;
 @icon-size: @icon-dim @icon-dim;
 
@@ -35,7 +36,7 @@
 .toolbar {
     box-sizing: border-box;
     z-index: 1;
-    width: @toolbar-button-size + 0.2rem;
+    width: @toolbar-button-size-retina-fix;
     height: @toolbar-button-size - 0.2rem;
     background-color: @bg-panel;
     color: @item-active;
@@ -62,7 +63,7 @@
         bottom: 1.3rem;
         align-items: center;
         justify-content: center;
-        width: @toolbar-button-size;
+        width: @toolbar-button-size-retina-fix;
         flex-wrap: wrap;
         
         .button-simple.toolbar__zoom {
@@ -75,7 +76,7 @@
             }
         }
         .number-input {
-            width: @toolbar-button-size;
+            width: @toolbar-button-size-retina-fix;
             text-align: center;
             font-size: @text-medium;
             border-bottom-color: transparent;
@@ -99,7 +100,7 @@
 }
 
 .toolbar li .button-simple {
-    width: @toolbar-button-size;
+    width: @toolbar-button-size-retina-fix;
     height: @toolbar-button-size;
     margin:  0.1rem 0;
     box-shadow: none;
