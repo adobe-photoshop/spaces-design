@@ -145,13 +145,15 @@ define(function (require, exports, module) {
 
         render: function () {
             var hasDocument = this.getFlux().store("application").getCurrentDocument();
-
+            
             var className = classnames({
                 main: true,
                 "main__ready": this.state.ready,
                 "main__no-panel": hasDocument && this.state.numberOfPanels === 0,
-                "main__one-panel": !hasDocument || this.state.numberOfPanels === 1,
-                "main__both-panel": hasDocument && this.state.numberOfPanels === 2
+                "main__one-panel":
+                    !hasDocument || this.state.numberOfPanels === 1 || this.state.singleColumnModeEnabled,
+                "main__both-panel":
+                    hasDocument && this.state.numberOfPanels === 2 && !this.state.singleColumnModeEnabled
             });
             return (
                 <div className={className}>

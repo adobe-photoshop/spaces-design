@@ -32,7 +32,8 @@
     top: 25%;
     left: 50%;
     transform: none;
-
+    transform: translate(-50%, 0); /*this is important so it won't bounce when typing in the search field */
+    
     width: @search-bar-width;
     min-height: 5rem;
     max-height: 60rem; /*this is important for use with dialog.showModa()*/
@@ -44,15 +45,44 @@
 }
 
 .main__no-panel .search-bar__dialog {
-    margin-left: -@search-bar-width / 2;
+    margin-left: 0;
 }
 
 .main__one-panel .search-bar__dialog {
-    margin-left: -(@panel-column-width / 2)  - (@search-bar-width / 2);
+    margin-left:  -(@panel-column-width / 2);
 }
 
 .main__both-panel .search-bar__dialog {
-    margin-left: @toolbar-width - @panel-column-width - (@search-bar-width / 2) - .5rem;
+    margin-left: -(@panel-column-width);
+}
+
+// Search Dialog at 1x
+
+@media (-webkit-min-device-pixel-ratio: 1) and (max-width: 1260px) {
+    .main__both-panel .search-bar__dialog {
+        margin-left: 0;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 1) and (max-width: 940px) {
+    .main__one-panel .search-bar__dialog {
+        margin-left: 0;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 1) and (max-width: 620px) {
+    .main__no-panel .search-bar__dialog {
+        margin-left: 0;
+    }
+}
+// Search Dialog at 2x
+
+@media (-webkit-min-device-pixel-ratio: 2) and (max-width: 1125px) {
+    .main__no-panel .search-bar__dialog,
+    .main__one-panel .search-bar__dialog,
+    .main__both-panel .search-bar__dialog {
+        margin-left: 0;
+    }
 }
 
 .search-bar__dialog .drop-down {

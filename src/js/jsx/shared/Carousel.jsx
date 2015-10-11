@@ -116,23 +116,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleClick: function (event) {
-            var elt = React.findDOMNode(this);
-            if (!elt) {
-                return;
-            }
-
-            var bounds = elt.getBoundingClientRect();
-            if (bounds.top <= event.clientY &&
-                event.clientY <= bounds.bottom &&
-                bounds.left <= event.clientX) {
-                var midpointX = bounds.left + Math.floor(bounds.width / 2);
-
-                if (event.clientX <= midpointX) {
-                    return this._prevItem(event);
-                } else if (event.clientX <= bounds.right) {
-                    return this._nextItem(event);
-                }
-            }
+            return this._nextItem(event);
         },
 
         /**
@@ -189,7 +173,7 @@ define(function (require, exports, module) {
                 return (
                     <a
                         className="carousel__slide-button__prev"
-                        onClick={this._gotoItem.bind(this, this.state.index - 1, this.state.index)}>
+                        onClick={this._gotoItem.bind(this, 0, 0)}>
                         <SVGIcon
                             viewBox="0 0 6 10"
                             CSSID="carousel-left"/>
