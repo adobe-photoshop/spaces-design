@@ -223,6 +223,7 @@ define(function (require, exports) {
     };
     setOverlayCloaking.reads = [locks.JS_UI];
     setOverlayCloaking.writes = [locks.PS_APP];
+    setOverlayCloaking.modal = true;
 
     /**
      * Cloak the non-UI portion of the screen immediately, redrawing on the

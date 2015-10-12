@@ -28,6 +28,7 @@ define(function (require, exports, module) {
 
     var util = require("adapter/util"),
         descriptor = require("adapter/ps/descriptor"),
+        adapterPS = require("adapter/ps"),
         OS = require("adapter/os"),
         UI = require("adapter/ps/ui"),
         toolLib = require("adapter/lib/tool"),
@@ -63,7 +64,7 @@ define(function (require, exports, module) {
         var toolStore = this.flux.store("tool"),
             applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            vectorMode = toolStore.getVectorMode() || false;
+            vectorMode = toolStore.getVectorMode();
 
         if (!vectorMode || !currentDocument) {
             return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
@@ -109,7 +110,7 @@ define(function (require, exports, module) {
      */
     var _nativeToolName = function () {
         var toolStore = this.flux.store("tool"),
-            vectorMode = toolStore.getVectorMode() || false;
+            vectorMode = toolStore.getVectorMode();
 
         if (vectorMode) {
             return "directSelectTool";
@@ -282,6 +283,8 @@ define(function (require, exports, module) {
     SuperSelectTool.prototype.onKeyDown = function (event) {
         var flux = this.getFlux(),
             applicationStore = flux.store("application"),
+            toolStore = flux.store("tool"),
+            vectorMaskMode = toolStore.getVectorMode(),
             currentDocument = applicationStore.getCurrentDocument();
 
         if (!currentDocument) {
@@ -292,15 +295,23 @@ define(function (require, exports, module) {
 
         switch (detail.keyCode) {
         case OS.eventKeyCode.ESCAPE: // Escape
-            var dontDeselectAll = system.isMac ? detail.modifiers.alt : detail.modifiers.shift;
-            flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
+            if (vectorMaskMode) {
+                flux.actions.tools.changeVectorMaskMode(false);
+            } else {
+                var dontDeselectAll = system.isMac ? detail.modifiers.alt : detail.modifiers.shift;
+                flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
+            }
             break;
         case OS.eventKeyCode.TAB: // Tab
             var cycleBack = detail.modifiers.shift;
             flux.actions.superselect.nextSibling(currentDocument, cycleBack);
             break;
         case OS.eventKeyCode.ENTER: // Enter
-            flux.actions.superselect.diveIn(currentDocument);
+            if (vectorMaskMode) {
+                adapterPS.endModalToolState(true);
+            } else {
+                flux.actions.superselect.diveIn(currentDocument);
+            }
             break;
         }
 

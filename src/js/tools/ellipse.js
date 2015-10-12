@@ -46,7 +46,7 @@ define(function (require, exports, module) {
      */
     var _selectHandler = function () {
         var toolStore = this.flux.store("tool"),
-            vectorMode = toolStore.getVectorMode() || false,
+            vectorMode = toolStore.getVectorMode(),
             toolMode = toolLib.toolModes.SHAPE,
             firstLaunch = true;
 
