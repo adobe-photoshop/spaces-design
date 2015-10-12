@@ -153,7 +153,7 @@ define(function (require, exports, module) {
                                     <SVGIcon CSSID="tool-maskmode" />
                                 </Button>
                                 <span className="keyboard-shortcut__name">{shortcuts.TOOLS.MASKMODE}</span>
-                                <span className="keyboard-shortcut__instr">m</span>
+                                <span className="keyboard-shortcut__instr">M</span>
                             </li>
                             <li>
                                 <Button>
