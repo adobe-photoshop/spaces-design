@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var collection = require("js/util/collection");
+    var SVGIcon = require("./SVGIcon"),
+        collection = require("js/util/collection");
 
     /**
      * If an array of selected values are provided, derive state
@@ -101,7 +102,11 @@ define(function (require, exports, module) {
                         type="checkbox"
                         checked={checked}
                         onChange={!this.props.disabled && this._handleClick} />
-                    <label htmlFor={this.state.uniqueId}></label>
+                    <label htmlFor={this.state.uniqueId}>
+                        <SVGIcon className="checked" CSSID="checkbox-checked"/>
+                        <SVGIcon className="mixed" CSSID="checkbox-mixed"/>
+                        <SVGIcon className="unchecked" CSSID="checkbox-unchecked"/>
+                    </label>
                 </div>
             );
         }
