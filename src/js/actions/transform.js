@@ -1084,22 +1084,45 @@ define(function (require, exports) {
                 });
         }, this);
 
-        _layerTransformHandler = synchronization.debounce(function (event) {
+        _layerTransformHandler = function (event) {
             this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-            
-            var appStore = this.flux.store("application"),
-                currentDoc = appStore.getCurrentDocument(),
-                artboardsSelected = currentDoc.layers.selected.some(function (layer) {
-                    return layer.isArtboard;
-                });
-                
-            // If it was a simple click/didn't move anything, there is no need to update bounds
-            // But, if we're moving multiple artboards, we get one event with 0,0, which means
-            // we hit this and we have to update bounds
-            if (event.trackerEndedWithoutBreakingHysteresis && !artboardsSelected) {
-                return Promise.resolve();
-            }
 
+            var appStore = this.flux.store("application"),
+                currentDoc = appStore.getCurrentDocument();
+
+            // Handle the normal move events with a debounced function
+            var debouncedMoveHandler = synchronization.debounce(function () {
+                // short circuit based on this trackerEndedWithoutBreakingHysteresis event flag
+                if (event.trackerEndedWithoutBreakingHysteresis) {
+                    return Promise.resolve();
+                } else {
+                    var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
+                            // Reset these layers completely because their impliedFontSize may have changed
+                            return layer.kind === layer.layerKinds.TEXT;
+                        }),
+                        otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
+                            return layer.kind === layer.layerKinds.TEXT;
+                        }),
+
+                        // note that in this case, the debouncing is critical even for just one "move" event
+                        // because the historyState event must be processed first for the following
+                        // "amend history" workflow to function correctly
+                        textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
+                        otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers, true);
+
+                    // When moving a mixture of both text and non-text layers, the individual actions do not
+                    // affect history.  Instead, a single, separate event is dispatched to provide a unified
+                    // finalization of this history transaction with the updated model.
+                    return Promise.join(textLayersPromise, otherLayersPromise)
+                        .bind(this)
+                        .then(function () {
+                            return this.dispatchAsync(events.history.FINALIZE_HISTORY_STATE,
+                                { documentID: currentDoc.id });
+                        });
+                }
+            }, this, 200);
+
+            // newDuplicateSheets move events should be processed immediately, not debounced
             if (event.newDuplicateSheets) {
                 var duplicateInfo = event.newDuplicateSheets,
                     newSheetIDlist = duplicateInfo.newSheetIDlist,
@@ -1112,19 +1135,9 @@ define(function (require, exports) {
                 // existing layers.
                 return this.flux.actions.layers.addLayers(currentDoc, toIDs, true, false);
             } else {
-                var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
-                        // Reset these layers completely because their impliedFontSize may have changed
-                        return layer.kind === layer.layerKinds.TEXT;
-                    }),
-                    otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
-                        return layer.kind === layer.layerKinds.TEXT;
-                    }),
-                    textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
-                    otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers);
-
-                return Promise.join(textLayersPromise, otherLayersPromise);
+                return debouncedMoveHandler();
             }
-        }, this);
+        }.bind(this);
 
         _moveToArtboardHandler = synchronization.debounce(function () {
             // Undefined makes it use the most recent document model
