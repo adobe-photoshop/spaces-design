@@ -52,8 +52,8 @@
                 "ICON": "tool-newSelect",
                 "HEADLINE": "Welcome to Design Space",
                 "SUBHEAD": "",
-                "BODY_FIRST": "Design Space is a companion experience to Photoshop for web and app designers.",
-                "BODY_SECOND": "We’re working in html+js creating new interactions tailored to your workflows."
+                "BODY_FIRST": "Design Space (currently a Preview) is a companion experience to Photoshop for web and app designers.",
+                "BODY_SECOND": "We’re working in html+js creating new interactions tailored to your workflows. This is a Preview release to get your feedback – so let us know what you think."
             },
             {
                 "TITLE": "Toolset",
@@ -80,12 +80,12 @@
             {
                 "TITLE": "Swap",
                 "ICON": "swap",
-                "HEADLINE": "Swap the contents and positions of layers with a single click."
+                "HEADLINE": "Swap the contents and positions of layers and artboards with a single click."
             },
             {
                 "TITLE": "Switching",
                 "ICON": "workspace",
-                "HEADLINE": "Switch to Standard Photoshop at any time for advanced photography features."
+                "HEADLINE": "Switch to standard Photoshop seamlessly for advanced photography features."
             },
             {
                 "TITLE": "Contact",
