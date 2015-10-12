@@ -213,9 +213,11 @@ define(function (require, exports, module) {
 
             return (
                 <div className={classNames}>
-                    <div className="libraries__assets__title">
-                        {title}
-                    </div>
+                    <header className="section-header section-header__no-padding">
+                        <h3 className="section-title__subtitle">
+                            {title}
+                        </h3>
+                    </header>
                     {components}
                 </div>
             );
