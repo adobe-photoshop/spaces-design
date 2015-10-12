@@ -40,7 +40,7 @@
     height: @toolbar-button-size - 0.2rem;
     background-color: @bg-panel;
     color: @item-active;
-    box-shadow: inset (-2 * @hairline) 0 0 @bg-border-for-canvas, inset @hairline (2 * @hairline) 0 @bg-border;
+    box-shadow: inset (-1 * @panel-border-width) 0 0 @bg-border-for-canvas, inset @hairline (@panel-border-width) 0 @bg-border;
     
     .toolbar-button.tool-selected {
         display: flex;
@@ -92,7 +92,7 @@
 
 .toolbar li:first-child {
     margin: 0;
-    box-shadow: -0.2rem 0 0 @bg-border;
+    box-shadow: -1*@panel-border-width 0 0 @bg-border;
 }
 
 .tool-current {

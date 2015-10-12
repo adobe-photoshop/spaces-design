@@ -24,6 +24,7 @@
 @panel-column-width: 32rem;
 @properties-padding: 1.6rem;
 @toolbar-width: 3rem;
+@panel-border-width: 0.2rem;
 
 /* -- MASTER CONTAINER -- */
 
@@ -43,7 +44,7 @@
     height: 100%;
     max-height: 100%;
     display: flex;
-    box-shadow: inset 0.2rem 0 0 @bg-border-for-canvas;
+    box-shadow: inset @panel-border-width 0 0 @bg-border-for-canvas;
 }
 
 .panel-set__container {
@@ -55,12 +56,12 @@
 .panel__tab-bar {
     background-color: @bg-panel;
     width: @toolbar-button-size + 0.2rem;
-    box-shadow: inset 0 (2 * @hairline) 0 @bg-border, inset (-2 * @hairline) @hairline 0 @bg-border;
+    box-shadow: inset 0 (@panel-border-width) 0 @bg-border, inset (-1*@hairline) @hairline 0 @bg-border;
     display: none;
     z-index: 1;
 }
 
-.panel__tab-bar__visible{
+.panel__tab-bar__visible {
     display: block;
 }
 
@@ -93,8 +94,8 @@
     max-height: 100%;
     width: @panel-column-width;
     background-color: @bg-panel;
-    box-shadow: inset 0 (2 * @hairline) 0 @bg-border;
-    border-right: (2 * @hairline) solid @bg-border;
+    box-shadow: inset 0 (0.2rem) 0 @bg-border;
+    border-right: @panel-border-width solid @bg-border;
     z-index: 1;
     display: none;
     position: relative;
@@ -102,7 +103,7 @@
 }
 
 .panel__visible + .panel:nth-child(2){
-    border-right: (2 * @hairline) solid @bg-border;
+    border-right: @panel-border-width solid @bg-border;
 }
 
 .panel__visible{
@@ -170,7 +171,7 @@
     flex-direction: column;
     flex-wrap: nowrap;
     flex-shrink: 1;
-    border-bottom: 2*@hairline solid @bg-border;
+    border-bottom: @panel-border-width solid @bg-border;
     &:last-child {
         border-bottom: none;
     }
@@ -187,7 +188,7 @@
 .section.section__collapsed {
     flex-grow: 0;
     height: auto;
-    border-bottom: 2*@hairline solid @bg-border;
+    border-bottom: @panel-border-width solid @bg-border;
 }
 
 .transform.section,
@@ -290,7 +291,7 @@
     .section-header {
         box-sizing: content-box;
         padding: 0 @properties-padding;
-        border-bottom: 2*@hairline solid @bg-border;
+        border-bottom: @panel-border-width solid @bg-border;
     }
 }
 
@@ -414,11 +415,15 @@
 }
 
 .panel-set__container__small-screen {
+    .panel {
+        border-right: @hairline solid @bg-border;
+    }
+
     .section.section__collapsed {
         flex-grow: 0;
         flex-shrink: 0;
         height: auto;
-        border-bottom: 2*@hairline solid @bg-border;
+        border-bottom: @panel-border-width solid @bg-border;
     }
 
     .libraries, .layers {
