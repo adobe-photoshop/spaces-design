@@ -36,6 +36,10 @@
     color: @item-inactive;
 }
 
+.document-title__stub {
+    flex-grow: 1;
+}
+
 .document-title:hover {
     flex-shrink: 0;
     color: @item-hover;
@@ -61,15 +65,31 @@
     padding-right: 2rem;
 }
 
-.document-header {
+.document-header-container {
+    height: @no-border-for-canvas-height;
+    overflow: hidden;
+    flex-grow: 10;
+    display: flex;
+    width: 10px;
+    flex-wrap: wrap;
+}
+
+.document-header, .document-header__hidden {
     height: @no-border-for-canvas-height;
     line-height: @no-border-for-canvas-height;
-    flex-grow: 10;
+    
+    flex-direction: row;
     position: relative;
     overflow: hidden;
     display: flex;
-    flex-shrink: 1;
+    width: 100%;
+    flex-shrink: 0;
+    flex-grow: 1;
     overflow-x: scroll;
+}
+
+.document-header__stub {
+    margin-top: @no-border-for-canvas-height;
 }
 
 .document-controls__unsupported {
