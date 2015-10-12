@@ -463,11 +463,15 @@ define(function (require, exports, module) {
 
             // The typeface family name and style for display in the UI
             var familyName,
-                styleTitle;
+                styleTitle,
+                placeholderText;
 
             if (this.props.uniformLayerKind && !postScriptNames.isEmpty() && this.state.initialized) {
                 if (postScriptFamilyName) {
                     familyName = this._getPostScriptFontFamily(postScriptFamilyName);
+                    if (!familyName) {
+                        placeholderText = "[" + postScriptFamilyName + "]";
+                    }
                     
                     if (postScriptStyleName) {
                         styleTitle = this._getPostScriptFontStyle(postScriptStyleName);
@@ -602,7 +606,7 @@ define(function (require, exports, module) {
             return (
                 <div ref="type">
                     {fillBlendFormline}
-                    <div className="formline" >
+                    <div className="formline">
                         <Datalist
                             className="dialog-type-typefaces"
                             sorted={true}
@@ -610,6 +614,7 @@ define(function (require, exports, module) {
                             list={typefaceListID}
                             value={familyName}
                             defaultSelected={postScriptFamilyName}
+                            placeholderText={placeholderText}
                             options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}
                             size="column-full" />
@@ -625,17 +630,17 @@ define(function (require, exports, module) {
                                 disabled={locked} />
                         </div>
                         <div className={"control-group control-group__vertical"}>
-                        <Datalist
-                            className="dialog-type-weights"
-                            sorted={true}
-                            title={styleTitle}
-                            list={weightListID}
-                            disabled={locked || !styleTitle}
-                            value={styleTitle}
-                            defaultSelected={postScriptFamilyName}
-                            options={familyFontOptions}
-                            onChange={this._handleTypefaceChange}
-                            size="column-22" />
+                            <Datalist
+                                className="dialog-type-weights"
+                                sorted={true}
+                                title={styleTitle}
+                                list={weightListID}
+                                disabled={locked || !styleTitle}
+                                value={styleTitle}
+                                defaultSelected={postScriptFamilyName}
+                                options={familyFontOptions}
+                                onChange={this._handleTypefaceChange}
+                                size="column-22" />
                         </div>
                     </div>
                     <div className="formline formline__space-between">

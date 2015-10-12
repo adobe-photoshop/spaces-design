@@ -423,7 +423,7 @@
             "LINE": "Line",
             "ALIGN": "Align",
             "AUTO_LEADING": "auto",
-            "MISSING": "missing",
+            "MISSING": "[Missing Font]",
             "MIXED": "Mixed Fonts",
             "MIXED_STYLE": "Mixed Font Styles"
         },
