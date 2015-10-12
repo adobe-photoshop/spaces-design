@@ -123,7 +123,7 @@ define(function (require, exports, module) {
             }
 
             // Single linked layer is not accepted, but multiple linked (or mixed) layers are accepted.
-            if (selectedLayers.size === 1 && selectedLayers.first().isLinked) {
+            if (selectedLayers.size === 1 && selectedLayers.first().isCloudLinkedSmartObject()) {
                 return false;
             }
 

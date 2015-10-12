@@ -297,12 +297,16 @@ define(function (require, exports) {
                     
                 return descriptor.playObject(createObj);
             })
+            // Wait for 1 second before Photoshop changes layer's smart object type from linked SO to 
+            // cloud-linked SO
+            // 
+            // FIXME: Instead of waiting, Photoshop should emit an event to tell DS that a layer's smart object 
+            // type has changed.
+            .delay(1000)
             .then(function () {
-                return this.transfer(layerActions.resetLayers, currentDocument,
-                    currentDocument.layers.selected);
+                return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
             })
             .then(function () {
-                // WE ONLY LINK IF THE LAYER WAS A SMART OBJECT
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
             });
     };
