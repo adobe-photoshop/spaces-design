@@ -53,7 +53,7 @@
                 "HEADLINE": "Welcome to Design Space",
                 "SUBHEAD": "",
                 "BODY_FIRST": "Design Space (currently a Preview) is a companion experience to Photoshop for web and app designers.",
-                "BODY_SECOND": "We’re working in html+js creating new interactions tailored to your workflows. This is a Preview release to get your feedback – so let us know what you think."
+                "BODY_SECOND": "We’re working in HTML and JavaScript, creating new interactions tailored to your workflows. This is a preview release to get your feedback – so let us know what you think."
             },
             {
                 "TITLE": "Toolset",
@@ -63,14 +63,14 @@
             {
                 "TITLE": "Search",
                 "ICON": "layer-search-app",
-                "HEADLINE_FIRST": "Search for layers, opened documents, place library assets and more.",
-                "HEADLINE_SECOND": "Use ⌘+f or Control+f"
+                "HEADLINE_FIRST": "Search for layers, open documents, place library assets, and more.",
+                "HEADLINE_SECOND": "Use ⌘+F or Control+F"
             },
             {
                 "TITLE": "Sampler",
                 "ICON": "tool-eyedropper",
-                "HEADLINE_FIRST": "Sample color & effects with just a click and shift+click.",
-                "HEADLINE_SECOND": "Sample everything else, even graphics with spacebar."
+                "HEADLINE_FIRST": "Sample colors and effects with just a click or a shift+click.",
+                "HEADLINE_SECOND": "Sample everything else, even graphics, with the spacebar."
             },
             {
                 "TITLE": "Artboards",
