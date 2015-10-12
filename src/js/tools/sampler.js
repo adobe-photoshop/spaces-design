@@ -33,7 +33,9 @@ define(function (require, exports, module) {
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy,
         SamplerOverlay = require("jsx!js/jsx/tools/SamplerOverlay"),
-        shortcuts = require("js/util/shortcuts");
+        shortcuts = require("js/util/shortcuts"),
+        policyActions = require("js/actions/policy"),
+        PolicyStore = require("js/stores/policy");
 
     /**
      * Used by sampler HUD, we listen to OS notifications to update the locations
@@ -60,19 +62,18 @@ define(function (require, exports, module) {
         var selectHandler = function () {
             OS.addListener("externalMouseMove", _mouseMoveHandler);
 
-            return UI.setPointerPropagationMode({
-                defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY
-            });
+            return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
+                UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY);
         };
 
         var deselectHandler = function () {
             OS.removeListener("externalMouseMove", _mouseMoveHandler);
 
             return this.dispatchAsync(events.style.HIDE_HUD)
+                .bind(this)
                 .then(function () {
-                    return UI.setPointerPropagationMode({
-                        defaultMode: UI.pointerPropagationMode.ALPHA_PROPAGATE
-                    });
+                    return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
+                        UI.pointerPropagationMode.ALPHA_PROPAGATE);
                 });
         };
 

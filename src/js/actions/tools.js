@@ -418,7 +418,7 @@ define(function (require, exports) {
     selectTool.reads = [];
     selectTool.writes = [locks.JS_TOOL, locks.PS_TOOL];
     selectTool.transfers = [resetBorderPolicies, policy.removePointerPolicies, installShapeDefaults,
-        policy.removeKeyboardPolicies, policy.addPointerPolicies, policy.addKeyboardPolicies,
+        policy.removeKeyboardPolicies, policy.addPointerPolicies, policy.addKeyboardPolicies, policy.setMode,
         shortcuts.addShortcut, shortcuts.removeShortcut];
     selectTool.modal = true;
 
