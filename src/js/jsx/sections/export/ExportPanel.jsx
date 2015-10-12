@@ -252,7 +252,8 @@ define(function (require, exports, module) {
                 "export": true,
                 "section": true,
                 "section__active": this.props.active,
-                "section__collapsed": !this.props.visible
+                "section__collapsed": !this.props.visible,
+                "section__expand": this.props.shouldPanelGrow
             });
 
             return (

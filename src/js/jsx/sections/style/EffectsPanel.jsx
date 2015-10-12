@@ -207,7 +207,8 @@ define(function (require, exports, module) {
                 "section": true,
                 "section__active": this.props.active,
                 "section__collapsed": !this.props.visible,
-                "section__sibling-collapsed": !this.props.visibleSibling
+                "section__sibling-collapsed": !this.props.visibleSibling,
+                "section__expand": this.props.shouldPanelGrow
             });
 
             var selectedLayers = this.props.document ? this.props.document.layers.selected : new Immutable.List(),
