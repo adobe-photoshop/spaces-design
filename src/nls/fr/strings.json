@@ -40,7 +40,7 @@
         "MODIFY_EXPORT_ASSETS": "Configurations d'exportation de fichier mises à jour",
         "APPLY_TEXT_STYLE": "Appliquer le style de texte",
         "APPLY_LAYER_STYLE": "Appliquer le style de calque",
-        "CREATE_LAYER_FROM_ELEMENT": "[8477628] é_Create Layer From Graphic Asset"
+        "CREATE_LAYER_FROM_ELEMENT": "Créer un calque à partir d'une image"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -85,14 +85,14 @@
             {
                 "TITLE": "Changement",
                 "ICON": "espace de travail",
-                "HEADLINE": "[8470756] é_Switch to Standard Photoshop at any time for advanced photography features."
+                "HEADLINE": "Passez à la version standard de Photoshop à tout moment pour accéder aux fonctionnalités avancées des photos."
             },
             {
                 "TITLE": "Contact",
                 "ICON": "oiseau",
                 "HEADLINE": "Espace de conception",
                 "BODY_FIRST": "Twitter",
-                "BODY_SECOND": "[8470749] é_GitHub",
+                "BODY_SECOND": "GitHub",
                 "BODY_THIRD": "Forum"
             }
         ]
@@ -252,15 +252,18 @@
         "LIBRARY_VIEW_ON_WEBSITE": "Afficher sur le site web",
         "LIBRARY_CLICK_TO_APPLY": "Cliquez pour appliquer.",
         "LIBRARY_DELETE": "Supprimer",
-        "LIBRARY_EDITABLE_GRAPHIC": "[8477630] é_Double click to edit",
-        "LIBRARY_NONEDITABLE_GRAPHIC": "[8477629] é_Not editable in this app",
-        "LIBRARY_EMPTY_GRAPHIC": "[8477631] é_Graphic has no content",
+        "LIBRARY_EDITABLE_GRAPHIC": "Cliquez deux fois pour modifier",
+        "LIBRARY_NONEDITABLE_GRAPHIC": "Non modifiable dans cette application",
+        "LIBRARY_EMPTY_GRAPHIC": "L'image ne contient aucun contenu",
         "EXPORT_EXPORT_ASSETS": "Exporter ces fichiers",
         "EXPORT_ADD_ASSET": "Ajouter un fichier exporté",
         "EXPORT_REMOVE_ASSET": "Supprimer la configuration d'un fichier",
         "EXPORT_IOS_PRESETS": "Ajouter 3 fichiers iOS + SVG",
         "EXPORT_HDPI_PRESETS": "Ajouter 6 fichiers HDPI + SVG",
-        "EXPORT_DIALOG": "Exporter..."
+        "EXPORT_DIALOG": "Exportation",
+        "REFERENCE_POINT_TOOL": "Définir le point de référence",
+        "VECTOR_MASK_MODE": "Mode Masque",
+        "SEARCH": "Rechercher"
     },
     "LAYER_KIND": {
         "0": "Tout calque",
@@ -278,6 +281,10 @@
         "12": "Calque d'arrière-plan",
         "13": "Dissocier le calque",
         "ARTBOARD": "Plan de travail"
+    },
+    "LAYER_KIND_ALERTS": {
+        "LINK_MISSING": "[8495445] é_Missing Linked Object",
+        "LINK_CHANGED": "[8495446] é_Linked Object Updated"
     },
     "COLOR_PICKER": {
         "FORMAT": "Format",
@@ -438,6 +445,7 @@
         "IPHONE_5": "iPhone 5",
         "IPAD_12": "iPad Mini",
         "IPAD_34": "iPad Retina",
+        "IPAD_PRO": "iPad Pro",
         "ANDROID_1080P": "Android 1080p",
         "MS_SURFACE_PRO_3": "Microsoft Surface Pro 3",
         "APPLE_WATCH_38MM": "Apple Watch 38 mm",
@@ -447,19 +455,20 @@
     },
     "SEARCH": {
         "PLACEHOLDER": "Recherche, ouvrir et sélectionner",
+        "PLACEHOLDER_INITIALIZING": "Initialisation…",
         "PLACEHOLDER_FILTER": "Rechercher ",
         "NO_OPTIONS": "Votre recherche n'a renvoyé aucun résultat",
         "HEADERS": {
             "ALL_LAYER": "Calques",
             "CURRENT_LAYER": "Calques",
-            "CURRENT_DOC": "Documents actifs",
+            "CURRENT_DOC": "Documents ouverts",
             "RECENT_DOC": "Documents récents",
             "MENU_COMMAND": "Commandes de menu",
             "LIBRARY": "Toutes les bibliothèques",
-            "FILTER": "Limiter la recherche à..."
+            "FILTER": "Limiter la recherche à…"
         },
         "CATEGORIES": {
-            "CURRENT_DOC": "Documents actifs",
+            "CURRENT_DOC": "Documents ouverts",
             "RECENT_DOC": "Documents récents",
             "MENU_COMMAND": "Commandes de menu",
             "ALL_LAYER": "Calques",

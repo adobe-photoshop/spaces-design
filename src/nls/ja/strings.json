@@ -40,7 +40,7 @@
         "MODIFY_EXPORT_ASSETS": "更新された書き出しアセット設定",
         "APPLY_TEXT_STYLE": "テキストスタイルを適用",
         "APPLY_LAYER_STYLE": "レイヤースタイルを適用",
-        "CREATE_LAYER_FROM_ELEMENT": "能_[8477628] Create Layer From Graphic Asset"
+        "CREATE_LAYER_FROM_ELEMENT": "グラフィックアセットからレイヤーを作成"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -85,14 +85,14 @@
             {
                 "TITLE": "切り替え中",
                 "ICON": "ワークスペース",
-                "HEADLINE": "能_[8470756] Switch to Standard Photoshop at any time for advanced photography features."
+                "HEADLINE": "高度な写真機能を使用する場合は、標準の Photoshop にいつでも切り替え可能。"
             },
             {
                 "TITLE": "連絡先",
                 "ICON": "鳥",
                 "HEADLINE": "デザインスペース",
                 "BODY_FIRST": "Twitter",
-                "BODY_SECOND": "能_[8470749] GitHub",
+                "BODY_SECOND": "GitHub",
                 "BODY_THIRD": "フォーラム"
             }
         ]
@@ -252,15 +252,18 @@
         "LIBRARY_VIEW_ON_WEBSITE": "Web サイトに表示",
         "LIBRARY_CLICK_TO_APPLY": "クリックすると、適用されます",
         "LIBRARY_DELETE": "削除",
-        "LIBRARY_EDITABLE_GRAPHIC": "能_[8477630] Double click to edit",
-        "LIBRARY_NONEDITABLE_GRAPHIC": "能_[8477629] Not editable in this app",
-        "LIBRARY_EMPTY_GRAPHIC": "能_[8477631] Graphic has no content",
+        "LIBRARY_EDITABLE_GRAPHIC": "ダブルクリックして編集",
+        "LIBRARY_NONEDITABLE_GRAPHIC": "このアプリケーションで編集できません",
+        "LIBRARY_EMPTY_GRAPHIC": "グラフィックは内容がありません",
         "EXPORT_EXPORT_ASSETS": "これらのアセットを書き出し",
         "EXPORT_ADD_ASSET": "書き出しアセットを追加",
         "EXPORT_REMOVE_ASSET": "アセット設定を削除",
         "EXPORT_IOS_PRESETS": "3 個の iOS アセット + SVG を追加",
         "EXPORT_HDPI_PRESETS": "6 個の HDPI アセット + SVG を追加",
-        "EXPORT_DIALOG": "書き出し..."
+        "EXPORT_DIALOG": "書き出し",
+        "REFERENCE_POINT_TOOL": "基準点を設定",
+        "VECTOR_MASK_MODE": "能_[8480161] Mask mode",
+        "SEARCH": "検索"
     },
     "LAYER_KIND": {
         "0": "すべてのレイヤー",
@@ -278,6 +281,10 @@
         "12": "背景レイヤー",
         "13": "グループ終了レイヤー",
         "ARTBOARD": "アートボード"
+    },
+    "LAYER_KIND_ALERTS": {
+        "LINK_MISSING": "能_[8495445] Missing Linked Object",
+        "LINK_CHANGED": "能_[8495446] Linked Object Updated"
     },
     "COLOR_PICKER": {
         "FORMAT": "形式",
@@ -438,6 +445,7 @@
         "IPHONE_5": "iPhone 5",
         "IPAD_12": "iPad Mini",
         "IPAD_34": "iPad Retina",
+        "IPAD_PRO": "iPad Pro",
         "ANDROID_1080P": "Android 1080p",
         "MS_SURFACE_PRO_3": "Microsoft Surface Pro 3",
         "APPLE_WATCH_38MM": "Apple Watch 38mm",
@@ -447,19 +455,20 @@
     },
     "SEARCH": {
         "PLACEHOLDER": "検索、開く、選択",
+        "PLACEHOLDER_INITIALIZING": "初期化しています…",
         "PLACEHOLDER_FILTER": "検索 ",
         "NO_OPTIONS": "検索条件に一致するものがありません",
         "HEADERS": {
             "ALL_LAYER": "レイヤー",
             "CURRENT_LAYER": "レイヤー",
-            "CURRENT_DOC": "現在のドキュメント",
+            "CURRENT_DOC": "開いているドキュメント",
             "RECENT_DOC": "最近使用したドキュメント",
             "MENU_COMMAND": "メニューのコマンド",
             "LIBRARY": "すべてのライブラリ",
             "FILTER": "検索範囲を限定…"
         },
         "CATEGORIES": {
-            "CURRENT_DOC": "現在のドキュメント",
+            "CURRENT_DOC": "開いているドキュメント",
             "RECENT_DOC": "最近使用したドキュメント",
             "MENU_COMMAND": "メニューのコマンド",
             "ALL_LAYER": "レイヤー",
