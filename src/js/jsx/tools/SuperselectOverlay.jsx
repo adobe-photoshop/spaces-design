@@ -727,8 +727,8 @@ define(function (require, exports, module) {
         _drawArtboardAdders: function (svg, layerTree) {
             var layers = layerTree.selected;
 
-            // For now we draw only one artboard
-            if (layers.size !== 1 || !layers.first().isArtboard) {
+            // For now we draw only adders for one visible artboard
+            if (layers.size !== 1 || !layers.first().isArtboard || !layers.first().visible) {
                 return;
             }
 
