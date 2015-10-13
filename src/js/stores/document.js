@@ -306,16 +306,20 @@ define(function (require, exports, module) {
          * Reset the given layer models.
          *
          * @private
-         * @param {{documentID: number, layers: Immutable.Iterable.<{layerID: number, descriptor: object}>}} payload
+         * @param {object} payload
+         * @param {number} payload.documentID
+         * @param {Immutable.Iterable.<{layerID: number, descriptor: object}>} payload.layers
+         * @param {boolean=} payload.suppressDirty
          */
         _handleLayerReset: function (payload) {
             var documentID = payload.documentID,
                 layerObjs = payload.layers,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.resetLayers(layerObjs, document),
-                nextDocument = document.set("layers", nextLayers);
+                nextDocument = document.set("layers", nextLayers),
+                suppressDirty = payload.suppressDirty;
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, !suppressDirty);
         },
 
         /**
@@ -585,7 +589,8 @@ define(function (require, exports, module) {
             var nextLayers = document.layers.updateSelection(selectedIDs, pivotID),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            // layer selection should NOT dirty the document
+            this.setDocument(nextDocument, false);
         },
 
         /**

@@ -442,7 +442,8 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Layer|Immutable.Iterable.<Layer>} layers
-     * @param {boolean=} amendHistory If truthy, update the current history state with latest document
+     * @param {boolean=} amendHistory If truthy, update the current history state
+     *  with latest document, and also do NOT dirty the document.
      * @return {Promise}
      */
     var resetLayers = function (document, layers, amendHistory) {
@@ -474,6 +475,7 @@ define(function (require, exports) {
                     };
                 });
                 if (amendHistory) {
+                    payload.suppressDirty = true;
                     this.dispatch(events.document.history.amendment.RESET_LAYERS, payload);
                 } else {
                     this.dispatch(events.document.RESET_LAYERS, payload);
