@@ -45,6 +45,7 @@ define(function (require, exports) {
         policy = require("./policy"),
         ui = require("./ui"),
         shortcuts = require("./shortcuts"),
+        strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
         utilShortcuts = require("js/util/shortcuts"),
@@ -593,11 +594,17 @@ define(function (require, exports) {
         var initPromise,
             dispatchPromise,
             removePromise,
-            policyPromise;
+            policyPromise,
+            createMaskOptions = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.ADD_VECTOR_MASK,
+                    target: documentLib.referenceBy.id(currentDocument.id)
+                }
+            };
 
         // if we are swtiching to vector mask mode, make sure the layer has a vector mask
         if (!currentLayer.vectorMaskEnabled && vectorMaskMode === true) {
-            initPromise = descriptor.playObject(vectorMaskLib.createRevealAllMask());
+            initPromise = descriptor.playObject(vectorMaskLib.createRevealAllMask(), createMaskOptions);
             var payload = {
                     documentID: currentDocument.id,
                     layerIDs: Immutable.List.of(currentLayer.id),
@@ -639,7 +646,13 @@ define(function (require, exports) {
                     currentLayer = appStore.getCurrentDocument().layers.selected.first();
 
                     if (currentLayer.vectorMaskEnabled && currentLayer.vectorMaskEmpty) {
-                        return descriptor.playObject(vectorMaskLib.deleteVectorMask())
+                        var deleteMaskOptions = {
+                            historyStateInfo: {
+                                name: strings.ACTIONS.DELETE_VECTOR_MASK,
+                                target: documentLib.referenceBy.id(currentDocument.id)
+                            }
+                        };
+                        return descriptor.playObject(vectorMaskLib.deleteVectorMask(), deleteMaskOptions)
                             .bind(this)
                             .then(function () {
                                 var payload = {

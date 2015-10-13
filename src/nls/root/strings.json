@@ -2,6 +2,7 @@
     "ACTIONS": {
         "ADD_STROKE": "Add Stroke",
         "ADD_FILL": "Add Fill",
+        "ADD_VECTOR_MASK": "Add Vector Mask",
         "APPLY_LIBRARY_COLOR": "Apply Library Color",
         "SET_STROKE_COLOR": "Set Stroke Color",
         "SET_STROKE": "Set Stroke",
@@ -11,6 +12,7 @@
         "SET_FILL_COLOR": "Set Fill Color",
         "SET_FILL_OPACITY": "Set Fill Opacity",
         "DELETE_LAYERS": "Delete Layers",
+        "DELETE_VECTOR_MASK": "Delete Vector Mask",
         "CHANGE_LAYER_OPACITY": "Change Layer Opacity",
         "SET_BLEND_MODE": "Set Blend Mode",
         "FLIP_LAYERS": "Flip Layers",
