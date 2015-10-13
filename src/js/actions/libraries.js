@@ -671,28 +671,30 @@ define(function (require, exports) {
                 return Promise.resolve();
             }
         }
-        
+
         var document = this.flux.stores.document.getDocument(documentID),
             updateGraphicPromise = Promise.resolve();
-        
+
         if (!document.unsupported) {
             this.dispatch(events.libraries.UPDATING_GRAPHIC_CONTENT, { documentID: documentID, element: element });
-            
+
             updateGraphicPromise = Promise
                 .fromNode(function (done) {
                     library.beginOperation();
-                    
-                    // If the element we're editing was deleted, we recreate it as a new element, so the changes 
+
+                    // If the element we're editing was deleted, we recreate it as a new element, so the changes
                     // aren't lost. Otherwise, we just remove the existing representations so we can add the new ones
                     if (element.deletedLocally) {
                         element = library.createElement(element.name, element.type);
                     } else {
-                        // TODO should keep representation's stock data
+                        // TODO should keep representation's Adobe Stock info. However, Adobe Stocks are in photo,
+                        // illustrator, and video formats currently, and none of them is editable in DS, so we can
+                        // safely skip this step for now.
                         element.removeAllRepresentations();
                     }
-                    
+
                     var newRepresentation = element.createRepresentation(REP_PHOTOSHOP_TYPE, "primary");
-                        
+
                     // TODO should check and limit file size to 1024MB
                     newRepresentation.updateContentFromPath(editStatus.documentPath, done);
                 })
@@ -707,7 +709,7 @@ define(function (require, exports) {
                     this.dispatch(events.libraries.UPDATED_GRAPHIC_CONTENT, { documentID: documentID });
                 });
         }
-        
+
         return updateGraphicPromise
             .bind(this)
             .then(function () {
