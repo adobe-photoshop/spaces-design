@@ -37,7 +37,8 @@ define(function (require, exports, module) {
         Help = require("jsx!js/jsx/Help"),
         Search = require("jsx!js/jsx/Search"),
         ExportModal = require("jsx!js/jsx/sections/export/ExportModal"),
-        Guard = require("jsx!js/jsx/Guard");
+        Guard = require("jsx!js/jsx/Guard"),
+        system = require("js/util/system");
         
     /**
      * Chrome does not play animated svg loaded from external file via svg:use. 
@@ -143,9 +144,13 @@ define(function (require, exports, module) {
             this.props.controller.off("unlock", this._handleControllerUnlock);
         },
 
+        componentDidMount: function () {
+            window.document.documentElement.lang = system.language;
+        },
+
         render: function () {
             var hasDocument = this.getFlux().store("application").getCurrentDocument();
-            
+
             var className = classnames({
                 main: true,
                 "main__ready": this.state.ready,

@@ -30,7 +30,7 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         classnames = require("classnames"),
         _ = require("lodash");
-        
+
     var LayerEffect = require("js/models/effects/layereffect"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings");
@@ -377,6 +377,7 @@ define(function (require, exports) {
                             size="column-3" />
                         <Label
                             title={shadowBlurTooltip}
+                            className="blur-label"
                             size="column-2">
                             {shadowBlur}
                         </Label>
@@ -390,6 +391,7 @@ define(function (require, exports) {
                             size="column-3" />
                         <Label
                             title={shadowSpreadTooltip}
+                            className="spread-label"
                             size="column-4">
                             {shadowSpread}
                         </Label>
