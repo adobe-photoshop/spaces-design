@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var SVGIcon = require("./SVGIcon"),
+    var SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         collection = require("js/util/collection");
 
     /**
