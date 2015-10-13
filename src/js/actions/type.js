@@ -661,24 +661,86 @@ define(function (require, exports) {
      * Initialize the list of installed fonts from Photoshop.
      *
      * @private
+     * @param {boolean=} force If true, re-initialize if necessary.
      * @return {Promise}
      */
-    var initFontList = function () {
+    var initFontList = function (force) {
         var fontStore = this.flux.store("font"),
             fontState = fontStore.getState(),
             initialized = fontState.initialized;
 
-        if (initialized) {
+        if (initialized && !force) {
             return Promise.resolve();
         }
 
         return descriptor.getProperty("application", "fontList")
             .bind(this)
-            .then(this.dispatch.bind(this, events.font.INIT_FONTS));
+            .then(this.dispatch.bind(this, events.font.INIT_FONTS))
+            .then(function () {
+                var document = this.flux.store("application").getCurrentDocument();
+                if (!document) {
+                    return;
+                }
+
+                var selected = document.layers.selected,
+                    typeLayers = selected.filter(function (layer) {
+                        return layer.isTextLayer();
+                    });
+
+                return this.transfer(layerActions.resetLayers, document, typeLayers, true);
+            });
     };
     initFontList.reads = [locks.PS_APP];
     initFontList.writes = [locks.JS_TYPE];
+    initFontList.transfers = [layerActions.resetLayers];
     initFontList.modal = true;
+
+    /**
+     * If the font list has already been initialized, re-initialize it in
+     * order to pick up added or removed fonts.
+     *
+     * @private
+     */
+    var _fontListChangedHandler;
+
+    /**
+     * Listen for font-list changes.
+     *
+     * @return {Promise}
+     */
+    var beforeStartup = function () {
+        _fontListChangedHandler = function () {
+            var fontStore = this.flux.store("font"),
+                fontState = fontStore.getState(),
+                initialized = fontState.initialized;
+
+            if (initialized) {
+                this.flux.actions.type.initFontList(true);
+            }
+        }.bind(this);
+
+        descriptor.addListener("fontListChanged", _fontListChangedHandler);
+
+        return Promise.resolve();
+    };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [];
+    beforeStartup.modal = [];
+
+    /**
+     * Remove font-list change listener.
+     *
+     * @return {Promise}
+     */
+    var onReset = function () {
+        descriptor.removeListener("fontListChanged", _fontListChangedHandler);
+        _fontListChangedHandler = null;
+
+        return Promise.resolve();
+    };
+    onReset.reads = [];
+    onReset.writes = [];
+    onReset.modal = [];
 
     exports.setPostScript = setPostScript;
     exports.updatePostScript = updatePostScript;
@@ -699,4 +761,7 @@ define(function (require, exports) {
 
     exports.duplicateTextStyle = duplicateTextStyle;
     exports.applyTextStyle = applyTextStyle;
+
+    exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
 });
