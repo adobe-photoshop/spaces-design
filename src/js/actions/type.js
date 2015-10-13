@@ -39,7 +39,8 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         math = require("js/util/math"),
         strings = require("i18n!nls/strings"),
-        layerActionsUtil = require("js/util/layeractions");
+        layerActionsUtil = require("js/util/layeractions"),
+        synchronization = require("js/util/synchronization");
 
     /**
      * Minimum and maximum Photoshop-supported font sizes
@@ -682,6 +683,8 @@ define(function (require, exports) {
                     return;
                 }
 
+                // FIXME: For performance reasons this ONLY resets non-exposed layers,
+                // which means when first exposed their icons may be incorrect.
                 var exposed = document.layers.exposed,
                     typeLayers = exposed.filter(function (layer) {
                         return layer.isTextLayer();
@@ -709,15 +712,17 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartup = function () {
-        _fontListChangedHandler = function () {
+        _fontListChangedHandler = synchronization.debounce(function () {
             var fontStore = this.flux.store("font"),
                 fontState = fontStore.getState(),
                 initialized = fontState.initialized;
 
             if (initialized) {
-                this.flux.actions.type.initFontList(true);
+                return this.flux.actions.type.initFontList(true);
+            } else {
+                return Promise.resolve();
             }
-        }.bind(this);
+        }, this, 500);
 
         descriptor.addListener("fontListChanged", _fontListChangedHandler);
 
