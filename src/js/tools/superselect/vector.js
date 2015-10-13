@@ -76,12 +76,22 @@ define(function (require, exports, module) {
     var _selectHandler = function () {
         var deleteFn = function (event) {
             event.stopPropagation();
+            
+            var flux = this.flux,
+                toolStore = flux.store("tool");
 
-            return PS.performMenuCommand(_CLEAR_PATH)
-                .catch(function () {
-                    // Silence the errors here
-                });
-        };
+            if (toolStore.getVectorMode()) {
+                flux.actions.layers.deleteVectorMask()
+                    .then(function () {
+                        flux.actions.tools.changeVectorMaskMode(false);
+                    });
+            } else {
+                return PS.performMenuCommand(_CLEAR_PATH)
+                    .catch(function () {
+                        // Silence the errors here
+                    });
+            }
+        }.bind(this);
 
         _pathSelectionhandler = function (event) {
             if (event.pathID && event.pathID.length === 0) {

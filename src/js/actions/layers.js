@@ -2225,6 +2225,53 @@ define(function (require, exports) {
     addVectorMask.reads = [locks.JS_TOOL];
     addVectorMask.writes = [locks.PS_DOC];
     addVectorMask.modal = true;
+
+    /**
+     * removes a vector mask on the selected layer
+     *
+     * @return {Promise}
+     */
+    var deleteVectorMask = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (currentDocument === null) {
+            return Promise.resolve();
+        }
+
+        var layers = currentDocument.layers.selected;
+
+        if (layers === null || layers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var currentLayer = layers.first();
+
+        if (currentLayer.vectorMaskEnabled) {
+            var deleteMaskOptions = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.DELETE_VECTOR_MASK,
+                    target: documentLib.referenceBy.id(currentDocument.id)
+                }
+            };
+            return descriptor.playObject(vectorMaskLib.deleteVectorMask(), deleteMaskOptions)
+                .bind(this)
+                .then(function () {
+                    var payload = {
+                            documentID: currentDocument.id,
+                            layerIDs: Immutable.List.of(currentLayer.id),
+                            vectorMaskEnabled: false
+                        },
+                        event = events.document.history.optimistic.REMOVE_VECTOR_MASK_FROM_LAYER;
+
+                    return this.dispatchAsync(event, payload);
+                });
+        } else {
+            return Promise.resolve();
+        }
+    };
+    deleteVectorMask.reads = [locks.JS_TOOL];
+    deleteVectorMask.writes = [locks.PS_DOC, locks.JS_DOC];
     
     /**
      * Event handlers initialized in beforeStartup.
@@ -2407,8 +2454,11 @@ define(function (require, exports) {
             // selected text (e.g., in a disabled text input), the shortcut is executed.
             // But it is surprising to the user to have a layer deleted when text is
             // selected, so we decline the delete layers in this particular case.
+            // 
+            // We also do not want to delete layers while a use is in vector mask editing mode
+            // since they presumably want to be deleteing the vector mask instead
             var selection = window.getSelection();
-            if (selection.type !== "Range") {
+            if (selection.type !== "Range" && !this.flux.store("tool").getVectorMode()) {
                 this.flux.actions.layers.deleteSelected();
             }
         }.bind(this);
@@ -2498,6 +2548,7 @@ define(function (require, exports) {
     exports.editVectorMask = editVectorMask;
     exports.selectVectorMask = selectVectorMask;
     exports.addVectorMask = addVectorMask;
+    exports.deleteVectorMask = deleteVectorMask;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
