@@ -156,6 +156,8 @@ define(function (require, exports, module) {
                             defaultSelected={scaleOption.id}
                             onChange={this._handleUpdateScale}
                             live={false}
+                            autoSelect={false}
+                            changeOnBlur={false}
                             size="column-4" />
                     </div>
                     <div className="control-group__vertical">
@@ -176,6 +178,8 @@ define(function (require, exports, module) {
                             defaultSelected={exportAsset.format}
                             onChange={this._handleUpdateFormat}
                             live={false}
+                            autoSelect={false}
+                            changeOnBlur={false}
                             size="column-8" />
                     </div>
                     <Button
