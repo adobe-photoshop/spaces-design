@@ -35,7 +35,6 @@ define(function (require, exports, module) {
         
     var Tool = require("js/models/tool"),
         shortcuts = require("js/actions/shortcuts"),
-        utilShortcuts = require("js/util/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
@@ -121,7 +120,6 @@ define(function (require, exports, module) {
         this.icon = "directSelect";
         this.isMainTool = false;
         this.handleVectorMaskMode = true;
-        this.activationKey = utilShortcuts.GLOBAL.TOOLS.VECTOR_SELECT;
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
