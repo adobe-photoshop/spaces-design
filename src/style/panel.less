@@ -404,13 +404,24 @@
 
 .popover-list__item {
     padding: 0.8rem;
+    border-left: 0.2rem solid transparent;
+    padding: 0.8rem 0.8rem 0.8rem 0.6rem;
     
     &:hover {
         color: @focus-highlight;
+        border-left: 0.2rem solid @focus-highlight;
     }
     
     &-disabled, &-disabled:hover {
         color: @item-disabled;
+    }
+    
+     &:first-child{
+        border-radius: .4rem 0 0 0;
+    }
+    
+    &:last-child{
+        border-radius: 0 0 0 .4rem;
     }
 }
 
