@@ -682,8 +682,8 @@ define(function (require, exports) {
                     return;
                 }
 
-                var selected = document.layers.selected,
-                    typeLayers = selected.filter(function (layer) {
+                var exposed = document.layers.exposed,
+                    typeLayers = exposed.filter(function (layer) {
                         return layer.isTextLayer();
                     });
 
