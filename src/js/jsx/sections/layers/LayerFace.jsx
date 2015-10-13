@@ -329,6 +329,11 @@ define(function (require, exports, module) {
                     iconClassModifier = "face__kind__warning";
                 }
             }
+            if (layer.isTextLayer()) {
+                if (layer.textWarningLevel === 2) {
+                    iconClassModifier = "face__kind__alert";
+                }
+            }
 
             return (
                 <li className={classnames(layerClasses)}>
