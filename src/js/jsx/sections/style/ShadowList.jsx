@@ -268,7 +268,7 @@ define(function (require, exports) {
             } else if (this.props.type === LayerEffect.INNER_SHADOW) {
                 return innerString;
             } else {
-                return "error";
+                throw new Error("Unexpected shadow type: " + this.props.type);
             }
         },
 
@@ -280,9 +280,9 @@ define(function (require, exports) {
                 });
 
             var shadowXPositionTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION,
-                     strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION),
+                     strings.TOOLTIPS.SET_INNER_SHADOW_X_POSITION),
                 shadowYPositionTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION,
-                     strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION),
+                     strings.TOOLTIPS.SET_INNER_SHADOW_Y_POSITION),
                 shadowColorTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_COLOR,
                     strings.TOOLTIPS.SET_INNER_SHADOW_COLOR),
                 shadowBlurTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_BLUR,
