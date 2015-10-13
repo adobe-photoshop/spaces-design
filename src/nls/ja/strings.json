@@ -2,6 +2,7 @@
     "ACTIONS": {
         "ADD_STROKE": "ストロークを追加",
         "ADD_FILL": "塗りつぶしを追加",
+        "ADD_VECTOR_MASK": "ベクトルマスクを追加",
         "APPLY_LIBRARY_COLOR": "ライブラリカラーを適用",
         "SET_STROKE_COLOR": "ストロークのカラーを設定",
         "SET_STROKE": "ストロークを設定",
@@ -11,6 +12,7 @@
         "SET_FILL_COLOR": "塗りつぶしのカラーを設定",
         "SET_FILL_OPACITY": "塗りつぶしの不透明度を設定",
         "DELETE_LAYERS": "レイヤーを削除",
+        "DELETE_VECTOR_MASK": "ベクトルマスクを削除",
         "CHANGE_LAYER_OPACITY": "レイヤーの不透明度を変更",
         "SET_BLEND_MODE": "描画モードを設定",
         "FLIP_LAYERS": "レイヤーを反転",
@@ -52,8 +54,8 @@
                 "ICON": "ツール - 新しい選択",
                 "HEADLINE": "デザインスペースへようこそ",
                 "SUBHEAD": "",
-                "BODY_FIRST": "デザインスペースは、Web やアプリケーションデザイナー向けの Photoshop の関連機能です。",
-                "BODY_SECOND": "html+js で作業してワークフローに合わせた新しいインタラクションを作成しています。"
+                "BODY_FIRST": "能_[8413939] Design Space (currently a Preview) is a companion experience to Photoshop for web and app designers.",
+                "BODY_SECOND": "能_[8413938] We’re working in HTML and JavaScript, creating new interactions tailored to your workflows. This is a preview release to get your feedback – so let us know what you think."
             },
             {
                 "TITLE": "ツールセット",
@@ -63,14 +65,14 @@
             {
                 "TITLE": "検索",
                 "ICON": "レイヤー - 検索 - アプリ",
-                "HEADLINE_FIRST": "レイヤーや開いているドキュメントを検索して、ライブラリアセットなどを配置します。",
-                "HEADLINE_SECOND": "⌘+f または Control+f を使用"
+                "HEADLINE_FIRST": "能_[8470744] Search for layers, open documents, place library assets, and more.",
+                "HEADLINE_SECOND": "能_[8470741] Use Command+F on Mac or Control+F on Windows."
             },
             {
                 "TITLE": "サンプラー",
                 "ICON": "ツール - スポイト",
-                "HEADLINE_FIRST": "クリックして Shift キーを押しながらクリックするだけで、カラーと効果をサンプリング。",
-                "HEADLINE_SECOND": "スペースパーで、他のすべて、グラフィックさえもサンプリング。"
+                "HEADLINE_FIRST": "能_[8470740] Sample colors and effects with just a click or a shift+click.",
+                "HEADLINE_SECOND": "能_[8470738] Sample everything else, even graphics, with the spacebar."
             },
             {
                 "TITLE": "アートボード",
@@ -80,12 +82,12 @@
             {
                 "TITLE": "入れ替え",
                 "ICON": "入れ替え",
-                "HEADLINE": "1 回のクリックで、レイヤーの内容や位置を入れ替ることができます。"
+                "HEADLINE": "能_[8470760] Swap the contents and positions of layers and artboards with a single click."
             },
             {
                 "TITLE": "切り替え中",
                 "ICON": "ワークスペース",
-                "HEADLINE": "高度な写真機能を使用する場合は、標準の Photoshop にいつでも切り替え可能。"
+                "HEADLINE": "能_[8470756] Switch to standard Photoshop seamlessly for advanced photography features."
             },
             {
                 "TITLE": "連絡先",
@@ -99,6 +101,7 @@
     },
     "KEYBOARD_SHORTCUTS": {
         "TOOLS_TITLE": "ツール",
+        "MORE_TITLE": "能_[8496728] More",
         "SELECT_TITLE": "選択ツール",
         "TOOLS": {
             "SELECT": "選択",
@@ -107,9 +110,17 @@
             "PEN": "ペン",
             "TYPE": "書式",
             "SAMPLER": "サンプラー",
+            "SAMPLER_EFFECTS": "能_[8496734] Sample Effects",
+            "SAMPLER_INSTRUCTION_EFFECTS": "能_[8496733] Shift + Click",
+            "SAMPLER_HUD": "能_[8496730] Sample Options HUD",
+            "SAMPLER_INSTRUCTION_HUD": "能_[8496729] Spacebar",
             "SEARCH": "検索",
             "SEARCH_INSTRUCTION_MAC": "Cmd+F",
-            "SEARCH_INSTRUCTION_WIN": "Ctrl+F"
+            "SEARCH_INSTRUCTION_WIN": "Ctrl+F",
+            "EXPORT": "書き出し",
+            "EXPORT_INSTRUCTION_MAC": "能_[8496731] Cmd + E",
+            "EXPORT_INSTRUCTION_WIN": "能_[8496736] Ctrl + E",
+            "MASKMODE": "能_[8496732] Mask Mode"
         },
         "SELECT_TOOL": {
             "TARGET": "ネスト化されたグループまたはレイヤーをターゲットとして設定",
@@ -262,7 +273,7 @@
         "EXPORT_HDPI_PRESETS": "6 個の HDPI アセット + SVG を追加",
         "EXPORT_DIALOG": "書き出し",
         "REFERENCE_POINT_TOOL": "基準点を設定",
-        "VECTOR_MASK_MODE": "能_[8480161] Mask mode",
+        "VECTOR_MASK_MODE": "マスクモード",
         "SEARCH": "検索"
     },
     "LAYER_KIND": {
@@ -414,7 +425,7 @@
             "LINE": "線",
             "ALIGN": "整列",
             "AUTO_LEADING": "自動",
-            "MISSING": "不明",
+            "MISSING": "能_[8414078] [Missing Font]",
             "MIXED": "合成フォント",
             "MIXED_STYLE": "合成フォントのスタイル"
         },
