@@ -64,7 +64,7 @@
                 "TITLE": "Search",
                 "ICON": "layer-search-app",
                 "HEADLINE_FIRST": "Search for layers, open documents, place library assets, and more.",
-                "HEADLINE_SECOND": "Use ⌘+F or Control+F"
+                "HEADLINE_SECOND": "Use \u2318;+F or Control+F"
             },
             {
                 "TITLE": "Sampler",
