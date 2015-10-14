@@ -257,39 +257,38 @@ define(function (require, exports) {
             overallHeightRatio = size.h ? size.h / overallBounds.height : 0,
             overallLeftOffset = 0,
             overallTopOffset = 0,
-            direction;
+            horizontalDirection,
+            verticalDirection;
 
         // This is the case if the width input was changed
         // "L" and "T" are the default cases in which none of the offsets need to be calculated.
-        if (size.hasOwnProperty("w")) {
-            direction = refPoint.charAt(0);
-            switch (direction) {
-                // This is the default case in which no left offset needs to be calculated. 
-                // This case is included for self-documentation.
-                case "l":
-                    break;
-                case "m":
-                    overallLeftOffset = (overallBounds.width - size.w) / 2;
-                    break;
-                case "r":
-                    overallLeftOffset = overallBounds.width - size.w;
-                    break;
-            }
-        } else if (size.hasOwnProperty("h")) {
-            // if the height input was changed
-            direction = refPoint.charAt(1);
-            switch (direction) {
-                // This is the default case in which no top offset needs to be calculated. 
-                // This case is included for self-documentation.
-                case "t":
-                    break;
-                case "c":
-                    overallTopOffset = (overallBounds.height - size.h) / 2;
-                    break;
-                case "b":
-                    overallTopOffset = overallBounds.height - size.h;
-                    break;
-            }
+        horizontalDirection = refPoint.charAt(0);
+        switch (horizontalDirection) {
+            // This is the default case in which no left offset needs to be calculated. 
+            // This case is included for self-documentation.
+            case "l":
+                break;
+            case "m":
+                overallLeftOffset = (overallBounds.width - size.w) / 2;
+                break;
+            case "r":
+                overallLeftOffset = overallBounds.width - size.w;
+                break;
+        }
+        
+        // if the height input was changed
+        verticalDirection = refPoint.charAt(1);
+        switch (verticalDirection) {
+            // This is the default case in which no top offset needs to be calculated. 
+            // This case is included for self-documentation.
+            case "t":
+                break;
+            case "c":
+                overallTopOffset = (overallBounds.height - size.h) / 2;
+                break;
+            case "b":
+                overallTopOffset = overallBounds.height - size.h;
+                break;
         }
 
         // We used to pass Photoshop just the width and height, and groups would be resized
@@ -314,13 +313,13 @@ define(function (require, exports) {
                 heightRatio = layer.bounds.height / overallBounds.height,
                 resizeObj;
 
-            if (size.hasOwnProperty("w")) {
+            if (size.w !== overallBounds.width) {
                 targetSize.w = size.w * widthRatio;
                 targetPosition.left =
                     overallBounds.left + overallLeftOffset + (layerLeft - overallBounds.left) * overallWidthRatio;
             }
 
-            if (size.hasOwnProperty("h")) {
+            if (size.h !== overallBounds.height) {
                 targetSize.h = size.h * heightRatio;
                 targetPosition.top =
                     overallBounds.top + overallTopOffset + (layerTop - overallBounds.top) * overallHeightRatio;
