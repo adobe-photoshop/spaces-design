@@ -198,16 +198,19 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Position the dialog according to the target
+         * Position the dialog according to the position method (either target or center)
          *
          * @private
          * @param {DOMElement} dialogEl the dialog DOM element
          */
         _positionDialog: function (dialogEl) {
+            var dialogBounds;
+            
             if (this.props.position === POSITION_METHODS.TARGET) {
                 if (this._target) {
-                    var dialogBounds = dialogEl.getBoundingClientRect(),
-                        clientHeight = window.document.documentElement.clientHeight,
+                    dialogBounds = dialogEl.getBoundingClientRect();
+
+                    var clientHeight = window.document.documentElement.clientHeight,
 
                         // Need to account for element margin
                         dialogComputedStyle = window.getComputedStyle(dialogEl),
@@ -234,6 +237,17 @@ define(function (require, exports, module) {
                     dialogEl.style.top = placedDialogTop + "px";
                 } else {
                     throw new Error("Could not determine target by which to render this dialog: " + this.displayName);
+                }
+            } else if (this.props.position === POSITION_METHODS.CENTER) {
+                dialogBounds = dialogEl.getBoundingClientRect();
+
+                var cloakingRect = this.getFlux().store("ui").getCloakRect(),
+                    cloakingRectWidth = cloakingRect.right - cloakingRect.left;
+
+                if (dialogBounds.width < cloakingRectWidth) {
+                    dialogEl.style.left = (cloakingRect.left + cloakingRectWidth / 2) + "px";
+                } else {
+                    dialogEl.style.left = null;
                 }
             }
         },

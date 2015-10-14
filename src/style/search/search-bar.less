@@ -44,47 +44,6 @@
     overflow: visible;
 }
 
-.main__no-panel .search-bar__dialog {
-    margin-left: 0;
-}
-
-.main__one-panel .search-bar__dialog {
-    margin-left:  -(@panel-column-width / 2);
-}
-
-.main__both-panel .search-bar__dialog {
-    margin-left: -(@panel-column-width);
-}
-
-// Search Dialog at 1x
-
-@media (-webkit-min-device-pixel-ratio: 1) and (max-width: 1260px) {
-    .main__both-panel .search-bar__dialog {
-        margin-left: 0;
-    }
-}
-
-@media (-webkit-min-device-pixel-ratio: 1) and (max-width: 940px) {
-    .main__one-panel .search-bar__dialog {
-        margin-left: 0;
-    }
-}
-
-@media (-webkit-min-device-pixel-ratio: 1) and (max-width: 620px) {
-    .main__no-panel .search-bar__dialog {
-        margin-left: 0;
-    }
-}
-// Search Dialog at 2x
-
-@media (-webkit-min-device-pixel-ratio: 2) and (max-width: 1125px) {
-    .main__no-panel .search-bar__dialog,
-    .main__one-panel .search-bar__dialog,
-    .main__both-panel .search-bar__dialog {
-        margin-left: 0;
-    }
-}
-
 .search-bar__dialog .drop-down {
     margin-top: 1rem;
     margin-left: 3.3rem;
