@@ -246,8 +246,8 @@ define(function (require, exports, module) {
             if (!select) {
                 switch (event.key) {
                 case "Escape":
-                    if (!this.props.live) {
-                        this.props.onChange(null);
+                    if (this.props.onKeyDown) {
+                        this.props.onKeyDown(event);
                     }
                     return;
                 case "Tab":
