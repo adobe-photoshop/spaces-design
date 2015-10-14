@@ -588,8 +588,11 @@ define(function (require, exports, module) {
 
                     var postPromises = post.map(function (conjunct, index) {
                         return conjunct.apply(this)
-                            .catch(function () {
-                                log.error("Verification of postcondition " + index + " failed for " + actionTitle);
+                            .catch(function (err) {
+                                var errMessage = err && err.message || "no error message";
+                                
+                                log.error("Verification of postcondition %s failed for %s - %s",
+                                    index, actionTitle, errMessage);
                             });
                     }, this);
 

@@ -440,6 +440,10 @@ define(function (require, exports) {
                 // Group into arrays of dropShadows, by position in each layer
                 var shadowGroups = collection.zip(collection.pluck(layers, "dropShadows"));
                 
+                if (shadowGroups.isEmpty()) {
+                    return null;
+                }
+                
                 shadowsContent = shadowGroups.map(function (dropShadows, index) {
                     return (
                         <Shadow
@@ -454,15 +458,11 @@ define(function (require, exports) {
                     );
                 }, this).toList();
             } else {
-                shadowsContent = Immutable.List.of((
+                shadowsContent = (
                     <div className="effect-list__list-container__mixed">
                         <i>{strings.STYLE.DROP_SHADOW.MIXED}</i>
                     </div>
-                ));
-            }
-
-            if (shadowsContent.isEmpty()) {
-                return null;
+                );
             }
 
             return (
@@ -511,6 +511,10 @@ define(function (require, exports) {
                 var temp = collection.pluck(layers, "innerShadows");
                 var shadowGroups = collection.zip(temp);
                 
+                if (shadowGroups.isEmpty()) {
+                    return null;
+                }
+                
                 shadowsContent = shadowGroups.map(function (innerShadows, index) {
                     return (
                         <Shadow {...this.props}
@@ -523,15 +527,11 @@ define(function (require, exports) {
                     );
                 }, this).toList();
             } else {
-                shadowsContent = Immutable.List.of((
+                shadowsContent = (
                     <div className="effect-list__list-container__mixed">
                         <i>{strings.STYLE.INNER_SHADOW.MIXED}</i>
                     </div>
-                ));
-            }
-
-            if (shadowsContent.isEmpty()) {
-                return null;
+                );
             }
 
             return (

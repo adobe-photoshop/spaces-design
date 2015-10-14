@@ -48,6 +48,7 @@ define(function (require, exports) {
         pathUtil = require("js/util/path"),
         log = require("js/util/log"),
         headlights = require("js/util/headlights"),
+        objUtil = require("js/util/object"),
         global = require("js/util/global");
 
     var templatesJSON = require("text!static/templates.json"),
@@ -873,29 +874,32 @@ define(function (require, exports) {
      * the layer ID of a layer not in the model, calls addLayers on
      * that layerID.
      *
+     * When placing a file with an empty layer selected, the expected behaviors are:
+     *
+     * 1. place file via menu item (place linked or embedded): empty layer will be replaced.
+     * 2. drag-n-drop local file: empty layer will be replaced.
+     * 3. drag-n-drop CC libraries graphic: empty layer will not be replaced.
+     *
      * @param {{ID: number}} event
      * @return {Promise}
      */
     var handlePlaceEvent = function (event) {
         var applicationStore = this.flux.store("application"),
-            document = applicationStore.getCurrentDocument(),
-            replace = false;
+            document = applicationStore.getCurrentDocument();
 
         if (!document) {
             var error = new Error("Place event received without a current document");
             return Promise.reject(error);
         }
-
-        var layerID = event.ID;
-        if (!layerID) {
+        
+        var newLayerID = event.ID,
+            replacedLayerID = objUtil.getPath(event, "replaceLayer.from._id");
+        
+        if (!newLayerID) {
             return this.transfer(updateDocument);
         }
 
-        if (document.layers.byID(layerID)) {
-            replace = true;
-        }
-
-        return this.transfer(layerActions.addLayers, document, layerID, true, replace);
+        return this.transfer(layerActions.addLayers, document, newLayerID, true, replacedLayerID || false);
     };
     handlePlaceEvent.reads = [locks.JS_APP];
     handlePlaceEvent.writes = [];
