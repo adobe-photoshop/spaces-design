@@ -445,6 +445,9 @@ define(function (require, exports, module) {
                     }
                     break;
                 }
+                case "Escape":
+                    this.props.dismissDialog();
+                    return;
                 case "Backspace": {
                     if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
                         // Clear filter and icon
