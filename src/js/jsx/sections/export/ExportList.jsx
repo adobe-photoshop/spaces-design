@@ -234,7 +234,7 @@ define(function (require, exports, module) {
                         <Label
                             title={strings.EXPORT.TITLE_SCALE}
                             size="column-4"
-                            className="label__medium__left-aligned">
+                            className="label__medium__left-aligned scale-title">
                             {strings.EXPORT.TITLE_SCALE}
                         </Label>
                         <Label

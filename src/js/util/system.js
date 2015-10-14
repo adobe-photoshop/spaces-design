@@ -25,6 +25,27 @@ define(function (require, exports) {
     "use strict";
 
     var isMac = window.navigator.platform.indexOf("Mac") === 0;
-        
+    var locale = window.navigator.language,
+        parts = locale.match(/\w+/),
+        language = parts.length > 0 && parts[0];
+    
+    switch (language) {
+        case "en":
+            language = "en";
+            break;
+        case "de":
+            language = "de";
+            break;
+        case "fr":
+            language = "fr";
+            break;
+        case "ja":
+            language = "ja";
+            break;
+        default:
+            language = "en";
+    }
+
     exports.isMac = isMac;
+    exports.language = language;
 });

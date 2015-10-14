@@ -38,7 +38,8 @@ define(function (require, exports, module) {
         FillVisiblity = Fill.FillVisibility,
         Label = require("jsx!js/jsx/shared/Label"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        classnames = require("classnames");
 
     /**
      * VectorFill Component displays information of fills for non-type only sets of layers
@@ -117,6 +118,11 @@ define(function (require, exports, module) {
                 return null;
             }
 
+            var opacityLabelClasses = classnames({
+                "label__medium__left-aligned": true,
+                "opacity-label": true
+            });
+
             var fillVisibilityToggle = !this.props.uniformLayerKind ? null : (
                 <FillVisiblity
                     document={this.props.document}
@@ -145,7 +151,7 @@ define(function (require, exports, module) {
                     <div className="control-group__vertical">
                         <Label
                             size="column-4"
-                            className={"label__medium__left-aligned"}
+                            className={opacityLabelClasses}
                             title={strings.TOOLTIPS.SET_OPACITY}>
                             {strings.STYLE.OPACITY}
                         </Label>
