@@ -519,6 +519,7 @@ define(function (require, exports) {
      */
     var _toolModalStateChangedHandler,
         _vectorMaskHandler,
+        _vectorSelectMaskHandler,
         _vectorMaskPolicyHandler;
     
     /**
@@ -857,6 +858,18 @@ define(function (require, exports) {
             key: utilShortcuts.GLOBAL.TOOLS.MASK_SELECT,
             modifiers: {},
             fn: _vectorMaskHandler
+        });
+
+        _vectorSelectMaskHandler = function () {
+            if (toolStore.getVectorMode()) {
+                flux.actions.tools.select(toolStore.getToolByID("superselectVector"));
+            }
+        }.bind(this);
+
+        shortcutSpecs.push({
+            key: utilShortcuts.GLOBAL.TOOLS.VECTOR_SELECT,
+            modifiers: {},
+            fn: _vectorSelectMaskHandler
         });
 
         var DEBOUNCE_DELAY = 200,
