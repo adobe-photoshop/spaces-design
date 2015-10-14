@@ -495,10 +495,11 @@ define(function (require, exports) {
 
                     return layers
                         .map(function (layer) {
-                            var list = layer.selected ? selected : unselected,
-                                index = layer.selected ? selectedIndex : unselectedIndex;
-
-                            return list[index++];
+                            if (layer.selected) {
+                                return selected[selectedIndex++];
+                            } else {
+                                return unselected[unselectedIndex++];
+                            }
                         })
                         .toArray();
                 }.bind(this));
