@@ -113,6 +113,7 @@ define(function (require, exports, module) {
                 events.document.TYPE_ALIGNMENT_CHANGED, this._updateMenuItems,
                 events.dialog.OPEN_DIALOG, this._updateMenuItems,
                 events.dialog.CLOSE_DIALOG, this._updateMenuItems,
+                events.history.FINALIZE_HISTORY_STATE, this._updateMenuItems,
                 events.history.LOAD_HISTORY_STATE, this._updateMenuItems,
                 events.history.LOAD_HISTORY_STATE_REVERT, this._updateMenuItems,
                 events.export.SERVICE_STATUS_CHANGED, this._updateMenuItems,
