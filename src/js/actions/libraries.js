@@ -297,12 +297,16 @@ define(function (require, exports) {
                     
                 return descriptor.playObject(createObj);
             })
+            // Wait for 1 second before Photoshop changes layer's smart object type from linked SO to 
+            // cloud-linked SO
+            // 
+            // FIXME: Instead of waiting, Photoshop should emit an event to tell DS that a layer's smart object 
+            // type has changed. Watson https://watsonexp.corp.adobe.com/#bug=4073805
+            .delay(1000)
             .then(function () {
-                return this.transfer(layerActions.resetLayers, currentDocument,
-                    currentDocument.layers.selected);
+                return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
             })
             .then(function () {
-                // WE ONLY LINK IF THE LAYER WAS A SMART OBJECT
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
             });
     };
@@ -668,35 +672,44 @@ define(function (require, exports) {
             }
         }
         
-        this.dispatch(events.libraries.UPDATING_GRAPHIC_CONTENT, { documentID: documentID, element: element });
-
-        library.beginOperation();
+        var document = this.flux.stores.document.getDocument(documentID),
+            updateGraphicPromise = Promise.resolve();
         
-        // If the element we're editing was deleted, we recreate it as a new element, so the changes aren't lost.
-        // Otherwise, we just remove the existing representations so we can add the new ones
-        if (element.deletedLocally) {
-            element = library.createElement(element.name, element.type);
-        } else {
-            // TODO should keep representation's stock data
-            element.removeAllRepresentations();
+        if (!document.unsupported) {
+            this.dispatch(events.libraries.UPDATING_GRAPHIC_CONTENT, { documentID: documentID, element: element });
+            
+            updateGraphicPromise = Promise
+                .fromNode(function (done) {
+                    library.beginOperation();
+                    
+                    // If the element we're editing was deleted, we recreate it as a new element, so the changes 
+                    // aren't lost. Otherwise, we just remove the existing representations so we can add the new ones
+                    if (element.deletedLocally) {
+                        element = library.createElement(element.name, element.type);
+                    } else {
+                        // TODO should keep representation's stock data
+                        element.removeAllRepresentations();
+                    }
+                    
+                    var newRepresentation = element.createRepresentation(REP_PHOTOSHOP_TYPE, "primary");
+                        
+                    // TODO should check and limit file size to 1024MB
+                    newRepresentation.updateContentFromPath(editStatus.documentPath, done);
+                })
+                .bind(this)
+                .then(function () {
+                    element.setRenditionCache(RENDITION_GRAPHIC_SIZE, editStatus.previewPath);
+                })
+                .finally(function () {
+                    library.endOperation();
+                })
+                .then(function () {
+                    this.dispatch(events.libraries.UPDATED_GRAPHIC_CONTENT, { documentID: documentID });
+                });
         }
         
-        return Promise.fromNode(function (done) {
-                var newRepresentation = element.createRepresentation(REP_PHOTOSHOP_TYPE, "primary");
-                    
-                // TODO should check and limit file size to 1024MB
-                newRepresentation.updateContentFromPath(editStatus.documentPath, done);
-            })
+        return updateGraphicPromise
             .bind(this)
-            .then(function () {
-                element.setRenditionCache(RENDITION_GRAPHIC_SIZE, editStatus.previewPath);
-            })
-            .finally(function () {
-                library.endOperation();
-            })
-            .then(function () {
-                this.dispatch(events.libraries.UPDATED_GRAPHIC_CONTENT, { documentID: documentID });
-            })
             .then(function () {
                 if (editStatus.isDocumentClosed) {
                     return this.transfer(deleteGraphicTempFiles, documentID);

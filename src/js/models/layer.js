@@ -288,7 +288,8 @@ define(function (require, exports, module) {
                 isLinked: this.isLinked,
                 vectorMaskEnabled: this.vectorMaskEnabled,
                 vectorMaskEmpty: this.vectorMaskEmpty,
-                textWarningLevel: this.textWarningLevel
+                textWarningLevel: this.textWarningLevel,
+                smartObject: this.smartObject
             });
         },
         /**
