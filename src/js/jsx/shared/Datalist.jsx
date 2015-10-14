@@ -445,7 +445,9 @@ define(function (require, exports, module) {
             }
 
             if (filter.length === 0) {
-                return options;
+                return options && options.filter(function (option) {
+                    return !option.hidden;
+                });
             }
 
             return options && options.filter(function (option) {
