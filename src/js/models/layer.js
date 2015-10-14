@@ -580,9 +580,10 @@ define(function (require, exports, module) {
      *
      * @param {object} layerDescriptor
      * @param {Document} previousDocument
+     * @param {boolean=} lazy If true, layer will be marked as initialized iff it is selected
      * @return {Layer}
      */
-    Layer.prototype.resetFromDescriptor = function (layerDescriptor, previousDocument) {
+    Layer.prototype.resetFromDescriptor = function (layerDescriptor, previousDocument, lazy) {
         var resolution = previousDocument.resolution,
             artboardEnabled = layerDescriptor.artboardEnabled,
             exportEnabled = artboardEnabled && layerDescriptor.exportEnabled !== false || layerDescriptor.exportEnabled,
@@ -607,7 +608,7 @@ define(function (require, exports, module) {
                 vectorMaskEmpty: layerDescriptor.vectorMaskEmpty,
                 textWarningLevel: layerDescriptor.textWarningLevel,
                 isLinked: _extractIsLinked(layerDescriptor),
-                initialized: true
+                initialized: lazy ? this.selected : true
             };
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));

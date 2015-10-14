@@ -39,7 +39,8 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         math = require("js/util/math"),
         strings = require("i18n!nls/strings"),
-        layerActionsUtil = require("js/util/layeractions");
+        layerActionsUtil = require("js/util/layeractions"),
+        synchronization = require("js/util/synchronization");
 
     /**
      * Minimum and maximum Photoshop-supported font sizes
@@ -661,24 +662,95 @@ define(function (require, exports) {
      * Initialize the list of installed fonts from Photoshop.
      *
      * @private
+     * @param {boolean=} force If true, re-initialize if necessary.
      * @return {Promise}
      */
-    var initFontList = function () {
+    var initFontList = function (force) {
         var fontStore = this.flux.store("font"),
             fontState = fontStore.getState(),
             initialized = fontState.initialized;
 
-        if (initialized) {
+        if (initialized && !force) {
             return Promise.resolve();
         }
 
         return descriptor.getProperty("application", "fontList")
             .bind(this)
-            .then(this.dispatch.bind(this, events.font.INIT_FONTS));
+            .then(this.dispatch.bind(this, events.font.INIT_FONTS))
+            .then(function () {
+                var resetPromises = this.flux.store("application")
+                    .getOpenDocuments()
+                    .filter(function (document) {
+                        // Skip uninitialized documents
+                        return document.layers;
+                    })
+                    .map(function (document) {
+                        var layers = document.layers.all,
+                            typeLayers = layers.filter(function (layer) {
+                                return layer.isTextLayer();
+                            });
+
+                        // Fully update selected layers; only update non-lazy properties for unselected layers.
+                        return this.transfer(layerActions.resetLayers, document, typeLayers, true, true);
+                    }, this)
+                    .toArray();
+
+                return Promise.all(resetPromises);
+            });
     };
     initFontList.reads = [locks.PS_APP];
     initFontList.writes = [locks.JS_TYPE];
+    initFontList.transfers = [layerActions.resetLayers];
     initFontList.modal = true;
+
+    /**
+     * If the font list has already been initialized, re-initialize it in
+     * order to pick up added or removed fonts.
+     *
+     * @private
+     */
+    var _fontListChangedHandler;
+
+    /**
+     * Listen for font-list changes.
+     *
+     * @return {Promise}
+     */
+    var beforeStartup = function () {
+        _fontListChangedHandler = synchronization.debounce(function () {
+            var fontStore = this.flux.store("font"),
+                fontState = fontStore.getState(),
+                initialized = fontState.initialized;
+
+            if (initialized) {
+                return this.flux.actions.type.initFontList(true);
+            } else {
+                return Promise.resolve();
+            }
+        }, this, 500);
+
+        descriptor.addListener("fontListChanged", _fontListChangedHandler);
+
+        return Promise.resolve();
+    };
+    beforeStartup.reads = [];
+    beforeStartup.writes = [];
+    beforeStartup.modal = [];
+
+    /**
+     * Remove font-list change listener.
+     *
+     * @return {Promise}
+     */
+    var onReset = function () {
+        descriptor.removeListener("fontListChanged", _fontListChangedHandler);
+        _fontListChangedHandler = null;
+
+        return Promise.resolve();
+    };
+    onReset.reads = [];
+    onReset.writes = [];
+    onReset.modal = [];
 
     exports.setPostScript = setPostScript;
     exports.updatePostScript = updatePostScript;
@@ -699,4 +771,7 @@ define(function (require, exports) {
 
     exports.duplicateTextStyle = duplicateTextStyle;
     exports.applyTextStyle = applyTextStyle;
+
+    exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
 });
