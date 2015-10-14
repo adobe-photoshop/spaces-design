@@ -1007,15 +1007,16 @@ define(function (require, exports, module) {
      *
      * @param {Immutable.Iterable.<{layerID: number, descriptor: object}>} layerObjs
      * @param {Document} previousDocument
+     * @param {boolean=} lazy If true, layer will be marked as initialized iff it is selected
      * @return {LayerStructure}
      */
-    LayerStructure.prototype.resetLayers = function (layerObjs, previousDocument) {
+    LayerStructure.prototype.resetLayers = function (layerObjs, previousDocument, lazy) {
         var nextLayers = this.layers.withMutations(function (layers) {
             layerObjs.forEach(function (layerObj) {
                 var layerID = layerObj.layerID,
                     descriptor = layerObj.descriptor,
                     layer = this.byID(layerID),
-                    nextLayer = layer.resetFromDescriptor(descriptor, previousDocument);
+                    nextLayer = layer.resetFromDescriptor(descriptor, previousDocument, lazy);
 
                 layers.set(layerID, nextLayer);
             }, this);

@@ -142,11 +142,14 @@ define(function (require, exports) {
      * 
      * @private
      * @param {Array.<object>} references
+     * @param {boolean=} lazy If true, only fetch non-lazy layer properties.
+     *  Otherwise, fetch all properties.
      * @return {Promise.<Array.<object>>}
      */
-    var _getLayersByRef = function (references) {
+    var _getLayersByRef = function (references, lazy) {
         var layerPropertiesPromise = descriptor.batchMultiGetProperties(references, _layerProperties),
-            optionalPropertiesPromise = descriptor.batchMultiGetProperties(references, _allOptionalLayerProperties,
+            optionalProperties = lazy ? _optionalLayerProperties : _allOptionalLayerProperties,
+            optionalPropertiesPromise = descriptor.batchMultiGetProperties(references, optionalProperties,
                 { continueOnError: true });
 
         var nameSpace = global.EXTENSION_DATA_NAMESPACE,
@@ -444,28 +447,79 @@ define(function (require, exports) {
      * @param {Layer|Immutable.Iterable.<Layer>} layers
      * @param {boolean=} amendHistory If truthy, update the current history state
      *  with latest document, and also do NOT dirty the document.
+     * @param {boolean=} lazy If true, non-selected layers will only have their
+     *  non-lazy properties updated, and will be returned to an uninitialized
+     *  state. This is a performance optimization. NOTE: the selection state
+     *  of the layer models passed in must be accurate for this to work correctly!
      * @return {Promise}
      */
-    var resetLayers = function (document, layers, amendHistory) {
+    var resetLayers = function (document, layers, amendHistory, lazy) {
         if (layers instanceof Layer) {
             layers = Immutable.List.of(layers);
         } else if (layers.isEmpty()) {
             return this.transfer(tools.resetBorderPolicies);
         }
 
-        var layerRefs = layers.map(function (layer) {
-            return [
-                documentLib.referenceBy.id(document.id),
-                layerLib.referenceBy.id(layer.id)
-            ];
-        }).toArray();
+        var layersPromise;
+        if (lazy) {
+            var selectedLayerRefs = layers
+                .filter(function (layer) {
+                    return layer.selected;
+                })
+                .map(function (layer) {
+                    return [
+                        documentLib.referenceBy.id(document.id),
+                        layerLib.referenceBy.id(layer.id)
+                    ];
+                })
+                .toArray(),
+                selectedLayersPromise = _getLayersByRef(selectedLayerRefs);
 
-        return _getLayersByRef(layerRefs)
+            var unselectedLayerRefs = layers
+                .filterNot(function (layer) {
+                    return layer.selected;
+                })
+                .map(function (layer) {
+                    return [
+                        documentLib.referenceBy.id(document.id),
+                        layerLib.referenceBy.id(layer.id)
+                    ];
+                })
+                .toArray(),
+                unselectedLayersPromise = _getLayersByRef(unselectedLayerRefs, true);
+
+            layersPromise = Promise.join(selectedLayersPromise, unselectedLayersPromise,
+                function (selected, unselected) {
+                    var selectedIndex = 0,
+                        unselectedIndex = 0;
+
+                    return layers
+                        .map(function (layer) {
+                            var list = layer.selected ? selected : unselected,
+                                index = layer.selected ? selectedIndex : unselectedIndex;
+
+                            return list[index++];
+                        })
+                        .toArray();
+                }.bind(this));
+        } else {
+            var layerRefs = layers.map(function (layer) {
+                return [
+                    documentLib.referenceBy.id(document.id),
+                    layerLib.referenceBy.id(layer.id)
+                ];
+            }).toArray();
+
+            layersPromise = _getLayersByRef(layerRefs);
+        }
+
+        return layersPromise
             .bind(this)
             .then(function (descriptors) {
                 var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
                     payload = {
-                        documentID: document.id
+                        documentID: document.id,
+                        lazy: lazy
                     };
 
                 payload.layers = layers.map(function (layer) {

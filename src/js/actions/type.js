@@ -678,19 +678,24 @@ define(function (require, exports) {
             .bind(this)
             .then(this.dispatch.bind(this, events.font.INIT_FONTS))
             .then(function () {
-                var document = this.flux.store("application").getCurrentDocument();
-                if (!document) {
-                    return;
-                }
+                var resetPromises = this.flux.store("application")
+                    .getOpenDocuments()
+                    .filter(function (document) {
+                        // Skip uninitialized documents
+                        return document.layers;
+                    })
+                    .map(function (document) {
+                        var layers = document.layers.all,
+                            typeLayers = layers.filter(function (layer) {
+                                return layer.isTextLayer();
+                            });
 
-                // FIXME: For performance reasons this ONLY resets non-exposed layers,
-                // which means when first exposed their icons may be incorrect.
-                var exposed = document.layers.exposed,
-                    typeLayers = exposed.filter(function (layer) {
-                        return layer.isTextLayer();
-                    });
+                        // Fully update selected layers; only update non-lazy properties for unselected layers.
+                        return this.transfer(layerActions.resetLayers, document, typeLayers, true, true);
+                    }, this)
+                    .toArray();
 
-                return this.transfer(layerActions.resetLayers, document, typeLayers, true);
+                return Promise.all(resetPromises);
             });
     };
     initFontList.reads = [locks.PS_APP];

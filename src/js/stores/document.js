@@ -310,12 +310,14 @@ define(function (require, exports, module) {
          * @param {number} payload.documentID
          * @param {Immutable.Iterable.<{layerID: number, descriptor: object}>} payload.layers
          * @param {boolean=} payload.suppressDirty
+         * @param {boolean=} payload.lazy
          */
         _handleLayerReset: function (payload) {
             var documentID = payload.documentID,
                 layerObjs = payload.layers,
                 document = this._openDocuments[documentID],
-                nextLayers = document.layers.resetLayers(layerObjs, document),
+                lazy = payload.lazy,
+                nextLayers = document.layers.resetLayers(layerObjs, document, lazy),
                 nextDocument = document.set("layers", nextLayers),
                 suppressDirty = payload.suppressDirty;
 
