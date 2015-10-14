@@ -54,6 +54,17 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
+    var math = require("js/util/math");
+
+    /**
+     * Distance in pixels before a mousedown+mousemove becomes a drag event.
+     * Prevents false drags on Windows.
+     *
+     * @const
+     * @type {number}
+     */
+    var MIN_DRAG_DISTANCE = 5;
+
     /**
      * Create a composed Droppoable component
      *
@@ -206,10 +217,28 @@ define(function (require, exports, module) {
             },
 
             /**
+             * Position of the original mousedown event. Used to measure the distance
+             * of each mousemove event. The drag is not started until mousemove events
+             * reach the MIN_DRAG_DISTANCE threshold.
+             *
+             * @private
+             * @type {?{x: number, y: number}}
+             */
+            _mousedownPosition: null,
+
+            /**
              * Handles the start of a dragging operation by setting up initial position
              * and adding event listeners to the window
+             *
+             * @private
+             * @param {SyntheticEvent} event
              */
-            _handleDragStart: function () {
+            _handleDragStart: function (event) {
+                this._mousedownPosition = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+
                 window.addEventListener("mousemove", this._handleDragMove, true);
                 window.addEventListener("mouseup", this._handleDragFinish, true);
             },
@@ -228,6 +257,14 @@ define(function (require, exports, module) {
                 };
     
                 if (!this.state.dragging) {
+                    var distance = math.distance(position.x, position.y,
+                        this._mousedownPosition.x, this._mousedownPosition.y);
+                    if (distance < MIN_DRAG_DISTANCE) {
+                        // Do not start the drag until the distance reaches a
+                        // threshold to prevent false drags on Windows.
+                        return;
+                    }
+
                     var dragItems = this.props.getDragItems ?
                             this.props.getDragItems(this) : Immutable.List([this.props.keyObject]);
                     
@@ -258,6 +295,8 @@ define(function (require, exports, module) {
             _handleDragFinish: function (event) {
                 window.removeEventListener("mousemove", this._handleDragMove, true);
                 window.removeEventListener("mouseup", this._handleDragFinish, true);
+
+                this._mousedownPosition = null;
 
                 // Short circuit if not currently dragging
                 if (!this.state.dragging) {
