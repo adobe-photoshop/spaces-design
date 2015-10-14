@@ -91,14 +91,14 @@
             "$payload": {
                 "commandID": 3090
             },
-            "$enable-rule": "supported-document"
+            "$enable-rule": "supported-document,always-except-modal"
         },
         "PLACE_EMBEDDED": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 1032
             },
-            "$enable-rule": "supported-document"
+            "$enable-rule": "supported-document,always-except-modal"
         },
         "PACKAGE": {
             "$action": "documents.packageDocument",
