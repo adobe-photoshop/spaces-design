@@ -75,6 +75,7 @@ define(function (require, exports, module) {
                 documentIDs: documentIDs,
                 count: count,
                 maskModeActive: toolState.vectorMaskMode,
+                currentTool: toolState.current,
                 searchActive: searchActive,
                 exportActive: exportActive,
                 inactiveDocumentsInitialized: inactiveDocumentsInitialized,
@@ -142,6 +143,7 @@ define(function (require, exports, module) {
                 this.state.searchActive !== nextState.searchActive ||
                 this.state.exportActive !== nextState.exportActive ||
                 this.state.maskModeActive !== nextState.maskModeActive ||
+                this.state.currentTool !== nextState.currentTool ||
                 this.state.panelColumnCount !== nextState.panelColumnCount ||
                 this.state.useSmallTab !== nextState.useSmallTab ||
                 !Immutable.is(this.state.documentIDs, nextState.documentIDs) ||
@@ -233,7 +235,8 @@ define(function (require, exports, module) {
 
         render: function () {
             var documentStore = this.getFlux().store("document"),
-                document = this.state.document;
+                document = this.state.document,
+                toolStore = this.getFlux().store("tool");
 
             var exportDisabled = !document || document.unsupported,
                 maskDisabled = !document || document.unsupported ||
@@ -241,10 +244,19 @@ define(function (require, exports, module) {
 
             if (!maskDisabled) {
                 var firstLayer = document.layers.selected.first();
+                
                 maskDisabled = maskDisabled ||
                     firstLayer.locked ||
                     firstLayer.kind === firstLayer.layerKinds.VECTOR ||
                     firstLayer.isBackground;
+            }
+
+            if (!maskDisabled) {
+                var currentTool = toolStore.getCurrentTool();
+
+                if (currentTool && !currentTool.handleVectorMaskMode) {
+                    maskDisabled = true;
+                }
             }
  
             var documentTabs = [],
