@@ -51,7 +51,6 @@
         "SLIDES": [
             {
                 "TITLE": "landing",
-                "ICON": "tool-newSelect",
                 "HEADLINE": "Welcome to Design Space",
                 "SUBHEAD": "",
                 "BODY_FIRST": "Design Space (currently a Preview) is a companion experience to Photoshop for web and app designers.",
@@ -59,39 +58,32 @@
             },
             {
                 "TITLE": "Toolset",
-                "ICON": "tool-newSelect",
                 "HEADLINE": "A minimized toolset & contextual properties panel."
             },
             {
                 "TITLE": "Search",
-                "ICON": "layer-search-app",
                 "HEADLINE_FIRST": "Search for layers, open documents, place library assets, and more.",
                 "HEADLINE_SECOND": "Use Command+F on Mac or Control+F on Windows."
             },
             {
                 "TITLE": "Sampler",
-                "ICON": "tool-eyedropper",
                 "HEADLINE_FIRST": "Sample colors and effects with just a click or a shift+click.",
                 "HEADLINE_SECOND": "Sample everything else, even graphics, with the spacebar."
             },
             {
                 "TITLE": "Artboards",
-                "ICON": "layer-artboard",
                 "HEADLINE": "Create multiple artboards for a more visual workflow."
             },
             {
                 "TITLE": "Swap",
-                "ICON": "swap",
                 "HEADLINE": "Swap the contents and positions of layers and artboards with a single click."
             },
             {
                 "TITLE": "Switching",
-                "ICON": "workspace",
                 "HEADLINE": "Switch to standard Photoshop seamlessly for advanced photography features."
             },
             {
                 "TITLE": "Contact",
-                "ICON": "bird",
                 "HEADLINE": "Design Space",
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",

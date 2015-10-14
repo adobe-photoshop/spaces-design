@@ -35,6 +35,15 @@ define(function (require, exports, module) {
         headlights = require("js/util/headlights"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         strings = require("i18n!nls/strings");
+
+    /**
+    * Storing the English file names manually otherwise in different languages, the SVGs cannot be found
+    * 
+    * @constant
+    * @type {array.<string>}
+    **/
+    var ICON_NAMES = ["tool-newSelect", "tool-newSelect", "layer-search-app", "tool-eyedropper",
+                            "layer-artboard", "swap", "workspace", "bird"];
         
     var Carousel = React.createClass({
         mixins: [FluxMixin],
@@ -138,7 +147,7 @@ define(function (require, exports, module) {
                                 className={classSet}
                                 onClick={this._gotoItem.bind(this, idx, this.state.index)}>
                                 <SVGIcon
-                                        CSSID={strings.FIRST_LAUNCH.SLIDES[idx].ICON} />
+                                    CSSID={ICON_NAMES[idx]} />
                                 <h3>{strings.FIRST_LAUNCH.SLIDES[idx].TITLE}</h3>
                             </a>
                         );
