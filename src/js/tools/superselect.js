@@ -140,6 +140,10 @@ define(function (require, exports, module) {
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
             tabKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.TAB),
+            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
+            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
             enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER),
             arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
@@ -154,6 +158,8 @@ define(function (require, exports, module) {
         this.keyboardPolicyList = [
             escapeKeyPolicy,
             tabKeyPolicy,
+            deleteKeyPolicy,
+            backspaceKeyPolicy,
             enterKeyPolicy,
             arrowUpKeyPolicy,
             arrowDownKeyPolicy,
@@ -313,6 +319,14 @@ define(function (require, exports, module) {
                 flux.actions.superselect.diveIn(currentDocument);
             }
             break;
+        case OS.eventKeyCode.DELETE: // DELETE
+        case OS.eventKeyCode.BACKSPACE: // BACKSPACE
+            if (toolStore.getVectorMode()) {
+                flux.actions.layers.deleteVectorMask()
+                    .then(function () {
+                        flux.actions.tools.changeVectorMaskMode(false);
+                    });
+            }
         }
 
         if (detail.keyChar === " ") {
