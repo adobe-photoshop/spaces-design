@@ -309,6 +309,12 @@ define(function (require, exports, module) {
                 // click event.
                 if (event.target === window.document.documentElement) {
                     window.removeEventListener("click", this._handleDragClick, true);
+                } else {
+                    // The following click event sometimes never arrives, so just
+                    // remove the handler after a short timeout.
+                    window.setTimeout(function () {
+                        window.removeEventListener("click", this._handleDragClick, true);
+                    }.bind(this), 100);
                 }
 
                 if (this.props.onDragStop) {
