@@ -363,13 +363,14 @@ define(function (require, exports, module) {
          * @param {number} documentID
          * @param {Immutable.List.<number>} layerIDs
          * @param {object} properties
+         * @param {boolean=} quiet If true, suppress change event.
          */
-        _updateLayerProperties: function (documentID, layerIDs, properties) {
+        _updateLayerProperties: function (documentID, layerIDs, properties, quiet) {
             var document = this._openDocuments[documentID],
                 nextLayers = document.layers.setProperties(layerIDs, properties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true, quiet);
         },
 
         /**
@@ -428,14 +429,52 @@ define(function (require, exports, module) {
          * Update layer models when groups are expanded or collapsed.
          *
          * @private
-         * @param {{documentID: number, layerIDs: Immutable.Iterable.<number>, expanded: boolean}} payload
+         * @param {object} payload
+         * @param {number} payload.documentID
+         * @param {Immutable.Iterable.<number>} payload.layerIDs
+         * @param {boolean} payload.expanded
+         * @param {Array.<number>} payload.selected Layer IDs that are newly selected
+         * @param {Array.<number>} payload.deselected Layer IDs that are newly deselected
          */
         _handleGroupExpansion: function (payload) {
             var documentID = payload.documentID,
                 layerIDs = payload.layerIDs,
-                expanded = payload.expanded;
+                expanded = payload.expanded,
+                selectedIDs = payload.selected,
+                deselectedIDs = payload.deselected,
+                suppressChange = true;
 
-            this._updateLayerProperties(documentID, layerIDs, { expanded: expanded });
+            // Suppress the first change event if there will be a second one later
+            if (selectedIDs.length === 0 && deselectedIDs.length === 0) {
+                suppressChange = false;
+            }
+
+            // If there will be a selection change, suppress change event for
+            // initial group expansion change.
+            this._updateLayerProperties(documentID, layerIDs, { expanded: expanded },
+                suppressChange);
+
+            if (!suppressChange) {
+                // A change event has already been emitted, and there are no
+                // further selection changes.
+                return;
+            }
+
+            // Calculate the updated layer selection
+            var nextDocument = this._openDocuments[documentID],
+                deselectedIDSet = new Set(deselectedIDs),
+                nextSelectedIDs = nextDocument.layers.selected
+                    .map(function (layer) {
+                        return layer.id;
+                    })
+                    .filterNot(function (layerID) {
+                        return deselectedIDSet.has(layerID);
+                    })
+                    .concat(selectedIDs)
+                    .toSet();
+
+            // Trigger change event with the final selection change
+            this._updateLayerSelection(nextDocument, nextSelectedIDs);
         },
 
         /**
