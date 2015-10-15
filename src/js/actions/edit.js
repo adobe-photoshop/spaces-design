@@ -35,7 +35,8 @@ define(function (require, exports) {
         menu = require("./menu"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
-        history = require("js/actions/history");
+        history = require("js/actions/history"),
+        policyActions = require("js/actions/policy");
 
     /**
      * Native menu command IDs for Photoshop edit commands.
@@ -127,17 +128,26 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var nativePaste = function () {
-        return this.transfer(menu.nativeModal, {
-            commandID: PASTE_NATIVE_MENU_COMMMAND_ID
-        })
-        .catch(function () {
-            // Ignore errors from menu.nativeModal
-        });
+        // FIXME: the suspend/restore policies hack is for pasting smart object from other sources (e.g. Illustrator).
+        // The cause is similar to the place-object menu commands: DS is not receiving "toolModalStateChanged" events
+        // until the object is committed.
+        return this.transfer(policyActions.suspendAllPolicies)
+            .bind(this)
+            .then(function () {
+                return this.transfer(menu.nativeModal, {
+                    commandID: PASTE_NATIVE_MENU_COMMMAND_ID
+                });
+            })
+            .finally(function () {
+                if (this.flux.store("policy").areAllSuspended()) {
+                    return this.transfer(policyActions.restoreAllPolicies);
+                }
+            });
     };
     nativePaste.modal = true;
     nativePaste.reads = [];
     nativePaste.writes = [];
-    nativePaste.transfers = [menu.nativeModal];
+    nativePaste.transfers = [menu.nativeModal, policyActions.suspendAllPolicies, policyActions.restoreAllPolicies];
 
     /**
      * Execute a native selectAll command.
