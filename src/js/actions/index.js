@@ -39,6 +39,7 @@ define(function (require, exports, module) {
         layers: require("./layers"),
         layerEffects: require("./layereffects"),
         libraries: require("./libraries"),
+        mask: require("./mask"),
         menu: require("./menu"),
         policy: require("./policy"),
         preferences: require("./preferences"),
