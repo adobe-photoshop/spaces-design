@@ -839,7 +839,7 @@ define(function (require, exports) {
             // FIXME: Change tool architecture to support multiple shortcuts for 1.1 - Barkin
             if (tool.id === "rectangle") {
                 specs.push({
-                    key: "U",
+                    key: utilShortcuts.GLOBAL.TOOLS.SHAPE,
                     modifiers: {},
                     fn: activateTool
                 });
