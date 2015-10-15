@@ -138,10 +138,27 @@ define(function (require, exports) {
         return (value < min) ? min : (value > max ? max : value);
     };
 
+    /**
+     * Measure the planar distance between two points.
+     *
+     * @param {number} x1
+     * @param {number} y1
+     * @param {number} x2
+     * @param {number} y2
+     * @return {number}
+     */
+    var distance = function (x1, y1, x2, y2) {
+        var xdiff = x2 - x1,
+            ydiff = y2 - y1;
+
+        return Math.sqrt((xdiff * xdiff) + (ydiff * ydiff));
+    };
+
     exports.parseNumber = parseNumber;
     exports.formatNumber = formatNumber;
     exports.pixelDimensionToNumber = pixelDimensionToNumber;
     exports.normalize = normalize;
     exports.isRotation = isRotation;
     exports.clamp = clamp;
+    exports.distance = distance;
 });
