@@ -647,8 +647,11 @@ define(function (require, exports) {
                                 location: coordinates,
                                 modifiers: dragModifiers
                             };
+                            // Clear border policies during the drag operation
+                            var removeBorderPolicyPromise = this.transfer(toolActions.resetBorderPolicies, true),
+                                postPromise = adapterOS.postEvent(dragEvent);
 
-                            return adapterOS.postEvent(dragEvent);
+                            return Promise.join(postPromise, removeBorderPolicyPromise);
                         }
                     })
                     .catch(function () {}) // Move should silently fail if there are no selected layers
@@ -663,7 +666,7 @@ define(function (require, exports) {
     };
     drag.reads = [locks.JS_DOC];
     drag.writes = [locks.PS_DOC, locks.JS_UI];
-    drag.transfers = [click];
+    drag.transfers = [click, toolActions.resetBorderPolicies];
 
     /**
      * Selects the given layers by the marquee

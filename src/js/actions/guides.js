@@ -102,7 +102,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var resetGuidePolicies = function () {
+    var resetGuidePolicies = function (removeOnly) {
         var toolStore = this.flux.store("tool"),
             appStore = this.flux.store("application"),
             uiStore = this.flux.store("ui"),
@@ -111,7 +111,12 @@ define(function (require, exports) {
             currentTool = toolStore.getCurrentTool(),
             removePromise = currentPolicy ?
                 this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve();
-            
+
+        if (removeOnly) {
+            _currentGuidePolicyID = null;
+            return removePromise;
+        }
+
         // Make sure to always remove the remaining policies
         // even if there is no document, guides are invisible, there are no guides
         // or tool isn't select

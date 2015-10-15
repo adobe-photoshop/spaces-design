@@ -1093,7 +1093,7 @@ define(function (require, exports) {
             var debouncedMoveHandler = synchronization.debounce(function () {
                 // short circuit based on this trackerEndedWithoutBreakingHysteresis event flag
                 if (event.trackerEndedWithoutBreakingHysteresis) {
-                    return Promise.resolve();
+                    return this.flux.actions.tools.resetBorderPolicies();
                 } else {
                     var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
                             // Reset these layers completely because their impliedFontSize may have changed

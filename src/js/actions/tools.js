@@ -220,7 +220,7 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var resetBorderPolicies = function () {
+    var resetBorderPolicies = function (removeOnly) {
         var toolStore = this.flux.store("tool"),
             appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument(),
@@ -229,6 +229,13 @@ define(function (require, exports) {
             removePromise = currentPolicy ?
                 this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve(),
             guidePromise; // We want to set these after border policies
+
+        if (removeOnly) {
+            _currentTransformPolicyID = null;
+            guidePromise = this.transfer(guides.resetGuidePolicies, true);
+            
+            return Promise.join(removePromise, guidePromise);
+        }
 
         // Make sure to always remove the remaining policies
         if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
