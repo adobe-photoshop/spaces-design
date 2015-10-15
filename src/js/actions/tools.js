@@ -86,7 +86,7 @@ define(function (require, exports) {
             strokeOpacity = 100;
         }
         if (strokeSize === undefined) {
-            strokeSize = 2;
+            strokeSize = 1;
         }
 
         var document = this.flux.store("application").getCurrentDocument(),
