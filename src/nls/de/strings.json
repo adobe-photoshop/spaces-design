@@ -51,47 +51,39 @@
         "SLIDES": [
             {
                 "TITLE": "Start",
-                "ICON": "Werkzeug-neuAuswählen",
                 "HEADLINE": "Zu „Design-Bereich“ wechseln",
                 "SUBHEAD": "",
-                "BODY_FIRST": "[8413939] ü_Design Space (currently a Preview) is a companion experience to Photoshop for web and app designers.",
-                "BODY_SECOND": "[8413938] ü_We’re working in HTML and JavaScript, creating new interactions tailored to your workflows. This is a preview release to get your feedback – so let us know what you think."
+                "BODY_FIRST": "„Design-Bereich“ (derzeit eine Vorschau) ist die optimale Ergänzung zu Photoshop für Web- und Anwendungsdesigner.",
+                "BODY_SECOND": "Wir arbeiten in HTML und JavaScript, um neue Interaktionen zu schaffen, die auf Ihre Arbeitsabläufe zugeschnitten sind. Dies ist eine Vorschauversion, für die wir Ihr Feedback benötigen – teilen Sie uns mit, was Sie denken."
             },
             {
                 "TITLE": "Werkzeugset",
-                "ICON": "Werkzeug-neuAuswählen",
                 "HEADLINE": "Ein minimiertes Werkzeugset und kontextbezogenes Eigenschaftenbedienfeld."
             },
             {
                 "TITLE": "Suchen",
-                "ICON": "Ebene-Suchen-Anwendung",
-                "HEADLINE_FIRST": "[8470744] ü_Search for layers, open documents, place library assets, and more.",
-                "HEADLINE_SECOND": "[8470741] ü_Use Command+F on Mac or Control+F on Windows."
+                "HEADLINE_FIRST": "Suchen Sie nach Ebenen und geöffneten Dokumenten, platzieren Sie Bibliothekselemente und vieles mehr.",
+                "HEADLINE_SECOND": "Verwenden Sie Befehlstaste+F auf Mac oder Strg+F auf Windows."
             },
             {
                 "TITLE": "Farbaufnehmer",
-                "ICON": "Werkzeug-Pipette",
-                "HEADLINE_FIRST": "[8470740] ü_Sample colors and effects with just a click or a shift+click.",
-                "HEADLINE_SECOND": "[8470738] ü_Sample everything else, even graphics, with the spacebar."
+                "HEADLINE_FIRST": "Nehmen Sie Farben und Effekte nur per Klick oder Umschalt+Klick auf.",
+                "HEADLINE_SECOND": "Nehmen Sie auch alles andere auf, sogar Grafiken mit der Leertaste."
             },
             {
                 "TITLE": "Zeichenflächen",
-                "ICON": "Ebene-Zeichenfläche",
                 "HEADLINE": "Erstellen Sie mehrere Zeichenflächen für einen visuelleren Arbeitsablauf."
             },
             {
                 "TITLE": "Vertauschen",
-                "ICON": "Austauschen",
-                "HEADLINE": "[8470760] ü_Swap the contents and positions of layers and artboards with a single click."
+                "HEADLINE": "Tauschen Sie mit nur einem Klick die Inhalte und Positionen von Ebenen und Zeichenflächen miteinander aus."
             },
             {
                 "TITLE": "Wechselnder",
-                "ICON": "Arbeitsbereich",
-                "HEADLINE": "[8470756] ü_Switch to standard Photoshop seamlessly for advanced photography features."
+                "HEADLINE": "Wechseln Sie nahtlos zum Standard-Photoshop, um erweiterte Fotografiefunktionen in Anspruch zu nehmen."
             },
             {
                 "TITLE": "Kontakt",
-                "ICON": "Vogel",
                 "HEADLINE": "Design-Bereich",
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",
@@ -101,7 +93,7 @@
     },
     "KEYBOARD_SHORTCUTS": {
         "TOOLS_TITLE": "Werkzeuge",
-        "MORE_TITLE": "[8496728] ü_More",
+        "MORE_TITLE": "Mehr",
         "SELECT_TITLE": "Werkzeug auswählen",
         "TOOLS": {
             "SELECT": "Auswahl",
@@ -110,17 +102,17 @@
             "PEN": "Füller",
             "TYPE": "Typ",
             "SAMPLER": "Farbaufnehmer",
-            "SAMPLER_EFFECTS": "[8496734] ü_Sample Effects",
-            "SAMPLER_INSTRUCTION_EFFECTS": "[8496733] ü_Shift + Click",
-            "SAMPLER_HUD": "[8496730] ü_Sample Options HUD",
-            "SAMPLER_INSTRUCTION_HUD": "[8496729] ü_Spacebar",
+            "SAMPLER_EFFECTS": "Effekte aufnehmen",
+            "SAMPLER_INSTRUCTION_EFFECTS": "Umschalt+Klicken",
+            "SAMPLER_HUD": "Beispieloptionen für HUD",
+            "SAMPLER_INSTRUCTION_HUD": "Leertaste",
             "SEARCH": "Suchen",
             "SEARCH_INSTRUCTION_MAC": "Befehlstaste + F",
             "SEARCH_INSTRUCTION_WIN": "Strg-Taste + F",
             "EXPORT": "Exportieren",
-            "EXPORT_INSTRUCTION_MAC": "[8496731] ü_Cmd + E",
-            "EXPORT_INSTRUCTION_WIN": "[8496736] ü_Ctrl + E",
-            "MASKMODE": "[8496732] ü_Mask Mode"
+            "EXPORT_INSTRUCTION_MAC": "Befehlstaste+E",
+            "EXPORT_INSTRUCTION_WIN": "Strg+E",
+            "MASKMODE": "Maskierungsmodus"
         },
         "SELECT_TOOL": {
             "TARGET": "Verschachtelte Gruppe/-ebenen ansteuern",
@@ -425,7 +417,7 @@
             "LINE": "Linie",
             "ALIGN": "Ausrichten",
             "AUTO_LEADING": "autom.",
-            "MISSING": "[8414078] ü_[Missing Font]",
+            "MISSING": "[Fehlende Schriftart]",
             "MIXED": "Mischschriftarten",
             "MIXED_STYLE": "Mischschriftschnitte"
         },
