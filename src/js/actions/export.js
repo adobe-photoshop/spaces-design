@@ -729,34 +729,34 @@ define(function (require, exports) {
             .then(function (baseDir) {
                 if (!baseDir) {
                     return Promise.resolve();
-                } else {
-                    _lastFolderPath = baseDir;
-
-                    var layerIdList = collection.pluck(layersList, "id");
-
-                    return _setAssetsRequested.call(this, document.id, layerIdList)
-                        .bind(this)
-                        .then(_setServiceBusy.bind(this, true))
-                        .return(quickAddPromise)
-                        .then(function () {
-                            // fetch documentExports anew, in case quick-add added any assets
-                            var documentExports = this.flux.stores.export.getDocumentExports(documentID, true);
-
-                            // Iterate over the layers, find the associated export assets, and export them
-                            var exportList = layersList.flatMap(function (layer) {
-                                var prefix = prefixMap && prefixMap.get(layer.id);
-
-                                return documentExports.getLayerExports(layer.id)
-                                    .map(function (asset, index) {
-                                        return _exportAsset.call(this, document, layer,
-                                            index, asset, _lastFolderPath, prefix);
-                                    }, this);
-                            }, this);
-
-                            _batchExports.call(this, exportList);
-                            return Promise.resolve();
-                        });
                 }
+
+                _lastFolderPath = baseDir;
+
+                var layerIdList = collection.pluck(layersList, "id");
+
+                return _setAssetsRequested.call(this, document.id, layerIdList)
+                    .bind(this)
+                    .then(_setServiceBusy.bind(this, true))
+                    .return(quickAddPromise)
+                    .then(function () {
+                        // fetch documentExports anew, in case quick-add added any assets
+                        var documentExports = this.flux.stores.export.getDocumentExports(documentID, true);
+
+                        // Iterate over the layers, find the associated export assets, and export them
+                        var exportList = layersList.flatMap(function (layer) {
+                            var prefix = prefixMap && prefixMap.get(layer.id);
+
+                            return documentExports.getLayerExports(layer.id)
+                                .map(function (asset, index) {
+                                    return _exportAsset.call(this, document, layer,
+                                        index, asset, _lastFolderPath, prefix);
+                                }, this);
+                        }, this);
+
+                        _batchExports.call(this, exportList);
+                        return Promise.resolve();
+                    });
             });
     };
     exportLayerAssets.reads = [locks.JS_DOC];
@@ -795,25 +795,25 @@ define(function (require, exports) {
             .then(function (baseDir) {
                 if (!baseDir) {
                     return Promise.resolve();
-                } else {
-                    _lastFolderPath = baseDir;
-
-                    return _setAssetsRequested.call(this, document.id)
-                        .bind(this)
-                        .then(_setServiceBusy.bind(this, true))
-                        .then(function () {
-                            // fetch documentExports anew, in case quick-add added any assets
-                            var documentExports = this.flux.stores.export.getDocumentExports(document.id, true);
-
-                            // Iterate over the root document assets, and export them
-                            var exportList = documentExports.rootExports.map(function (asset, index) {
-                                return _exportAsset.call(this, document, null, index, asset, _lastFolderPath);
-                            }, this);
-
-                            _batchExports.call(this, exportList);
-                            return Promise.resolve();
-                        });
                 }
+                
+                _lastFolderPath = baseDir;
+
+                return _setAssetsRequested.call(this, document.id)
+                    .bind(this)
+                    .then(_setServiceBusy.bind(this, true))
+                    .then(function () {
+                        // fetch documentExports anew, in case quick-add added any assets
+                        var documentExports = this.flux.stores.export.getDocumentExports(document.id, true);
+
+                        // Iterate over the root document assets, and export them
+                        var exportList = documentExports.rootExports.map(function (asset, index) {
+                            return _exportAsset.call(this, document, null, index, asset, _lastFolderPath);
+                        }, this);
+
+                        _batchExports.call(this, exportList);
+                        return Promise.resolve();
+                    });
             });
     };
     exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
