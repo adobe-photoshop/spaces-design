@@ -72,6 +72,7 @@ define(function (require, exports) {
         "jpg": "image/jpeg",
         "gif": "image/gif",
         "svg": "image/svg+xml",
+        "bmp": "image/bmp",
         "shape": "image/vnd.adobe.shape+svg",
         "zip": "application/vnd.adobe.charts+zip"
     };
@@ -113,8 +114,9 @@ define(function (require, exports) {
         "image/jpg",
         "image/gif",
         "image/bmp",
-        "application/photoshop",
+        "image/svg+xml",
         "image/vnd.adobe.photoshop",
+        "application/photoshop",
         "application/photoshop.large",
         "application/illustrator",
         "application/pdf"
@@ -236,24 +238,25 @@ define(function (require, exports) {
         }
 
         var firstLayer = currentLayers.last(), // currentLayers are in reversed order
-            representationType = REP_PHOTOSHOP_TYPE,
-            newElement;
-
+            layerFileName;
+        
         // However, if the layer is a smart object, and is owned by some other app, we need to change representation
         // we do this by matching extensions
         if (currentLayers.size === 1 && firstLayer.isSmartObject()) {
-            var layerFileName = firstLayer.smartObject.fileReference;
+            layerFileName = firstLayer.smartObject.fileReference;
 
             // layerFileName will be undefined if CC Libraries is uploading the same layer.
             if (!layerFileName) {
                 return Promise.resolve();
             }
+        }
 
-            var fileExtension = pathUtil.extension(layerFileName);
+        var fileExtension = pathUtil.extension(layerFileName),
+            representationType = EXTENSION_TO_REPRESENTATION_MAP[fileExtension],
+            newElement;
 
-            if (EXTENSION_TO_REPRESENTATION_MAP.hasOwnProperty(fileExtension)) {
-                representationType = EXTENSION_TO_REPRESENTATION_MAP[fileExtension];
-            }
+        if (!representationType) {
+            throw new Error("Cannot find representation type of extension: " + fileExtension);
         }
 
         return _getTempPaths()
