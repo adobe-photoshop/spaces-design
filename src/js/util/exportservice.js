@@ -151,7 +151,7 @@ define(function (require, exports, module) {
 
     /**
      * Pop the folder chooser
-     * Rejects with ExportService.CancelPromptError if the user cancels the dialog
+     * Resolves empty if user cancels
      *
      * @return {Promise.<?string>} Promise of a File Path of the chosen folder, 
      */
@@ -159,11 +159,13 @@ define(function (require, exports, module) {
         return this._spacesDomain.exec("promptForFolder", { folderPath: folderPath })
             .catch(function (err) {
                 // promptForFolder rejected, probably just user-canceled
-                if (err.message && err.message.startsWith("cancelError: cancel")) {
+                var message = (typeof err === "object") ? err.message : err;
+                if (message && message.indexOf("cancelError: cancel") >= 0) {
+                    return Promise.resolve();
+                } else {
                     log.warn("Prompt for folder failed, and it wasn't a simple 'cancel'");
-                    throw new Error("Failed to open an OS folder chooser dialog: " + err.message);
+                    throw new Error("Failed to open an OS folder chooser dialog: " + message);
                 }
-                throw new ExportService.CancelPromptError();
             });
     };
     
@@ -193,12 +195,6 @@ define(function (require, exports, module) {
      * @type {string}
      */
     ExportService.domainPrefKey = GeneratorConnection.domainPrefKey(GENERATOR_DOMAIN_NAME);
-
-    /**
-     * A custom error that occurs when the user cancels the OS dialog prompt
-     */
-    ExportService.CancelPromptError = function MyCustomError () {};
-    ExportService.CancelPromptError.prototype = Object.create(Error.prototype);
 
     module.exports = ExportService;
 });
