@@ -652,7 +652,7 @@ define(function (require, exports) {
     /**
      * Prompt the user to choose a folder by opening an OS dialog.
      * Keyboard policies are temporarily disabled while the dialog is open.
-     * Rejects with ExportService.CancelPromptError if user cancels
+     * Resolves with null if the user cancels
      *
      * @return {Promise.<?string>} Promise of a File Path of the chosen folder
      */
@@ -727,32 +727,36 @@ define(function (require, exports) {
         return this.transfer(promptForFolder)
             .bind(this)
             .then(function (baseDir) {
-                _lastFolderPath = baseDir;
+                if (!baseDir) {
+                    return Promise.resolve();
+                } else {
+                    _lastFolderPath = baseDir;
 
-                var layerIdList = collection.pluck(layersList, "id");
-                return _setAssetsRequested.call(this, document.id, layerIdList);
-            })
-            .then(_setServiceBusy.bind(this, true))
-            .return(quickAddPromise)
-            .then(function () {
-                // fetch documentExports anew, in case quick-add added any assets
-                var documentExports = this.flux.stores.export.getDocumentExports(documentID, true);
+                    var layerIdList = collection.pluck(layersList, "id");
 
-                // Iterate over the layers, find the associated export assets, and export them
-                var exportList = layersList.flatMap(function (layer) {
-                    var prefix = prefixMap && prefixMap.get(layer.id);
+                    return _setAssetsRequested.call(this, document.id, layerIdList)
+                        .bind(this)
+                        .then(_setServiceBusy.bind(this, true))
+                        .return(quickAddPromise)
+                        .then(function () {
+                            // fetch documentExports anew, in case quick-add added any assets
+                            var documentExports = this.flux.stores.export.getDocumentExports(documentID, true);
 
-                    return documentExports.getLayerExports(layer.id)
-                        .map(function (asset, index) {
-                            return _exportAsset.call(this, document, layer, index, asset, _lastFolderPath, prefix);
-                        }, this);
-                }, this);
+                            // Iterate over the layers, find the associated export assets, and export them
+                            var exportList = layersList.flatMap(function (layer) {
+                                var prefix = prefixMap && prefixMap.get(layer.id);
 
-                _batchExports.call(this, exportList);
-                return Promise.resolve();
-            })
-            .catch(ExportService.CancelPromptError, function () {
-                return Promise.resolve();
+                                return documentExports.getLayerExports(layer.id)
+                                    .map(function (asset, index) {
+                                        return _exportAsset.call(this, document, layer,
+                                            index, asset, _lastFolderPath, prefix);
+                                    }, this);
+                            }, this);
+
+                            _batchExports.call(this, exportList);
+                            return Promise.resolve();
+                        });
+                }
             });
     };
     exportLayerAssets.reads = [locks.JS_DOC];
@@ -789,25 +793,27 @@ define(function (require, exports) {
         return this.transfer(promptForFolder)
             .bind(this)
             .then(function (baseDir) {
-                _lastFolderPath = baseDir;
+                if (!baseDir) {
+                    return Promise.resolve();
+                } else {
+                    _lastFolderPath = baseDir;
 
-                return _setAssetsRequested.call(this, document.id);
-            })
-            .then(_setServiceBusy.bind(this, true))
-            .then(function () {
-                // fetch documentExports anew, in case quick-add added any assets
-                var documentExports = this.flux.stores.export.getDocumentExports(document.id, true);
+                    return _setAssetsRequested.call(this, document.id)
+                        .bind(this)
+                        .then(_setServiceBusy.bind(this, true))
+                        .then(function () {
+                            // fetch documentExports anew, in case quick-add added any assets
+                            var documentExports = this.flux.stores.export.getDocumentExports(document.id, true);
 
-                // Iterate over the root document assets, and export them
-                var exportList = documentExports.rootExports.map(function (asset, index) {
-                    return _exportAsset.call(this, document, null, index, asset, _lastFolderPath);
-                }, this);
+                            // Iterate over the root document assets, and export them
+                            var exportList = documentExports.rootExports.map(function (asset, index) {
+                                return _exportAsset.call(this, document, null, index, asset, _lastFolderPath);
+                            }, this);
 
-                _batchExports.call(this, exportList);
-                return Promise.resolve();
-            })
-            .catch(ExportService.CancelPromptError, function () {
-                return Promise.resolve();
+                            _batchExports.call(this, exportList);
+                            return Promise.resolve();
+                        });
+                }
             });
     };
     exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
