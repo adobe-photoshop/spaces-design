@@ -79,10 +79,14 @@ define(function (require, exports) {
         
         return Promise.bind(this)
             .then(function () {
+                // This is a hack for the place linked/embedded menu commands which do not
+                // seem to promptly emit a toolModalStateChanged:enter event
                 if (isPlaceCommand) {
                     this.dispatch(events.menus.PLACE_COMMAND, { executing: true });
                     
-                    return this.transfer(policyActions.suspendAllPolicies);
+                    if (!this.flux.store("policy").areAllSuspended()) {
+                        return this.transfer(policyActions.suspendAllPolicies);
+                    }
                 }
             })
             .then(function () {
@@ -349,7 +353,7 @@ define(function (require, exports) {
         return this.dispatchAsync(events.menus.PLACE_COMMAND, { executing: false })
             .bind(this)
             .then(function () {
-                if (this.flux.store("policy").areAllSuspended) {
+                if (this.flux.store("policy").areAllSuspended()) {
                     return this.transfer(policyActions.restoreAllPolicies);
                 }
             });

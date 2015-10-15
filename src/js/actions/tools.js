@@ -505,14 +505,18 @@ define(function (require, exports) {
     var handleToolModalStateChanged = function (event) {
         var modalState = (event.state._value === "enter"),
             changeStatePromise = this.transfer(changeModalState, modalState),
+            policyStore = this.flux.stores.policy,
+            toolsIdsThatSuspendPolicies = ["txBx", "arwT", "Rect"],
             policyPromise;
 
         // Suspend policies during type tool modal states
-        if (event.kind._value === "tool" && event.tool.ID === "txBx") {
-            if (modalState) {
+        if (event.kind._value === "tool" && toolsIdsThatSuspendPolicies.indexOf(event.tool.ID) > -1) {
+            if (modalState && !policyStore.areAllSuspended()) {
                 policyPromise = this.transfer(policy.suspendAllPolicies);
-            } else {
+            } else if (!modalState && policyStore.areAllSuspended()) {
                 policyPromise = this.transfer(policy.restoreAllPolicies);
+            } else {
+                policyPromise = Promise.resolve();
             }
         } else {
             policyPromise = Promise.resolve();
