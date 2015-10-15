@@ -1650,7 +1650,7 @@ define(function (require, exports) {
                 return Promise.resolve();
             }
         }
-        
+
         return _getLayerIDsForDocumentID.call(this, document.id)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
@@ -1668,10 +1668,17 @@ define(function (require, exports) {
                 } else {
                     return this.dispatchAsync(events.document.history.optimistic.REORDER_LAYERS, payload);
                 }
+            })
+            .then(function () {
+                // get the document with latest selected layers, after layer reordering.
+                var document = this.flux.store("application").getCurrentDocument();
+
+                return this.transfer(initializeLayers, document, document.layers.selected);
             });
     };
     resetIndex.reads = [locks.PS_DOC];
     resetIndex.writes = [locks.JS_DOC];
+    resetIndex.transfers = [initializeLayers];
     resetIndex.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**

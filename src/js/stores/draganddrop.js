@@ -26,6 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor");
 
+    var events = require("../events");
+
     /**
      * Holds global state needed by view components to implement drag-and-drop.
      *
@@ -79,7 +81,7 @@ define(function (require, exports, module) {
          * @private
          * @type {boolean}
          */
-        _hasValidDropTarget: false,
+        _hasValidDropTarget: null,
 
         /**
          * Past drag target (for maintaining position during render)
@@ -105,8 +107,34 @@ define(function (require, exports, module) {
          * Initializes the by-zone maps.
          */
         initialize: function () {
+            this.bindActions(
+                events.RESET, this._handleReset
+            );
+            
+            // These setting attributes should be initialized once.
             this._dropTargetsByZone = new Map();
             this._dropTargetOrderingsByZone = new Map();
+
+            this._handleReset();
+        },
+        
+        /**
+         * Reset or initialize store state.
+         *
+         * @private
+         */
+        _handleReset: function () {
+            var hasDragTargets = !!this._dragTargets;
+            
+            this._pastDragTargets = null;
+            this._dragTargets = null;
+            this._dropTarget = null;
+            this._hasValidDropTarget = false;
+            this._dragPosition = null;
+            
+            if (hasDragTargets) {
+                this.emit("change");
+            }
         },
 
         /**
