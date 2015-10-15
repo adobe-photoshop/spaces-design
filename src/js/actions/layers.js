@@ -926,7 +926,7 @@ define(function (require, exports) {
      *
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a single layer that
-     *  the selection is based on, or an array of such layers
+     *  the selection is based on, or a list of such layers.
      * @param {string=} modifier Way of modifying the selection. Possible values
      *  are defined in `adapter/src/lib/layer.js` under `select.vals`.
      *  Default is similar to "select", but the pivot layer will always be cleared.
@@ -942,11 +942,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        if (modifier !== undefined && layerSpec.size > 1) {
-            return Promise.reject(new Error("Select with modifier requires a single layer"));
-        }
-
-        var selected = document.layers.selected,
+        var setPivot = layerSpec.size === 1,
+            selected = document.layers.selected,
             pivot = document.layers.pivot,
             nextSelected,
             nextPivot;
@@ -954,25 +951,33 @@ define(function (require, exports) {
         switch (modifier) {
         case "select":
             nextSelected = layerSpec;
-            nextPivot = layerSpec.first();
+            nextPivot = setPivot ? layerSpec.first() : null;
             break;
         case "deselect":
             nextSelected = selected.filterNot(function (layer) {
                 return layerSpec.first().id === layer.id;
             });
-            if (pivot) {
-                if (pivot.id === layerSpec.first().id) {
-                    nextPivot = selected.first();
-                } else {
-                    nextPivot = pivot;
+            if (setPivot) {
+                if (pivot) {
+                    if (pivot.id === layerSpec.first().id) {
+                        nextPivot = selected.first();
+                    } else {
+                        nextPivot = pivot;
+                    }
                 }
+            } else {
+                nextPivot = null;
             }
             break;
         case "add":
             nextSelected = selected.concat(layerSpec);
-            nextPivot = pivot;
+            nextPivot = setPivot ? pivot : null;
             break;
         case "addUpTo":
+            if (!setPivot) {
+                throw new Error("Select with modifier addUpTo does not support multiple layers.");
+            }
+
             if (selected.isEmpty()) {
                 nextSelected = layerSpec;
                 nextPivot = layerSpec.first();
