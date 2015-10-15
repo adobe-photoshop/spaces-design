@@ -320,7 +320,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartup = function () {
-        var defaultKeyboardMode = adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
+        var defaultKeyboardMode = adapterUI.keyboardPropagationMode.FOCUS_PROPAGATE,
             keyboardModePromise = this.transfer(setMode, PolicyStore.eventKind.KEYBOARD,
                 defaultKeyboardMode),
             defaultPointerMode = adapterUI.pointerPropagationMode.ALPHA_PROPAGATE,
