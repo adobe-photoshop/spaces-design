@@ -51,47 +51,39 @@
         "SLIDES": [
             {
                 "TITLE": "destination",
-                "ICON": "outil-nouvelle Sélection",
                 "HEADLINE": "Bienvenue dans Design Space",
                 "SUBHEAD": "",
-                "BODY_FIRST": "[8413939] é_Design Space (currently a Preview) is a companion experience to Photoshop for web and app designers.",
-                "BODY_SECOND": "[8413938] é_We’re working in HTML and JavaScript, creating new interactions tailored to your workflows. This is a preview release to get your feedback – so let us know what you think."
+                "BODY_FIRST": "Design Space (qui est pour l'instant un Aperçu) est une application qui s'utilise conjointement avec Photoshop pour les concepteurs Web et les concepteurs d'applications.",
+                "BODY_SECOND": "Nous utilisons le code HTML et Javascript afin de créer de nouvelles interactions personnalisées adaptées à vos flux de production. Il s'agit d'une version préliminaire destinée à obtenir vos commentaires. Faites-nous part de votre opinion."
             },
             {
                 "TITLE": "Ensemble d'outils",
-                "ICON": "outil-nouvelle Sélection",
                 "HEADLINE": "Ensemble d'outils réduit et panneau de propriétés contextuel."
             },
             {
                 "TITLE": "Rechercher",
-                "ICON": "calque-recherche-application",
-                "HEADLINE_FIRST": "[8470744] é_Search for layers, open documents, place library assets, and more.",
-                "HEADLINE_SECOND": "[8470741] é_Use Command+F on Mac or Control+F on Windows."
+                "HEADLINE_FIRST": "Recherchez des calques, ouvrez des documents, importez des ressources de la bibliothèque, et plus encore.",
+                "HEADLINE_SECOND": "Utilisez Commande+F sous Mac ou Ctrl+F sous Windows."
             },
             {
                 "TITLE": "Echantillonnage",
-                "ICON": "outil-pipette",
-                "HEADLINE_FIRST": "[8470740] é_Sample colors and effects with just a click or a shift+click.",
-                "HEADLINE_SECOND": "[8470738] é_Sample everything else, even graphics, with the spacebar."
+                "HEADLINE_FIRST": "Echantillonnez les couleurs et les effets d'un simple clic ou en utilisant Maj+clic.",
+                "HEADLINE_SECOND": "Echantillonnez tout le reste, même les graphiques, avec la barre d'espace."
             },
             {
                 "TITLE": "Plans de travail",
-                "ICON": "calque-planche graphique",
                 "HEADLINE": "Créez plusieurs planches graphiques pour un flux de travaux plus visuel."
             },
             {
                 "TITLE": "Permuter",
-                "ICON": "permuter",
-                "HEADLINE": "[8470760] é_Swap the contents and positions of layers and artboards with a single click."
+                "HEADLINE": "Echangez le contenu et les positions des calques et des plans de travail en un seul clic."
             },
             {
                 "TITLE": "Changement",
-                "ICON": "espace de travail",
-                "HEADLINE": "[8470756] é_Switch to standard Photoshop seamlessly for advanced photography features."
+                "HEADLINE": "Passez aisément à la version standard de Photoshop pour accéder aux fonctionnalités avancées des photos."
             },
             {
                 "TITLE": "Contact",
-                "ICON": "oiseau",
                 "HEADLINE": "Espace de conception",
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",
@@ -101,7 +93,7 @@
     },
     "KEYBOARD_SHORTCUTS": {
         "TOOLS_TITLE": "Outils",
-        "MORE_TITLE": "[8496728] é_More",
+        "MORE_TITLE": "Plus",
         "SELECT_TITLE": "Outil Sélection",
         "TOOLS": {
             "SELECT": "Sélectionner",
@@ -110,17 +102,17 @@
             "PEN": "Plume",
             "TYPE": "Texte",
             "SAMPLER": "Echantillonnage",
-            "SAMPLER_EFFECTS": "[8496734] é_Sample Effects",
-            "SAMPLER_INSTRUCTION_EFFECTS": "[8496733] é_Shift + Click",
-            "SAMPLER_HUD": "[8496730] é_Sample Options HUD",
-            "SAMPLER_INSTRUCTION_HUD": "[8496729] é_Spacebar",
+            "SAMPLER_EFFECTS": "Echantillonner les effets",
+            "SAMPLER_INSTRUCTION_EFFECTS": "Maj+clic",
+            "SAMPLER_HUD": "Echantillonner le HUD d'options",
+            "SAMPLER_INSTRUCTION_HUD": "Barre d'espace",
             "SEARCH": "Rechercher",
             "SEARCH_INSTRUCTION_MAC": "Cmd + F",
             "SEARCH_INSTRUCTION_WIN": "Ctrl + F",
             "EXPORT": "Exportation",
-            "EXPORT_INSTRUCTION_MAC": "[8496731] é_Cmd + E",
-            "EXPORT_INSTRUCTION_WIN": "[8496736] é_Ctrl + E",
-            "MASKMODE": "[8496732] é_Mask Mode"
+            "EXPORT_INSTRUCTION_MAC": "Cmd+E",
+            "EXPORT_INSTRUCTION_WIN": "Ctrl+E",
+            "MASKMODE": "Mode Masque"
         },
         "SELECT_TOOL": {
             "TARGET": "Cibler un groupe imbriqué/des calques",
@@ -294,8 +286,8 @@
         "ARTBOARD": "Plan de travail"
     },
     "LAYER_KIND_ALERTS": {
-        "LINK_MISSING": "[8495445] é_Missing Linked Object",
-        "LINK_CHANGED": "[8495446] é_Linked Object Updated"
+        "LINK_MISSING": "Objet lié manquant",
+        "LINK_CHANGED": "Objet lié mis à jour"
     },
     "COLOR_PICKER": {
         "FORMAT": "Format",
@@ -425,7 +417,7 @@
             "LINE": "Trait",
             "ALIGN": "Aligner",
             "AUTO_LEADING": "automatique",
-            "MISSING": "[8414078] é_[Missing Font]",
+            "MISSING": "[Police manquante]",
             "MIXED": "Polices mixtes",
             "MIXED_STYLE": "Styles de police mixtes"
         },
