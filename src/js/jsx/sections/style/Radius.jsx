@@ -99,6 +99,8 @@ define(function (require, exports, module) {
                 }, Immutable.List())
                 .min();
 
+            var maxRadiusInput = Math.floor(maxRadius);
+
             return (
                 <div className="formline">
                     <Label
@@ -111,6 +113,8 @@ define(function (require, exports, module) {
                         <NumberInput
                             size="column-4"
                             disabled={this.props.disabled}
+                            min={0}
+                            max={maxRadiusInput}
                             value={this.props.disabled ? "" : scalars}
                             onChange={this._handleRadiusChange.bind(this, layers)} />
                     </div>
