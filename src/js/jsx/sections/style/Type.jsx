@@ -466,17 +466,22 @@ define(function (require, exports, module) {
                 styleTitle,
                 placeholderText;
 
+            var anylayerTextWarning = layers.some(function (layer) {
+                return layer.textWarningLevel > 0;
+            });
+
             if (this.props.uniformLayerKind && !postScriptNames.isEmpty() && this.state.initialized) {
-                if (postScriptFamilyName) {
+                if (postScriptFamilyName || anylayerTextWarning) {
                     familyName = this._getPostScriptFontFamily(postScriptFamilyName);
                     if (!familyName) {
-                        if (layers.size > 1) {
-                            placeholderText = strings.STYLE.TYPE.MISSING;
+                        // Font is missing
+                        var uniformValue = collection.uniformValue(postScriptNames);
+                        if (uniformValue === null) {
+                            placeholderText = "[" + strings.STYLE.TYPE.MIXED + "]";
                         } else {
                             placeholderText = "[" + postScriptFamilyName + "]";
                         }
                     }
-                    
                     if (postScriptStyleName) {
                         styleTitle = this._getPostScriptFontStyle(postScriptStyleName);
                     } else {
