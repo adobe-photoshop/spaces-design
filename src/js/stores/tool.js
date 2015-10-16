@@ -294,7 +294,7 @@ define(function (require, exports, module) {
             // current options of the native tool
             Object.keys(this._allTools).some(function (toolID) {
                 var tool = this._allTools[toolID];
-                if (tool.isMainTool && tool.nativeToolName === psToolName) {
+                if (tool.isMainTool && tool.nativeToolName() === psToolName) {
                     target = tool;
                     return true;
                 }
