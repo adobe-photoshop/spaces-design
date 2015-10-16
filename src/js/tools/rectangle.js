@@ -84,6 +84,8 @@ define(function (require, exports, module) {
     var RectangleTool = function () {
         var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, { shift: true }, utilShortcuts.GLOBAL.TOOLS.SHAPE),
+            escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
             deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
             backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
@@ -91,7 +93,7 @@ define(function (require, exports, module) {
 
         Tool.call(this, "rectangle", "Rectangle", "rectangleTool", _selectHandler);
        
-        this.keyboardPolicyList = [shiftUKeyPolicy, deleteKeyPolicy, backspaceKeyPolicy];
+        this.keyboardPolicyList = [shiftUKeyPolicy, deleteKeyPolicy, backspaceKeyPolicy, escapeKeyPolicy];
         this.activationKey = utilShortcuts.GLOBAL.TOOLS.RECTANGLE;
         this.handleVectorMaskMode = true;
     };
@@ -111,6 +113,10 @@ define(function (require, exports, module) {
             flux.actions.tools.select(toolStore.getToolByID("ellipse"));
         }
         
+        if (toolStore.getVectorMode() && detail.keyCode === OS.eventKeyCode.ESCAPE) {
+            flux.actions.tools.changeVectorMaskMode(false);
+        }
+
         // we may like to iterate on what happens when a user hits delete in vector mask mode
         if (toolStore.getVectorMode() && (detail.keyCode === OS.eventKeyCode.DELETE ||
                 detail.keyCode === OS.eventKeyCode.BACKSPACE)) {
