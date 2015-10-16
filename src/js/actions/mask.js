@@ -59,19 +59,18 @@ define(function (require, exports) {
                     return this.transfer(menuActions.native, payload)
                         .bind(this)
                         .then(function () {
-                            return this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
-                                .bind(this)
-                                .then(function () {
-                                    currentDocument = this.flux.store("application").getCurrentDocument();
-                                    currentLayer = currentDocument.layers.selected.first();
-                                    if (currentLayer && !currentLayer.vectorMaskEnabled) {
-                                        return this.transfer(layerActions.deleteVectorMask)
-                                            .bind(this)
-                                            .then(function () {
-                                                return this.transfer(toolActions.changeVectorMaskMode, false);
-                                            });
-                                    }
-                                });
+                            return this.transfer(layerActions.resetLayers, currentDocument, currentLayer);
+                        })
+                        .then(function () {
+                            currentDocument = this.flux.store("application").getCurrentDocument();
+                            currentLayer = currentDocument.layers.selected.first();
+                            if (currentLayer && !currentLayer.vectorMaskEnabled) {
+                                return this.transfer(layerActions.deleteVectorMask)
+                                    .bind(this)
+                                    .then(function () {
+                                        return this.transfer(toolActions.changeVectorMaskMode, false);
+                                    });
+                            }
                         });
                 } else {
                     return this.transfer(layerActions.deleteVectorMask)
