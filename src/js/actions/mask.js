@@ -34,11 +34,11 @@ define(function (require, exports) {
     var _CLEAR_PATH = 106;
 
     /**
-     * Handle the deleteText for vector mask mode tools
+     * Handle deleting vector mask for all of the vector mask mode tools
      *
      * @return {Promise}
      */
-    var handleDelete = function () {
+    var handleDeleteVectorMask = function () {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument();
 
@@ -51,7 +51,7 @@ define(function (require, exports) {
         return this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
             .bind(this)
             .then(function () {
-                currentDocument = this.flux.store("application").getCurrentDocument();
+                currentDocument = appStore.getCurrentDocument();
                 currentLayer = currentDocument.layers.selected.first();
                 
                 if (currentLayer && !currentLayer.vectorMaskEmpty) {
@@ -62,7 +62,7 @@ define(function (require, exports) {
                             return this.transfer(layerActions.resetLayers, currentDocument, currentLayer);
                         })
                         .then(function () {
-                            currentDocument = this.flux.store("application").getCurrentDocument();
+                            currentDocument = appStore.getCurrentDocument();
                             currentLayer = currentDocument.layers.selected.first();
                             if (currentLayer && !currentLayer.vectorMaskEnabled) {
                                 return this.transfer(layerActions.deleteVectorMask)
@@ -82,10 +82,10 @@ define(function (require, exports) {
             });
     };
 
-    handleDelete.reads = [locks.JS_APP, locks.JS_DOC];
-    handleDelete.writes = [];
-    handleDelete.transfers = [layerActions.resetLayers,layerActions.deleteVectorMask,
+    handleDeleteVectorMask.reads = [locks.JS_APP, locks.JS_DOC];
+    handleDeleteVectorMask.writes = [];
+    handleDeleteVectorMask.transfers = [layerActions.resetLayers,layerActions.deleteVectorMask,
         toolActions.changeVectorMaskMode, menuActions.native];
 
-    exports.handleDelete = handleDelete;
+    exports.handleDeleteVectorMask = handleDeleteVectorMask;
 });

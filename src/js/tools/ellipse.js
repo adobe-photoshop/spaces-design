@@ -119,7 +119,7 @@ define(function (require, exports, module) {
 
         if (toolStore.getVectorMode() && (detail.keyCode === OS.eventKeyCode.DELETE ||
                 detail.keyCode === OS.eventKeyCode.BACKSPACE)) {
-            flux.actions.mask.handleDelete();
+            flux.actions.mask.handleDeleteVectorMask();
         }
     };
     module.exports = EllipseTool;
