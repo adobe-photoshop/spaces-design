@@ -732,6 +732,28 @@ define(function (require, exports) {
     resetLayerVisibility.modal = true;
 
     /**
+     * Initialize the uninitialized subset of the given layers by loading their lazy properties.
+     *
+     * @param {Document} document
+     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec
+     * @return {Promise}
+     */
+    var initializeLayers = function (document, layerSpec) {
+        if (layerSpec instanceof Layer) {
+            layerSpec = Immutable.List.of(layerSpec);
+        }
+
+        var uninitializedLayers = layerSpec.filterNot(function (layer) {
+            return layer.initialized;
+        });
+
+        return this.transfer(resetLayers, document, uninitializedLayers, true);
+    };
+    initializeLayers.reads = [];
+    initializeLayers.writes = [];
+    initializeLayers.transfers = [resetLayers];
+
+    /**
      * Expand or collapse the given group layers in the layers panel.
      *
      * @param {Document} document
@@ -745,10 +767,6 @@ define(function (require, exports) {
             layers = Immutable.List.of(layers);
         }
 
-        if (descendants) {
-            layers = layers.flatMap(document.layers.descendants, document.layers);
-        }
-
         layers = layers
             .filter(function (layer) {
                 return layer.kind === layer.layerKinds.GROUP;
@@ -756,6 +774,58 @@ define(function (require, exports) {
 
         if (layers.isEmpty()) {
             return Promise.resolve();
+        }
+
+        if (descendants) {
+            layers = layers.flatMap(document.layers.descendants, document.layers);
+        }
+
+        // When collapsing layers, if a visible descendent is selected then the selection
+        // is removed and moved up to the collapsing group.
+        var layersToSelect = [],
+            layersToDeselect = [],
+            playObjects = [];
+
+        if (!expand) {
+            layers.forEach(function (parent) {
+                var selectedDescendants = document.layers.strictDescendants(parent)
+                    .filter(function (child) {
+                        return child.selected && !document.layers.hasCollapsedAncestor(child);
+                    });
+
+                // If there are any selected hidden descendants, deselect the
+                // children and select the parent if necessary.
+                if (!selectedDescendants.isEmpty()) {
+                    layersToDeselect = layersToDeselect.concat(selectedDescendants.toArray());
+                    if (!parent.selected) {
+                        layersToSelect.push(parent);
+                    }
+                }
+            });
+
+            if (layersToSelect.length > 0) {
+                var selectRef = layersToSelect
+                    .map(function (layer) {
+                        return layerLib.referenceBy.id(layer.id);
+                    });
+
+                selectRef.unshift(documentLib.referenceBy.id(document.id));
+
+                var selectObj = layerLib.select(selectRef, false);
+                playObjects.push(selectObj);
+            }
+
+            if (layersToDeselect.length > 0) {
+                var deselectRef = layersToDeselect
+                    .map(function (layer) {
+                        return layerLib.referenceBy.id(layer.id);
+                    });
+
+                deselectRef.unshift(documentLib.referenceBy.id(document.id));
+
+                var deselectObj = layerLib.select(deselectRef, false, "deselect");
+                playObjects.push(deselectObj);
+            }
         }
 
         var documentRef = documentLib.referenceBy.id(document.id),
@@ -766,18 +836,31 @@ define(function (require, exports) {
                 .unshift(documentRef)
                 .toArray();
 
-        var expandPlayObject = layerLib.setGroupExpansion(layerRefs, !!expand),
-            expansionPromise = descriptor.playObject(expandPlayObject),
+        var expandPlayObject = layerLib.setGroupExpansion(layerRefs, !!expand);
+
+        playObjects.push(expandPlayObject);
+
+        var expansionPromise = descriptor.batchPlayObjects(playObjects),
             dispatchPromise = this.dispatchAsync(events.document.SET_GROUP_EXPANSION, {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
+                selected: collection.pluck(layersToSelect, "id"),
+                deselected: collection.pluck(layersToDeselect, "id"),
                 expanded: expand
             });
 
-        return Promise.join(expansionPromise, dispatchPromise);
+        return Promise.join(expansionPromise, dispatchPromise, function () {
+            if (layersToSelect.length > 0) {
+                var nextDocument = this.flux.store("document").getDocument(document.id),
+                    nextSelected = nextDocument.layers.selected;
+
+                return this.transfer(initializeLayers, nextDocument, nextSelected);
+            }
+        }.bind(this));
     };
     setGroupExpansion.reads = [];
     setGroupExpansion.writes = [locks.PS_DOC, locks.JS_DOC];
+    setGroupExpansion.transfers = [initializeLayers];
 
     /**
      * Reveal the given layers in the layers panel by ensuring their ancestors
@@ -809,28 +892,6 @@ define(function (require, exports) {
     revealLayers.reads = [locks.JS_DOC];
     revealLayers.writes = [];
     revealLayers.transfers = [setGroupExpansion];
-
-    /**
-     * Initialize the uninitialized subset of the given layers by loading their lazy properties.
-     *
-     * @param {Document} document
-     * @param {Layer|Immutable.Iterable.<Layer>} layerSpec
-     * @return {Promise}
-     */
-    var initializeLayers = function (document, layerSpec) {
-        if (layerSpec instanceof Layer) {
-            layerSpec = Immutable.List.of(layerSpec);
-        }
-
-        var uninitializedLayers = layerSpec.filterNot(function (layer) {
-            return layer.initialized;
-        });
-
-        return this.transfer(resetLayers, document, uninitializedLayers, true);
-    };
-    initializeLayers.reads = [];
-    initializeLayers.writes = [];
-    initializeLayers.transfers = [resetLayers];
 
     /**
      * Resets the list of selected layers by asking photoshop for targetLayers
