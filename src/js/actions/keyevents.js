@@ -99,12 +99,34 @@ define(function (require, exports) {
     var _handleFlagsChanged;
 
     /**
+     * Clears modifier state when the application becomes inactive.
+     *
+     * @private
+     * @type {function({{becameActive: boolean}})}
+     */
+    var _handleActivationChanged;
+
+    /**
      * Registers a key event handler to reflect adapter events back to the DOM.
      * 
      * @return {Promise}
      */
     var beforeStartup = function () {
         os.addListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
+
+        _handleActivationChanged = function (event) {
+            if (!event.becameActive) {
+                // The modifier state becomes invalid when the application becomes inactive.
+                // To avoid having stale modifier state when the application becomes active
+                // again, just reset the state immediately. Ideally, the adapter would also
+                // send another adapterFlagsChanged event whenever the application becomes
+                // active so that the modifier state can be updated immediately. If not, it
+                // will be null until the first new adapterFlagsChanged event, which is
+                // less bad than having stale modifier state. For details, see #2946.
+                this.dispatch(events.modifiers.MODIFIERS_CHANGED, {});
+            }
+        }.bind(this);
+        os.addListener("activationChanged", _handleActivationChanged);
 
         _handleFlagsChanged = function (event) {
             this.dispatch(events.modifiers.MODIFIERS_CHANGED, event.detail.modifiers);
@@ -125,6 +147,7 @@ define(function (require, exports) {
      */
     var onReset = function () {
         os.removeListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
+        os.removeListener("activationChanged", _handleActivationChanged);
         window.removeEventListener("adapterFlagsChanged", _handleFlagsChanged);
 
         return Promise.resolve();
