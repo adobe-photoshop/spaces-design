@@ -145,14 +145,17 @@ define(function (require, exports, module) {
             backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
             enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER);
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER),
+            spaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, " ");
 
         this.keyboardPolicyList = [
             escapeKeyPolicy,
             tabKeyPolicy,
             deleteKeyPolicy,
             backspaceKeyPolicy,
-            enterKeyPolicy
+            enterKeyPolicy,
+            spaceKeyPolicy
         ];
 
         var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
