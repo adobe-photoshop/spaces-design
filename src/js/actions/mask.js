@@ -34,6 +34,45 @@ define(function (require, exports) {
     var _CLEAR_PATH = 106;
 
     /**
+     * Handle escaping from vector mask for the selection based vector mask tools
+     * most tools can just call toolActions.changeVectorMaskMode directly
+     *
+     * @return {Promise}
+     */
+    var handleEscapeVectorMask = function () {
+        var appStore = this.flux.store("application"),
+            toolStore = this.flux.store("tool"),
+            currentDocument = appStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        if (toolStore.getVectorMode() && toolStore.getModalToolState()) {
+            return this.transfer(toolActions.changeVectorMaskMode, false);
+        }
+
+        var currentLayer = currentDocument.layers.selected.first();
+
+        return this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
+            .bind(this)
+            .then(function () {
+                currentDocument = appStore.getCurrentDocument();
+                currentLayer = currentDocument.layers.selected.first();
+                if (currentLayer && currentLayer.vectorMaskEmpty) {
+                    return this.transfer(toolActions.changeVectorMaskMode, false);
+                } else {
+                    return this.transfer(toolActions.select, toolStore.getToolByID("newSelect"));
+                }
+            });
+    };
+    handleEscapeVectorMask.reads = [locks.JS_APP, locks.JS_DOC];
+    handleEscapeVectorMask.writes = [];
+    handleEscapeVectorMask.transfers = [layerActions.resetLayers, toolActions.changeVectorMaskMode,
+        toolActions.select];
+    handleEscapeVectorMask.modal = true;
+
+    /**
      * Handle deleting vector mask for all of the vector mask mode tools
      *
      * @return {Promise}
@@ -81,11 +120,11 @@ define(function (require, exports) {
                 }
             });
     };
-
     handleDeleteVectorMask.reads = [locks.JS_APP, locks.JS_DOC];
     handleDeleteVectorMask.writes = [];
     handleDeleteVectorMask.transfers = [layerActions.resetLayers,layerActions.deleteVectorMask,
         toolActions.changeVectorMaskMode, menuActions.native];
 
     exports.handleDeleteVectorMask = handleDeleteVectorMask;
+    exports.handleEscapeVectorMask = handleEscapeVectorMask;
 });

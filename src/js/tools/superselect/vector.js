@@ -1,4 +1,4 @@
-/*
+    /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -164,11 +164,7 @@ define(function (require, exports, module) {
 
         var detail = event.detail;
         if (detail.keyCode === 27) { // Escape
-            if (toolStore.getVectorMode() && toolStore.getModalToolState()) {
-                flux.actions.tools.changeVectorMaskMode(false);
-            } else {
-                flux.actions.tools.select(toolStore.getToolByID("newSelect"));
-            }
+            flux.actions.mask.handleEscapeVectorMask();
         } else if (detail.keyCode === 13) { // Enter
             flux.actions.tools.select(toolStore.getToolByID("newSelect"));
         }

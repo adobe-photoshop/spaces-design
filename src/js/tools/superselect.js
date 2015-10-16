@@ -290,7 +290,7 @@ define(function (require, exports, module) {
         switch (detail.keyCode) {
         case OS.eventKeyCode.ESCAPE: // Escape
             if (vectorMaskMode) {
-                flux.actions.tools.changeVectorMaskMode(false);
+                flux.actions.mask.handleEscapeVectorMask();
             } else {
                 var dontDeselectAll = system.isMac ? detail.modifiers.alt : detail.modifiers.shift;
                 flux.actions.superselect.backOut(currentDocument, dontDeselectAll);
