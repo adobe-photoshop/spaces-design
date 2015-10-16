@@ -55,7 +55,8 @@ define(function (require, exports, module) {
                 events.RESET, this._handleReset,
                 events.style.COPY_STYLE, this._copyStyle,
                 events.style.SHOW_HUD, this._showHUD,
-                events.style.HIDE_HUD, this._hideHUD
+                events.style.HIDE_HUD, this._hideHUD,
+                events.ui.TRANSFORM_UPDATED, this._hideHUD
             );
 
             this._handleReset();
@@ -130,10 +131,12 @@ define(function (require, exports, module) {
          * @private
          */
         _hideHUD: function () {
-            this._sampleTypes = null;
-            this._samplePoint = null;
+            if (this._sampleTypes) {
+                this._sampleTypes = null;
+                this._samplePoint = null;
 
-            this.emit("change");
+                this.emit("change");
+            }
         }
     });
 
