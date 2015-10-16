@@ -30,7 +30,8 @@ define(function (require, exports) {
     var textLayerLib = require("adapter/lib/textLayer"),
         descriptor = require("adapter/ps/descriptor"),
         documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer");
+        layerLib = require("adapter/lib/layer"),
+        appLib = require("adapter/lib/application");
 
     var layerActions = require("./layers"),
         events = require("../events"),
@@ -674,9 +675,29 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return descriptor.getProperty("application", "fontList")
+        // Determine whether to use native or English-only font names
+        var englishFontNamesPromise;
+        if (fontState.initialized) {
+            englishFontNamesPromise = Promise.resolve(fontState.englishFontNames);
+        } else {
+            englishFontNamesPromise = descriptor.getProperty("application", "typePreferences")
+                .get("showEnglishFontNames");
+        }
+
+        return englishFontNamesPromise
             .bind(this)
-            .then(this.dispatch.bind(this, events.font.INIT_FONTS))
+            .then(function (englishFontNames) {
+                var fontListPlayObject = appLib.getFontList(englishFontNames);
+
+                return descriptor.playObject(fontListPlayObject)
+                    .get("fontList")
+                    .bind(this)
+                    .then(function (payload) {
+                        payload.englishFontNames = englishFontNames;
+
+                        this.dispatch(events.font.INIT_FONTS, payload);
+                    });
+            })
             .then(function () {
                 var resetPromises = this.flux.store("application")
                     .getOpenDocuments()

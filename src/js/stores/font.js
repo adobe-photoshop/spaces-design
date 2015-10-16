@@ -59,9 +59,18 @@ define(function (require, exports, module) {
         /**
          * List of typefaces for populating datalists
          *
+         * @private
          * @type {Immutable.List.<{id: string, font: string}>}
          */
         _typefaces: Immutable.List(),
+
+        /**
+         * Whether to use native or English-only font names.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _englishFontNames: false,
 
         initialize: function () {
             this.bindActions(
@@ -79,6 +88,7 @@ define(function (require, exports, module) {
             this._initialized = false;
             this._familyMap = Immutable.Map();
             this._postScriptMap = Immutable.Map();
+            this._englishFontNames = false;
         },
 
         /**
@@ -92,7 +102,8 @@ define(function (require, exports, module) {
                 initialized: this._initialized,
                 familyMap: this._familyMap,
                 postScriptMap: this._postScriptMap,
-                typefaces: this._typefaces
+                typefaces: this._typefaces,
+                englishFontNames: this._englishFontNames
             };
         },
 
@@ -238,13 +249,22 @@ define(function (require, exports, module) {
          * Create lookup tables for the list of installed fonts.
          * 
          * @private
-         * @param {{fontFamilyName: Array.<string>, fontName: Array.<string>, fontStyleNames: Array.<string>}} payload
+         * @param {object} payload
+         * @param {Array.<string>} payload.fontFamilyName
+         * @param {Array.<string>} payload.fontName
+         * @param {Array.<string>} payload.fontStyleNames
+         * @param {boolean} payload.englishFontNames
          */
         _handleInitFonts: function (payload) {
             var familyNames = payload.fontFamilyName,
                 fontNames = payload.fontName,
                 fontStyleNames = payload.fontStyleName,
-                fontPostScriptNames = payload.fontPostScriptName;
+                fontPostScriptNames = payload.fontPostScriptName,
+                englishFontNames = payload.englishFontNames;
+
+            // Whether to use native font names when available or to always use
+            // English font names.
+            this._englishFontNames = englishFontNames;
 
             // Maps families to constituent fonts and styles
             var FontRec = Immutable.Record({
