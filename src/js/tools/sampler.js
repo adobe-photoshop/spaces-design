@@ -116,6 +116,10 @@ define(function (require, exports, module) {
             applicationStore = flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument();
             
+        if (!currentDocument) {
+            return;
+        }
+        
         if (event.detail.keyChar === " ") {
             flux.actions.sampler.showHUD(currentDocument, _currentMouseX, _currentMouseY);
         } else if (event.detail.keyCode === OS.eventKeyCode.ESCAPE) {
