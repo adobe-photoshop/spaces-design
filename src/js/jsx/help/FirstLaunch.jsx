@@ -67,7 +67,7 @@ define(function (require, exports, module) {
                 psForumURL = "https://www.adobe.com/go/designspace-forum",
                 githubURL = "https://www.adobe.com/go/designspace-github",
                 firstLaunchCarouselItems = [
-                (<div className="carousel__slide__full">
+                (<div className="carousel__slide__full slide-0">
                     <h1>{strings.FIRST_LAUNCH.SLIDES[0].HEADLINE}</h1>
                     <img src="img/first_launch/img_slide_ds.png"/>
                     <h3>{strings.FIRST_LAUNCH.SLIDES[0].BODY_FIRST}</h3>
@@ -82,20 +82,20 @@ define(function (require, exports, module) {
                     <h2>{strings.FIRST_LAUNCH.SLIDES[2].HEADLINE_FIRST}</h2>
                     <h2>{strings.FIRST_LAUNCH.SLIDES[2].HEADLINE_SECOND}</h2>
                 </div>),
-                (<div className="carousel__slide__full">
+                (<div className="carousel__slide__full slide-3">
                     <img src="img/first_launch/img_slide_sampler.png"/>
                     <h2>{strings.FIRST_LAUNCH.SLIDES[3].HEADLINE_FIRST}</h2>
                     <h2>{strings.FIRST_LAUNCH.SLIDES[3].HEADLINE_SECOND}</h2>
                 </div>),
-                (<div className="carousel__slide__full">
+                (<div className="carousel__slide__full slide-4">
                     <img src="img/first_launch/img_slide_artboards.gif"/>
                     <h2>{strings.FIRST_LAUNCH.SLIDES[4].HEADLINE}</h2>
                 </div>),
-                (<div className="carousel__slide__full">
+                (<div className="carousel__slide__full slide-5">
                     <img src="img/first_launch/img_slide_swap.gif"/>
                     <h2>{strings.FIRST_LAUNCH.SLIDES[5].HEADLINE}</h2>
                 </div>),
-                (<div className="carousel__slide__full">
+                (<div className="carousel__slide__full slide-6">
                     <img src="img/first_launch/img_slide_switching.gif"/>
                     <h2>{strings.FIRST_LAUNCH.SLIDES[6].HEADLINE}</h2>
                 </div>),
