@@ -230,6 +230,11 @@ define(function (require, exports) {
                 this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve(),
             guidePromise; // We want to set these after border policies
 
+        // if we are in vector mask mode we should not change pointer policies 
+        if (toolStore.getVectorMode()) {
+            return Promise.resolve();
+        }
+
         // Make sure to always remove the remaining policies
         if (!currentDocument || !currentTool || currentTool.id !== "newSelect") {
             _currentTransformPolicyID = null;

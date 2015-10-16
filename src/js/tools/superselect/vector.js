@@ -79,7 +79,7 @@ define(function (require, exports, module) {
             var flux = this.flux,
                 toolStore = flux.store("tool");
 
-            if (toolStore.getVectorMode()) {
+            if (toolStore.getVectorMode() && toolStore.getModalToolState()) {
                 flux.actions.layers.deleteVectorMask()
                     .then(function () {
                         flux.actions.tools.changeVectorMaskMode(false);

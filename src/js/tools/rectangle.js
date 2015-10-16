@@ -117,13 +117,9 @@ define(function (require, exports, module) {
             flux.actions.tools.changeVectorMaskMode(false);
         }
 
-        // we may like to iterate on what happens when a user hits delete in vector mask mode
         if (toolStore.getVectorMode() && (detail.keyCode === OS.eventKeyCode.DELETE ||
                 detail.keyCode === OS.eventKeyCode.BACKSPACE)) {
-            flux.actions.layers.deleteVectorMask()
-                .then(function () {
-                    flux.actions.tools.changeVectorMaskMode(false);
-                });
+            flux.actions.mask.handleDeleteVectorMask();
         }
     };
 
