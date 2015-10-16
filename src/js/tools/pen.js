@@ -66,25 +66,31 @@ define(function (require, exports, module) {
                     return descriptor.playObject(optionsObj);
                 });
 
-        if (this.vectorMode) {
-            var selectVectorMask = descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
-            return Promise.join(setPromise, selectVectorMask);
+        var deleteFn = function (event) {
+            event.stopPropagation();
+
+            return PS.performMenuCommand(_CLEAR_PATH)
+                .catch(function () {
+                    // Silence the errors here
+                });
+        };
+
+        // Disable target path suppression
+        var backspacePromise = this.transfer(shortcuts.addShortcut,
+                OS.eventKeyCode.BACKSPACE, {}, deleteFn, "penBackspace", true),
+            deletePromise = this.transfer(shortcuts.addShortcut,
+                OS.eventKeyCode.DELETE, {}, deleteFn, "penDelete", true),
+            disableSuppressionPromise = UI.setSuppressTargetPaths(false);
+
+        if (vectorMode) {
+            var selectVectorMask = UI.setSuppressTargetPaths(false)
+                .then(function () {
+                    return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+                });
+
+            return Promise.join(setPromise, selectVectorMask,
+                disableSuppressionPromise, backspacePromise, deletePromise);
         } else {
-            var deleteFn = function (event) {
-                event.stopPropagation();
-
-                return PS.performMenuCommand(_CLEAR_PATH)
-                    .catch(function () {
-                        // Silence the errors here
-                    });
-            };
-
-            // Disable target path suppression
-            var backspacePromise = this.transfer(shortcuts.addShortcut,
-                    OS.eventKeyCode.BACKSPACE, {}, deleteFn, "penBackspace", true),
-                deletePromise = this.transfer(shortcuts.addShortcut,
-                    OS.eventKeyCode.DELETE, {}, deleteFn, "penDelete", true),
-                 disableSuppressionPromise = UI.setSuppressTargetPaths(false);
             return Promise.join(setPromise,
                 disableSuppressionPromise, backspacePromise, deletePromise);
         }
