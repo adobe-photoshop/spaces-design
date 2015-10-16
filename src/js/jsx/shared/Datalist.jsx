@@ -137,6 +137,7 @@ define(function (require, exports, module) {
 
             return (this.props.options !== nextProps.options ||
                 this.state.filter !== nextState.filter ||
+                this.props.placeholderText !== nextState.placeholderText ||
                 this.state.active !== nextState.active ||
                 this.state.suggestTitle !== nextState.suggestTitle ||
                 this.props.value !== nextProps.value);

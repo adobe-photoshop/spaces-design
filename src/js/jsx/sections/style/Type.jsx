@@ -470,7 +470,11 @@ define(function (require, exports, module) {
                 if (postScriptFamilyName) {
                     familyName = this._getPostScriptFontFamily(postScriptFamilyName);
                     if (!familyName) {
-                        placeholderText = "[" + postScriptFamilyName + "]";
+                        if (layers.size > 1) {
+                            placeholderText = strings.STYLE.TYPE.MISSING;
+                        } else {
+                            placeholderText = "[" + postScriptFamilyName + "]";
+                        }
                     }
                     
                     if (postScriptStyleName) {
