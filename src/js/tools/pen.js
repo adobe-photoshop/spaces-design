@@ -107,11 +107,14 @@ define(function (require, exports, module) {
         var backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
             deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE);
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
+            escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
             
         this.keyboardPolicyList = [
             backspaceKeyPolicy,
-            deleteKeyPolicy
+            deleteKeyPolicy,
+            escapeKeyPolicy
         ];
         
         this.selectHandler = _selectHandler;
@@ -120,6 +123,21 @@ define(function (require, exports, module) {
         this.handleVectorMaskMode = true;
     };
     util.inherits(PenTool, Tool);
+
+    /**
+     * Handler for keydown events, installed when the tool is active.
+     *
+     * @param {CustomEvent} event
+     */
+    PenTool.prototype.onKeyDown = function (event) {
+        var flux = this.getFlux(),
+            toolStore = flux.store("tool"),
+            detail = event.detail;
+  
+        if (toolStore.getVectorMode() && detail.keyCode === OS.eventKeyCode.ESCAPE) {
+            flux.actions.tools.changeVectorMaskMode(false);
+        }
+    };
 
     module.exports = PenTool;
 });
