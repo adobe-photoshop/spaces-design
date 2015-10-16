@@ -301,7 +301,7 @@ define(function (require, exports, module) {
                     <div className="icon-header">
                         <div className="icon-header-buttons">
                             <Button
-                                className="button-plus"
+                                className="button-plus search-button"
                                 title={strings.TOOLTIPS.SEARCH}
                                 onClick={this._toggleSearch}
                                 active={this.state.searchActive}>
@@ -318,7 +318,7 @@ define(function (require, exports, module) {
                                     CSSID="tool-maskmode" />
                             </Button>
                             <Button
-                                className="button-plus"
+                                className="button-plus export-button"
                                 title={strings.TOOLTIPS.EXPORT_DIALOG}
                                 disabled={exportDisabled}
                                 active={this.state.exportActive}
