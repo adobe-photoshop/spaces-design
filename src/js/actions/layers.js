@@ -783,47 +783,49 @@ define(function (require, exports) {
         // When collapsing layers, if a visible descendent is selected then the selection
         // is removed and moved up to the collapsing group.
         var layersToSelect = [],
-            layersToDeselect = [];
+            layersToDeselect = [],
+            playObjects = [];
 
-        layers.forEach(function (parent) {
-            var selectedDescendants = document.layers.strictDescendants(parent)
-                .filter(function (child) {
-                    return child.selected && !document.layers.hasCollapsedAncestor(child);
-                });
+        if (!expand) {
+            layers.forEach(function (parent) {
+                var selectedDescendants = document.layers.strictDescendants(parent)
+                    .filter(function (child) {
+                        return child.selected && !document.layers.hasCollapsedAncestor(child);
+                    });
 
-            // If there are any selected hidden descendants, deselect the
-            // children and select the parent if necessary.
-            if (!selectedDescendants.isEmpty()) {
-                layersToDeselect = layersToDeselect.concat(selectedDescendants.toArray());
-                if (!parent.selected) {
-                    layersToSelect.push(parent);
+                // If there are any selected hidden descendants, deselect the
+                // children and select the parent if necessary.
+                if (!selectedDescendants.isEmpty()) {
+                    layersToDeselect = layersToDeselect.concat(selectedDescendants.toArray());
+                    if (!parent.selected) {
+                        layersToSelect.push(parent);
+                    }
                 }
+            });
+
+            if (layersToSelect.length > 0) {
+                var selectRef = layersToSelect
+                    .map(function (layer) {
+                        return layerLib.referenceBy.id(layer.id);
+                    });
+
+                selectRef.unshift(documentLib.referenceBy.id(document.id));
+
+                var selectObj = layerLib.select(selectRef, false);
+                playObjects.push(selectObj);
             }
-        });
 
-        var playObjects = [];
-        if (layersToSelect.length > 0) {
-            var selectRef = layersToSelect
-                .map(function (layer) {
-                    return layerLib.referenceBy.id(layer.id);
-                });
+            if (layersToDeselect.length > 0) {
+                var deselectRef = layersToDeselect
+                    .map(function (layer) {
+                        return layerLib.referenceBy.id(layer.id);
+                    });
 
-            selectRef.unshift(documentLib.referenceBy.id(document.id));
+                deselectRef.unshift(documentLib.referenceBy.id(document.id));
 
-            var selectObj = layerLib.select(selectRef, false);
-            playObjects.push(selectObj);
-        }
-
-        if (layersToDeselect.length > 0) {
-            var deselectRef = layersToDeselect
-                .map(function (layer) {
-                    return layerLib.referenceBy.id(layer.id);
-                });
-
-            deselectRef.unshift(documentLib.referenceBy.id(document.id));
-
-            var deselectObj = layerLib.select(deselectRef, false, "deselect");
-            playObjects.push(deselectObj);
+                var deselectObj = layerLib.select(deselectRef, false, "deselect");
+                playObjects.push(deselectObj);
+            }
         }
 
         var documentRef = documentLib.referenceBy.id(document.id),
