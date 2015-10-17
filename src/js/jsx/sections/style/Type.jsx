@@ -37,16 +37,17 @@ define(function (require, exports, module) {
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        SplitButtonList = SplitButton.SplitButtonList,
-        SplitButtonItem = SplitButton.SplitButtonItem,
         LayerBlendMode = require("jsx!./LayerBlendMode"),
         Opacity = require("jsx!./Opacity"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
-        strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection"),
-        Color = require("js/models/color"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
-        unit = require("js/util/unit");
+        SplitButtonList = SplitButton.SplitButtonList,
+        SplitButtonItem = SplitButton.SplitButtonItem,
+        strings = require("i18n!nls/strings"),
+        Color = require("js/models/color"),
+        collection = require("js/util/collection"),
+        unit = require("js/util/unit"),
+        mathUtil = require("js/util/math");
 
     /**
      * Minimum and maximum values for font size, leading and tracking.
@@ -142,12 +143,16 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Set the type face of the selected text layers from a font's postscript name.
+         * Set the type face of the selected text layers from a font's ID.
          * 
          * @private
-         * @param {string} postScriptName
+         * @param {string} typefaceID
          */
-        _handleTypefaceChange: function (postScriptName) {
+        _handleTypefaceChange: function (typefaceID) {
+            var typefaceIndex = mathUtil.parseNumber(typefaceID), // typefaceID is equivalent to index in typefaces
+                typeface = this.state.typefaces.get(typefaceIndex),
+                postScriptName = typeface && typeface.postScriptName;
+
             if (!postScriptName) {
                 return;
             }
@@ -459,7 +464,11 @@ define(function (require, exports, module) {
                 }.bind(this)),
                 postScriptStyleName = collection.uniformValue(postScriptNames, function (a, b) {
                     return this._getPostScriptFontStyle(a) === this._getPostScriptFontStyle(b);
-                }.bind(this));
+                }.bind(this)),
+                selectedTypeface = this.state.typefaces.find(function (typeface) {
+                    return typeface.postScriptName === postScriptFamilyName;
+                }),
+                selectedTypefaceID = selectedTypeface && selectedTypeface.id;
 
             // The typeface family name and style for display in the UI
             var familyName,
@@ -617,7 +626,7 @@ define(function (require, exports, module) {
                             disabled={locked}
                             list={typefaceListID}
                             value={familyName}
-                            defaultSelected={postScriptFamilyName}
+                            defaultSelected={selectedTypefaceID}
                             placeholderText={placeholderText}
                             options={this.state.typefaces}
                             onChange={this._handleTypefaceChange}
