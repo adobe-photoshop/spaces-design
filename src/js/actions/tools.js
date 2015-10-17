@@ -25,7 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
@@ -148,64 +149,73 @@ define(function (require, exports) {
             outset = isArtboard ? inset : 27,
             distortModifier = system.isMac ? { command: true } : { control: true };
 
+        // Rectangles used in polices below
+        var innerRect = {
+                x: psSelectionTL.x + inset,
+                y: psSelectionTL.y + inset,
+                width: Math.max(psSelectionWidth - (inset * 2), 0),
+                height: Math.max(psSelectionHeight - (inset * 2), 0)
+            },
+            middleRect = {
+                x: psSelectionTL.x - inset,
+                y: psSelectionTL.y - inset,
+                width: psSelectionWidth + (inset * 2),
+                height: psSelectionHeight + (inset * 2)
+            },
+            outerRect = {
+                x: psSelectionTL.x - outset,
+                y: psSelectionTL.y - outset,
+                width: psSelectionWidth + (outset * 2),
+                height: psSelectionHeight + (outset * 2)
+            };
+
         var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 {}, // no modifiers inside
-                {
-                    x: psSelectionTL.x + inset,
-                    y: psSelectionTL.y + inset,
-                    width: Math.max(psSelectionWidth - inset * 2, 0),
-                    height: Math.max(psSelectionHeight - inset * 2, 0)
-                }
+                innerRect
             ),
             insideCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 distortModifier,
-                {
-                    x: psSelectionTL.x + inset,
-                    y: psSelectionTL.y + inset,
-                    width: Math.max(psSelectionWidth - inset * 2, 0),
-                    height: Math.max(psSelectionHeight - inset * 2, 0)
-                }
+                innerRect
             ),
             // Used for distort/skew transformations
             noOutsetCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 distortModifier,
-                {
-                    x: psSelectionTL.x - inset,
-                    y: psSelectionTL.y - inset,
-                    width: psSelectionWidth + inset * 2,
-                    height: psSelectionHeight + inset * 2
-                }
+                middleRect
             ),
+            // Used for proportional resize
+            noOutsetShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                { shift: true },
+                middleRect
+            ),
+            // Used for proportional distort/skew
+            noOutsetCommandShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                _.merge({ shift: true }, distortModifier),
+                middleRect
+            ),
+            // Used for rotation
             outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 {},
-                {
-                    x: psSelectionTL.x - outset,
-                    y: psSelectionTL.y - outset,
-                    width: psSelectionWidth + outset * 2,
-                    height: psSelectionHeight + outset * 2
-                }
+                outerRect
             ),
-            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
+            // Used for constrained rotation
+            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
-                {
-                    shift: true
-                },
-                {
-                    x: psSelectionTL.x - outset,
-                    y: psSelectionTL.y - outset,
-                    width: psSelectionWidth + outset * 2,
-                    height: psSelectionHeight + outset * 2
-                }
+                { shift: true },
+                outerRect
             );
 
         var pointerPolicyList = [
             insidePolicy,
             insideCommandPolicy,
             noOutsetCommandPolicy,
+            noOutsetShiftPolicy,
+            noOutsetCommandShiftPolicy,
             outsidePolicy,
             outsideShiftPolicy
         ];

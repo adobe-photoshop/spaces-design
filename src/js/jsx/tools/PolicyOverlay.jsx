@@ -124,6 +124,9 @@ define(function (require, exports, module) {
                     } else if (policy.action === UI.policyAction.NEVER_PROPAGATE) {
                         policyRect.style("stroke", "#FF2200")
                             .style("stroke-opacity", "1.0");
+                    } else if (policy.action === UI.policyAction.ALPHA_PROPAGATE) {
+                        policyRect.style("stroke", "#0066FF")
+                            .style("stroke-opacity", "0.25");
                     }
                 }
             }, this);
