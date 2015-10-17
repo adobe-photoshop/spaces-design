@@ -75,11 +75,16 @@ define(function (require, exports, module) {
                         UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY);
                 });
         } else {
-            var currentLayers = currentDocument.layers.selected,
-                currentLayer = currentLayers.first();
+            var currentLayers = currentDocument.layers.selected;
+
+            if (currentLayers.isEmpty()) {
+                return Promise.resolve();
+            }
+
+            var currentLayer = currentLayers.first();
 
             if (currentLayer.vectorMaskEnabled) {
-                this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
+                return this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
                     .bind(this)
                     .then(function () {
                         currentLayer = applicationStore.getCurrentDocument().layers.selected.first();
@@ -87,7 +92,8 @@ define(function (require, exports, module) {
                             return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
                                 .bind(this)
                                 .then(function () {
-                                    // We are not transfering here, because we activly want to end the use of our locks
+                                    // We are not transfering here
+                                    // because we activly want to end the use of our locks
                                     this.flux.actions.tools.enterPathModalState();
                                 });
                         }
