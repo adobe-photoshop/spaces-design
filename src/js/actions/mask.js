@@ -52,7 +52,13 @@ define(function (require, exports) {
             return this.transfer(toolActions.changeVectorMaskMode, false);
         }
 
-        var currentLayer = currentDocument.layers.selected.first();
+        var currentLayers = currentDocument.layers.selected;
+
+        if (currentLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var currentLayer = currentLayers.first();
 
         return this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
             .bind(this)
