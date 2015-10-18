@@ -585,8 +585,10 @@ define(function (require, exports, module) {
 
             switch (key) {
             case "Tab":
-                this.props.onShiftTabPress();
-                event.preventDefault();
+                if (event.shiftKey) {
+                    this.props.onShiftTabPress();
+                    event.preventDefault();
+                }
                 break;
             case "ArrowDown":
                 this._cycleColorFormat(true, event);
