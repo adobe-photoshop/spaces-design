@@ -38,6 +38,7 @@ define(function (require, exports, module) {
         VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type"),
         system = require("js/util/system"),
+        layerActions = require("js/actions/layers"),
         policy = require("js/actions/policy"),
         shortcuts = require("js/util/shortcuts"),
         SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay"),
@@ -74,25 +75,29 @@ define(function (require, exports, module) {
                         UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY);
                 });
         } else {
-            var currentLayers = currentDocument.layers.selected,
-                currentLayer = currentLayers.first();
-            
-            if (currentLayer.vectorMaskEnabled && !currentLayer.vectorMaskEmpty) {
-                return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
+            var currentLayers = currentDocument.layers.selected;
+
+            if (currentLayers.isEmpty()) {
+                return Promise.resolve();
+            }
+
+            var currentLayer = currentLayers.first();
+
+            if (currentLayer.vectorMaskEnabled) {
+                return this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
                     .bind(this)
                     .then(function () {
-                        var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                            OS.eventKind.LEFT_MOUSE_DOWN);
-                        return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
-                    })
-                    .then(function () {
-                        // We are not transfering here, because we activly want to end the use of our locks
-                        this.flux.actions.tools.enterPathModalState();
+                        currentLayer = applicationStore.getCurrentDocument().layers.selected.first();
+                        if (!currentLayer.vectorMaskEmpty) {
+                            return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
+                                .bind(this)
+                                .then(function () {
+                                    // We are not transfering here
+                                    // because we activly want to end the use of our locks
+                                    this.flux.actions.tools.enterPathModalState();
+                                });
+                        }
                     });
-            } else {
-                var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                    OS.eventKind.LEFT_MOUSE_DOWN);
-                return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
             }
         }
     };
@@ -117,6 +122,26 @@ define(function (require, exports, module) {
         } else {
             return "moveTool";
         }
+    };
+
+    /**
+     * Vector Mode requires that Design Space does not swallow pointer commands
+     * @private
+     * @return {Array.<PointerEventPolicy>}
+     */
+    var _pointerPolicyList = function () {
+        var toolStore = this.flux.store("tool"),
+            vectorMode = toolStore.getVectorMode(),
+            pointerPolicy;
+
+        if (vectorMode) {
+            pointerPolicy = new PointerEventPolicy(UI.policyAction.ALPHA_PROPAGATE,
+                OS.eventKind.LEFT_MOUSE_DOWN);
+        } else {
+            pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.LEFT_MOUSE_DOWN);
+        }
+        return [pointerPolicy];
     };
 
     /**
@@ -155,11 +180,7 @@ define(function (require, exports, module) {
             enterKeyPolicy
         ];
 
-        var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.LEFT_MOUSE_DOWN);
-        this.pointerPolicyList = [
-            pointerPolicy
-        ];
+        this.pointerPolicyList = _pointerPolicyList;
 
         _spaceKeyDown = false;
 

@@ -36,7 +36,8 @@ define(function (require, exports, module) {
     var Tool = require("js/models/tool"),
         shortcuts = require("js/actions/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
+        PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
     var _TOGGLE_TARGET_PATH = 3502,
         _CLEAR_PATH = 106;
@@ -145,6 +146,12 @@ define(function (require, exports, module) {
             enterKeyPolicy, // Switch back to newSelect
             backspaceKeyPolicy, // Delete selected vertices
             deleteKeyPolicy // Delete selected vertices
+        ];
+
+        var vectorMaskPointerPolicy = new PointerEventPolicy(UI.policyAction.ALPHA_PROPAGATE,
+                OS.eventKind.LEFT_MOUSE_DOWN);
+        this.pointerPolicyList = [
+            vectorMaskPointerPolicy
         ];
 
         this.selectHandler = _selectHandler;

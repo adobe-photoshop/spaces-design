@@ -25,7 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
@@ -46,7 +47,6 @@ define(function (require, exports) {
         ui = require("./ui"),
         shortcuts = require("./shortcuts"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
         utilShortcuts = require("js/util/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
@@ -313,8 +313,13 @@ define(function (require, exports) {
     var _swapPolicies = function (nextTool) {
         var toolStore = this.flux.store("tool"),
             nextToolKeyboardPolicyList = nextTool ? nextTool.keyboardPolicyList : [],
-            nextToolPointerPolicyList = nextTool ? nextTool.pointerPolicyList : [],
-            previousToolKeyboardPolicyListID = toolStore.getCurrentKeyboardPolicyID(),
+            nextToolPointerPolicyList = nextTool ? nextTool.pointerPolicyList : [];
+
+        if (_.isFunction(nextToolPointerPolicyList)) {
+            nextToolPointerPolicyList = nextToolPointerPolicyList.call(this);
+        }
+
+        var previousToolKeyboardPolicyListID = toolStore.getCurrentKeyboardPolicyID(),
             previousToolPointerPolicyListID = toolStore.getCurrentPointerPolicyID();
 
         // Swap keyboard policies
@@ -418,15 +423,17 @@ define(function (require, exports) {
             .then(function (result) {
                 // After setting everything, dispatch to stores
                 this.dispatch(events.tool.SELECT_TOOL, result);
-                
-                return this.transfer(resetBorderPolicies);
+
+                if (!toolStore.getVectorMode() || !nextTool.handleVectorMaskMode) {
+                    return this.transfer(resetBorderPolicies);
+                }
             });
     };
     selectTool.reads = [];
     selectTool.writes = [locks.JS_TOOL, locks.PS_TOOL];
     selectTool.transfers = [resetBorderPolicies, policy.removePointerPolicies, installShapeDefaults,
         policy.removeKeyboardPolicies, policy.addPointerPolicies, policy.addKeyboardPolicies, policy.setMode,
-        shortcuts.addShortcut, shortcuts.removeShortcut];
+        shortcuts.addShortcut, shortcuts.removeShortcut, "layers.resetLayers"];
     selectTool.modal = true;
 
     /**
@@ -524,31 +531,7 @@ define(function (require, exports) {
      */
     var _toolModalStateChangedHandler,
         _vectorMaskHandler,
-        _vectorSelectMaskHandler,
-        _vectorMaskPolicyHandler;
-    
-    /**
-     * helper function to determine cloaking bounds. 
-     *
-     * @private
-     * @return {{
-     *             x: number, 
-     *             y: number, 
-     *             width: number,
-     *             height: number
-     *         }}
-     */
-    var _getVectorMaskPolicyBounds = function () {
-        var uiStore = this.flux.store("ui"),
-            cloakRect = uiStore.getCloakRect();
-        
-        return {
-            x: cloakRect.left,
-            y: cloakRect.top,
-            width: cloakRect.right - cloakRect.left,
-            height: cloakRect.bottom - cloakRect.top
-        };
-    };
+        _vectorSelectMaskHandler;
 
     /**
      * Change the tool's vector mask mode
@@ -632,11 +615,8 @@ define(function (require, exports) {
         }
          
         if (vectorMaskMode) {
-            var area = _getVectorMaskPolicyBounds.call(this),
-                pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                    OS.eventKind.LEFT_MOUSE_DOWN,
-                    {},
-                    area);
+            var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALPHA_PROPAGATE,
+                    OS.eventKind.LEFT_MOUSE_DOWN);
             
             policyPromise = this.transfer(policy.addPointerPolicies, [pointerPolicy])
                 .bind(this)
@@ -764,43 +744,6 @@ define(function (require, exports) {
     enterPathModalState.modal = true;
 
     /**
-     * recreate pointer policies if we're in Vector Mask Mode on UI Store change events
-     *
-     * return {Promise}
-     */
-    var handleVectorMaskUIChange = function () {
-        var toolStore = this.flux.store("tool"),
-            vectorMaskMode = toolStore.getVectorMode();
-
-        if (vectorMaskMode) {
-            var pointerPolicyID = toolStore.getVectorMaskPolicyID();
-
-            if (pointerPolicyID) {
-                return this.transfer(policy.removePointerPolicies, pointerPolicyID)
-                    .bind(this)
-                    .then(function () {
-                        var area = _getVectorMaskPolicyBounds.call(this),
-                            pointerPolicy = new PointerEventPolicy(UI.policyAction.ALWAYS_PROPAGATE,
-                                OS.eventKind.LEFT_MOUSE_DOWN,
-                                {},
-                                area);
-                    
-                        return this.transfer(policy.addPointerPolicies, [pointerPolicy]);
-                    })
-                    .then(function (policyID) {
-                        this.dispatch(events.tool.VECTOR_MASK_POLICY_CHANGE, policyID);
-                    });
-            }
-        } else {
-            return Promise.resolve();
-        }
-    };
-    handleVectorMaskUIChange.reads = [locks.JS_UI, locks.JS_TOOL];
-    handleVectorMaskUIChange.writes = [locks.JS_TOOL];
-    handleVectorMaskUIChange.transfers = [policy.removePointerPolicies, policy.addPointerPolicies];
-    handleVectorMaskUIChange.modal = true;
-
-    /**
      * Register event listeners for native tool selection change events, register
      * tool keyboard shortcuts, and initialize the currently selected tool.
      * 
@@ -809,7 +752,6 @@ define(function (require, exports) {
     var beforeStartup = function () {
         var flux = this.flux,
             toolStore = this.flux.store("tool"),
-            uiStore = this.flux.store("ui"),
             tools = toolStore.getAllTools();
 
         // Listen for modal tool state entry/exit events
@@ -877,19 +819,6 @@ define(function (require, exports) {
             fn: _vectorSelectMaskHandler
         });
 
-        var DEBOUNCE_DELAY = 200,
-            debouncedHandleVectorMaskUIChange = synchronization.debounce(
-                this.flux.actions.tools.handleVectorMaskUIChange, this, DEBOUNCE_DELAY, false);
-
-        _vectorMaskPolicyHandler = function () {
-            var vectorMaskMode = toolStore.getVectorMode();
-
-            if (vectorMaskMode) {
-                debouncedHandleVectorMaskUIChange();
-            }
-        };
-        uiStore.addListener("change", _vectorMaskPolicyHandler);
-
         var shortcutsPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),
             endModalPromise = adapterPS.endModalToolState(true),
             initToolPromise = this.transfer(initTool); // Initialize the current tool
@@ -912,7 +841,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var onReset = function () {
-        this.flux.store("ui").removeListener("change", _vectorMaskPolicyHandler);
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         _currentTransformPolicyID = null;
@@ -931,7 +859,6 @@ define(function (require, exports) {
     exports.handleToolModalStateChanged = handleToolModalStateChanged;
     exports.changeModalState = changeModalState;
     exports.enterPathModalState = enterPathModalState;
-    exports.handleVectorMaskUIChange = handleVectorMaskUIChange;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
