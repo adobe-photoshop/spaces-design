@@ -430,18 +430,19 @@ define(function (require, exports) {
      *
      * @private
      * @param {Document} document Owner document
-     * @param {Array.<Layer>} layers An array of two layers
+     * @param {Immutable.Iterable.<Layer>} layers A list of two layers
      *
      * @return {Promise}
      */
     var swapLayers = function (document, layers) {
+        layers = layers.filterNot(function (layer) {
+            var bounds = document.layers.childBounds(layer);
+
+            return !bounds || bounds.empty;
+        });
+
         // validate layers input
         if (layers.size !== 2) {
-            throw new Error("Expected two layers");
-        }
-
-        // Don't act if one of the layers is an empty bound
-        if (layers.every(function (layer) { return layer.kind === layer.layerKinds.GROUPEND; })) {
             return Promise.resolve();
         }
 
@@ -599,9 +600,15 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _flip = function (document, layers, axis) {
+        layers = layers.filterNot(function (layer) {
+            var bounds = document.layers.childBounds(layer);
+
+            return !bounds || bounds.empty;
+        });
+
         // validate layers input
         if (layers.isEmpty()) {
-            throw new Error("Expected at least one layer");
+            return Promise.resolve();
         }
         
         // Get a representative layer (non background)
@@ -716,9 +723,15 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _align = function (document, layers, align) {
+        layers = layers.filterNot(function (layer) {
+            var bounds = document.layers.childBounds(layer);
+
+            return !bounds || bounds.empty;
+        });
+
         // validate layers input
-        if (layers.isEmpty()) {
-            throw new Error("Expected at least one layer");
+        if (layers.size < 2) {
+            return Promise.resolve();
         }
         
         var repLayer = layers.find(function (l) { return !l.isBackground; });
@@ -868,9 +881,15 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _distribute = function (document, layers, align) {
+        layers = layers.filterNot(function (layer) {
+            var bounds = document.layers.childBounds(layer);
+
+            return !bounds || bounds.empty;
+        });
+
         // validate layers input
-        if (layers.isEmpty()) {
-            throw new Error("Expected at least one layer");
+        if (layers.size < 2) {
+            return Promise.resolve();
         }
         
         var repLayer = layers.find(function (l) { return !l.isBackground; });
