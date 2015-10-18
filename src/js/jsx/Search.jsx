@@ -58,8 +58,10 @@ define(function (require, exports, module) {
             this._closeSearchBar()
                 .bind(this)
                 .then(function () {
-                    var searchStore = this.getFlux().store("search");
-                    searchStore.handleExecute(itemID);
+                    if (itemID) {
+                        var searchStore = this.getFlux().store("search");
+                        searchStore.handleExecute(itemID);
+                    }
                 });
         },
 
