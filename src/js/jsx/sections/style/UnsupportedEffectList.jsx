@@ -164,7 +164,7 @@ define(function (require, exports, module) {
             return (
                 <div className="unsupported-effect-list effect-list__container">
                     <header className="section-header section-header__no-padding">
-                        <h3 className="section-title">
+                        <h3 className="section-title__subtitle">
                             {strings.STYLE.UNSUPPORTED_EFFECTS.TITLE}
                         </h3>
                     </header>

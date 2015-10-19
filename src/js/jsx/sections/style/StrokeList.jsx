@@ -330,7 +330,7 @@ define(function (require, exports, module) {
             return (
                 <div className="effect-list__container">
                     <header className="section-header section-header__no-padding">
-                        <h3 className="section-title">
+                        <h3 className="section-title__subtitle">
                             {strings.STYLE.STROKE_EFFECT.TITLE}
                         </h3>
                     </header>
