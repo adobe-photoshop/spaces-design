@@ -129,6 +129,15 @@ define(function (require, exports, module) {
         },
 
         /**
+         * If currently invisible, force to visible by calling the parent's onVisibilityToggle
+         */
+        _forceVisible: function () {
+            if (!this.props.visible && this.props.onVisibilityToggle) {
+                this.props.onVisibilityToggle();
+            }
+        },
+
+        /**
          * Calls action to copy currently selected layer's style
          * 
          * @private
@@ -175,6 +184,7 @@ define(function (require, exports, module) {
                 layers = this.props.document.layers.selected;
 
             dialog.toggle(event);
+            this._forceVisible();
             this.getFlux().actions.layerEffects.addEffect(this.props.document, layers, effectType);
         },
         
