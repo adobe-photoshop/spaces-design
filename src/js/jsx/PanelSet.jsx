@@ -51,7 +51,7 @@ define(function (require, exports, module) {
         synchronization = require("js/util/synchronization");
 
     var PanelSet = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("application", "document")],
+        mixins: [FluxMixin, StoreWatchMixin("application", "document", "preferences")],
         
         /**
          * Get the active document from flux and add it to the state.
@@ -214,7 +214,6 @@ define(function (require, exports, module) {
             }
 
             this.getFlux().actions.preferences.setPreferences(nextState);
-            this.setState(nextState);
         },
 
         /** @ignore */
@@ -228,7 +227,6 @@ define(function (require, exports, module) {
             nextState[panelName] = !this.state[panelName];
 
             this.getFlux().actions.preferences.setPreferences(nextState);
-            this.setState(nextState);
         },
 
         render: function () {
