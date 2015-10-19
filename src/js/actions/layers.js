@@ -2443,7 +2443,15 @@ define(function (require, exports) {
                     if (curLayer) {
                         this.flux.actions.layers.resetLayers(currentDocument, curLayer, true);
                     } else {
-                        this.flux.actions.layers.addLayers(currentDocument, event.layerID);
+                        // The `addLayers` actions is delayed because the new layer is not always avaialble 
+                        // for read when we receive the `make` event. Without the delay, we may result in 
+                        // "base element not found" error. For example, creating a new layer with the pen tool.
+                        // 
+                        // FIXME: Photoshop should make sure the new layer is ready for read before 
+                        // emitting the `make` event.
+                        window.setTimeout(function () {
+                            this.flux.actions.layers.addLayers(currentDocument, event.layerID);
+                        }.bind(this), 100);
                     }
                 } else {
                     this.flux.actions.documents.updateDocument();
