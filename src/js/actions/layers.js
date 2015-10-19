@@ -2531,12 +2531,15 @@ define(function (require, exports) {
             // will be initialized with the correct bounds.
             if (event.command === "pathChange") {
                 var applicationStore = this.flux.store("application"),
-                    currentDocument = applicationStore.getCurrentDocument(),
-                    currentLayers = currentDocument.layers,
-                    layerIDs = _.pluck(_.rest(event.null._ref), "_id"),
-                    layers = Immutable.List(layerIDs.map(currentLayers.byID, currentLayers));
+                    currentDocument = applicationStore.getCurrentDocument();
 
-                this.flux.actions.layers.resetBoundsQuietly(currentDocument, layers);
+                if (currentDocument) {
+                    var currentLayers = currentDocument.layers,
+                        layerIDs = _.pluck(_.rest(event.null._ref), "_id"),
+                        layers = Immutable.List(layerIDs.map(currentLayers.byID, currentLayers));
+
+                    this.flux.actions.layers.resetBoundsQuietly(currentDocument, layers);
+                }
             }
         }.bind(this);
         descriptor.addListener("pathOperation", _pathOperationHandler);
