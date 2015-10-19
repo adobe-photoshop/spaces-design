@@ -340,6 +340,14 @@ define(function (require, exports) {
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
                                 this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                             }.bind(this))
+                            .bind(this)
+                            .then(function () {
+                                var currentDoc = this.flux.stores.application.getCurrentDocument();
+                                
+                                if (currentDoc.unsupported) {
+                                    return this.transfer(layerActions.deselectAll, currentDoc);
+                                }
+                            })
                             .then(function () {
                                 return {
                                     currentIndex: currentDoc.itemIndex,
@@ -351,7 +359,7 @@ define(function (require, exports) {
     };
     initActiveDocument.reads = [locks.PS_DOC];
     initActiveDocument.writes = [locks.JS_DOC];
-    initActiveDocument.transfers = [historyActions.queryCurrentHistory];
+    initActiveDocument.transfers = [historyActions.queryCurrentHistory, "layers.deselectAll"];
 
     /**
      * Update the document and layer state for the given document ID. Emits a

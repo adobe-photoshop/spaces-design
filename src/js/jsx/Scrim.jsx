@@ -283,7 +283,8 @@ define(function (require, exports, module) {
             
             var classNames = classnames({
                 "scrim": true,
-                "scrim-drop": this.state.isDropTarget
+                "scrim-drop": this.state.isDropTarget,
+                "scrim__disabled": document && document.unsupported
             });
 
             // Only the mouse event handlers are attached to the scrim
