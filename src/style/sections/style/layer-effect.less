@@ -65,13 +65,18 @@
         justify-content: space-between;
         align-items: center;
         padding: 0.4em 0.6em;
-        border: @hairline solid @underlines;
+        border: @hairline solid @item-disabled;
         margin: 0.4em 0;
-        border-radius: 0.6em;
+        border-radius: 0.4em;
+
+        &__title {
+            font-style: italic;
+            color: @item-inactive;
+        }
         
         &:hover {
-            border: @hairline solid @item-active;
-            color: @item-active;
+            border: @hairline solid item-disabled;
+            color: @item-inactive;
         }
         
         &__index {
