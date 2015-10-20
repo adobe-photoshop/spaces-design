@@ -62,6 +62,22 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Blur the Width input when shift-tabbing past it.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleWidthKeyDown: function (event) {
+            var key = event.key,
+                shiftKey = event.shiftKey;
+
+            if (key === "Tab" && shiftKey) {
+                event.preventDefault();
+                event.target.blur();
+            }
+        },
+
+        /**
          * Update the width of the selected layers.
          *
          * @private
@@ -196,6 +212,7 @@ define(function (require, exports, module) {
                         disabled={disabled}
                         value={widths}
                         onChange={this._handleWidthChange}
+                        onKeyDown={this._handleWidthKeyDown}
                         ref="width"
                         min={MIN_LAYER_SIZE}
                         max={MAX_LAYER_SIZE}
