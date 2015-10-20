@@ -317,11 +317,11 @@ define(function (require, exports) {
             preferences = preferencesStore.getState(),
             columnCount = 0;
 
-        if (preferences.get(uiStore.components.LAYERS_LIBRARY_COL), true) {
+        if (preferences.get(uiStore.components.LAYERS_LIBRARY_COL, true)) {
             columnCount++;
         }
 
-        if (preferences.get(uiStore.components.PROPERTIES_COL), true) {
+        if (preferences.get(uiStore.components.PROPERTIES_COL, true)) {
             columnCount++;
         }
 
