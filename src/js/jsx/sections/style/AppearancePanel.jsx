@@ -42,6 +42,7 @@ define(function (require, exports, module) {
         VectorAppearance = require("jsx!./VectorAppearance"),
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization"),
+        headlights = require("js/util/headlights"),
         collection = require("js/util/collection");
 
     var AppearancePanel = React.createClass({
@@ -131,6 +132,7 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.sampler.copyLayerStyle(document, source);
             event.stopPropagation();
+            headlights.logEvent("style", "create", "copy-all-styles");
         },
 
         /**
@@ -144,6 +146,7 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.sampler.pasteLayerStyle(document, targetLayers);
             event.stopPropagation();
+            headlights.logEvent("style", "create", "paste-all-styles");
         },
 
         render: function () {

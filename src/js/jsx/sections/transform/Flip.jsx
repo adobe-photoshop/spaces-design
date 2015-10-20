@@ -31,6 +31,7 @@ define(function (require, exports, module) {
     var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
+        headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings");
 
     var Flip = React.createClass({
@@ -79,6 +80,7 @@ define(function (require, exports, module) {
                 layers = document.layers.selected;
 
             this.getFlux().actions.transform.flipX(document, layers);
+            headlights.logEvent("edit", "layers", "flip-horizontal");
         },
         
         /**
@@ -91,6 +93,7 @@ define(function (require, exports, module) {
                 layers = document.layers.selected;
 
             this.getFlux().actions.transform.flipY(document, layers);
+            headlights.logEvent("edit", "layers", "flip-vertical");
         },
 
         /**

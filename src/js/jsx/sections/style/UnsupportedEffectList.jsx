@@ -32,6 +32,7 @@ define(function (require, exports, module) {
     var LayerEffect = require("js/models/effects/layereffect");
 
     var ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
+        headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings");
 
     var UnsupportedEffectList = React.createClass({
@@ -47,6 +48,7 @@ define(function (require, exports, module) {
         _handleDelete: function (effectType, effectIndex) {
             this.getFlux().actions.layerEffects.deleteEffect(
                 this.props.document, this.props.layers, effectIndex, effectType);
+            headlights.logEvent("effect", "delete", "unsupported");
         },
         
         /**

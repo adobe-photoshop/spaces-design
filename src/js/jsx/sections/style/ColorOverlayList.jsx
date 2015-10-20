@@ -32,7 +32,8 @@ define(function (require, exports, module) {
         
     var LayerEffect = require("js/models/effects/layereffect"),
         collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        headlights = require("js/util/headlights");
 
     var BlendMode = require("jsx!./BlendMode"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
@@ -103,6 +104,7 @@ define(function (require, exports, module) {
                     this.props.index,
                     blendMode,
                     LayerEffect.COLOR_OVERLAY);
+            headlights.logEvent("edit", "color-overlay-blendmode-input", blendMode);
         },
 
         /**
@@ -125,6 +127,7 @@ define(function (require, exports, module) {
         _handleDelete: function () {
             this.getFlux().actions.layerEffects.deleteEffect(
                 this.props.document, this.props.layers, this.props.index, LayerEffect.COLOR_OVERLAY);
+            headlights.logEvent("effect", "delete", "color-overlay");
         },
 
         /**

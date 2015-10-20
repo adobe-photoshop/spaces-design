@@ -46,6 +46,7 @@ define(function (require, exports) {
         ExportAsset = require("js/models/exportasset"),
         ExportService = require("js/util/exportservice"),
         policyActions = require("js/actions/policy"),
+        headlights = require("js/util/headlights"),
         exportStore = require("js/stores/export");
 
     /**
@@ -178,6 +179,9 @@ define(function (require, exports) {
             _layers = layer ? Immutable.List.of(layer) : null;
 
         fileName = prefix ? prefix + "-" + fileName : fileName;
+
+        headlights.logEvent("export", "asset", "scale-" + asset.scale +
+                            "-suffix-" + asset.suffix + "-setting-" + asset.format);
 
         return _exportService.exportAsset(document, layer, asset, fileName, baseDir)
             .bind(this)

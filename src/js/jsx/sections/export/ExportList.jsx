@@ -38,6 +38,7 @@ define(function (require, exports, module) {
 
     var mathUtil = require("js/util/math"),
         collection = require("js/util/collection"),
+        headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings");
 
     /**
@@ -97,6 +98,8 @@ define(function (require, exports, module) {
                 index = this.props.index;
 
             this.getFlux().actions.export.deleteExportAsset(document, layers, index);
+
+            headlights.logEvent("export", "delete", "single-asset");
         },
 
         /**

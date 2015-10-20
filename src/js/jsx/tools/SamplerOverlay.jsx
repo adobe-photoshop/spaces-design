@@ -34,6 +34,7 @@ define(function (require, exports, module) {
     var OS = require("adapter/os");
 
     var system = require("js/util/system"),
+        headlights = require("js/util/headlights"),
         mathUtil = require("js/util/math");
 
     // Used for debouncing the overlay drawing
@@ -325,6 +326,7 @@ define(function (require, exports, module) {
 
             // Draw each sample square
             this._drawSampleHUDObjects(rectTLX, rectTLY, sampleSize, samples);
+            headlights.logEvent("tools", "sampler-hud", "sampler-invoked");
         },
         
         /**
@@ -371,6 +373,7 @@ define(function (require, exports, module) {
                             // Apply the color to selected layers
                             fluxActions.sampler.applyColor(this.state.document, null, sample.value);
                             d3.event.stopPropagation();
+                            headlights.logEvent("tools", "sampler-hud", _.kebabCase(sample.type));
                         }.bind(this));
                 } else if (sample.type === "stroke") {
                     var stroke = sample.value,
@@ -389,6 +392,7 @@ define(function (require, exports, module) {
                             // Apply the color to selected layers
                             fluxActions.sampler.applyStroke(this.state.document, null, stroke);
                             d3.event.stopPropagation();
+                            headlights.logEvent("tools", "sampler-hud", sample.type);
                         }.bind(this));
                     
                     // stroke color        
@@ -405,6 +409,7 @@ define(function (require, exports, module) {
                             // Apply the color to selected layers
                             fluxActions.sampler.applyStroke(this.state.document, null, stroke);
                             d3.event.stopPropagation();
+                            headlights.logEvent("tools", "sampler-hud", sample.type);
                         }.bind(this));
                 } else if (sample.type === "typeStyle") {
                     var applyTypeStyleFunc = function () {
@@ -414,6 +419,7 @@ define(function (require, exports, module) {
                                 null, { ignoreAlpha: false });
                         }
                         d3.event.stopPropagation();
+                        headlights.logEvent("tools", "sampler-hud", sample.type);
                     }.bind(this);
                     
                     // background rectangle for the icon so it's clickable easier
@@ -441,6 +447,7 @@ define(function (require, exports, module) {
                     var duplicateLayerEffectsFunc = function () {
                         fluxActions.layerEffects.duplicateLayerEffects(this.state.document, null, sample.value);
                         d3.event.stopPropagation();
+                        headlights.logEvent("tools", "sampler-hud", sample.type);
                     }.bind(this);
                     
                     // background rectangle for the icon so it's clickable easier
@@ -469,6 +476,7 @@ define(function (require, exports, module) {
                     var replaceGraphicFunc = function () {
                         fluxActions.sampler.replaceGraphic(this.state.document, null, sample.value);
                         d3.event.stopPropagation();
+                        headlights.logEvent("tools", "sampler-hud", sample.type);
                     }.bind(this);
                     
                     // background rectangle for the icon so it's clickable easier

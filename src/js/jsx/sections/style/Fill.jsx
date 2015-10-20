@@ -33,6 +33,7 @@ define(function (require, exports, module) {
     var ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
+        headlights = require("js/util/headlights"),
         collection = require("js/util/collection");
 
     /**
@@ -57,6 +58,8 @@ define(function (require, exports, module) {
         _opacityChanged: function (event, opacity) {
             this.getFlux().actions.shapes
                 .setFillOpacityThrottled(this.props.document, this.props.layers, opacity);
+
+            headlights.logEvent("edit", "color-input", "opacity-change");
         },
 
         /**
@@ -70,6 +73,9 @@ define(function (require, exports, module) {
             this.getFlux().actions.shapes
                 .setFillColorThrottled(this.props.document, this.props.layers, color,
                     { coalesce: coalesce });
+            if (!coalesce) {
+                headlights.logEvent("edit", "color-input", "fill-color-change");
+            }
         },
 
         /**
@@ -87,6 +93,9 @@ define(function (require, exports, module) {
                         ignoreAlpha: true,
                         enabled: true
                     });
+            if (!coalesce) {
+                headlights.logEvent("edit", "color-input", "opaque-fill-color-change");
+            }
         },
 
         /**

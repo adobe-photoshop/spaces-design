@@ -582,7 +582,7 @@ define(function (require, exports) {
             presetPromise = Promise.resolve();
         }
 
-        headlights.logEvent("file", "newFromTemplate", preset);
+        headlights.logEvent("file", "new-from-template", preset);
 
         return this.transfer(ui.setOverlayOffsetsForFirstDocument)
             .bind(this)

@@ -498,7 +498,16 @@ define(function (require, exports) {
 
         var autoExpandEnabled = false;
 
-        headlights.logEvent("edit", "layers", "swap_layers");
+        var hasArtboard = layers.some(function (layer) {
+            return layer.isArtboard;
+        });
+
+        if (hasArtboard) {
+            headlights.logEvent("edit", "layers", "swap-artboard");
+        } else {
+            headlights.logEvent("edit", "layers", "swap-non-artboard");
+        }
+
         var swapPromise = descriptor.getProperty(documentRef, "artboards")
             .bind(this)
             .then(function (artboardInfo) {

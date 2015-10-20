@@ -49,6 +49,7 @@ define(function (require, exports) {
         strings = require("i18n!nls/strings"),
         layerActionsUtil = require("js/util/layeractions"),
         system = require("js/util/system"),
+        headlights = require("js/util/headlights"),
         utilShortcuts = require("js/util/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
@@ -753,6 +754,8 @@ define(function (require, exports) {
                 });
             }
         }
+
+        headlights.logEvent("tools", "mask-mode-" + currentLayer.kind);
     };
     changeVectorMaskMode.reads = [locks.JS_APP, locks.JS_TOOL, locks.PS_DOC, locks.PS_TOOL];
     changeVectorMaskMode.writes = [locks.JS_TOOL, locks.PS_DOC];

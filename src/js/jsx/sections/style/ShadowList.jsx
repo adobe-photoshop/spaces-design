@@ -33,6 +33,7 @@ define(function (require, exports) {
 
     var LayerEffect = require("js/models/effects/layereffect"),
         collection = require("js/util/collection"),
+        headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings");
 
     var Label = require("jsx!js/jsx/shared/Label"),
@@ -217,6 +218,8 @@ define(function (require, exports) {
                     this.props.index,
                     blendMode,
                     this.props.type);
+            // Currently does not differentiate between inner and drop shadows
+            headlights.logEvent("edit", "shadow-blendmode-input", blendMode);
         },
 
         /**
@@ -239,6 +242,7 @@ define(function (require, exports) {
         _handleDelete: function () {
             this.getFlux().actions.layerEffects.deleteEffect(
                 this.props.document, this.props.layers, this.props.index, this.props.type);
+            headlights.logEvent("effect", "delete", "shadow");
         },
 
         /**

@@ -49,7 +49,8 @@ define(function (require, exports, module) {
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization"),
-        system = require("js/util/system");
+        system = require("js/util/system"),
+        headlights = require("js/util/headlights");
 
     var PanelSet = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("application", "document", "preferences")],
@@ -206,6 +207,7 @@ define(function (require, exports, module) {
                 components = uiStore.components,
                 modifierState = modifierStore.getState(),
                 swapModifier = system.isMac ? modifierState.command : modifierState.control,
+                currentlyVisible,
                 nextState = {};
                 
             if (swapModifier) {
@@ -214,6 +216,28 @@ define(function (require, exports, module) {
             } else {
                 nextState[columnName] = !this.state[columnName];
             }
+
+            // For headlights
+            var layersLibPanel = this.state[components.LAYERS_LIBRARY_COL],
+                propertiesPanel = this.state[components.PROPERTIES_COL];
+
+            if (columnName === "layersLibrariesVisible") {
+                layersLibPanel = nextState[components.LAYERS_LIBRARY_COL];
+            } else {
+                propertiesPanel = nextState[components.PROPERTIES_COL];
+            }
+
+            if (layersLibPanel && propertiesPanel) {
+                currentlyVisible = "layersLibrary-properties-visible";
+            } else if (layersLibPanel) {
+                currentlyVisible = "layersLibrary-visible";
+            } else if (propertiesPanel) {
+                currentlyVisible = "properties-visible";
+            } else {
+                currentlyVisible = "none-visible";
+            }
+
+            headlights.logEvent("user-interface", "panels-visible", currentlyVisible);
 
             this.getFlux().actions.preferences.setPreferences(nextState);
         },

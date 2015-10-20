@@ -31,6 +31,7 @@ define(function (require, exports, module) {
 
     var BlendMode = require("jsx!./BlendMode"),
         strings = require("i18n!nls/strings"),
+        headlights = require("js/util/headlights"),
         collection = require("js/util/collection");
 
     var LayerBlendMode = React.createClass({
@@ -60,6 +61,7 @@ define(function (require, exports, module) {
         _handleChange: function (mode) {
             this.getFlux().actions.layers
                 .setBlendModeThrottled(this.props.document, this.props.layers, mode);
+            headlights.logEvent("edit", "layer-blendmode-input", mode);
         },
 
         render: function () {

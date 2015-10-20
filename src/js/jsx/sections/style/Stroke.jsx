@@ -39,7 +39,8 @@ define(function (require, exports, module) {
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection");
+        collection = require("js/util/collection"),
+        headlights = require("js/util/headlights");
 
     /**
      * The maximum stroke size in Photoshop is 288px.
@@ -110,6 +111,8 @@ define(function (require, exports, module) {
                 this.state.layers,
                 { enabled: isChecked }
             );
+
+            headlights.logEvent("edit", "stroke-activation", isChecked);
         },
 
         /**
@@ -134,6 +137,8 @@ define(function (require, exports, module) {
         _opacityChanged: function (event, opacity) {
             this.getFlux().actions.shapes
                 .setStrokeOpacityThrottled(this.props.document, this.state.layers, opacity);
+
+            headlights.logEvent("edit", "stroke-input", "opacity-change");
         },
 
         /**
@@ -147,6 +152,10 @@ define(function (require, exports, module) {
             this.getFlux().actions.shapes
                 .setStrokeOpacityThrottled(this.props.document, this.state.layers,
                     color.opacity, { coalesce: coalesce });
+
+            if (!coalesce) {
+                headlights.logEvent("edit", "stroke-input", "alpha-change");
+            }
         },
 
         /**
@@ -181,6 +190,10 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.shapes
                 .setStrokeColorThrottled(this.props.document, this.state.layers, color, options);
+
+            if (!coalesce) {
+                headlights.logEvent("edit", "stroke-input", "stroke-color-change");
+            }
         },
         
         /**
