@@ -81,7 +81,7 @@
             "$payload": {
                 "commandID": 34
             },
-            "$enable-rule": "dirty-previously-saved-document"
+            "$enable-rule": "dirty-previously-saved-document,not-vector-mask-mode"
         },
         "OPEN_RECENT": {
             "$enable-rule": "always-except-modal"

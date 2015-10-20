@@ -117,6 +117,7 @@ define(function (require, exports, module) {
                 events.history.LOAD_HISTORY_STATE, this._updateMenuItems,
                 events.history.LOAD_HISTORY_STATE_REVERT, this._updateMenuItems,
                 events.export.SERVICE_STATUS_CHANGED, this._updateMenuItems,
+                events.tool.VECTOR_MASK_MODE_CHANGE, this._updateMenuItems,
 
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
                 events.preferences.SET_PREFERENCE, this._updatePreferencesBasedMenuItems
@@ -182,9 +183,14 @@ define(function (require, exports, module) {
          * @private
          * @param {DocumentStore} docStore
          * @param {ApplicationStore} appStore
+         * @param {DialogStore} dialogStore
+         * @param {PreferencesStore} preferencesStore
+         * @param {HistoryStore} historyStore
+         * @param {ExportStore} exportStore
+         * @param {ToolStore} toolStore
          */
         _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore,
-            preferencesStore, historyStore, exportStore) {
+            preferencesStore, historyStore, exportStore, toolStore) {
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 appIsModal = dialogStore.getState().appIsModal,
@@ -193,10 +199,12 @@ define(function (require, exports, module) {
                 hasNextHistoryState = document && historyStore.hasNextState(document.id),
                 exportEnabled = exportStore.getState().serviceAvailable,
                 preferences = preferencesStore.getState(),
+                vectorMaskMode = toolStore.getVectorMode(),
                 oldMenu = this._applicationMenu;
                 
             this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document,
-                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled);
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled,
+                vectorMaskMode);
             this._applicationMenu = this._applicationMenu.updateOpenDocuments(openDocuments, document, appIsModal);
 
             // Note: this only needs to be called when the active document is loaded/reset, 
@@ -219,7 +227,7 @@ define(function (require, exports, module) {
          * @private
          */
         _updateMenuItems: function () {
-            this.waitFor(["document", "application", "dialog", "preferences", "history", "export"],
+            this.waitFor(["document", "application", "dialog", "preferences", "history", "export", "tool"],
                 this._updateMenuItemsHelper);
         },
         
