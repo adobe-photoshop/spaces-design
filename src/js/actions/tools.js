@@ -47,7 +47,6 @@ define(function (require, exports) {
         ui = require("./ui"),
         shortcuts = require("./shortcuts"),
         strings = require("i18n!nls/strings"),
-        log = require("js/util/log"),
         system = require("js/util/system"),
         utilShortcuts = require("js/util/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
@@ -513,7 +512,6 @@ define(function (require, exports) {
         // Except for Direct Selection Tool (ptha) because we need keyboard events in mask mode
         if (event.kind._value === "tool" && event.tool.ID !== "ptha") {
             if (modalState && !policyStore.areAllSuspended()) {
-                log.info("TEMP: suspending policies");
                 policyPromise = this.transfer(policy.suspendAllPolicies);
             } else if (!modalState && policyStore.areAllSuspended()) {
                 policyPromise = this.transfer(policy.restoreAllPolicies);
