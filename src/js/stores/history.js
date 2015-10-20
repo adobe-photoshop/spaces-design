@@ -278,7 +278,7 @@ define(function (require, exports, module) {
 
                         // if we have IDs stored in the current state AND the payload, validate that they are equal
                         if (currentState.id && payload.id && currentState.id !== payload.id) {
-                            throw new Error("Photoshop's curent state has ID " + payload.id +
+                            throw new Error("Photoshop's current state has ID " + payload.id +
                                 " but our model's current state has ID" + currentState.id);
                         }
 

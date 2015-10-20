@@ -2297,17 +2297,13 @@ define(function (require, exports) {
      */
     var editVectorMask = function () {
         var toolStore = this.flux.store("tool"),
-            superselectVector = toolStore.getToolByID("superselectVector");
+            currentVectorMaskMode = toolStore.getVectorMode();
 
-        return this.transfer(tools.select, superselectVector)
-            .then(function () {
-                // select and activate knots on Current Vector Mask
-                return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
-            });
+        return this.transfer(tools.changeVectorMaskMode, !currentVectorMaskMode);
     };
     editVectorMask.reads = [locks.JS_TOOL];
     editVectorMask.writes = [locks.PS_DOC];
-    editVectorMask.transfers = [tools.select];
+    editVectorMask.transfers = [tools.changeVectorMaskMode];
     editVectorMask.modal = true;
 
     /**
