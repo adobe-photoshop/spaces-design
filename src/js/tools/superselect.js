@@ -132,16 +132,29 @@ define(function (require, exports, module) {
     var _pointerPolicyList = function () {
         var toolStore = this.flux.store("tool"),
             vectorMode = toolStore.getVectorMode(),
-            pointerPolicy;
+            pointerPolicy,
+            pointerPolicyList;
 
         if (vectorMode) {
             pointerPolicy = new PointerEventPolicy(UI.policyAction.ALPHA_PROPAGATE,
                 OS.eventKind.LEFT_MOUSE_DOWN);
+            var rightPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.RIGHT_MOUSE_DOWN);
+
+            if (system.isMac) {
+                var contextPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                    OS.eventKind.LEFT_MOUSE_DOWN, { control: true });
+                pointerPolicyList = [rightPointerPolicy, contextPointerPolicy, pointerPolicy];
+            } else {
+                pointerPolicyList = [rightPointerPolicy, pointerPolicy];
+            }
         } else {
             pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.LEFT_MOUSE_DOWN);
+            pointerPolicyList = [pointerPolicy];
         }
-        return [pointerPolicy];
+
+        return pointerPolicyList;
     };
 
     /**

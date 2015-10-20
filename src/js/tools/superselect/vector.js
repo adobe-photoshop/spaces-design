@@ -35,6 +35,7 @@ define(function (require, exports, module) {
         
     var Tool = require("js/models/tool"),
         shortcuts = require("js/actions/shortcuts"),
+        system = require("js/util/system"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
@@ -149,10 +150,17 @@ define(function (require, exports, module) {
         ];
 
         var vectorMaskPointerPolicy = new PointerEventPolicy(UI.policyAction.ALPHA_PROPAGATE,
-                OS.eventKind.LEFT_MOUSE_DOWN);
-        this.pointerPolicyList = [
-            vectorMaskPointerPolicy
-        ];
+                OS.eventKind.LEFT_MOUSE_DOWN),
+            rightPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                OS.eventKind.RIGHT_MOUSE_DOWN);
+            
+        if (system.isMac) {
+            var controlpointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                    OS.eventKind.LEFT_MOUSE_DOWN, { control: true });
+            this.pointerPolicyList = [rightPointerPolicy, controlpointerPolicy, vectorMaskPointerPolicy];
+        } else {
+            this.pointerPolicyList = [rightPointerPolicy, vectorMaskPointerPolicy];
+        }
 
         this.selectHandler = _selectHandler;
         this.deselectHandler = _deselectHandler;
