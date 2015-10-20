@@ -2149,13 +2149,16 @@ define(function (require, exports) {
                 return this.transfer(resetIndex, document, true, true);
             })
             .then(function () {
-                return this.transfer(exportActions.addDefaultAsset, document.id, artboardLayerId);
+                var exportPromise = this.transfer(exportActions.addDefaultAsset, document.id, artboardLayerId),
+                    borderPromise = this.transfer(tools.resetBorderPolicies);
+
+                return Promise.join(exportPromise, borderPromise);
             });
     };
 
     createArtboard.reads = [locks.JS_APP];
     createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
-    createArtboard.transfers = [resetIndex, addLayers, exportActions.addDefaultAsset];
+    createArtboard.transfers = [resetIndex, addLayers, exportActions.addDefaultAsset, tools.resetBorderPolicies];
     createArtboard.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -2267,36 +2270,24 @@ define(function (require, exports) {
 
     /**
      * Dispatches a layer reposition for all layers in the given document model
-     * We may use an outdated document model here, because we want to update the 
-     * positions of layers at the point this event was emitted to us. Please refer to 
-     * https://github.com/adobe-photoshop/spaces-design/pull/2721
-     * and 
-     * https://github.com/adobe-photoshop/spaces-design/issues/2713
      *
-     * @param {Document} document Document model to update
-     * @param {object} event Action Descriptor of autoCanvasResizeShift event
      * @return {Promise}
      */
-    var handleCanvasShift = function (document, event) {
-        var layerIDs = collection.pluck(document.layers.all, "id"),
-            newLayers = document.layers.translateLayers(layerIDs, event.to.horizontal, event.to.vertical),
-            positions = newLayers.all.map(function (layer) {
-                return {
-                    layer: layer,
-                    x: layer.bounds ? layer.bounds.left : 0,
-                    y: layer.bounds ? layer.bounds.top : 0
-                };
-            }).toList(),
-            payload = {
-                documentID: document.id,
-                positions: positions
-            };
-    
-        return this.dispatchAsync(events.document.REPOSITION_LAYERS, payload);
+    var handleCanvasShift = function () {
+        var document = this.flux.stores.application.getCurrentDocument();
+
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        // TODO this action used to translate layer bounds and dispatch events.document.REPOSITION_LAYERS,
+        // but this was incompatible with undo/redo.  When stepping back into a history state we might also get
+        // a canvas shift event which would cause us to shift our already-correct cached history state
+        return this.transfer(resetBounds, document, document.layers.all, true);
     };
-    handleCanvasShift.reads = [];
-    handleCanvasShift.writes = [locks.JS_DOC];
-    handleCanvasShift.transfers = [];
+    handleCanvasShift.reads = [locks.JS_DOC];
+    handleCanvasShift.writes = [];
+    handleCanvasShift.transfers = [resetBounds];
 
     /**
      * Reveal and select the vector mask of the selected layer. 
@@ -2500,10 +2491,7 @@ define(function (require, exports) {
         // Listens to layer shift events caused by auto canvas resize feature of artboards
         // and shifts all the layers correctly
         _autoCanvasResizeShiftHandler = function (event) {
-            var applicationStore = this.flux.store("application"),
-                currentDocument = applicationStore.getCurrentDocument();
-        
-            this.flux.actions.layers.handleCanvasShift(currentDocument, event);
+            this.flux.actions.layers.handleCanvasShift(event);
         }.bind(this);
         descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);
 
