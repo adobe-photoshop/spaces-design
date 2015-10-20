@@ -110,6 +110,9 @@ define(function (require, exports, module) {
             .sort(function (a, b) {
                 return a.bounds.left - b.bounds.left;
             })
+            .sort(function (a, b) {
+                return a.bounds.top - b.bounds.top;
+            })
             .reduce(_.ary(_addLayerToRow, 2), []);
 
         // flatten the array of "rows" into a simple list of layers
