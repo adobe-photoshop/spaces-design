@@ -423,12 +423,7 @@ define(function (require, exports) {
                 historyStateInfo: {
                     name: strings.ACTIONS.SET_LAYER_POSITION,
                     target: documentLib.referenceBy.id(document.id)
-                },
-                // Setting this to false allows PS to send us
-                // notifications that happen as a result of this
-                // action, in conjunction with `suppresPlayLevelIncrease`
-                // flag in the descriptor
-                synchronous: false
+                }
             };
 
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
