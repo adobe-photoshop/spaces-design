@@ -814,17 +814,14 @@ define(function (require, exports, module) {
 
         propTypes: {
             color: React.PropTypes.instanceOf(Color),
-            onChange: React.PropTypes.func,
-            onColorChange: React.PropTypes.func,
-            onAlphaChange: React.PropTypes.func
+            onChange: React.PropTypes.func.isRequired,
+            onColorChange: React.PropTypes.func.isRequired,
+            onAlphaChange: React.PropTypes.func.isRequired
         },
 
         getDefaultProps: function () {
             return {
-                color: Color.DEFAULT,
-                onChange: _.identity,
-                onAlphaChange: _.identity,
-                onColorChange: _.identity
+                color: Color.DEFAULT
             };
         },
 
@@ -949,8 +946,6 @@ define(function (require, exports, module) {
                         currentRgbaColor.b !== nextRgbaColor.b) {
                         this._changeColor(nextRgbaColor);
                     }
-
-                    this.props.onChange(nextRgbaColor);
                 }
             }
         },
@@ -993,7 +988,7 @@ define(function (require, exports, module) {
          */
         _changeColor: function (color) {
             var coalesce = this.shouldCoalesce();
-            this.props.onColorChange(color, coalesce);
+            this.props.onChange(color, coalesce);
             if (!coalesce) {
                 headlights.logEvent("edit", "color-input", "palette-click");
             }

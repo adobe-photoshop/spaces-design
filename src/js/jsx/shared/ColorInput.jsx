@@ -142,10 +142,10 @@ define(function (require, exports, module) {
                     React.PropTypes.instanceOf(Color),
                     React.PropTypes.instanceOf(Immutable.Iterable)
                 ]),
-            onChange: React.PropTypes.func,
             onFocus: React.PropTypes.func,
-            onColorChange: React.PropTypes.func,
-            onAlphaChange: React.PropTypes.func,
+            onChange: React.PropTypes.func.isRequired,
+            onColorChange: React.PropTypes.func.isRequired,
+            onAlphaChange: React.PropTypes.func.isRequired,
             editable: React.PropTypes.bool,
             swatchOverlay: React.PropTypes.func
         },
@@ -153,10 +153,7 @@ define(function (require, exports, module) {
         getDefaultProps: function () {
             return {
                 defaultColor: Color.DEFAULT,
-                onChange: _.identity,
-                onFocus: _.identity,
-                onAlphaChange: _.identity,
-                onColorChange: _.identity
+                onFocus: _.identity
             };
         },
 
@@ -395,6 +392,7 @@ define(function (require, exports, module) {
                             editable={this.props.editable}
                             opaque={this.props.opaque}
                             color={color}
+                            onChange={this.props.onChange}
                             onAlphaChange={this.props.onAlphaChange}
                             onColorChange={this.props.onColorChange} />
                     </Dialog>
