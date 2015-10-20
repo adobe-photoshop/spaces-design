@@ -84,7 +84,7 @@ define(function (require, exports, module) {
         if (vectorMode) {
             selectVectorMask = descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
         } else {
-            selectVectorMask = Promise.resolve();
+            selectVectorMask = descriptor.playObject(vectorMaskLib.dropPathSelection());
         }
         return Promise.join(setPromise, selectVectorMask, disableSuppressionPromise,
             backspacePromise, deletePromise);
