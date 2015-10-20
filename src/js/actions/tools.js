@@ -616,9 +616,21 @@ define(function (require, exports) {
          
         if (vectorMaskMode) {
             var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALPHA_PROPAGATE,
-                    OS.eventKind.LEFT_MOUSE_DOWN);
+                    OS.eventKind.LEFT_MOUSE_DOWN),
+                rightPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                    OS.eventKind.RIGHT_MOUSE_DOWN, { control: true }),
+                pointerPolicyList;
+
+            if (system.isMac) {
+                var contextPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                    OS.eventKind.LEFT_MOUSE_DOWN, { control: true });
+                
+                pointerPolicyList = [rightPointerPolicy, contextPointerPolicy, pointerPolicy];
+            } else {
+                pointerPolicyList = [rightPointerPolicy, pointerPolicy];
+            }
             
-            policyPromise = this.transfer(policy.addPointerPolicies, [pointerPolicy])
+            policyPromise = this.transfer(policy.addPointerPolicies, pointerPolicyList)
                 .bind(this)
                 .then(function (policyID) {
                     this.dispatch(events.tool.VECTOR_MASK_POLICY_CHANGE, policyID);
