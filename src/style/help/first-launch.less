@@ -256,14 +256,6 @@
     }
 }
 
-:lang(fr) .carousel__nav .dot {
-    width: 12rem;
-}
-
-:lang(de) .carousel__nav .dot {
-    width: 12rem;
-}
-
 .carousel__slide__head__list, .carousel__slide__three__list {
     width: 50%;
     float: left;
@@ -289,6 +281,21 @@
 }
 .carousel__slide__three__list {
     width: 33.3%;
+
+    h2 {
+        color: @icon-active;
+    }
+
+    div:hover {
+
+        svg {
+            fill: @icon-hover;
+        }
+
+        h2 {
+            color: @item-hover;
+        }
+    }
 
     svg {
         fill: @icon-active;
@@ -391,7 +398,7 @@
     
     &:last-child {
         border: none;
-    }    
+    }
 }
 
 .carousel__slide__block-link {
@@ -405,4 +412,110 @@
 .block-link__image img {
     width: 3.5rem;
     height: 3.5rem;
+}
+
+// LANGUAGE SPECIFIC STYLES //
+
+/**** FRENCH *****/
+
+:lang(fr) .carousel__slide__full {
+    padding-top: 0rem;
+
+    img {
+        top: -6rem;
+    }
+}
+
+:lang(fr) .carousel__slide-button__continue {
+    bottom: 15rem;
+}
+
+:lang(fr) .carousel__nav .dot {
+    width: 12rem;
+}
+
+/**** GERMAN *****/
+
+:lang(de) .carousel__nav .dot {
+    width: 12rem;
+}
+
+:lang(de) .carousel__slide__full.slide-0 {
+    padding-top: 1rem;
+
+    h3 {
+        text-align: left;
+        padding-left: 9.5rem;
+        padding-right: 9.5rem;
+    }
+
+    img {
+        top: -5rem;
+    }
+}
+
+:lang(de) .carousel__slide-button__continue {
+    bottom: 14rem;
+}
+
+/**** JAPANESE *****/
+
+:lang(ja) .carousel__slide__full {
+    &.slide-0 {
+        padding-top: 1rem;
+
+        h3 {
+            text-align: left;
+            // The padding on either side needs to be equal so that the content is centered
+            padding-left: 5rem;
+            padding-right: 5rem;
+        }
+        img {
+            top: -5rem;
+        }
+    }
+
+    &.slide-3 {
+        
+        img {
+            top: 3rem;
+        }
+
+        h2 {
+            padding-left: 0rem;
+            padding-right: 0rem;
+        }
+
+        h2:first-of-type {
+            // The padding on either side needs to be equal so that the content is centered
+            padding-left: 5rem;
+            padding-right: 5rem;
+        }
+    }
+
+    &.slide-4 {
+        h2 {
+            padding-left: 9rem;
+            padding-right: 9rem;
+        }
+    }
+
+    &.slide-5 {
+        h2 {
+            padding-left: 6rem;
+            padding-right: 6rem;
+        }
+
+    }
+
+    &.slide-6 {
+        h2 {
+            padding-left: 9rem;
+            padding-right: 9rem;
+        }
+    }
+}
+
+:lang(ja) .carousel__slide-button__continue {
+    bottom: 14rem;
 }
