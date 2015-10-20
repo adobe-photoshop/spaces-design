@@ -12,6 +12,7 @@
     "noarg"         : true,
     "noempty"       : true,
     "nonew"         : true,
+    "nocomma"       : true,
     "plusplus"      : false,
     "quotmark"      : "double",
     "undef"         : true,
