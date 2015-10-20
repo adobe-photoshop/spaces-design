@@ -329,37 +329,6 @@
     .generate-columns(@n, (@i + 1));
 }
 
-/* Japanese Specific Label Sizings */
-
-:lang(ja) .label__medium.column-4.label__medium__left-aligned.opacity-label {
-   width: 5rem;
-}
-
-:lang(ja) .label__medium.column-2.blur-label {
-    width: 3.8rem;
-}
-
-:lang(ja) .label__medium.column-4.spread-label {
-    width: 7rem;
-}
-
-:lang(ja) .label__medium__left-aligned.scale-title {
-    width: 7rem;
-}
-
-:lang(ja) .effect-list__container .section-title__subtitle {
-    display: block;
-}
-
-/* German Specific Label Sizings */
-:lang(de) .label__medium.column-2.blur-label {
-    width: 5rem;
-}
-
-:lang(de) .label__medium.column-4.spread-label {
-    width: 5rem;
-}
-
 .column-full {
     width: 28.8rem;
 }
@@ -498,4 +467,44 @@
         height: 18rem;
         flex-grow: 0;
     }
+}
+
+// LANGUAGE SPECIFIC STYLES //
+
+/**** JAPANESE *****/
+
+:lang(ja) .label__medium.column-4.label__medium__left-aligned.opacity-label {
+   width: 5rem;
+}
+
+:lang(ja) .label__medium.column-2.blur-label {
+    width: 3.8rem;
+}
+
+:lang(ja) .label__medium.column-4.spread-label {
+    width: 7rem;
+}
+
+:lang(ja) .label__medium__left-aligned.scale-title {
+    width: 7rem;
+}
+
+:lang(ja) .effect-list__container .section-title__subtitle {
+    display: block;
+}
+
+:lang(ja) .stroke-alignment-buttons {
+    width: 11rem;
+}
+
+:lang(ja) .appearance .section-container
+
+/**** GERMAN *****/
+
+:lang(de) .label__medium.column-2.blur-label {
+    width: 5rem;
+}
+
+:lang(de) .label__medium.column-4.spread-label {
+    width: 5rem;
 }

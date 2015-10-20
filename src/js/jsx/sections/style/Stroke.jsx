@@ -242,7 +242,8 @@ define(function (require, exports, module) {
                 strokeClasses = classnames("control-group__vertical",
                     "control-group__vertical",
                     "control-group__no-label",
-                    "column-10");
+                    "column-10",
+                    "stroke-alignment-buttons");
 
             var strokeOverlay = function (colorTiny, disabled) {
                 if (colorTiny && !disabled) {
