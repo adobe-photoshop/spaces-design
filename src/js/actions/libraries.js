@@ -53,7 +53,6 @@ define(function (require, exports) {
         shapeActions = require("./shapes"),
         typeActions = require("./type"),
         preferencesActions = require("./preferences"),
-        policyActions = require("./policy"),
         LibrarySyncStatus = require("js/models/library_sync_status");
 
     /**
@@ -821,12 +820,6 @@ define(function (require, exports) {
                 
                 return Promise.bind(this)
                     .then(function () {
-                        // Suspend all policies to allow moving and transforming the new graphic layer.
-                        if (!hasAlt) {
-                            return this.transfer(policyActions.suspendAllPolicies);
-                        }
-                    })
-                    .then(function () {
                         var docRef = docAdapter.referenceBy.id(currentDocument.id),
                             placeObj = libraryAdapter.placeElement(docRef, element, path, location);
 
@@ -877,7 +870,7 @@ define(function (require, exports) {
     createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
     createLayerFromElement.writes = [locks.JS_LIBRARIES, locks.PS_DOC];
     createLayerFromElement.transfers = [layerActions._getLayerIDsForDocumentID, layerActions.addLayers,
-        policyActions.suspendAllPolicies, "libraries.handleCompletePlacingGraphic"];
+        "libraries.handleCompletePlacingGraphic"];
         
     /**
      * This event will be triggered when the user confirm or cancel the new layer 
@@ -886,19 +879,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var handleCompletePlacingGraphic = function () {
-        return this.dispatchAsync(events.libraries.PLACE_GRAPHIC_UPDATED, { isPlacing: false })
-            .bind(this)
-            .then(function () {
-                var policyStore = this.flux.store("policy");
-                
-                if (policyStore.areAllSuspended) {
-                    return this.transfer(policyActions.restoreAllPolicies);
-                }
-            });
+        return this.dispatchAsync(events.libraries.PLACE_GRAPHIC_UPDATED, { isPlacing: false });
     };
     handleCompletePlacingGraphic.reads = [locks.JS_APP];
     handleCompletePlacingGraphic.writes = [locks.JS_LIBRARIES];
-    handleCompletePlacingGraphic.transfers = [policyActions.restoreAllPolicies];
 
     /**
      * Applies the given layer style element to the active layers

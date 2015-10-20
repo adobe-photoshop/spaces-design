@@ -101,7 +101,16 @@ define(function (require, exports) {
         // FIXME: the suspend/restore policies hack is for pasting smart object from other sources (e.g. Illustrator).
         // The cause is similar to the place-object menu commands: DS is not receiving "toolModalStateChanged" events
         // until the object is committed.
-        return this.transfer(policyActions.suspendAllPolicies)
+        var policyStore = this.flux.store("policy"),
+            suspendPromise;
+
+        if (policyStore.areAllSuspended()) {
+            suspendPromise = Promise.resolve();
+        } else {
+            suspendPromise = this.transfer(policyActions.suspendAllPolicies);
+        }
+
+        return suspendPromise
             .bind(this)
             .then(function () {
                 return this.transfer(menu.nativeModal, {

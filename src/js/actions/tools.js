@@ -505,14 +505,18 @@ define(function (require, exports) {
     var handleToolModalStateChanged = function (event) {
         var modalState = (event.state._value === "enter"),
             changeStatePromise = this.transfer(changeModalState, modalState),
+            policyStore = this.flux.stores.policy,
             policyPromise;
 
         // Suspend policies during type tool modal states
-        if (event.kind._value === "tool" && event.tool.ID === "txBx") {
-            if (modalState) {
+        // Except for Direct Selection Tool (ptha) because we need keyboard events in mask mode
+        if (event.kind._value === "tool" && event.tool.ID !== "ptha") {
+            if (modalState && !policyStore.areAllSuspended()) {
                 policyPromise = this.transfer(policy.suspendAllPolicies);
-            } else {
+            } else if (!modalState && policyStore.areAllSuspended()) {
                 policyPromise = this.transfer(policy.restoreAllPolicies);
+            } else {
+                policyPromise = Promise.resolve();
             }
         } else {
             policyPromise = Promise.resolve();

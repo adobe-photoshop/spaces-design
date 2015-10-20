@@ -87,7 +87,10 @@ define(function (require, exports) {
         // but would require a core change to include document ID
         var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
 
-        if (currentDocumentID === null) {
+        // Ignore if either there is no current document,
+        // or if this history state is related to another document
+        if (currentDocumentID === null || currentDocumentID !== event.documentID) {
+            log.debug("Ignoring this historyState event, probably because it was for a non-current document");
             return Promise.resolve();
         }
 
@@ -102,6 +105,7 @@ define(function (require, exports) {
     };
     handleHistoryState.reads = [locks.JS_DOC, locks.JS_APP];
     handleHistoryState.writes = [locks.JS_HISTORY];
+    handleHistoryState.modal = true;
 
     /**
      * Go forward or backward in the history state by playing the appropriate photoshop action
