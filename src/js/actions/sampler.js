@@ -474,7 +474,6 @@ define(function (require, exports) {
         }
 
         var style = {
-            effects: source.effects,
             opacity: source.opacity,
             blendMode: source.blendMode,
             fillColor: null,
@@ -508,6 +507,31 @@ define(function (require, exports) {
     };
     copyLayerStyle.reads = [locks.JS_DOC, locks.JS_APP];
     copyLayerStyle.writes = [locks.JS_STYLE];
+    
+    /**
+     * Saves the currently selected layer's effects in the style store clipboard
+     *
+     * @param {Document?} document Default is active document
+     * @param {Layer?} source Layer to copy style of, default is selected layer
+     *
+     * @return {Promise}
+     */
+    var copyLayerEffects = function (document, source) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.layers.selected;
+
+        document = document || currentDocument;
+        source = source || document ? selectedLayers.first() : null;
+
+        if (!source) {
+            return Promise.resolve();
+        }
+
+        return this.dispatchAsync(events.style.COPY_EFFECTS, { effects: source.effects });
+    };
+    copyLayerEffects.reads = [locks.JS_DOC, locks.JS_APP];
+    copyLayerEffects.writes = [locks.JS_STYLE];
 
     /**
      * Applies the saved layer style to the given layers
@@ -574,8 +598,6 @@ define(function (require, exports) {
                 this.transfer(typeActions.setAlignment, document, textLayers, style.textAlignment, actionOpts),
             layerBlendModePromise = (!style.blendMode || targetLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(layerActions.setBlendMode, document, targetLayers, style.blendMode, actionOpts),
-            effectsPromise = !style.effects ? Promise.resolve() :
-                this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, style.effects, actionOpts),
             layerOpacityPromise = Promise.resolve();
 
         // If the source style does not include `style.textColor` (when copied from layer other than text and vector),
@@ -594,8 +616,7 @@ define(function (require, exports) {
                 textAlignmentPromise,
                 textStylePromise,
                 layerBlendModePromise,
-                layerOpacityPromise,
-                effectsPromise
+                layerOpacityPromise
             )
             .bind(this)
             .then(function () {
@@ -615,6 +636,37 @@ define(function (require, exports) {
         layerFXActions.duplicateLayerEffects, toolActions.resetBorderPolicies,
         layerActions.resetLayers, layerActions.setBlendMode, layerActions.setOpacity,
         transformActions.setRadius];
+        
+    /**
+     * Applies the saved layer effects to the given layers
+     *
+     * @param {Document?} document Default is active document
+     * @param {Immutable.Iterable.<Layer>?} targetLayers Default is selected layers
+     *
+     * @return {Promise}
+     */
+    var pasteLayerEffects = function (document, targetLayers) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.layers.selected;
+
+        document = document || currentDocument;
+        targetLayers = targetLayers || document ? selectedLayers : null;
+
+        if (!targetLayers) {
+            return Promise.resolve();
+        }
+        
+        var styleStore = this.flux.store("style"),
+            layerEffects = styleStore.getClipboardEffects(),
+            effectsPromise = !layerEffects ? Promise.resolve() :
+                this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, layerEffects);
+
+        return effectsPromise;
+    };
+    pasteLayerEffects.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
+    pasteLayerEffects.writes = [];
+    pasteLayerEffects.transfers = [layerFXActions.duplicateLayerEffects];
 
     /**
      * Builds the layerActions object for sampling:
@@ -797,5 +849,7 @@ define(function (require, exports) {
     exports.applyStroke = applyStroke;
     exports.copyLayerStyle = copyLayerStyle;
     exports.pasteLayerStyle = pasteLayerStyle;
+    exports.copyLayerEffects = copyLayerEffects;
+    exports.pasteLayerEffects = pasteLayerEffects;
     exports.replaceGraphic = replaceGraphic;
 });

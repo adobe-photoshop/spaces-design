@@ -111,10 +111,10 @@ define(function (require, exports, module) {
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 styleStore = flux.store("style"),
-                clipboardStyle = styleStore.getClipboardStyle();
+                clipboardEffects = styleStore.getClipboardEffects();
 
             return {
-                clipboard: clipboardStyle
+                clipboard: clipboardEffects
             };
         },
 
@@ -146,7 +146,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 source = document.layers.selected.first();
 
-            this.getFlux().actions.sampler.copyLayerStyle(document, source);
+            this.getFlux().actions.sampler.copyLayerEffects(document, source);
             event.stopPropagation();
         },
 
@@ -159,7 +159,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 targetLayers = this.props.document.layers.selected;
 
-            this.getFlux().actions.sampler.pasteLayerStyle(document, targetLayers);
+            this.getFlux().actions.sampler.pasteLayerEffects(document, targetLayers);
             event.stopPropagation();
         },
 
