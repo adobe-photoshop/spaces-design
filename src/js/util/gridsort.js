@@ -108,7 +108,14 @@ define(function (require, exports, module) {
                 return layer.bounds && !layer.bounds.empty;
             })
             .sort(function (a, b) {
-                return a.bounds.left - b.bounds.left;
+                var top = a.bounds.top <= b.bounds.top ? true : false;
+                var bottom = a.bounds.top <= b.bounds.bottom ? true : false;
+                var left = a.bounds.left <= b.bounds.left ? true : false;
+                if(top && bottom && left) {
+                    return -1;
+                } else  {
+                    return 1;
+                }
             })
             .reduce(_.ary(_addLayerToRow, 2), []);
 
