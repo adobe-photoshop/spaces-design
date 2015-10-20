@@ -36,7 +36,8 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
         history = require("js/actions/history"),
-        policyActions = require("js/actions/policy");
+        policyActions = require("js/actions/policy"),
+        dom = require("js/util/dom");
 
     /**
      * Native menu command IDs for Photoshop edit commands.
@@ -51,37 +52,6 @@ define(function (require, exports) {
         SELECT_ALL_NATIVE_MENU_COMMMAND_ID = 1017;
 
     var LAYER_CLIPBOARD_FORMAT = "com.adobe.photoshop.spaces.design.layers";
-
-    /**
-     * Determines whether the given element is an HTML input element.
-     * 
-     * @private
-     * @param {HTMLElement} el
-     * @return {boolean}
-     */
-    var _isInput = function (el) {
-        return el instanceof window.HTMLInputElement;
-    };
-
-    /**
-     * Determines whether the given input element is a textual element.
-     * 
-     * @private
-     * @param {HTMLInputElement} el
-     * @return {boolean}
-     */
-    var _isTextInput = function (el) {
-        switch (el.type) {
-            case "text":
-            case "search":
-            case "url":
-            case "tel":
-            case "password":
-                return true;
-            default:
-                return false;
-        }
-    };
 
     /**
      * Execute a native cut command.
@@ -186,8 +156,8 @@ define(function (require, exports) {
                 var el = window.document.activeElement,
                     data;
 
-                if (cefHasFocus && _isInput(el)) {
-                    if (_isTextInput(el)) {
+                if (cefHasFocus && dom.isInput(el)) {
+                    if (dom.isTextInput(el)) {
                         data = el.value.substring(el.selectionStart, el.selectionEnd);
                         if (cut) {
                             el.setRangeText("");
@@ -277,7 +247,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function (cefHasFocus) {
                 var el = window.document.activeElement;
-                if (cefHasFocus && _isInput(el)) {
+                if (cefHasFocus && dom.isInput(el)) {
                     return os.clipboardRead()
                         .then(function (result) {
                             var data = result.data,
@@ -287,7 +257,7 @@ define(function (require, exports) {
                                 return;
                             }
 
-                            if (_isTextInput(el)) {
+                            if (dom.isTextInput(el)) {
                                 var selectionStart = el.selectionStart;
                                 el.setRangeText(data);
                                 el.setSelectionRange(selectionStart + data.length, selectionStart + data.length);
@@ -355,8 +325,8 @@ define(function (require, exports) {
             .bind(this)
             .then(function (cefHasFocus) {
                 var el = window.document.activeElement;
-                if (cefHasFocus && _isInput(el)) {
-                    if (_isTextInput(el)) {
+                if (cefHasFocus && dom.isInput(el)) {
+                    if (dom.isTextInput(el)) {
                         el.setSelectionRange(0, el.value.length);
                     }
                 } else {

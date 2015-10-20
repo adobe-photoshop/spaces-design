@@ -34,7 +34,8 @@ define(function (require, exports) {
         locks = require("js/locks"),
         policy = require("js/actions/policy"),
         EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
+        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
+        dom = require("js/util/dom");
 
     /**
      * Add a keyboard shortcut command. Registers the handler function and sets
@@ -199,18 +200,22 @@ define(function (require, exports) {
                     return;
                 }
 
-                // If an HTML element is focused, only attempt to match the shortcut
+                // If an HTML text input is focused, only attempt to match the shortcut
                 // if there are modifiers other than shift.
                 if (event.target !== window.document.body &&
+                    dom.isTextInput(event.target) &&
                     (event.detail.modifierBits === os.eventModifiers.NONE ||
                         event.detail.modifierBits === os.eventModifiers.SHIFT)) {
                     return;
                 }
 
                 var handlers = shortcutStore.matchShortcuts(event.detail, capture);
-                handlers.forEach(function (handler) {
-                    handler(event);
-                });
+                if (handlers.length > 0) {
+                    event.target.blur();
+                    handlers.forEach(function (handler) {
+                        handler(event);
+                    });
+                }
             };
         };
 
