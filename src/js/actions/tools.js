@@ -441,9 +441,10 @@ define(function (require, exports) {
     };
     selectTool.reads = [];
     selectTool.writes = [locks.JS_TOOL, locks.PS_TOOL];
-    selectTool.transfers = [resetBorderPolicies, policy.removePointerPolicies, installShapeDefaults,
-        policy.removeKeyboardPolicies, policy.addPointerPolicies, policy.addKeyboardPolicies, policy.setMode,
-        shortcuts.addShortcut, shortcuts.removeShortcut, "layers.resetLayers"];
+    selectTool.transfers = [resetBorderPolicies, installShapeDefaults, shortcuts.addShortcut,
+        shortcuts.removeShortcut, "layers.deleteSelected", "layers.resetLayers",
+        policy.removePointerPolicies, policy.removeKeyboardPolicies, policy.addPointerPolicies,
+        policy.addKeyboardPolicies, policy.setMode];
     selectTool.modal = true;
 
     /**

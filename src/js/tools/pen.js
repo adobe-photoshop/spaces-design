@@ -35,6 +35,7 @@ define(function (require, exports, module) {
 
     var Tool = require("js/models/tool"),
         shortcuts = require("js/actions/shortcuts"),
+        layerActions = require("js/actions/layers"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         shortcutUtil = require("js/util/shortcuts");
@@ -70,7 +71,17 @@ define(function (require, exports, module) {
             if (toolStore.getVectorMode()) {
                 this.flux.actions.mask.handleDeleteVectorMask();
             } else {
-                this.flux.actions.menu.native({ commandID: _CLEAR_PATH });
+                // When path is selected, hitting DELETE key should delete the selected path, otherwise, 
+                // the selected layer(s) should be deleted. We don't know whether a path is selected or not, 
+                // so we try to delete a selected path (by running menu command) first. If nothing is deleted,
+                // we delete the selected layer(s).
+                this.flux.actions.menu.native({ commandID: _CLEAR_PATH })
+                    .bind(this)
+                    .then(function (pathCleared) {
+                        if (!pathCleared) {
+                            return this.transfer(layerActions.deleteSelected);
+                        }
+                    });
             }
         }.bind(this);
 
