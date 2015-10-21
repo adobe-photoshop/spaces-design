@@ -33,7 +33,7 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         ui = require("js/util/ui"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
-        
+ 
     var FirstLaunch = React.createClass({
         mixins: [FluxMixin],
 
@@ -105,7 +105,7 @@ define(function (require, exports, module) {
                             <ul className="carousel__slide__three__list">
                                 <li>
                                     <div
-                                        onClick={ui.openURL.bind(null, psDesignTwitterURL)}>
+                                        onClick={ui.openURL.bind(null, psDesignTwitterURL, "twitter")}>
                                         <SVGIcon
                                             CSSID="bird"/>
                                         <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_FIRST}</h2>
@@ -115,7 +115,7 @@ define(function (require, exports, module) {
                             <ul className="carousel__slide__three__list">
                                 <li>
                                     <div
-                                        onClick={ui.openURL.bind(null, githubURL)}>
+                                        onClick={ui.openURL.bind(null, githubURL, "github")}>
                                         <SVGIcon
                                             CSSID="github"/>
                                         <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_SECOND}</h2>
@@ -125,7 +125,7 @@ define(function (require, exports, module) {
                             <ul className="carousel__slide__three__list">
                                 <li>
                                     <div
-                                        onClick={ui.openURL.bind(null, psForumURL)}>
+                                        onClick={ui.openURL.bind(null, psForumURL, "forum")}>
                                         <SVGIcon
                                             CSSID="workspace"/>
                                         <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_THIRD}</h2>

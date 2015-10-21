@@ -32,7 +32,8 @@ define(function (require, exports) {
         hitTestLib = require("adapter/lib/hitTest");
 
     var Bounds = require("js/models/bounds"),
-        Color = require("js/models/color");
+        Color = require("js/models/color"),
+        headlights = require("js/util/headlights");
 
     /**
      * Calculates the bounds of the name badge, used for artboards
@@ -105,10 +106,13 @@ define(function (require, exports) {
      *
      * @param {string} url
      * @param {SyntheticEvent?} event
+     * @param {string} name
      */
-    var openURL = function (url, event) {
+    var openURL = function (url, event, name) {
         adapter.openURLInDefaultBrowser(url);
-        
+
+        headlights.logEvent("UserInterface", "introduction", name);
+
         if (event && event.stopPropagation) {
             event.stopPropagation();
         }

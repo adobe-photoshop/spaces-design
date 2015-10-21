@@ -480,21 +480,30 @@
         "TWITTER": {
             "$action": "menu.openURL",
             "$payload": {
-                "url": "https://www.adobe.com/go/designspace-twitter"
+                "url": "https://www.adobe.com/go/designspace-twitter",
+                "category": "help",
+                "subcategory": "external-link",
+                "eventName": "twitter"
             },
             "$enable-rule": "always-except-modal"
         },
         "HELPX": {
             "$action": "menu.openURL",
             "$payload": {
-                "url": "https://www.adobe.com/go/designspace-help"
+                "url": "https://www.adobe.com/go/designspace-help",
+                "category": "help",
+                "subcategory": "external-link",
+                "eventName": "helpX"
             },
             "$enable-rule": "always-except-modal"
         },
         "FORUM": {
             "$action": "menu.openURL",
             "$payload": {
-                "url": "https://www.adobe.com/go/designspace-forum"
+                "url": "https://www.adobe.com/go/designspace-forum",
+                "category": "help",
+                "subcategory": "external-link",
+                "eventName": "forum"
             },
             "$enable-rule": "always-except-modal"
         }

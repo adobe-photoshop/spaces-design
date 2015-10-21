@@ -129,13 +129,16 @@ define(function (require, exports) {
     /**
      * Open a URL in the user's default browser.
      * 
-     * @param {{url: string}} payload
+     * @param {{url: string, category: string, subcategory: string, eventName: string}} payload
      * @return {Promise}
      */
     var openURL = function (payload) {
         if (!payload.hasOwnProperty("url")) {
             var error = new Error("Missing URL");
             return Promise.reject(error);
+        }
+        if (payload.category !== null && payload.subcategory !== null && payload.eventName !== null) {
+            headlights.logEvent(payload.category, payload.subcategory, payload.eventName);
         }
 
         return adapter.openURLInDefaultBrowser(payload.url);
