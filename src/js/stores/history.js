@@ -597,7 +597,7 @@ define(function (require, exports, module) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
                     documentExports = exportStore.getDocumentExports(documentID),
-                    nextState = new HistoryState({ document: document, documentExports: documentExports });
+                    nextState = { document: document, documentExports: documentExports };
 
                 if (!document) {
                     throw new Error("Could not amend history state, document not found: " + documentID);
