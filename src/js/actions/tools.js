@@ -47,6 +47,7 @@ define(function (require, exports) {
         ui = require("./ui"),
         shortcuts = require("./shortcuts"),
         strings = require("i18n!nls/strings"),
+        layerActionsUtil = require("js/util/layeractions"),
         system = require("js/util/system"),
         utilShortcuts = require("js/util/shortcuts"),
         EventPolicy = require("js/models/eventpolicy"),
@@ -606,7 +607,12 @@ define(function (require, exports) {
 
         // if we are swtiching to vector mask mode, make sure the layer has a vector mask
         if (!currentLayer.vectorMaskEnabled && vectorMaskMode === true) {
-            initPromise = descriptor.playObject(vectorMaskLib.createRevealAllMask(), createMaskOptions);
+            var createActions = Immutable.List.of({ layer: currentLayer,
+                        playObject: vectorMaskLib.createRevealAllMask() });
+
+            initPromise = layerActionsUtil.playLayerActions(currentDocument, createActions,
+                    true, createMaskOptions);
+
             var payload = {
                     documentID: currentDocument.id,
                     layerIDs: Immutable.List.of(currentLayer.id),
@@ -662,8 +668,12 @@ define(function (require, exports) {
                                 name: strings.ACTIONS.DELETE_VECTOR_MASK,
                                 target: documentLib.referenceBy.id(currentDocument.id)
                             }
-                        };
-                        return descriptor.playObject(vectorMaskLib.deleteVectorMask(), deleteMaskOptions)
+                        },
+                            deleteActions = Immutable.List.of({ layer: currentLayer,
+                                playObject: vectorMaskLib.deleteVectorMask() });
+
+                        return layerActionsUtil.playLayerActions(currentDocument, deleteActions,
+                                true, deleteMaskOptions)
                             .bind(this)
                             .then(function () {
                                 var payload = {
