@@ -1089,9 +1089,7 @@ define(function (require, exports, module) {
             }, this);
         }.bind(this));
 
-        return this.mergeDeep({
-            layers: nextLayers
-        });
+        return this.set("layers", nextLayers);
     };
 
     /**
