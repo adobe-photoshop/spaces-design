@@ -966,7 +966,7 @@ define(function (require, exports) {
      * @param {boolean=} options.coalesce Whether this history state should be coalesce with the previous one
      */
     var setRadius = function (document, layers, radius, options) {
-        options = _.merge({ coalesce: false }, options);
+        options = _.merge({}, options);
         
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RADII_CHANGED, {
             documentID: document.id,

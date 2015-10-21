@@ -68,7 +68,7 @@ define(function (require, exports) {
             },
             types = _.isArray(type) ? type : [type];
 
-        options = _.merge(options, syncOptions);
+        options = _.merge({}, options, syncOptions);
 
         // Map the layers to a list of playable objects
         layers.forEach(function (curLayer) {
