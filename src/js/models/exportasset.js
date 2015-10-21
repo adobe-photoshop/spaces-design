@@ -25,7 +25,9 @@ define(function (require, exports, module) {
     "use strict";
 
     var Immutable = require("immutable"),
-        objUtil = require("js/util/object");
+        _ = require("lodash");
+
+    var objUtil = require("js/util/object");
 
     /**
      * Possible statuses of exports asset in the state machine
@@ -44,7 +46,35 @@ define(function (require, exports, module) {
      *
      * @type {Imutable.List.<string>}
      */
-    var FORMATS = Immutable.List(["png", "jpg", "svg", "pdf"]);
+    var FORMATS_OPTIONS = Immutable.List([
+        { format: "png", quality: 32, label: "PNG" },
+        { format: "png", quality: 24, label: "PNG 24" },
+        { format: "png", quality: 8, label: "PNG 8" },
+        { format: "jpg", quality: 100, label: "JPG 100%" },
+        { format: "jpg", quality: 85, label: "JPG 85%" },
+        { format: "jpg", quality: 75, label: "JPG 75%" },
+        { format: "jpg", quality: 50, label: "JPG 50%" },
+        { format: "jpg", quality: 25, label: "JPG 25%" },
+        { format: "svg", quality: 100, label: "SVG" },
+        { format: "pdf", quality: 100, label: "PDF" }
+    ]);
+
+    /**
+     * A lazily computed reverse index of asset format+quality to its index within FORMATS_OPTIONS
+     *
+     * @private
+     * @param {string} format
+     * @param {number} quality
+     * @return {number}
+     */
+    var _findFormatOptionIndex = _.memoize(
+        function (format, quality) {
+            return FORMATS_OPTIONS.findIndex(function (formatOption) {
+                return formatOption.format === format && formatOption.quality === quality;
+            });
+        }, function (format, quality) {
+            return format + quality;
+        });
 
     /**
      * Supported scales of export assets
@@ -74,6 +104,11 @@ define(function (require, exports, module) {
         format: "png",
 
         /**
+         * @type {number}
+         */
+        quality: 32,
+
+        /**
          * The status of this asset in the state machine
          * @type {string}
          */
@@ -94,7 +129,8 @@ define(function (require, exports, module) {
      * @return {ExportAsset}
      */
     ExportAsset.prototype.mergeProps = function (props) {
-        if (!this.suffixCustomized && props.scale && (props.scale !== this.scale)) {
+        if (!this.suffixCustomized && (props.scale && (props.scale !== this.scale) ||
+            props.quality && (props.quality !== this.quality))) {
             return this.merge(props).deriveSuffix();
         } else {
             return this.merge(props);
@@ -119,12 +155,15 @@ define(function (require, exports, module) {
 
     Object.defineProperties(ExportAsset.prototype, objUtil.cachedGetSpecs({
         /**
-         * Derive a standardized suffix based on the scale
+         * Derive a standardized suffix based on the scale and quality
          * @private
          * @type {string}
          */
         derivedSuffix: function () {
-            return "@" + this.scale + "x";
+            var qualitySuffix = (this.quality === 32 || this.quality === 100) ? "" : "-" + this.quality.toString(),
+                scaleSuffix = "@" + this.scale + "x";
+
+            return scaleSuffix + qualitySuffix;
         },
 
         /**
@@ -134,6 +173,15 @@ define(function (require, exports, module) {
          */
         suffixCustomized: function () {
             return this.suffix !== this.derivedSuffix;
+        },
+
+        /**
+         * Determine the index of the "format option" for this asset
+         * @private
+         * @return {number}
+         */
+        formatOptionIndex: function () {
+            return _findFormatOptionIndex(this.format, this.quality);
         }
     }));
 
@@ -175,7 +223,7 @@ define(function (require, exports, module) {
      * Attach some enums to the export
      */
     ExportAsset.STATUS = STATUS;
-    ExportAsset.FORMATS = FORMATS;
+    ExportAsset.FORMATS_OPTIONS = FORMATS_OPTIONS;
     ExportAsset.SCALES = SCALES;
 
     /**
@@ -188,7 +236,7 @@ define(function (require, exports, module) {
             { scale: 1, suffix: "" },
             { scale: 2 },
             { scale: 3 },
-            { scale: 1, suffix: "", format: "svg" }
+            { scale: 1, suffix: "", format: "svg", quality: 100 }
         ],
         HDPI: [
             { scale: 0.75, suffix: "ldpi" },
@@ -197,7 +245,7 @@ define(function (require, exports, module) {
             { scale: 2, suffix: "xhdpi" },
             { scale: 3, suffix: "xxhdpi" },
             { scale: 4, suffix: "xxxhdpi" },
-            { scale: 1, suffix: "", format: "svg" }
+            { scale: 1, suffix: "", format: "svg", quality: 100 }
         ]
     };
 
