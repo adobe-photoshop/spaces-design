@@ -37,6 +37,7 @@ define(function (require, exports) {
 
     var events = require("js/events"),
         locks = require("js/locks"),
+        synchronization = require("js/util/synchronization"),
         log = require("js/util/log");
 
     /**
@@ -308,14 +309,13 @@ define(function (require, exports) {
 
     /**
      * Given a history state event from photoshop that comes directly after a "select" event,
-     * Interpret this event's index as cause to adjust/load that history state.
-     * Validate the event as "previous" or "next" and that the offset is positive or negative 1
+     * Interpret this event as cause to nuke history and update doc.  Ideally, we would be
+     * able to intelligently step back through cached states, but because photoshop might emit these faster than
+     * we can keep up with, things like "reset layer visibility" based on our intermediate cached states might fail
      *
-     * @param {object} event a raw historyState event from photoshop
-     * @param {string} recentSelectEvent either "previous" or "next"
      * @return {Promise}
      */
-    var handleHistoryStateAfterSelect = function (event, recentSelectEvent) {
+    var handleHistoryStateAfterSelect = function () {
         // This assumption of current document could be problematic
         // but would require a core change to include document ID
         var documentID = this.flux.store("application").getCurrentDocumentID();
@@ -324,43 +324,14 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var historyStore = this.flux.stores.history,
-            currentIndex = historyStore.currentIndex(documentID),
-            nextIndex = event.currentHistoryState;
-
-        if (_.isFinite(currentIndex) && _.isFinite(nextIndex)) {
-            var count = nextIndex - currentIndex,
-                prev = recentSelectEvent === "previous" && count === -1,
-                next = recentSelectEvent === "next" && count === 1;
-
-            if ((prev && historyStore.hasPreviousStateCached(documentID)) ||
-                (next && historyStore.hasNextStateCached(documentID))) {
-                // either load previous, or adjust & update
-                return _loadHistory.call(this, documentID, count);
-            } else {
-                // adjust pointer, and update doc
-                var payload = {
-                    documentID: documentID,
-                    count: count
-                };
-
-                return this.dispatchAsync(events.history.ADJUST_HISTORY_STATE, payload)
-                    .then(function () {
-                        return this.transfer(documentActions.updateDocument);
-                    });
-            }
-        } else {
-            // failsafe, if things are out of whack, nuke and pave
-            return this.dispatchAsync(events.history.DELETE_DOCUMENT_HISTORY, { documentID: documentID })
-                .then(function () {
-                    return this.transfer(documentActions.updateDocument);
-                });
-        }
+        return this.dispatchAsync(events.history.DELETE_DOCUMENT_HISTORY, { documentID: documentID })
+            .then(function () {
+                return this.transfer(documentActions.updateDocument);
+            });
     };
     handleHistoryStateAfterSelect.reads = [locks.JS_DOC];
-    handleHistoryStateAfterSelect.writes = [locks.JS_HISTORY];
-    handleHistoryStateAfterSelect.transfers = [toolActions.resetBorderPolicies, "layers.resetLayerVisibility",
-        "documents.updateDocument"];
+    handleHistoryStateAfterSelect.writes = [];
+    handleHistoryStateAfterSelect.transfers = ["documents.updateDocument"];
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -383,6 +354,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartup = function () {
+        var debouncedHandleHistoryStateAfterSelect =
+            synchronization.debounce(this.flux.actions.history.handleHistoryStateAfterSelect, this, 200);
+
         // We get these every time there is a new history state being created
         _historyStateHandler = function (event) {
             log.debug("History state event from photoshop (raw): currentState (index) %d, total states: %d",
@@ -395,7 +369,7 @@ define(function (require, exports) {
                 log.debug("History state event received, and there was a recent history select event: %s",
                     _recentSelectEvent);
 
-                this.flux.actions.history.handleHistoryStateAfterSelect(event, _recentSelectEvent);
+                debouncedHandleHistoryStateAfterSelect();
                 _recentSelectTimer = null;
                 _recentSelectEvent = null;
             } else {
@@ -414,11 +388,11 @@ define(function (require, exports) {
 
                 _recentSelectEvent = eventData._value;
                 _recentSelectTimer = window.setTimeout(function () {
-                    // If we don't get a follow-up historyState event, then we just reboot the doc
-                    this.flux.actions.document.updateDocument();
+                    // If we don't get a timely follow-up historyState event, then just handle it anyway
+                    debouncedHandleHistoryStateAfterSelect();
                     _recentSelectEvent = null;
                     _recentSelectTimer = null;
-                }.bind(this), 700);
+                }, 700);
             }
         }.bind(this);
         descriptor.addListener("select", _historySelectHandler);
