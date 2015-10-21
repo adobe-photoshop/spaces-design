@@ -55,12 +55,20 @@ define(function (require, exports, module) {
          * @type {Immutable.Map.<string, {family: string, font: string}>}
          */
         _postScriptMap: Immutable.Map(),
+        
+        /**
+         * @typedef {object} FontTypeface
+         * @property {string} id - value of id is typeface's index in the List pad with leading zeros (e.g. 0025, 1004)
+         *                         see `_handleInitFonts`
+         * @property {string} postScriptName
+         * @property {string} title
+         */
 
         /**
          * List of typefaces for populating datalists
          *
          * @private
-         * @type {Immutable.List.<{id: string, font: string}>}
+         * @type {Immutable.List.<FontTypeface>}
          */
         _typefaces: Immutable.List(),
 
@@ -313,19 +321,25 @@ define(function (require, exports, module) {
             // The list of all selectable type faces
             this._typefaces = this._postScriptMap
                 .entrySeq()
-                .sortBy(function (entry) {
-                    return entry[0];
-                })
                 .map(function (entry) {
                     var psName = entry[0],
                         fontObj = entry[1];
 
                     return {
-                        id: psName,
+                        postScriptName: psName,
                         title: fontObj.font
                     };
                 })
-                .toList();
+                .sortBy(function (typeface) {
+                    return typeface.title.toUpperCase();
+                })
+                .toList()
+                .map(function (typeface, index) {
+                    // typeface id is equivalent to its index in this._typefaces, pad with leading zeros.
+                    typeface.id = ("000" + index).slice(-4);
+
+                    return typeface;
+                });
 
             this._initialized = true;
             this.emit("change");
