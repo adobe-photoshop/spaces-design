@@ -115,12 +115,13 @@ define(function (require, exports, module) {
         _updateTabContainerScroll: function () {
             var currentTab = window.document.querySelector(".document-title__current");
             if (currentTab) {
-                var container = React.findDOMNode(this.refs.tabContainer),
+                var container = React.findDOMNode(this.refs.tabs),
+                    containerBounds = container.getBoundingClientRect(),
                     bounds = currentTab.getBoundingClientRect();
 
                 if (bounds.left < 0) {
                     container.scrollLeft = 0;
-                } else if (bounds.right > container.clientWidth) {
+                } else if (bounds.right > containerBounds.right + 1) {
                     container.scrollLeft = bounds.right;
                 }
             }
@@ -290,7 +291,7 @@ define(function (require, exports, module) {
             return (
                 <div className="document-container">
                     <div className="document-header-container" ref="tabContainer">
-                        <div className="document-header">
+                        <div className="document-header" ref="tabs">
                             {documentTabs}
                         </div>
                         <div className="document-header__hidden">
