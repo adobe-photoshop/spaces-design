@@ -2288,6 +2288,7 @@ define(function (require, exports) {
     handleCanvasShift.reads = [locks.JS_DOC];
     handleCanvasShift.writes = [];
     handleCanvasShift.transfers = [resetBounds];
+    handleCanvasShift.modal = true;
 
     /**
      * Reveal and select the vector mask of the selected layer. 
