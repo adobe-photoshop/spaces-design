@@ -210,7 +210,8 @@ define(function (require, exports, module) {
                 if (this._target) {
                     dialogBounds = dialogEl.getBoundingClientRect();
 
-                    var clientHeight = window.document.documentElement.clientHeight,
+                    var placedAbove = false,
+                        clientHeight = window.document.documentElement.clientHeight,
 
                         // Need to account for element margin
                         dialogComputedStyle = window.getComputedStyle(dialogEl),
@@ -225,6 +226,7 @@ define(function (require, exports, module) {
 
                     if (placedDialogBottom > clientHeight) {
                         // If there is space, let's place this above the target
+                        placedAbove = true;
                         if (dialogBounds.height + dialogMarginTop + dialogMarginBottom < targetBounds.top) {
                             placedDialogTop = targetBounds.top -
                                 dialogBounds.height - dialogMarginTop - dialogMarginBottom;
@@ -234,21 +236,27 @@ define(function (require, exports, module) {
                         }
                     }
 
-                    dialogEl.style.top = placedDialogTop + "px";
+                    this.setState({
+                        "topPosition": placedDialogTop + "px",
+                        "placedAbove": placedAbove
+                    });
                 } else {
                     throw new Error("Could not determine target by which to render this dialog: " + this.displayName);
                 }
             } else if (this.props.position === POSITION_METHODS.CENTER) {
                 dialogBounds = dialogEl.getBoundingClientRect();
 
-                var cloakingRect = this.getFlux().store("ui").getCloakRect(),
+                var dialogElLeft = null,
+                    cloakingRect = this.getFlux().store("ui").getCloakRect(),
                     cloakingRectWidth = cloakingRect.right - cloakingRect.left;
 
                 if (dialogBounds.width < cloakingRectWidth) {
-                    dialogEl.style.left = (cloakingRect.left + cloakingRectWidth / 2) + "px";
-                } else {
-                    dialogEl.style.left = null;
+                    dialogElLeft = (cloakingRect.left + cloakingRectWidth / 2) + "px";
                 }
+                
+                this.setState({
+                    "leftPosition": dialogElLeft
+                });
             }
         },
 
@@ -306,9 +314,14 @@ define(function (require, exports, module) {
         render: function () {
             var children,
                 globalClass = (this.props.position === POSITION_METHODS.CENTER) ? "dialog__center" : "dialog__target",
-                classes = classnames(globalClass, this.props.className || ""),
+                classes = classnames(globalClass, this.props.className || "",
+                    { "placed-above": this.state.placedAbove }),
                 props = {
-                    className: classes
+                    className: classes,
+                    style: {
+                        top: this.state.topPosition,
+                        left: this.state.leftPosition
+                    }
                 };
 
             if (this.state.open) {

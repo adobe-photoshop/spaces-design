@@ -1052,7 +1052,7 @@ define(function (require, exports, module) {
             });
 
             return (
-                <div className="color-picker">
+                <div>
                     <ColorType {...this.props}
                         ref="input"
                         color={color}
