@@ -59,13 +59,13 @@ define(function (require, exports, module) {
      * @private
      * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
      */
-    var _formatOptions = Immutable.OrderedMap(ExportAsset.FORMATS
-        .map(function (format) {
+    var _formatOptions = Immutable.OrderedMap(ExportAsset.FORMATS_OPTIONS
+        .map(function (formatOption, key) {
             var obj = {
-                id: format,
-                title: format.toUpperCase()
+                id: key.toString(),
+                title: formatOption.label
             };
-            return [format, obj];
+            return [key.toString(), obj];
         }));
 
     /**
@@ -80,6 +80,10 @@ define(function (require, exports, module) {
             layers: React.PropTypes.instanceOf(Immutable.Iterable), // undefined => doc-level export
             index: React.PropTypes.number.isRequired,
             exportAssets: React.PropTypes.instanceOf(Immutable.Iterable).isRequired
+        },
+
+        shouldComponentUpdate: function (nextProps) {
+            return this.props.exportAssets !== nextProps.exportAssets;
         },
 
         /**
@@ -118,15 +122,25 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Update this asset's format
+         * Update this asset's format and quality
          *
          * @private
          */
-        _handleUpdateFormat: function (format) {
-            var formatLower = format && format.toLowerCase();
+        _handleUpdateFormat: function (id) {
+            var formatIndex = mathUtil.parseNumber(id),
+                formatOption = ExportAsset.FORMATS_OPTIONS.get(formatIndex);
 
-            this.getFlux().actions.export.updateLayerAssetFormat(
-                this.props.document, this.props.layers, this.props.index, formatLower);
+            if (!formatOption || !formatOption.format) {
+                throw new Error("Could not find export format option with id " + id);
+            }
+
+            var props = {
+                format: formatOption.format,
+                quality: formatOption.quality
+            };
+
+            this.getFlux().actions.export.updateExportAsset(
+                this.props.document, this.props.layers, this.props.index, props);
         },
 
         render: function () {
@@ -141,6 +155,8 @@ define(function (require, exports, module) {
             var scale = exportAsset.scale,
                 scaleOption = _scaleOptions.has(scale.toString()) ?
                     _scaleOptions.get(scale.toString()) : _scaleOptions.get("1"),
+                formatOptionId = exportAsset.formatOptionIndex.toString(),
+                formatOption = _formatOptions.get(formatOptionId) || { title: "-" },
                 keySuffix = this.props.faceKey,
                 scaleListID = "exportAsset-scale-" + keySuffix,
                 formatListID = "exportAsset-format-" + keySuffix;
@@ -174,8 +190,8 @@ define(function (require, exports, module) {
                             list={formatListID}
                             className="dialog-export-format"
                             options={_formatOptions.toList()}
-                            value={exportAsset.format.toUpperCase()}
-                            defaultSelected={exportAsset.format}
+                            value={formatOption.title}
+                            defaultSelected={formatOptionId}
                             onChange={this._handleUpdateFormat}
                             live={false}
                             autoSelect={false}

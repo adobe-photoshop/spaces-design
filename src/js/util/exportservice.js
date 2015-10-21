@@ -130,6 +130,7 @@ define(function (require, exports, module) {
             layerID: layer && layer.id,
             scale: asset.scale,
             format: asset.format,
+            quality: asset.quality,
             fileName: fileName,
             baseDir: baseDir
         };

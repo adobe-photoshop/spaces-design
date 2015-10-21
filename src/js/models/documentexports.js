@@ -85,6 +85,11 @@ define(function (require, exports, module) {
                 return new Immutable.List();
             }
             return Immutable.List(propsArray.map(function (props) {
+                if (!props.quality && props.format && props.format !== "png") {
+                    // hack for support of "old" assets prior to quality
+                    // for non PNG, force a better default than 32
+                    props.quality = 100;
+                }
                 return new ExportAsset(props);
             }));
         };
