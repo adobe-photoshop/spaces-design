@@ -410,11 +410,12 @@ define(function (require, exports) {
                     effects: effects
                 };
             });
-
+            
+        // 1. Build lists to update / insert the properties from source layer to target layers
+        // 
         // For each effectType
         //      For each effect at index i
         //          Build every layer's ID array, with index for that layer, and props for that layer's new effect
-
         // Build a different master props/index list for each effect type
         sourceEffects.forEach(function (sourceEffect) {
             var curType = sourceEffect.type,
@@ -448,12 +449,59 @@ define(function (require, exports) {
 
                     perEffectPropsList.push(newEffectProps);
                 });
+                
                 effectIndexList.push(Immutable.List(perEffectIndexList));
                 effectPropsList.push(Immutable.List(perEffectPropsList));
             });
+            
             // Now that we've build per effect per layer lists, we can add them to master list
             masterEffectIndexMap[curType] = Immutable.List(effectIndexList);
             masterEffectPropsMap[curType] = Immutable.List(effectPropsList);
+        });
+        
+        // 2. Expand the lists to delete the effects that are not exist in the source layer.
+        masterEffectTypes.forEach(function (effectType) {
+            var effectIndexList = masterEffectIndexMap[effectType],
+                effectPropsMap = masterEffectPropsMap[effectType],
+                sourceEffectSize = source.get(effectType).size,
+                maxExistingEffectsNumber = 0;
+            
+            targetLayers.forEach(function (targetLayer) {
+                maxExistingEffectsNumber = Math.max(targetLayer.getLayerEffectsByType(effectType).size,
+                    maxExistingEffectsNumber);
+            });
+            
+            if (sourceEffectSize < maxExistingEffectsNumber) {
+                for (var i = sourceEffectSize; i < maxExistingEffectsNumber; i++) {
+                    var deletedEffectIndexList = [],
+                        deletedEffectPropsList = [];
+                    
+                    for (var j = 0; j < layerIDs.size; j++) {
+                        // the index of the deleted effects are always the size of the effects in the source layer, 
+                        // which is the index after the last effect. This is becuase the LayerStructure model updates 
+                        // the effects index by index, and indexes may become invalid after a deletion.
+                        // 
+                        // For example:
+                        // 
+                        // 1 say we have layer effects [A, B, C]
+                        // 2 we want to delete the last two effects (because they don't exist in the source layer), 
+                        //   so the index may looks like [1 , 2] 
+                        // 3 after layerstructure deletes the second effect (index = 1), the new layer 
+                        //   effects list become [A, C]
+                        // 4 when it tries to delete the third effect (index = 2), it will hit out-of-range error.
+                        // 
+                        // For this case, a working index list should be [1, 1]
+                        deletedEffectIndexList.push(sourceEffectSize);
+                        deletedEffectPropsList.push(null);
+                    }
+                    
+                    effectIndexList = effectIndexList.push(Immutable.List(deletedEffectIndexList));
+                    effectPropsMap = effectPropsMap.push(Immutable.List(deletedEffectPropsList));
+                }
+                
+                masterEffectIndexMap[effectType] = effectIndexList;
+                masterEffectPropsMap[effectType] = effectPropsMap;
+            }
         });
 
         var payload = {

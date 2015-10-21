@@ -1493,7 +1493,8 @@ define(function (require, exports, module) {
      * @param {Immutable.Iterable.<number>} layerIDs
      * @param {number | Immutable.List.<number>} layerEffectIndex index of effect, or per-layer List thereof
      * @param {string} layerEffectType type of layer effect
-     * @param {object | Immutable.List.<object>} layerEffectProperties properties to merge, or per-layer List thereof
+     * @param {object | Immutable.List.<object>} layerEffectProperties properties to merge, or per-layer List thereof.
+     *                  				         If property is null, the layer effect will be deleted.
      * @return {LayerStructure}
      */
     LayerStructure.prototype.setLayerEffectProperties = function (layerIDs,
@@ -1503,32 +1504,40 @@ define(function (require, exports, module) {
             throw new Error("Invalid layerEffectType supplied");
         }
 
-        var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID, index) {
+        var updatedLayers = Immutable.Map(layerIDs.reduce(function (map, layerID, index) {
             var layer = this.byID(layerID),
                 layerEffects = layer.getLayerEffectsByType(layerEffectType) || Immutable.List(),
+                newProps = Immutable.List.isList(layerEffectProperties) ?
+                    layerEffectProperties.get(index) : layerEffectProperties,
                 _layerEffectIndex,
-                layerEffect,
-                nextLayerEffect,
-                newProps,
                 nextLayer;
 
             _layerEffectIndex = Immutable.List.isList(layerEffectIndex) ?
                 layerEffectIndex.get(index) : layerEffectIndex;
             _layerEffectIndex = Number.isFinite(_layerEffectIndex) ? _layerEffectIndex : layerEffects.size;
 
-            newProps = Immutable.List.isList(layerEffectProperties) ?
-                layerEffectProperties.get(index) : layerEffectProperties;
-            layerEffect = layerEffects.get(_layerEffectIndex) || LayerEffect.newEffectByType(layerEffectType);
-            nextLayerEffect = layerEffect.merge(newProps);
-            nextLayer = layer.setLayerEffectByType(layerEffectType, _layerEffectIndex, nextLayerEffect)
-                .set("usedToHaveLayerEffect", true);
+            // null effect property will delete the layer effect.
+            if (newProps === null) {
+                if (layerEffects.has(_layerEffectIndex)) {
+                    var nextLayerEffects = layerEffects.delete(_layerEffectIndex);
+                    
+                    nextLayer = layer.setLayerEffectsByType(layerEffectType, nextLayerEffects)
+                        .set("usedToHaveLayerEffect", true);
+                    return map.set(layerID, nextLayer);
+                }
+            } else { // Othwerise, update the layer effect properties.
+                var layerEffect = layerEffects.get(_layerEffectIndex) || LayerEffect.newEffectByType(layerEffectType),
+                    nextLayerEffect = layerEffect.merge(newProps);
+                
+                nextLayer = layer.setLayerEffectByType(layerEffectType, _layerEffectIndex, nextLayerEffect)
+                    .set("usedToHaveLayerEffect", true);
+                return map.set(layerID, nextLayer);
+            }
 
-            return map.set(layerID, nextLayer);
+            return map;
         }.bind(this), new Map()));
 
-        return this.mergeDeep({
-            layers: nextLayers
-        });
+        return this.set("layers", this.layers.merge(updatedLayers));
     };
 
     /**
