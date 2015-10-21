@@ -108,11 +108,20 @@ define(function (require, exports, module) {
                 return layer.bounds && !layer.bounds.empty;
             })
             .sort(function (a, b) {
-                return a.bounds.left - b.bounds.left;
+                var top = a.bounds.top - b.bounds.top >= 0 ? true : false;
+                var bottom = a.bounds.top >= b.bounds.bottom ? false : true;
+                var left = a.bounds.left - b.bounds.left <= 0 ? false : true;
+                if(bottom && left) {
+                    return 1;
+                } else  {
+                    return -1;
+                }
+                
+                //return a.bounds.left - b.bounds.left;
             })
-            .sort(function (a, b) {
+            /*.sort(function (a, b) {
                 return a.bounds.top - b.bounds.top;
-            })
+            })*/
             .reduce(_.ary(_addLayerToRow, 2), []);
 
         // flatten the array of "rows" into a simple list of layers
