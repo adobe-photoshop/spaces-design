@@ -77,7 +77,8 @@ define(function (require, exports, module) {
                 },
                 amendment: {
                     REORDER_LAYERS: "reorderLayersAmendment",
-                    RESET_LAYERS: "resetLayersAmendement",
+                    RESET_LAYERS: "resetLayersAmendment",
+                    RESET_BOUNDS: "resetBoundsAmendment",
                     LAYER_EXPORT_ENABLED_CHANGED: "layerExportEnabledChanged"
                 }
             },

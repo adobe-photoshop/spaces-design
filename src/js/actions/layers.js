@@ -550,10 +550,11 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
-     * @param {boolean=} noHistory Optional. If true, emit an event that does NOT change history
+     * @param {boolean=} suppressHistory Optional. If true, emit an event that does NOT add a new history state
+     * @param {boolean=} amendHistory Optional. If true, update the current state (requires suppressHistory)
      * @return {Promise}
      */
-    var resetBounds = function (document, layers, noHistory) {
+    var resetBounds = function (document, layers, suppressHistory, amendHistory) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         }
@@ -594,8 +595,12 @@ define(function (require, exports) {
                     };
                 });
 
-                if (noHistory) {
-                    this.dispatch(events.document.RESET_BOUNDS, payload);
+                if (suppressHistory) {
+                    if (amendHistory) {
+                        this.dispatch(events.document.history.amendment.RESET_BOUNDS, payload);
+                    } else {
+                        this.dispatch(events.document.RESET_BOUNDS, payload);
+                    }
                 } else {
                     this.dispatch(events.document.history.nonOptimistic.RESET_BOUNDS, payload);
                 }
@@ -1642,8 +1647,8 @@ define(function (require, exports) {
      * though possibly out of order w.r.t. Photoshop's model.
      *
      * @param {Document=} document Document for which layers should be reordered, if undefined, use current document
-     * @param {boolean=} suppressHistory if truthy, dispatch a non-history-changing event.
-     * @param {boolean=} amendHistory if truthy, update the current state (requires suppressHistory)
+     * @param {boolean=} suppressHistory Optional. If true, emit an event that does NOT add a new history state
+     * @param {boolean=} amendHistory Optional. If true, update the current state (requires suppressHistory)
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      **/
     var resetIndex = function (document, suppressHistory, amendHistory) {
@@ -2289,7 +2294,7 @@ define(function (require, exports) {
         // TODO this action used to translate layer bounds and dispatch events.document.REPOSITION_LAYERS,
         // but this was incompatible with undo/redo.  When stepping back into a history state we might also get
         // a canvas shift event which would cause us to shift our already-correct cached history state
-        return this.transfer(resetBounds, document, document.layers.all, true);
+        return this.transfer(resetBounds, document, document.layers.all, true, true);
     };
     handleCanvasShift.reads = [locks.JS_DOC];
     handleCanvasShift.writes = [];

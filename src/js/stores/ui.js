@@ -167,6 +167,7 @@ define(function (require, exports, module) {
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated,
                 events.document.RESET_BOUNDS, this._handleLayersUpdated,
+                events.document.history.amendment.RESET_BOUNDS, this._handleLayersUpdated,
                 events.document.history.nonOptimistic.RESET_BOUNDS, this._handleLayersUpdated
             );
 
