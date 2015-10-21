@@ -39,6 +39,14 @@ define(function (require, exports, module) {
          * @type {object}
          */
         _storedStyle: null,
+        
+        /**
+         * Currently stored effects object for copy/pasting
+         * 
+         * @private
+         * @type {LayerEffectsMap}
+         */
+        _storedEffects: null,
 
         /**
          * Currently active sample types based on selection / clicked point
@@ -54,6 +62,7 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.RESET, this._handleReset,
                 events.style.COPY_STYLE, this._copyStyle,
+                events.style.COPY_EFFECTS, this._copyEffects,
                 events.style.SHOW_HUD, this._showHUD,
                 events.style.HIDE_HUD, this._hideHUD,
                 events.ui.TRANSFORM_UPDATED, this._hideHUD
@@ -69,6 +78,15 @@ define(function (require, exports, module) {
          */
         getClipboardStyle: function () {
             return this._storedStyle;
+        },
+        
+        /**
+         * Returns the currently copied effects object
+         *
+         * @return {LayerEffectsMap}
+         */
+        getClipboardEffects: function () {
+            return this._storedEffects;
         },
 
         /**
@@ -96,6 +114,7 @@ define(function (require, exports, module) {
          */
         _handleReset: function () {
             this._storedStyle = null;
+            this._storedEffects = null;
             this._sampleTypes = null;
         },
 
@@ -107,6 +126,18 @@ define(function (require, exports, module) {
          */
         _copyStyle: function (payload) {
             this._storedStyle = payload.style;
+
+            this.emit("change");
+        },
+        
+        /**
+         * Saves the passed in effects internally for pasting
+         *
+         * @private
+         * @param {object} payload
+         */
+        _copyEffects: function (payload) {
+            this._storedEffects = payload.effects;
 
             this.emit("change");
         },

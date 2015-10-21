@@ -42,6 +42,7 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         typeActions = require("./type"),
         shapeActions = require("./shapes"),
+        transformActions = require("./transform"),
         toolActions = require("./tools"),
         layerActionsUtil = require("js/util/layeractions"),
         strings = require("i18n!nls/strings");
@@ -472,39 +473,65 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var fillColor = null,
-            stroke = null,
-            typeStyle = null;
+        var style = {
+            opacity: source.opacity,
+            blendMode: source.blendMode,
+            fillColor: null,
+            textColor: null,
+            stroke: null,
+            typeStyle: null,
+            radii: null
+        };
 
         switch (source.kind) {
         case source.layerKinds.VECTOR:
-            fillColor = source.fill && source.fill.color;
-            stroke = source.stroke;
+            style.fillColor = source.fill && source.fill.color;
+            style.textColor = style.fillColor && style.fillColor.setOpacity(source.opacity);
+            style.stroke = source.stroke;
+            style.blendMode = source.blendMode;
+            style.radii = source.radii && source.radii.scalar;
 
             break;
         case source.layerKinds.TEXT:
-            var fontStore = this.flux.store("font");
-
-            fillColor = source.text.characterStyle.color;
-            fillColor = fillColor && fillColor.setOpacity(source.opacity);
-            typeStyle = fontStore.getTypeObjectFromLayer(source);
+            var fontStore = this.flux.store("font"),
+                textColor = source.text.characterStyle.color;
+                
+            style.textColor = textColor && textColor.setOpacity(source.opacity);
+            style.fillColor = textColor && textColor.setOpacity(100);
+            style.typeStyle = fontStore.getTypeObjectFromLayer(source);
 
             break;
         }
-        
-        var payload = {
-            style: {
-                effects: source.effects,
-                fillColor: fillColor,
-                stroke: stroke,
-                typeStyle: typeStyle
-            }
-        };
 
-        return this.dispatchAsync(events.style.COPY_STYLE, payload);
+        return this.dispatchAsync(events.style.COPY_STYLE, { style: style });
     };
     copyLayerStyle.reads = [locks.JS_DOC, locks.JS_APP];
     copyLayerStyle.writes = [locks.JS_STYLE];
+    
+    /**
+     * Saves the currently selected layer's effects in the style store clipboard
+     *
+     * @param {Document?} document Default is active document
+     * @param {Layer?} source Layer to copy style of, default is selected layer
+     *
+     * @return {Promise}
+     */
+    var copyLayerEffects = function (document, source) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.layers.selected;
+
+        document = document || currentDocument;
+        source = source || document ? selectedLayers.first() : null;
+
+        if (!source) {
+            return Promise.resolve();
+        }
+
+        return this.dispatchAsync(events.style.COPY_EFFECTS, { effects: source.effects });
+    };
+    copyLayerEffects.reads = [locks.JS_DOC, locks.JS_APP];
+    copyLayerEffects.writes = [locks.JS_STYLE];
 
     /**
      * Applies the saved layer style to the given layers
@@ -533,6 +560,7 @@ define(function (require, exports) {
             style = styleStore.getClipboardStyle(),
             shapeLayers = Immutable.List(),
             textLayers = Immutable.List(),
+            nonTextLayers = Immutable.List(),
             transactionOpts = {
                 historyStateInfo: {
                     name: strings.ACTIONS.PASTE_LAYER_STYLE,
@@ -546,6 +574,10 @@ define(function (require, exports) {
             } else if (layer.kind === layer.layerKinds.TEXT) {
                 textLayers = textLayers.push(layer);
             }
+
+            if (layer.kind !== layer.layerKinds.TEXT) {
+                nonTextLayers = nonTextLayers.push(layer);
+            }
         });
 
         var transaction = descriptor.beginTransaction(transactionOpts),
@@ -556,21 +588,36 @@ define(function (require, exports) {
                 this.transfer(shapeActions.setFillColor, document, shapeLayers, style.fillColor, actionOpts),
             shapeStrokePromise = (!style.stroke || shapeLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(shapeActions.setStroke, document, shapeLayers, style.stroke, actionOpts),
-            textColorPromise = (!style.fillColor || textLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(typeActions.setColor, document, textLayers, style.fillColor, actionOpts),
+            shapeRadiiPromise = (!style.radii || shapeLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(transformActions.setRadius, document, shapeLayers, style.radii, actionOpts),
+            textColorPromise = (!style.textColor || textLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(typeActions.setColor, document, textLayers, style.textColor, actionOpts),
             textStylePromise = (!style.typeStyle || textLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(typeActions.applyTextStyle, document, textLayers, style.typeStyle, actionOpts),
             textAlignmentPromise = (!style.textAlignment || textLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(typeActions.setAlignment, document, textLayers, style.textAlignment, actionOpts),
-            effectsPromise = !style.effects ? Promise.resolve() :
-                this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, style.effects, actionOpts);
+            layerBlendModePromise = (!style.blendMode || targetLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(layerActions.setBlendMode, document, targetLayers, style.blendMode, actionOpts),
+            layerOpacityPromise = Promise.resolve();
 
-        return Promise.join(shapeFillPromise,
+        // If the source style does not include `style.textColor` (when copied from layer other than text and vector),
+        // text layers' opacity are determined by `style.opacity`
+        var opacityTargetLayers = !textLayers.isEmpty() && !style.textColor ? targetLayers : nonTextLayers;
+        if (style.opacity && !opacityTargetLayers.isEmpty()) {
+            layerOpacityPromise = this.transfer(layerActions.setOpacity, document, opacityTargetLayers,
+                style.opacity, actionOpts);
+        }
+
+        return Promise.join(
+                shapeFillPromise,
                 shapeStrokePromise,
+                shapeRadiiPromise,
                 textColorPromise,
                 textAlignmentPromise,
                 textStylePromise,
-                effectsPromise)
+                layerBlendModePromise,
+                layerOpacityPromise
+            )
             .bind(this)
             .then(function () {
                 return descriptor.endTransaction(transaction);
@@ -587,7 +634,39 @@ define(function (require, exports) {
     pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStroke,
         typeActions.setColor, typeActions.applyTextStyle, typeActions.setAlignment,
         layerFXActions.duplicateLayerEffects, toolActions.resetBorderPolicies,
-        layerActions.resetLayers];
+        layerActions.resetLayers, layerActions.setBlendMode, layerActions.setOpacity,
+        transformActions.setRadius];
+        
+    /**
+     * Applies the saved layer effects to the given layers
+     *
+     * @param {Document?} document Default is active document
+     * @param {Immutable.Iterable.<Layer>?} targetLayers Default is selected layers
+     *
+     * @return {Promise}
+     */
+    var pasteLayerEffects = function (document, targetLayers) {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument(),
+            selectedLayers = currentDocument.layers.selected;
+
+        document = document || currentDocument;
+        targetLayers = targetLayers || document ? selectedLayers : null;
+
+        if (!targetLayers) {
+            return Promise.resolve();
+        }
+        
+        var styleStore = this.flux.store("style"),
+            layerEffects = styleStore.getClipboardEffects(),
+            effectsPromise = !layerEffects ? Promise.resolve() :
+                this.transfer(layerFXActions.duplicateLayerEffects, document, targetLayers, layerEffects);
+
+        return effectsPromise;
+    };
+    pasteLayerEffects.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
+    pasteLayerEffects.writes = [];
+    pasteLayerEffects.transfers = [layerFXActions.duplicateLayerEffects];
 
     /**
      * Builds the layerActions object for sampling:
@@ -770,5 +849,7 @@ define(function (require, exports) {
     exports.applyStroke = applyStroke;
     exports.copyLayerStyle = copyLayerStyle;
     exports.pasteLayerStyle = pasteLayerStyle;
+    exports.copyLayerEffects = copyLayerEffects;
+    exports.pasteLayerEffects = pasteLayerEffects;
     exports.replaceGraphic = replaceGraphic;
 });

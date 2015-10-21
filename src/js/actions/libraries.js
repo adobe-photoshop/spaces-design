@@ -237,26 +237,28 @@ define(function (require, exports) {
         }
 
         var firstLayer = currentLayers.last(), // currentLayers are in reversed order
-            layerFileName;
+            representationType = REP_PHOTOSHOP_TYPE;
         
         // However, if the layer is a smart object, and is owned by some other app, we need to change representation
         // we do this by matching extensions
         if (currentLayers.size === 1 && firstLayer.isSmartObject()) {
-            layerFileName = firstLayer.smartObject.fileReference;
+            var layerFileName = firstLayer.smartObject.fileReference;
 
             // layerFileName will be undefined if CC Libraries is uploading the same layer.
             if (!layerFileName) {
                 return Promise.resolve();
             }
+            
+            var fileExtension = pathUtil.extension(layerFileName);
+            
+            representationType = EXTENSION_TO_REPRESENTATION_MAP[fileExtension];
+
+            if (!representationType) {
+                throw new Error("Cannot find representation type of extension: " + fileExtension);
+            }
         }
 
-        var fileExtension = pathUtil.extension(layerFileName),
-            representationType = EXTENSION_TO_REPRESENTATION_MAP[fileExtension],
-            newElement;
-
-        if (!representationType) {
-            throw new Error("Cannot find representation type of extension: " + fileExtension);
-        }
+        var newElement;
 
         return _getTempPaths()
             .bind(this)

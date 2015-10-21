@@ -962,13 +962,16 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
      * @param {number} radius New uniform border radius in pixels
-     * @param {boolean} coalesce Whether this history state should be coalesce with the previous one
+     * @param {object} options
+     * @param {boolean=} options.coalesce Whether this history state should be coalesce with the previous one
      */
-    var setRadius = function (document, layers, radius, coalesce) {
+    var setRadius = function (document, layers, radius, options) {
+        options = _.merge({ coalesce: false }, options);
+        
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RADII_CHANGED, {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
-            coalesce: coalesce,
+            coalesce: !!options.coalesce,
             radii: {
                 topLeft: radius,
                 topRight: radius,
@@ -976,17 +979,18 @@ define(function (require, exports) {
                 bottomLeft: radius
             }
         });
+        
+        options = _.merge(options, {
+            paintOptions: _paintOptions,
+            historyStateInfo: {
+                name: strings.ACTIONS.SET_RADIUS,
+                target: documentLib.referenceBy.id(document.id),
+                coalesce: !!options.coalesce,
+                suppressHistoryStateNotification: !!options.coalesce
+            }
+        });
 
         var radiusDescriptor = contentLib.setRadius(radius),
-            options = {
-                paintOptions: _paintOptions,
-                historyStateInfo: {
-                    name: strings.ACTIONS.SET_RADIUS,
-                    target: documentLib.referenceBy.id(document.id),
-                    coalesce: !!coalesce,
-                    suppressHistoryStateNotification: !!coalesce
-                }
-            },
             radiusPromise = locking.playWithLockOverride(document, layers, radiusDescriptor, options);
 
         return Promise.join(dispatchPromise, radiusPromise);

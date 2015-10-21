@@ -57,7 +57,7 @@ define(function (require, exports) {
             coalesce: false
         };
 
-        return _.merge(options, {
+        return _.merge({}, options, {
             paintOptions: {
                 immediateUpdate: true,
                 quality: "draft"
@@ -172,6 +172,8 @@ define(function (require, exports) {
     var setStroke = function (document, layers, stroke, options) {
         // if enabled is not provided, assume it is true
         // derive the type of event to be dispatched based on this parameter's existence
+        options = _.merge({}, options); // create a copy of the options
+        
         var eventName;
 
         if (options.enabled === undefined || options.enabled === null) {
@@ -245,6 +247,7 @@ define(function (require, exports) {
     var setStrokeColor = function (document, layers, color, options) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
+        options = _.merge({}, options); // make a copy of the options
 
         // if enabled is not provided, assume it is true
         // derive the type of event to be dispatched based on this parameter's existence
@@ -497,6 +500,7 @@ define(function (require, exports) {
         // if a color is provided, adjust the alpha to one that can be represented as a fraction of 255
         color = color ? color.normalizeAlpha() : null;
         // if enabled is not provided, assume it is true
+        options = _.merge({}, options);
         options.enabled = (options.enabled === undefined) ? true : options.enabled;
 
         // dispatch the change event    

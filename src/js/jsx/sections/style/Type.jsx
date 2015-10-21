@@ -240,7 +240,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            flux.actions.layers.setOpacityThrottled(document, layers, color.opacity, coalesce);
+            flux.actions.layers.setOpacityThrottled(document, layers, color.opacity, { coalesce: coalesce });
         },
 
         /**

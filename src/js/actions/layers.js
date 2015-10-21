@@ -1544,19 +1544,22 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
      * @param {number} opacity Opacity as a percentage
-     * @param {boolean=} coalesce Whether to coalesce this operation's history state
+     * @param {object} options
+     * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
      * @return {Promise}
      */
-    var setOpacity = function (document, layers, opacity, coalesce) {
+    var setOpacity = function (document, layers, opacity, options) {
         layers = layers.filterNot(function (layer) {
             return layer.isBackground;
         });
+        
+        options = _.merge({ coalesce: false }, options);
 
         var payload = {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
                 opacity: opacity,
-                coalesce: !!coalesce
+                coalesce: !!options.coalesce
             },
             playObjects = layers.map(function (layer) {
                 var layerRef = [
@@ -1565,22 +1568,23 @@ define(function (require, exports) {
                 ];
 
                 return layerLib.setOpacity(layerRef, opacity);
-            }),
-            options = {
-                historyStateInfo: {
-                    name: strings.ACTIONS.CHANGE_LAYER_OPACITY,
-                    target: documentLib.referenceBy.id(document.id),
-                    coalesce: !!coalesce,
-                    suppressHistoryStateNotification: !!coalesce
-                },
-                paintOptions: {
-                    immediateUpdate: true,
-                    quality: "draft"
-                }
-            };
+            });
+        
+        var playOptions = _.merge(options, {
+            historyStateInfo: {
+                name: strings.ACTIONS.CHANGE_LAYER_OPACITY,
+                target: documentLib.referenceBy.id(document.id),
+                coalesce: !!options.coalesce,
+                suppressHistoryStateNotification: !!options.coalesce
+            },
+            paintOptions: {
+                immediateUpdate: true,
+                quality: "draft"
+            }
+        });
 
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.OPACITY_CHANGED, payload),
-            opacityPromise = locking.playWithLockOverride(document, layers, playObjects.toArray(), options);
+            opacityPromise = locking.playWithLockOverride(document, layers, playObjects.toArray(), playOptions);
 
         return Promise.join(dispatchPromise, opacityPromise);
     };
@@ -1861,11 +1865,19 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
      * @param {string} mode Blend mode ID
+     * @param {object} options
      * @return {Promise}
      */
-    var setBlendMode = function (document, layers, mode) {
+    var setBlendMode = function (document, layers, mode, options) {
         layers = layers.filterNot(function (layer) {
             return layer.isBackground;
+        });
+        
+        options = _.merge({}, options, {
+            historyStateInfo: {
+                name: strings.ACTIONS.SET_BLEND_MODE,
+                target: documentLib.referenceBy.id(document.id)
+            }
         });
 
         var documentRef = documentLib.referenceBy.id(document.id),
@@ -1875,13 +1887,7 @@ define(function (require, exports) {
                     return layerLib.referenceBy.id(layerID);
                 })
                 .unshift(documentRef)
-                .toArray(),
-            options = {
-                historyStateInfo: {
-                    name: strings.ACTIONS.SET_BLEND_MODE,
-                    target: documentLib.referenceBy.id(document.id)
-                }
-            };
+                .toArray();
 
         var payload = {
             documentID: document.id,

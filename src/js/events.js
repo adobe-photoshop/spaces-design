@@ -148,6 +148,7 @@ define(function (require, exports, module) {
         },
         style: {
             COPY_STYLE: "copyStyle",
+            COPY_EFFECTS: "copyEffects",
             SHOW_HUD: "showStyleHUD",
             HIDE_HUD: "hideStyleHUD"
         },
