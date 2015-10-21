@@ -1553,7 +1553,7 @@ define(function (require, exports) {
             return layer.isBackground;
         });
         
-        options = _.merge({ coalesce: false }, options);
+        options = _.merge({}, options);
 
         var payload = {
                 documentID: document.id,

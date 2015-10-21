@@ -473,7 +473,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setFillEnabled = function (document, layers, options) {
-        options = _.merge(options, {
+        options = _.merge({}, options, {
             coalesce: false,
             ignoreAlpha: false
         });
