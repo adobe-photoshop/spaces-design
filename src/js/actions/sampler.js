@@ -732,10 +732,10 @@ define(function (require, exports) {
             // However, for cloud SOs, we use createElement, and let Photoshop deal with relinking
             targets.forEach(function (target) {
                 var targetType = target.smartObjectType(),
-                reference = source.smartObject.link.elementReference,
+                    reference = source.smartObject.link.elementReference,
                     element = CCLibraries.resolveElementReference(reference),
                     playObjects = [];
-                    
+
                 // PS does not allow CLSO to link to another CLSO, so we embed it first as a work around
                 if (targetType === soTypes.CLOUD_LINKED) {
                     playObjects.push(layerLib.embedLinked());
