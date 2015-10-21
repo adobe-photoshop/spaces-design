@@ -72,10 +72,10 @@
             },
             {
                 "TITLE": "Plans de travail",
-                "HEADLINE": "Créez plusieurs planches graphiques pour un flux de travaux plus visuel."
+                "HEADLINE": "Créez plusieurs plans de travail pour un flux de travaux plus visuel."
             },
             {
-                "TITLE": "Permuter",
+                "TITLE": "Permutation",
                 "HEADLINE": "Echangez le contenu et les positions des calques et des plans de travail en un seul clic."
             },
             {
@@ -96,7 +96,7 @@
         "MORE_TITLE": "Plus",
         "SELECT_TITLE": "Outil Sélection",
         "TOOLS": {
-            "SELECT": "Sélectionner",
+            "SELECT": "Sélection",
             "RECTANGLE": "Rectangle",
             "ELLIPSE": "Ellipse",
             "PEN": "Plume",
@@ -122,7 +122,7 @@
             "EDIT_SMART": "Modifier/Ouvrir dans l'application définie",
             "EDIT_SMART_INSTRUCTION": "Double-cliquez sur l'objet dynamique",
             "BACK_OUT": "Sortir de l'arborescence",
-            "BACK_OUT_INSTRUCTION": "Esc",
+            "BACK_OUT_INSTRUCTION": "Echap",
             "HOLD_SELECTION": "Conserver la sélection supérieure dans les calques",
             "HOLD_SEL_MAC": "Option + Echap",
             "HOLD_SEL_WIN": "Maj + Echap",
@@ -193,7 +193,7 @@
         "ALIGN_TYPE_LEFT": "Aligner le texte à gauche",
         "ALIGN_TYPE_CENTER": "Centrer le texte",
         "ALIGN_TYPE_RIGHT": "Aligner le texte à droite",
-        "ALIGN_TYPE_JUSTIFIED": "Justification du texte",
+        "ALIGN_TYPE_JUSTIFIED": "Justifier le texte",
         "SET_STROKE_COLOR": "Définir la couleur du contour",
         "SET_STROKE_OPACITY": "Définir l'opacité du contour",
         "SET_STROKE_SIZE": "Définir la taille du contour",
@@ -213,7 +213,7 @@
         "TOGGLE_LAYER_EFFECT": "Activer/désactiver%s  ",
         "SET_DROP_SHADOW_COLOR": "Définir la couleur de l'ombre portée",
         "SET_DROP_SHADOW_PROPS": "Définir les dimensions de l'ombre portée",
-        "SET_DROP_SHADOW_X_POSITION": "Définir la position de l'ombre portée X",
+        "SET_DROP_SHADOW_X_POSITION": "Définir la position X de l'ombre portée",
         "SET_DROP_SHADOW_Y_POSITION": "Définir la position Y de l'ombre portée",
         "SET_DROP_SHADOW_BLUR": "Définir le flou de l'ombre portée",
         "SET_DROP_SHADOW_SPREAD": "Définir l'étendue de l'ombre portée",
@@ -248,7 +248,7 @@
         "ADD_FILL_COLOR": "Ajouter une couleur de fond",
         "ADD_STROKE_COLOR": "Ajouter une couleur au contour",
         "ADD_TEXT_COLOR": "Ajouter une couleur de texte",
-        "SEARCH_ADOBE_STOCK": "Recherche dans Adobe Stock",
+        "SEARCH_ADOBE_STOCK": "Rechercher dans Adobe Stock",
         "SYNC_LIBRARIES": "Synchroniser les bibliothèques",
         "LIBRARY_SHARE": "Partager",
         "LIBRARY_SEND_LINK": "Envoyer le lien",
@@ -457,9 +457,9 @@
         "WEB_1920_1080": "Web"
     },
     "SEARCH": {
-        "PLACEHOLDER": "Recherche, ouvrir et sélectionner",
+        "PLACEHOLDER": "Rechercher, ouvrir et sélectionner",
         "PLACEHOLDER_INITIALIZING": "Initialisation…",
-        "PLACEHOLDER_FILTER": "Rechercher ",
+        "PLACEHOLDER_FILTER": "Recherche ",
         "NO_OPTIONS": "Votre recherche n'a renvoyé aucun résultat",
         "HEADERS": {
             "ALL_LAYER": "Calques",
@@ -482,7 +482,7 @@
             "TEXT": "Calques de texte",
             "VECTOR": "Calques vectoriels",
             "SMARTOBJECT": "Objets dynamiques",
-            "GROUP": "Associer les calques",
+            "GROUP": "Calques de groupe",
             "LIBRARY": "Toutes les bibliothèques",
             "GRAPHIC": "Graphiques",
             "LAYERSTYLE": "Styles de calque",
@@ -534,7 +534,7 @@
         "DELETE_SHARED_LIBRARY_CONFIRM": "Si vous supprimez cette bibliothèque, vos collaborateurs n'y auront plus accès. Voulez-vous vraiment supprimer \\\"%s\\\" ?",
         "LEAVE_LIBRARY": "Quitter la bibliothèque",
         "LEAVE_LIBRARY_CONFIRM": "Voulez-vous vraiment fermer \\\"%s\\\" ?",
-        "DELETE_ASSET": "Suppression une ressource",
+        "DELETE_ASSET": "Supprimer la ressource",
         "DELETE_ASSET_CONFIRM": "Voulez-vous vraiment supprimer \\\"%s\\\" ?",
         "GRAPHICS": "Graphiques",
         "COLORS": "Couleurs",

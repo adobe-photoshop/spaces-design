@@ -46,19 +46,19 @@
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
-        "CONTINUE": "Fortsetzen",
+        "CONTINUE": "Weiter",
         "GET_STARTED": "Erste Schritte",
         "SLIDES": [
             {
                 "TITLE": "Start",
-                "HEADLINE": "Zu „Design-Bereich“ wechseln",
+                "HEADLINE": "Willkommen beim Design-Bereich",
                 "SUBHEAD": "",
                 "BODY_FIRST": "„Design-Bereich“ (derzeit eine Vorschau) ist die optimale Ergänzung zu Photoshop für Web- und Anwendungsdesigner.",
                 "BODY_SECOND": "Wir arbeiten in HTML und JavaScript, um neue Interaktionen zu schaffen, die auf Ihre Arbeitsabläufe zugeschnitten sind. Dies ist eine Vorschauversion, für die wir Ihr Feedback benötigen – teilen Sie uns mit, was Sie denken."
             },
             {
-                "TITLE": "Werkzeugset",
-                "HEADLINE": "Ein minimiertes Werkzeugset und kontextbezogenes Eigenschaftenbedienfeld."
+                "TITLE": "Werkzeugsatz",
+                "HEADLINE": "Ein minimierter Werkzeugsatz und kontextuelles Eigenschaftenbedienfeld."
             },
             {
                 "TITLE": "Suchen",
@@ -66,7 +66,7 @@
                 "HEADLINE_SECOND": "Verwenden Sie Befehlstaste+F auf Mac oder Strg+F auf Windows."
             },
             {
-                "TITLE": "Farbaufnehmer",
+                "TITLE": "Farbaufnahme",
                 "HEADLINE_FIRST": "Nehmen Sie Farben und Effekte nur per Klick oder Umschalt+Klick auf.",
                 "HEADLINE_SECOND": "Nehmen Sie auch alles andere auf, sogar Grafiken mit der Leertaste."
             },
@@ -76,10 +76,10 @@
             },
             {
                 "TITLE": "Vertauschen",
-                "HEADLINE": "Tauschen Sie mit nur einem Klick die Inhalte und Positionen von Ebenen und Zeichenflächen miteinander aus."
+                "HEADLINE": "Vertauschen Sie Inhalte und Positionen von Ebenen mit einem einzigen Klick."
             },
             {
-                "TITLE": "Wechselnder",
+                "TITLE": "Wechseln",
                 "HEADLINE": "Wechseln Sie nahtlos zum Standard-Photoshop, um erweiterte Fotografiefunktionen in Anspruch zu nehmen."
             },
             {
@@ -99,36 +99,36 @@
             "SELECT": "Auswahl",
             "RECTANGLE": "Rechteck",
             "ELLIPSE": "Ellipse",
-            "PEN": "Füller",
-            "TYPE": "Typ",
-            "SAMPLER": "Farbaufnehmer",
+            "PEN": "Zeichenstift",
+            "TYPE": "Text",
+            "SAMPLER": "Farbaufnahme",
             "SAMPLER_EFFECTS": "Effekte aufnehmen",
             "SAMPLER_INSTRUCTION_EFFECTS": "Umschalt+Klicken",
             "SAMPLER_HUD": "Beispieloptionen für HUD",
             "SAMPLER_INSTRUCTION_HUD": "Leertaste",
-            "SEARCH": "Suchen",
+            "SEARCH": "Suche",
             "SEARCH_INSTRUCTION_MAC": "Befehlstaste + F",
-            "SEARCH_INSTRUCTION_WIN": "Strg-Taste + F",
+            "SEARCH_INSTRUCTION_WIN": "Strg + F",
             "EXPORT": "Exportieren",
             "EXPORT_INSTRUCTION_MAC": "Befehlstaste+E",
             "EXPORT_INSTRUCTION_WIN": "Strg+E",
             "MASKMODE": "Maskierungsmodus"
         },
         "SELECT_TOOL": {
-            "TARGET": "Verschachtelte Gruppe/-ebenen ansteuern",
-            "TARGET_INSTRUCTION": "Auf die Leinwand doppelklicken",
+            "TARGET": "Verschachtelte Grup./Eben. ansteuern",
+            "TARGET_INSTRUCTION": "Auf Leinwand doppelkl.",
             "EDIT_PATH": "Pfad/Text bearbeiten",
-            "EDIT_PATH_INSTRUCTION": "Auf Vektorobjekt/-typ doppelklicken",
-            "EDIT_SMART": "In festgelegter Anwendung bearbeiten/öffnen",
-            "EDIT_SMART_INSTRUCTION": "Auf Smartobjekt doppelklicken",
+            "EDIT_PATH_INSTRUCTION": "Auf Vektorobjekt/-text doppelkl.",
+            "EDIT_SMART": "In festgel. Anwendung bearb./öffnen",
+            "EDIT_SMART_INSTRUCTION": "Auf Smartobjekt doppelkl.",
             "BACK_OUT": "Zurück aus der Hierarchie",
             "BACK_OUT_INSTRUCTION": "Esc",
             "HOLD_SELECTION": "Oberste Ebenenauswahl beibehalten",
             "HOLD_SEL_MAC": "Wahltaste + Esc-Taste",
-            "HOLD_SEL_WIN": "Umschalttaste + Esc-Taste",
+            "HOLD_SEL_WIN": "Umschalt + Esc",
             "TARGET_LAYER": "Bestimmte Ebene ansteuern",
             "TARGET_LAYER_MAC": "Befehlstaste + Klick",
-            "TARGET_LAYER_WIN": "Strg-Taste + Klick"
+            "TARGET_LAYER_WIN": "Strg + Klicken"
         }
     },
     "TITLE_PAGES": "Ebenen",
@@ -138,8 +138,8 @@
     "TITLE_EXPORT": "Exportieren",
     "TITLE_LIBRARIES": "Bibliotheken",
     "NO_DOC": {
-        "RECENT_FILES_TITLE": "Letzte Dateien",
-        "ARTBOARD_PRESETS_TITLE": "Vorlagen."
+        "RECENT_FILES_TITLE": "Zuletzt verwendete Dateien",
+        "ARTBOARD_PRESETS_TITLE": "Vorlagen"
     },
     "TITLE_TRANSFORM": "Transformieren",
     "TOOLS": {
@@ -176,7 +176,7 @@
         "SET_OPACITY": "Deckkraft festlegen",
         "VECTOR_SETTINGS": "Vektoreinstellungen anzeigen",
         "SET_COMBINATION": "Formkombination festlegen",
-        "UNITE_SHAPE": "Formen vereinigen",
+        "UNITE_SHAPE": "Form vereinigen",
         "SUBTRACT_SHAPE": "Form subtrahieren",
         "INTERSECT_SHAPE": "Schnittmenge von Form",
         "DIFFERENCE_SHAPE": "Differenzform",
@@ -193,10 +193,10 @@
         "ALIGN_TYPE_LEFT": "Text linksbündig ausrichten",
         "ALIGN_TYPE_CENTER": "Text zentriert ausrichten",
         "ALIGN_TYPE_RIGHT": "Text rechtsbündig ausrichten",
-        "ALIGN_TYPE_JUSTIFIED": "Text ausrichten",
+        "ALIGN_TYPE_JUSTIFIED": "Text im Blocksatz ausrichten",
         "SET_STROKE_COLOR": "Konturfarbe festlegen",
         "SET_STROKE_OPACITY": "Strichdeckkraft festlegen",
-        "SET_STROKE_SIZE": "Strichstärke festlegen",
+        "SET_STROKE_SIZE": "Konturstärke festlegen",
         "SET_STROKE_ALIGNMENT": "Konturausrichtung festlegen",
         "TOGGLE_STROKE": "Kontur ein/aus",
         "SET_FILL_COLOR": "Füllfarbe festlegen",
@@ -232,7 +232,7 @@
         "SET_INNER_SHADOW_PROPS": "Maße für Schatten nach innen festlegen",
         "SET_INNER_SHADOW_X_POSITION": "X-Position für Schatten nach innen festlegen",
         "SET_INNER_SHADOW_Y_POSITION": "Y-Position für Schatten nach innen festlegen",
-        "SET_INNER_SHADOW_BLUR": "Weichzeichnen für Schatten nach innen festlegen",
+        "SET_INNER_SHADOW_BLUR": "Weichzeichnung für Schatten nach innen festlegen",
         "SET_INNER_SHADOW_SPREAD": "Ausbreitung des Schattens nach innen festlegen",
         "SECTION_COLLAPSE": ": Zum Reduzieren doppelklicken",
         "SECTION_EXPAND": ": Zum Erweitern doppelklicken",
@@ -255,7 +255,7 @@
         "LIBRARY_VIEW_ON_WEBSITE": "Auf Website anzeigen",
         "LIBRARY_CLICK_TO_APPLY": "Zum Anwenden klicken",
         "LIBRARY_DELETE": "Löschen",
-        "LIBRARY_EDITABLE_GRAPHIC": "Doppelklicken, um zu bearbeiten.",
+        "LIBRARY_EDITABLE_GRAPHIC": "Zum Bearbeiten doppelklicken",
         "LIBRARY_NONEDITABLE_GRAPHIC": "Nicht in dieser App bearbeitbar",
         "LIBRARY_EMPTY_GRAPHIC": "Grafik hat keinen Inhalt",
         "EXPORT_EXPORT_ASSETS": "Diese Elemente exportieren",
@@ -264,7 +264,7 @@
         "EXPORT_IOS_PRESETS": "3 iOS-Elemente + SVG hinzufügen",
         "EXPORT_HDPI_PRESETS": "6 HDPI-Elemente + SVG hinzufügen",
         "EXPORT_DIALOG": "Exportieren",
-        "REFERENCE_POINT_TOOL": "Referenzpunkt setzen",
+        "REFERENCE_POINT_TOOL": "Referenzpunkt festlegen",
         "VECTOR_MASK_MODE": "Maskierungsmodus",
         "SEARCH": "Suchen"
     },
@@ -311,7 +311,7 @@
     "TRANSFORM": {
         "X": "X",
         "Y": "Y",
-        "W": "W",
+        "W": "B",
         "H": "H",
         "RADIUS": "Radius",
         "ROTATE": "Drehen",
@@ -324,7 +324,7 @@
             "DARKEN": "Abdunkeln",
             "LIGHTEN": "Aufhellen",
             "SCREEN": "Negativ multiplizieren",
-            "OVERLAY": "Überlagerung",
+            "OVERLAY": "Ineinanderkopieren",
             "MULTIPLY": "Multiplizieren",
             "COLORBURN": "Farbig nachbelichten",
             "LINEARBURN": "Linear nachbelichten",
@@ -342,7 +342,7 @@
             "DIFFERENCE": "Differenz",
             "EXCLUSION": "Ausschluss",
             "SUBTRACT": "Subtrahieren",
-            "DIVIDE": "Unterteilen",
+            "DIVIDE": "Dividieren",
             "HUE": "Farbton",
             "SATURATION": "Sättigung",
             "COLOR": "Farbe",
@@ -357,7 +357,7 @@
         "STROKE": {
             "TITLE": "Kontur",
             "ALPHA": "Alpha",
-            "SIZE": "Größe",
+            "SIZE": "Stärke",
             "ALIGNMENT": "Ausrichten",
             "ALIGNMENT_MODES": {
                 "INSIDE": "Innen",
@@ -371,8 +371,8 @@
             "TITLE_SINGLE": "Schlagschatten",
             "X_POSITION": "X",
             "Y_POSITION": "Y",
-            "BLUR": "Unschärfe",
-            "SPREAD": "Überfüllen",
+            "BLUR": "Wei.",
+            "SPREAD": "Ausbr.",
             "MIXED": "Gemischte Darstellung"
         },
         "INNER_SHADOW": {
@@ -381,8 +381,8 @@
             "TITLE_SINGLE": "Schatten nach innen",
             "X_POSITION": "X",
             "Y_POSITION": "Y",
-            "BLUR": "Unschärfe",
-            "SPREAD": "Überfüllen",
+            "BLUR": "Wei.",
+            "SPREAD": "Ausbr.",
             "MIXED": "Gemischte Darstellung"
         },
         "COLOR_OVERLAY": {
@@ -391,7 +391,7 @@
             "MIXED": "Gemischte Darstellung"
         },
         "STROKE_EFFECT": {
-            "TITLE": "Striche",
+            "TITLE": "Konturen",
             "TITLE_SINGLE": "Kontur",
             "SIZE": "Größe",
             "MIXED": "Gemischte Darstellung"
@@ -416,7 +416,7 @@
             "LETTER": "US-Letter",
             "LINE": "Linie",
             "ALIGN": "Ausrichten",
-            "AUTO_LEADING": "autom.",
+            "AUTO_LEADING": "auto",
             "MISSING": "[Fehlende Schriftart]",
             "MIXED": "Mischschriftarten",
             "MIXED_STYLE": "Mischschriftschnitte"
@@ -459,7 +459,7 @@
     "SEARCH": {
         "PLACEHOLDER": "Suchen, öffnen und auswählen",
         "PLACEHOLDER_INITIALIZING": "Initialisierung…",
-        "PLACEHOLDER_FILTER": "Suchen ",
+        "PLACEHOLDER_FILTER": "Suchen in:",
         "NO_OPTIONS": "Keine übereinstimmenden Ergebnisse für Ihre Suche",
         "HEADERS": {
             "ALL_LAYER": "Ebenen",
@@ -481,8 +481,8 @@
             "ADJUSTMENT": "Einstellungsebenen",
             "TEXT": "Textebenen",
             "VECTOR": "Vektorebenen",
-            "SMARTOBJECT": "Smart Objekte",
-            "GROUP": "Ebenen gruppieren",
+            "SMARTOBJECT": "Smartobjekte",
+            "GROUP": "Gruppierte Ebenen",
             "LIBRARY": "Alle Bibliotheken",
             "GRAPHIC": "Grafiken",
             "LAYERSTYLE": "Ebenenstile",
@@ -534,7 +534,7 @@
         "DELETE_SHARED_LIBRARY_CONFIRM": "Ihre Mitarbeiter können nicht mehr auf diese Bibliothek zugreifen, wenn Sie sie löschen. Möchten Sie „%s“ wirklich löschen?",
         "LEAVE_LIBRARY": "Bibliothek verlassen",
         "LEAVE_LIBRARY_CONFIRM": "Möchten Sie „%s“ wirklich verlassen?",
-        "DELETE_ASSET": "Asset löschen",
+        "DELETE_ASSET": "Element löschen",
         "DELETE_ASSET_CONFIRM": "Möchten Sie „%s“ wirklich löschen?",
         "GRAPHICS": "Grafiken",
         "COLORS": "Farben",

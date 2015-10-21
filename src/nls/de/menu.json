@@ -13,7 +13,7 @@
         "NEW": "Neu",
         "NEW_EXTENDED": "Neu…",
         "NEW_FROM_TEMPLATE": {
-            "$MENU": "Neues von Vorlage",
+            "$MENU": "Neu aus Vorlage",
             "IPHONE_6_PLUS": "iPhone 6+",
             "IPHONE_6": "iPhone 6",
             "IPHONE_5": "iPhone 5",
@@ -40,9 +40,9 @@
         "RENAME_DOCUMENT": "Umbenennen…",
         "GENERATE_ASSETS": "Elemente generieren…",
         "AUTO_GENERATE_IMAGE_ASSETS": "Elemente automatisch generieren",
-        "PLACE_EMBEDDED": "Eingebettetes Smartobjekt platzieren…",
-        "PLACE_LINKED": "Verknüpftes Element platzieren…",
-        "PACKAGE": "Paket…",
+        "PLACE_EMBEDDED": "Platzieren und einbetten…",
+        "PLACE_LINKED": "Platzieren und verknüpfen…",
+        "PACKAGE": "Verpacken…",
         "PRINT": "Drucken…",
         "QUIT_APPLICATION_WIN": "Photoshop beenden"
     },
@@ -167,7 +167,7 @@
         "ALIGN": {
             "$MENU": "Objekte ausrichten",
             "ALIGN_LEFT": "Links",
-            "ALIGN_CENTER": "Mitte",
+            "ALIGN_CENTER": "Zentriert",
             "ALIGN_RIGHT": "Rechts",
             "ALIGN_TOP": "Oben",
             "ALIGN_MIDDLE": "Mitte",
@@ -180,7 +180,7 @@
         "UNLOCK_LAYER": "Lösen",
         "SHOW_LAYER": "Anzeigen",
         "HIDE_LAYER": "Ausblenden",
-        "GROUP_LAYERS": "Gruppe",
+        "GROUP_LAYERS": "Gruppieren",
         "UNGROUP_LAYERS": "Gruppierung aufheben",
         "BRING_TO_FRONT": "In den Vordergrund"
     },
@@ -191,14 +191,14 @@
         "FIT_TO_WINDOW": "An Fenster anpassen",
         "ACTUAL_SIZE": "Originalgröße",
         "ZOOM_TO_SELECTION": "Auf Auswahl vergrößern",
-        "CENTER_SELECTION": "Mitte-Auswahl",
+        "CENTER_SELECTION": "Auswahl zentrieren",
         "FULLSCREEN_MENUBAR": "Vollbild mit Menüleiste",
         "FULLSCREEN": "Vollbild",
         "PRESENTATION": "Präsentation",
         "TOGGLE_EXTRAS": "Extras anzeigen | ausblenden",
         "TOGGLE_RULERS": "Lineale anzeigen | ausblenden",
         "TOGGLE_SMART_GUIDES": "Intelligente Hilfslinien anzeigen",
-        "TOGGLE_GUIDES": "Hilfslinien einblenden",
+        "TOGGLE_GUIDES": "Hilfslinien anzeigen",
         "CLEAR_GUIDES": "Hilfslinien löschen"
     },
     "WINDOW": {
