@@ -42,7 +42,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
-                return collection.pluckAll(props.document.layers.selected, ["id"]);
+                return collection.pluckAll(props.document.layers.selected, ["id", "vectorMaskEnabled"]);
             };
 
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
