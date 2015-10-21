@@ -78,7 +78,7 @@
         "COMBINE": {
             "$MENU": "組み合わせ",
             "COMBINE_UNION": "結合",
-            "COMBINE_SUBTRACT": "削除",
+            "COMBINE_SUBTRACT": "減算",
             "COMBINE_INTERSECT": "共通範囲",
             "COMBINE_DIFFERENCE": "差の絶対値"
         },
@@ -94,7 +94,7 @@
         "CREATE_ARTBOARD": "新規アートボードを作成",
         "DUPLICATE": "選択範囲を複製",
         "NEW_ARTBOARD_FROM_TEMPLATE": {
-            "$MENU": "アートボードを新規作成",
+            "$MENU": "新規アートボード",
             "IPHONE_6_PLUS": "iPhone 6+",
             "IPHONE_6": "iPhone 6",
             "IPHONE_5": "iPhone 5",
@@ -159,23 +159,23 @@
         "LAYOUT_DIVIDE": "分割...",
         "LAYOUT_INSET": "割り込み...",
         "DISTRIBUTE": {
-            "$MENU": "オブジェクトの分布",
-            "DISTRIBUTE_HORIZONTAL": "縦に並べる",
-            "DISTRIBUTE_VERTICAL": "横に並べる",
+            "$MENU": "オブジェクトを分布",
+            "DISTRIBUTE_HORIZONTAL": "水平方向",
+            "DISTRIBUTE_VERTICAL": "垂直方向",
             "DISTRIBUTE_EVENLY": "均等"
         },
         "ALIGN": {
-            "$MENU": "オブジェクトの整列",
+            "$MENU": "オブジェクトを整列",
             "ALIGN_LEFT": "左端",
-            "ALIGN_CENTER": "中央",
+            "ALIGN_CENTER": "垂直中央",
             "ALIGN_RIGHT": "右端",
             "ALIGN_TOP": "上端",
-            "ALIGN_MIDDLE": "中央揃え",
+            "ALIGN_MIDDLE": "水平中央",
             "ALIGN_BOTTOM": "下端"
         },
         "FLIP_HORIZONTAL": "水平方向に反転",
         "FLIP_VERTICAL": "垂直方向に反転",
-        "SWAP_POSITION": "位置の入れ替え",
+        "SWAP_POSITION": "位置を入れ替え",
         "LOCK_LAYER": "ロック",
         "UNLOCK_LAYER": "ロック解除",
         "SHOW_LAYER": "表示",
@@ -229,7 +229,7 @@
         "TOGGLE_ACTION_TRANSFER_LOGGING": "ログアクションの転送",
         "OPEN_FIRST_LAUNCH": "デザインスペースの概要",
         "SHORTCUTS": "キーボードショートカット",
-        "TWITTER": "Twitter のデザインスペース",
+        "TWITTER": "Twitter でデザインスペースをチェック",
         "HELPX": "デザインスペースのヘルプ",
         "FORUM": "デザインスペースフォーラム"
     }
