@@ -81,7 +81,7 @@
             "$payload": {
                 "commandID": 34
             },
-            "$enable-rule": "dirty-previously-saved-document"
+            "$enable-rule": "dirty-previously-saved-document,not-vector-mask-mode"
         },
         "OPEN_RECENT": {
             "$enable-rule": "always-except-modal"
@@ -91,14 +91,14 @@
             "$payload": {
                 "commandID": 3090
             },
-            "$enable-rule": "supported-document,always-except-modal"
+            "$enable-rule": "supported-document,always-except-modal,not-vector-mask-mode"
         },
         "PLACE_EMBEDDED": {
             "$action": "menu.native",
             "$payload": {
                 "commandID": 1032
             },
-            "$enable-rule": "supported-document,always-except-modal"
+            "$enable-rule": "supported-document,always-except-modal,not-vector-mask-mode"
         },
         "PACKAGE": {
             "$action": "documents.packageDocument",
@@ -229,10 +229,10 @@
         },
         "CREATE_ARTBOARD": {
             "$action": "layers.createArtboard",
-            "$enable-rule": "supported-document"
+            "$enable-rule": "supported-document,not-vector-mask-mode"
         },
         "NEW_ARTBOARD_FROM_TEMPLATE": {
-            "$enable-rule": "supported-document"
+            "$enable-rule": "supported-document,not-vector-mask-mode"
         }
     },
     "ARRANGE": {

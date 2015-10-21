@@ -133,10 +133,12 @@ define(function (require, exports, module) {
      * @param {boolean} appIsModal is there a global modal that should disable most menu items
      * @param {boolean} appIsInputModal true if app is in a modal state and the modal has a text input
      * @param {boolean} exportEnabled true if the export service has been enabled and is available
+     * @param {boolean} vectorMaskMode true if the toolStore currently is in vector mode
      * @return {Map.<string, boolean>} Result of each rule on current conditions
      */
     var _buildRuleResults = function (openDocuments, document,
-            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled) {
+            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled,
+            vectorMaskMode) {
         if (appIsModal || appIsInputModal) {
             return {
                 "always": true,
@@ -235,7 +237,8 @@ define(function (require, exports, module) {
             "earlier-history":
                 (document !== null) && hasPreviousHistoryState,
             "later-history":
-                (document !== null) && hasNextHistoryState
+                (document !== null) && hasNextHistoryState,
+            "not-vector-mask-mode": !vectorMaskMode
         };
     };
 
@@ -412,9 +415,11 @@ define(function (require, exports, module) {
      * @return {MenuBar}
      */
     MenuBar.prototype.updateMenuItems = function (openDocuments, document,
-            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled) {
+            hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled,
+            vectorMaskMode) {
         var rules = _buildRuleResults(openDocuments, document,
-                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled),
+                hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled,
+                vectorMaskMode),
             newRootMap = new Map(),
             newRoots;
 
