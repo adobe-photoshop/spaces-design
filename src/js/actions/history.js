@@ -37,6 +37,7 @@ define(function (require, exports) {
 
     var events = require("js/events"),
         locks = require("js/locks"),
+        synchronization = require("js/util/synchronization"),
         log = require("js/util/log");
 
     /**
@@ -77,51 +78,54 @@ define(function (require, exports) {
     queryCurrentHistory.modal = true;
 
     /**
-     * Given a history state event from photoshop, dispatch a flux event for the history store
+     * Helper function to load a state from history store based on a count offset
+     * and then to fix it up with the latest selection state, visibility state, and
+     * then reset border policies
      *
-     * @param {object} event a raw historyState event from photoshop
+     * @private
+     * @param {number} documentID
+     * @param {number} count
      * @return {Promise}
      */
-    var handleHistoryState = function (event) {
-        // This assumption of current document could be problematic
-        // but would require a core change to include document ID
-        var currentDocumentID = this.flux.store("application").getCurrentDocumentID();
+    var _loadHistory = function (documentID, count) {
+        return descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
+            .bind(this)
+            .catch(function () {
+                // no targetLayers property means no document is open
+                return [];
+            })
+            .then(function (targetLayers) {
+                var selectedIndices = _.pluck(targetLayers, "_index");
+                return this.dispatchAsync(events.history.LOAD_HISTORY_STATE, {
+                    documentID: documentID,
+                    count: count,
+                    selectedIndices: selectedIndices
+                });
+            })
+            .then(function () {
+                var currentDocument = this.flux.store("application").getCurrentDocument(),
+                    borderPromise = this.transfer(toolActions.resetBorderPolicies),
+                    visibilityPromise = this.transfer(layerActions.resetLayerVisibility, currentDocument);
 
-        // Ignore if either there is no current document,
-        // or if this history state is related to another document
-        if (currentDocumentID === null || currentDocumentID !== event.documentID) {
-            log.debug("Ignoring this historyState event, probably because it was for a non-current document");
-            return Promise.resolve();
-        }
-
-        var payload = {
-            source: "listener", // for human convenience
-            documentID: currentDocumentID,
-            name: event.name,
-            totalStates: event.historyStates + 1, // yes, seriously.
-            currentState: event.currentHistoryState // seems to be zero-base already (unlike get historyState)
-        };
-        return this.dispatchAsync(events.history.PS_HISTORY_EVENT, payload);
+                return Promise.join(borderPromise, visibilityPromise);
+            });
     };
-    handleHistoryState.reads = [locks.JS_DOC, locks.JS_APP];
-    handleHistoryState.writes = [locks.JS_HISTORY];
-    handleHistoryState.modal = true;
 
     /**
      * Go forward or backward in the history state by playing the appropriate photoshop action
      * and either loading a state from the history store's cache, or calling updateDocument
      *
      * @private
-     * @param {Document} document
+     * @param {number} documentID
      * @param {number} count increment history state by this number, should be either 1 or -1
      * @return {Promise}
      */
-    var _navigateHistory = function (document, count) {
-        if (document === undefined) {
-            document = this.flux.store("application").getCurrentDocument();
+    var _navigateHistory = function (documentID, count) {
+        if (documentID === undefined) {
+            documentID = this.flux.store("application").getCurrentDocumentID();
         }
 
-        if (!document) {
+        if (!documentID) {
             throw new Error("History changed without an open document");
         }
 
@@ -131,12 +135,12 @@ define(function (require, exports) {
             hasNextStateCached;
 
         if (count === 1) {
-            hasNextState = historyStore.hasNextState(document.id);
-            hasNextStateCached = historyStore.hasNextStateCached(document.id);
+            hasNextState = historyStore.hasNextState(documentID);
+            hasNextStateCached = historyStore.hasNextStateCached(documentID);
             historyPlayObject = historyLib.stepForward;
         } else if (count === -1) {
-            hasNextState = historyStore.hasPreviousState(document.id);
-            hasNextStateCached = historyStore.hasPreviousStateCached(document.id);
+            hasNextState = historyStore.hasPreviousState(documentID);
+            hasNextStateCached = historyStore.hasPreviousStateCached(documentID);
             historyPlayObject = historyLib.stepBackward;
         } else {
             throw new Error("Count must be 1 or -1");
@@ -154,27 +158,7 @@ define(function (require, exports) {
             return descriptor.playObject(historyPlayObject)
                 .bind(this)
                 .then(function () {
-                    return descriptor.getProperty(documentLib.referenceBy.id(document.id), "targetLayers")
-                        .bind(this)
-                        .catch(function () {
-                            // no targetLayers property means no document is open
-                            return [];
-                        })
-                        .then(function (targetLayers) {
-                            var selectedIndices = _.pluck(targetLayers, "_index");
-                            return this.dispatchAsync(events.history.LOAD_HISTORY_STATE, {
-                                documentID: document.id,
-                                count: count,
-                                selectedIndices: selectedIndices
-                            });
-                        })
-                        .then(function () {
-                            var currentDocument = this.flux.store("application").getCurrentDocument(),
-                                borderPromise = this.transfer(toolActions.resetBorderPolicies),
-                                visibilityPromise = this.transfer(layerActions.resetLayerVisibility, currentDocument);
-
-                            return Promise.join(borderPromise, visibilityPromise);
-                        });
+                    return _loadHistory.call(this, documentID, count);
                 });
         } else {
             // If cached state is not available, we must wait for photoshop undo/redo to be complete
@@ -184,7 +168,7 @@ define(function (require, exports) {
                 .bind(this)
                 .then(function () {
                     return this.dispatchAsync(events.history.ADJUST_HISTORY_STATE, {
-                            documentID: document.id,
+                            documentID: documentID,
                             count: count });
                 })
                 .then(function () {
@@ -196,10 +180,10 @@ define(function (require, exports) {
     /**
      * Navigate to the next (future) history state
      *
-     * @param {Document} document
+     * @param {number} documentID
      * @return {Promise}
      */
-    var incrementHistory = function (document) {
+    var incrementHistory = function (documentID) {
         var modal = this.flux.store("tool").getModalToolState();
 
         if (modal) {
@@ -207,7 +191,7 @@ define(function (require, exports) {
             // Currently we are not disabling this menu action correctly, so this is for safety
             return Promise.resolve();
         } else {
-            return _navigateHistory.call(this, document, 1);
+            return _navigateHistory.call(this, documentID, 1);
         }
     };
     incrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
@@ -221,10 +205,10 @@ define(function (require, exports) {
      * If we're in a modal text edit state, play the native UNDO command.
      * Otherwise use the history store
      *
-     * @param {Document} document
+     * @param {number} documentID
      * @return {Promise}
      */
-    var decrementHistory = function (document) {
+    var decrementHistory = function (documentID) {
         var modal = this.flux.store("tool").getModalToolState();
 
         if (modal) {
@@ -234,7 +218,7 @@ define(function (require, exports) {
             };
             return ps.performMenuCommand(payload);
         } else {
-            return _navigateHistory.call(this, document, -1);
+            return _navigateHistory.call(this, documentID, -1);
         }
     };
     decrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
@@ -292,25 +276,126 @@ define(function (require, exports) {
     revertCurrentDocument.modal = true;
 
     /**
+     * Given a history state event from photoshop, dispatch a flux event for the history store
+     *
+     * @param {object} event a raw historyState event from photoshop
+     * @return {Promise}
+     */
+    var handleHistoryState = function (event) {
+        // This assumption of current document could be problematic
+        // but would require a core change to include document ID
+        var documentID = this.flux.store("application").getCurrentDocumentID();
+
+        // Ignore if either there is no current document,
+        // or if this history state is related to another document
+        if (documentID === null || documentID !== event.documentID) {
+            log.debug("Ignoring this historyState event, probably because it was for a non-current document");
+            return Promise.resolve();
+        }
+
+        var payload = {
+            source: "listener", // for human convenience
+            documentID: documentID,
+            id: event.ID,
+            name: event.name,
+            totalStates: event.historyStates + 1, // yes, seriously.
+            currentState: event.currentHistoryState // seems to be zero-base already (unlike get historyState)
+        };
+        return this.dispatchAsync(events.history.PS_HISTORY_EVENT, payload);
+    };
+    handleHistoryState.reads = [locks.JS_DOC, locks.JS_APP];
+    handleHistoryState.writes = [locks.JS_HISTORY];
+    handleHistoryState.modal = true;
+
+    /**
+     * Given a history state event from photoshop that comes directly after a "select" event,
+     * Interpret this event as cause to nuke history and update doc.  Ideally, we would be
+     * able to intelligently step back through cached states, but because photoshop might emit these faster than
+     * we can keep up with, things like "reset layer visibility" based on our intermediate cached states might fail
+     *
+     * @return {Promise}
+     */
+    var handleHistoryStateAfterSelect = function () {
+        // This assumption of current document could be problematic
+        // but would require a core change to include document ID
+        var documentID = this.flux.store("application").getCurrentDocumentID();
+
+        if (documentID === null) {
+            return Promise.resolve();
+        }
+
+        return this.dispatchAsync(events.history.DELETE_DOCUMENT_HISTORY, { documentID: documentID })
+            .then(function () {
+                return this.transfer(documentActions.updateDocument);
+            });
+    };
+    handleHistoryStateAfterSelect.reads = [locks.JS_DOC];
+    handleHistoryStateAfterSelect.writes = [];
+    handleHistoryStateAfterSelect.transfers = ["documents.updateDocument"];
+
+    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
      * @type {function()}
      */
-    var _historyStateHandler;
+    var _historyStateHandler,
+        _historySelectHandler;
+
+    /**
+     * String value of the most recent "select" event from photoshop.  Null if the event "expired"
+     * @type {?string}
+     */
+    var _recentSelectEvent,
+        _recentSelectTimer;
 
     /**
      * Register event listeners for step back/forward commands
      * @return {Promise}
      */
     var beforeStartup = function () {
+        var debouncedHandleHistoryStateAfterSelect =
+            synchronization.debounce(this.flux.actions.history.handleHistoryStateAfterSelect, this, 200);
+
         // We get these every time there is a new history state being created
         _historyStateHandler = function (event) {
             log.debug("History state event from photoshop (raw): currentState (index) %d, total states: %d",
                  event.currentHistoryState, event.historyStates);
-            this.flux.actions.history.handleHistoryState(event);
+
+            if (_recentSelectTimer) {
+                // If a "select" event (undo/redo) was recently received, handle this event specially.
+                // This will validate the event and attempt to incr/decr history
+                window.clearTimeout(_recentSelectTimer);
+                log.debug("History state event received, and there was a recent history select event: %s",
+                    _recentSelectEvent);
+
+                debouncedHandleHistoryStateAfterSelect();
+                _recentSelectTimer = null;
+                _recentSelectEvent = null;
+            } else {
+                // Handle this historyState event conventionally
+                this.flux.actions.history.handleHistoryState(event);
+            }
         }.bind(this);
         descriptor.addListener("historyState", _historyStateHandler);
+
+        // We get these every time there is a "select" event of type historyState
+        // This indicates an out of band undo/redo event that we try to handle
+        _historySelectHandler = function (event) {
+            var eventData = event["null"];
+            if (eventData && eventData._ref === "historyState" && eventData._value) {
+                log.debug("History SELECT event from photoshop _value: %s", eventData._value);
+
+                _recentSelectEvent = eventData._value;
+                _recentSelectTimer = window.setTimeout(function () {
+                    // If we don't get a timely follow-up historyState event, then just handle it anyway
+                    debouncedHandleHistoryStateAfterSelect();
+                    _recentSelectEvent = null;
+                    _recentSelectTimer = null;
+                }, 700);
+            }
+        }.bind(this);
+        descriptor.addListener("select", _historySelectHandler);
 
         return Promise.resolve();
     };
@@ -320,6 +405,9 @@ define(function (require, exports) {
     /** @ignore */
     var onReset = function () {
         descriptor.removeListener("historyState", _historyStateHandler);
+        descriptor.removeListener("select", _historySelectHandler);
+        _recentSelectEvent = null;
+        _recentSelectTimer = null;
 
         return Promise.resolve();
     };
@@ -327,10 +415,11 @@ define(function (require, exports) {
     onReset.writes = [];
 
     exports.queryCurrentHistory = queryCurrentHistory;
-    exports.handleHistoryState = handleHistoryState;
     exports.incrementHistory = incrementHistory;
     exports.decrementHistory = decrementHistory;
     exports.revertCurrentDocument = revertCurrentDocument;
+    exports.handleHistoryState = handleHistoryState;
+    exports.handleHistoryStateAfterSelect = handleHistoryStateAfterSelect;
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 });

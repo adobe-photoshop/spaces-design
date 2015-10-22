@@ -366,7 +366,7 @@ define(function (require, exports) {
         } else {
             return Promise.join(
                 this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
-                this.transfer(history.decrementHistory, currentDocument),
+                this.transfer(history.decrementHistory, currentDocument.id),
                 function () {
                     return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
                 }.bind(this));
@@ -390,7 +390,7 @@ define(function (require, exports) {
         } else {
             return Promise.join(
                 this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
-                this.transfer(history.incrementHistory, currentDocument),
+                this.transfer(history.incrementHistory, currentDocument.id),
                 function () {
                     return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
                 }.bind(this));

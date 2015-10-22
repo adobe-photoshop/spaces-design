@@ -110,6 +110,16 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Find the current pointer by documentID
+         *
+         * @param {number} documentID
+         * @return {?number}
+         */
+        currentIndex: function (documentID) {
+            return this._current.get(documentID);
+        },
+
+        /**
          * Is there a next state in the document's history, regardless of status of the document in our cache
          *
          * @param {number} documentID
