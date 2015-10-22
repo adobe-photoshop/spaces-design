@@ -96,17 +96,22 @@ define(function (require, exports) {
                 return ps.performMenuCommand(payload);
             })
             .then(function (success) {
-                // FIXME: After the M2 release, remove the debug conjunct
                 if (global.debug && !success) {
-                    throw new Error("Menu command not available: " + payload.commandID);
+                    log.error("Menu command not available: " + payload.commandID);
                 }
+                
+                // Return the menu command result for outer promise chain.
+                return success;
             })
-            .catch(function () {
+            .catch(function (error) {
                 if (isPlaceCommand) {
                     // Call the handler for any exceptions to make sure
                     // the policies are restored and relevent event is dispatched.
                     return this.transfer(handleExecutedPlaceCommand);
                 }
+                
+                // Re-throw the error
+                throw error;
             });
     };
     native.reads = locks.ALL_NATIVE_LOCKS;
