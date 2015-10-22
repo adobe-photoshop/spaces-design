@@ -978,12 +978,13 @@ define(function (require, exports) {
      * @param {boolean=} options.coalesce Whether this history state should be coalesce with the previous one
      */
     var setRadius = function (document, layers, radius, options) {
-        layers = _filterTransform(document, layers, true);
+        options = _.merge({}, options);
+        layers = _filterTransform(document, layers, true)
+            .filter(function (l) { return !!l.radii; }); // Exclude layers without radii attribute
+
         if (layers.isEmpty()) {
             return Promise.resolve();
         }
-
-        options = _.merge({}, options);
 
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RADII_CHANGED, {
             documentID: document.id,
