@@ -183,7 +183,7 @@ define(function (require, exports, module) {
 
             // build out the full list of history states with null placeholder, except current
             var blankHistory = new HistoryState();
-            log.info("Initializing history with %d states", payload.totalStates);
+            log.debug("Initializing history with %d states", payload.totalStates);
 
             for (var i = 0; i < payload.totalStates; i++) {
                 if (i === payload.currentState) {
@@ -247,7 +247,7 @@ define(function (require, exports, module) {
                 if (history && current) {
                     // history has been initialized
                     if (payload.currentState === 0) {
-                        log.info("Ignoring history status because currentState is zero, maybe part of a revert?");
+                        log.debug("Ignoring history status because currentState is zero, maybe part of a revert?");
                     } else if (current === payload.currentState) {
                         // validate the current state
                         currentState = history.get(current);
@@ -261,7 +261,7 @@ define(function (require, exports, module) {
                         if (currentState.isInconsistent(document, documentExports)) {
                             if (current === this.MAX_HISTORY_SIZE - 1) {
                                 // handle this like a rogue
-                                log.info("Handling this '50th' as though it were a rogue");
+                                log.debug("Handling this '50th' as though it were a rogue");
                                 return this._pushHistoryState.call(this, new HistoryState({
                                     id: payload.id,
                                     name: payload.name,
@@ -270,9 +270,9 @@ define(function (require, exports, module) {
                                     rogue: true
                                 }));
                             }
-                            log.warn("Photoshop history status matches ours, but the documents differ. %O", payload);
+                            log.debug("Photoshop history status matches ours, but the documents differ. %O", payload);
                         } else if (document.equals(currentState.document) && current === this.MAX_HISTORY_SIZE - 1) {
-                            log.warn("50th, but ignoring because it is equal");
+                            log.debug("50th history state, but ignoring because it is equal");
                             return;
                         }
 
@@ -292,7 +292,7 @@ define(function (require, exports, module) {
 
                         if (history.size > payload.totalStates) {
                             // safety
-                            log.info("Trimming future states, possibly just diverging from stale future. " +
+                            log.debug("Trimming future states, possibly just diverging from stale future. " +
                                 "Photoshop says the totalStates is " + payload.totalStates + ", " +
                                 "but our model says " + history.size);
                             this._history = this._history.slice(0, payload.totalStates);
@@ -306,11 +306,11 @@ define(function (require, exports, module) {
                     } else if (payload.source !== "query" && payload.currentState - current === 1) {
                         // Handle the case where the payload is one step ahead.  A "rogue" update
                         // Push a fresh history on the stack and set the rogue flag
-                        log.info("This is a ROGUE history-changing event %O", payload);
+                        log.debug("This is a ROGUE history-changing event %O", payload);
                         if (history.size > payload.totalStates) {
                             // This could simply be that we are diverging from a previous redo future list
                             // But it is a safety feature too
-                            log.info("Trimming future states, possibly just diverging from stale future. " +
+                            log.debug("Trimming future states, possibly just diverging from stale future. " +
                                 "Photoshop thinks the totalStates is " + payload.totalStates + ", " +
                                 "but our model says " + history.size);
                             this._history = this._history.slice(0, payload.totalStates);
@@ -329,7 +329,7 @@ define(function (require, exports, module) {
                         this._initializeHistory.call(this, payload, document, documentExports);
                     }
                 } else {
-                    log.info("Initializing history based on historyState event from ps. %O", payload);
+                    log.debug("Initializing history based on historyState event from ps. %O", payload);
                     this._initializeHistory.call(this, payload, document, documentExports);
                 }
             });
@@ -551,7 +551,7 @@ define(function (require, exports, module) {
          * @param {object} payload
          */
         _handlePostHistoryEvent: function (payload) {
-            log.info("Pushing history for an action for which we expect to have gotten a rogue history event");
+            log.debug("Pushing history for an action for which we expect to have gotten a rogue history event");
             this.waitFor(["document", "export", "application"], function (documentStore, exportStore) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
@@ -641,7 +641,7 @@ define(function (require, exports, module) {
                 if (!history.size) {
                     throw new Error("Initial must not be coalesced");
                 }
-                log.info("Updating the previous history state instead of pushing (coalesce or rogue-catchup)");
+                log.debug("Updating the previous history state instead of pushing (coalesce or rogue-catchup)");
                 history = history.splice(-1, 1, lastHistory.merge(state.set("rogue", false)));
             } else {
                 if (history.size === this.MAX_HISTORY_SIZE) {
@@ -661,7 +661,7 @@ define(function (require, exports, module) {
 
             current = history.size - 1;
 
-            log.info("History state added or merged: %d", current);
+            log.debug("History state added or merged: %d", current);
             this._history = this._history.set(documentID, history);
             this._current = this._current.set(documentID, current);
             this.emit("change");

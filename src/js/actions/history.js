@@ -179,7 +179,7 @@ define(function (require, exports) {
         } else {
             // If cached state is not available, we must wait for photoshop undo/redo to be complete
             // before calling history.incr/decr, and finally updateDocument
-            log.info("HISTORY CACHE MISS");
+            log.debug("HISTORY CACHE MISS");
             return descriptor.playObject(historyPlayObject)
                 .bind(this)
                 .then(function () {
@@ -263,7 +263,7 @@ define(function (require, exports) {
         } else {
             // If cached state is not available, we must wait for photoshop revert to complete
             // before adjusting history state, and finally updateDocument
-            log.info("HISTORY CACHE MISS - REVERT");
+            log.debug("HISTORY CACHE MISS - REVERT");
             superPromise = descriptor.playObject(historyLib.revert)
                 .bind(this)
                 .then(function () {
@@ -306,7 +306,7 @@ define(function (require, exports) {
     var beforeStartup = function () {
         // We get these every time there is a new history state being created
         _historyStateHandler = function (event) {
-            log.info("History state event from photoshop (raw): currentState (index) %d, total states: %d",
+            log.debug("History state event from photoshop (raw): currentState (index) %d, total states: %d",
                  event.currentHistoryState, event.historyStates);
             this.flux.actions.history.handleHistoryState(event);
         }.bind(this);
