@@ -48,7 +48,8 @@ define(function (require, exports, module) {
         LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
-        synchronization = require("js/util/synchronization");
+        synchronization = require("js/util/synchronization"),
+        system = require("js/util/system");
 
     var PanelSet = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("application", "document", "preferences")],
@@ -204,9 +205,10 @@ define(function (require, exports, module) {
                 modifierStore = flux.store("modifier"),
                 components = uiStore.components,
                 modifierState = modifierStore.getState(),
+                swapModifier = system.isMac ? modifierState.command : modifierState.control,
                 nextState = {};
                 
-            if (modifierState.command) {
+            if (swapModifier) {
                 nextState[components.LAYERS_LIBRARY_COL] = !this.state[components.LAYERS_LIBRARY_COL];
                 nextState[components.PROPERTIES_COL] = !this.state[components.PROPERTIES_COL];
             } else {
