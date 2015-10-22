@@ -2531,6 +2531,7 @@ define(function (require, exports) {
         descriptor.addListener("subtractFrom", _updateShapeHandler);
         // Supposed to be intersectWith, but it's defined twice and interfaceWhite is defined before
         descriptor.addListener("interfaceWhite", _updateShapeHandler);
+        descriptor.addListener("nudgePathPoints", _updateShapeHandler);
 
         // Listener for path changes
         _pathOperationHandler = function (event) {

@@ -120,12 +120,24 @@ define(function (require, exports, module) {
             deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
             escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
+            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
+            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT),
+            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN),
+            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT);
             
         this.keyboardPolicyList = [
             backspaceKeyPolicy,
             deleteKeyPolicy,
-            escapeKeyPolicy
+            escapeKeyPolicy,
+            arrowUpKeyPolicy, // Arrow keys for nudging points
+            arrowRightKeyPolicy,
+            arrowDownKeyPolicy,
+            arrowLeftKeyPolicy
         ];
         
         this.selectHandler = _selectHandler;
