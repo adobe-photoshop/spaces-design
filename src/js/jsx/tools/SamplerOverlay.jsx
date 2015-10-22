@@ -437,6 +437,11 @@ define(function (require, exports, module) {
                         .classed("sampler-hud-icon-disabled", !sample.value)
                         .on("click", applyTypeStyleFunc);
                 } else if (sample.type === "layerEffects") {
+                    var duplicateLayerEffectsFunc = function () {
+                        fluxActions.layerEffects.duplicateLayerEffects(this.state.document, null, sample.value);
+                        d3.event.stopPropagation();
+                    }.bind(this);
+                    
                     // background rectangle for the icon so it's clickable easier
                     this._hudGroup
                         .append("rect")
@@ -446,10 +451,7 @@ define(function (require, exports, module) {
                         .attr("height", iconSize)
                         .classed("sampler-hud-background", true)
                         .classed("sampler-hud-icon-disabled", !sample.value)
-                        .on("click", function () {
-                            fluxActions.layerEffects.duplicateLayerEffects(this.state.document, null, sample.value);
-                            d3.event.stopPropagation();
-                        }.bind(this));
+                        .on("click", duplicateLayerEffectsFunc);
 
                     // fx icon
                     this._hudGroup
@@ -461,11 +463,24 @@ define(function (require, exports, module) {
                         .attr("height", iconSize)
                         .classed("sampler-hud", true)
                         .classed("sampler-hud-icon-disabled", !sample.value)
-                        .on("click", function () {
-                            fluxActions.layerEffects.duplicateLayerEffects(this.state.document, null, sample.value);
-                            d3.event.stopPropagation();
-                        }.bind(this));
+                        .on("click", duplicateLayerEffectsFunc);
                 } else if (sample.type === "graphic") {
+                    var replaceGraphicFunc = function () {
+                        fluxActions.sampler.replaceGraphic(this.state.document, null, sample.value);
+                        d3.event.stopPropagation();
+                    }.bind(this);
+                    
+                    // background rectangle for the icon so it's clickable easier
+                    this._hudGroup
+                        .append("rect")
+                        .attr("x", iconLeft)
+                        .attr("y", iconTop)
+                        .attr("width", iconSize)
+                        .attr("height", iconSize)
+                        .classed("sampler-hud-background", true)
+                        .classed("sampler-hud-icon-disabled", !sample.value)
+                        .on("click", replaceGraphicFunc);
+
                     this._hudGroup
                         .append("use")
                         .attr("xlink:href", "img/ico-sampler-graphics.svg#sampler-graphics")
@@ -475,10 +490,7 @@ define(function (require, exports, module) {
                         .attr("height", iconSize)
                         .classed("sampler-hud", true)
                         .classed("sampler-hud-icon-disabled", !sample.value)
-                        .on("click", function () {
-                            fluxActions.sampler.replaceGraphic(this.state.document, null, sample.value);
-                            d3.event.stopPropagation();
-                        }.bind(this));
+                        .on("click", replaceGraphicFunc);
                 }
             }, this);
         },
