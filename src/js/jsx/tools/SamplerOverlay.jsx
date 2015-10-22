@@ -410,7 +410,8 @@ define(function (require, exports, module) {
                     var applyTypeStyleFunc = function () {
                         if (sample.value) {
                             // Apply the type style to selected layers
-                            fluxActions.type.applyTextStyle(this.state.document, null, sample.value);
+                            fluxActions.type.applyTextStyle(this.state.document, null, sample.value,
+                                null, { ignoreAlpha: false });
                         }
                         d3.event.stopPropagation();
                     }.bind(this);

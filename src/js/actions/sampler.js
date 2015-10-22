@@ -477,7 +477,6 @@ define(function (require, exports) {
             opacity: source.opacity,
             blendMode: source.blendMode,
             fillColor: null,
-            textColor: null,
             stroke: null,
             typeStyle: null,
             radii: null
@@ -486,7 +485,6 @@ define(function (require, exports) {
         switch (source.kind) {
         case source.layerKinds.VECTOR:
             style.fillColor = source.fill && source.fill.color;
-            style.textColor = style.fillColor && style.fillColor.setOpacity(source.opacity);
             style.stroke = source.stroke;
             style.blendMode = source.blendMode;
             style.radii = source.radii && source.radii.scalar;
@@ -495,8 +493,7 @@ define(function (require, exports) {
         case source.layerKinds.TEXT:
             var fontStore = this.flux.store("font"),
                 textColor = source.text.characterStyle.color;
-                
-            style.textColor = textColor && textColor.setOpacity(source.opacity);
+
             style.fillColor = textColor && textColor.setOpacity(100);
             style.typeStyle = fontStore.getTypeObjectFromLayer(source);
 
@@ -590,19 +587,16 @@ define(function (require, exports) {
                 this.transfer(shapeActions.setStroke, document, shapeLayers, style.stroke, actionOpts),
             shapeRadiiPromise = (!style.radii || shapeLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(transformActions.setRadius, document, shapeLayers, style.radii, actionOpts),
-            textColorPromise = (!style.textColor || textLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(typeActions.setColor, document, textLayers, style.textColor, actionOpts),
             textStylePromise = (!style.typeStyle || textLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(typeActions.applyTextStyle, document, textLayers, style.typeStyle, actionOpts),
-            textAlignmentPromise = (!style.textAlignment || textLayers.isEmpty()) ? Promise.resolve() :
-                this.transfer(typeActions.setAlignment, document, textLayers, style.textAlignment, actionOpts),
+                this.transfer(typeActions.applyTextStyle, document, textLayers, style.typeStyle, actionOpts,
+                { ignoreAlpha: false }),
             layerBlendModePromise = (!style.blendMode || targetLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(layerActions.setBlendMode, document, targetLayers, style.blendMode, actionOpts),
             layerOpacityPromise = Promise.resolve();
 
-        // If the source style does not include `style.textColor` (when copied from layer other than text and vector),
-        // text layers' opacity are determined by `style.opacity`
-        var opacityTargetLayers = !textLayers.isEmpty() && !style.textColor ? targetLayers : nonTextLayers;
+        // If the source style does not include `style.typeStyle` (when copied from layer other than text and vector),
+        // then text layers' opacity are determined by `style.opacity`
+        var opacityTargetLayers = !textLayers.isEmpty() && !style.typeStyle ? targetLayers : nonTextLayers;
         if (style.opacity && !opacityTargetLayers.isEmpty()) {
             layerOpacityPromise = this.transfer(layerActions.setOpacity, document, opacityTargetLayers,
                 style.opacity, actionOpts);
@@ -612,8 +606,6 @@ define(function (require, exports) {
                 shapeFillPromise,
                 shapeStrokePromise,
                 shapeRadiiPromise,
-                textColorPromise,
-                textAlignmentPromise,
                 textStylePromise,
                 layerBlendModePromise,
                 layerOpacityPromise
