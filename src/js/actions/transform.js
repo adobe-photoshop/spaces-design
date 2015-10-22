@@ -60,6 +60,34 @@ define(function (require, exports) {
     };
 
     /**
+     * Filter out layers that can't generally be transformed like empty,
+     * adjustment and background layers.
+     *
+     * @private
+     * @param {Document} document
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {boolean=} filterArtboards
+     * @return {Immutable.Iterable.<Layer>}
+     */
+    var _filterTransform = function (document, layers, filterArtboards) {
+        return layers.filterNot(function (layer) {
+            // Adjustment and background layers can't be transformed
+            if (layer.kind === layer.layerKinds.ADJUSTMENT || layer.isBackground) {
+                return true;
+            }
+
+            // Artboards may be exempt from the empty-bounds rule below
+            if (!filterArtboards && layer.isArtboard) {
+                return false;
+            }
+
+            // Layers with empty bounds can't be transformed
+            var bounds = document.layers.childBounds(layer);
+            return !bounds || bounds.empty;
+        });
+    };
+
+    /**
      * Helper function that will break down a given layer to all it's children
      * and calculate the move action for the layer and new bounds of all the children.
      *
@@ -435,11 +463,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var swapLayers = function (document, layers) {
-        layers = layers.filterNot(function (layer) {
-            var bounds = document.layers.childBounds(layer);
-
-            return !bounds || bounds.empty;
-        });
+        layers = _filterTransform(document, layers);
 
         // validate layers input
         if (layers.size !== 2) {
@@ -600,11 +624,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _flip = function (document, layers, axis) {
-        layers = layers.filterNot(function (layer) {
-            var bounds = document.layers.childBounds(layer);
-
-            return !bounds || bounds.empty;
-        });
+        layers = _filterTransform(document, layers);
 
         // validate layers input
         if (layers.isEmpty()) {
@@ -723,11 +743,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _align = function (document, layers, align) {
-        layers = layers.filterNot(function (layer) {
-            var bounds = document.layers.childBounds(layer);
-
-            return !bounds || bounds.empty;
-        });
+        layers = _filterTransform(document, layers);
 
         // validate layers input
         if (layers.size < 2) {
@@ -881,11 +897,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _distribute = function (document, layers, align) {
-        layers = layers.filterNot(function (layer) {
-            var bounds = document.layers.childBounds(layer);
-
-            return !bounds || bounds.empty;
-        });
+        layers = _filterTransform(document, layers);
 
         // validate layers input
         if (layers.size < 2) {
@@ -966,8 +978,13 @@ define(function (require, exports) {
      * @param {boolean=} options.coalesce Whether this history state should be coalesce with the previous one
      */
     var setRadius = function (document, layers, radius, options) {
+        layers = _filterTransform(document, layers, true);
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        }
+
         options = _.merge({}, options);
-        
+
         var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RADII_CHANGED, {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
@@ -1028,8 +1045,17 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var rotate = function (document, angle) {
+        var layers = _filterTransform(document, document.layers.selected);
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        }
+
         var documentRef = documentLib.referenceBy.id(document.id),
-            layerRef = [documentRef, layerLib.referenceBy.current],
+            layerRef = layers.map(function (layer) {
+                    return layerLib.referenceBy.id(layer.id);
+                })
+                .unshift(documentRef)
+                .toArray(),
             rotateObj = layerLib.rotate(layerRef, angle),
             options = {
                 historyStateInfo: {
@@ -1038,11 +1064,10 @@ define(function (require, exports) {
                 }
             };
 
-        return locking.playWithLockOverride(document, document.layers.selected, rotateObj, options)
+        return locking.playWithLockOverride(document, layers, rotateObj, options)
             .bind(this)
             .then(function () {
-                var selected = document.layers.selected,
-                    descendants = selected.flatMap(document.layers.descendants, document.layers);
+                var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetBounds, document, descendants);
             });
