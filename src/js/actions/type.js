@@ -629,27 +629,43 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {?Immutable.Iterable.<Layer>} targetLayers Default is selected layers
      * @param {object} style Style object
-     * @param {object} options Batch play options
+     * @param {object} actionOptions Batch play options
+     * @param {object} options 
+     * @param {boolean} options.ignoreAlpha
      * @return {Promise}
      */
-    var applyTextStyle = function (document, targetLayers, style, options) {
+    var applyTextStyle = function (document, targetLayers, style, actionOptions, options) {
+        actionOptions = _.merge({}, actionOptions);
+        options = _.merge({ ignoreAlpha: true }, options);
         targetLayers = targetLayers || document.layers.selected;
 
         var layerIDs = collection.pluck(targetLayers, "id"),
-            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
-            applyObj = textLayerLib.applyTextStyle(layerRefs, style),
+            textLayerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
+            applyObjects = [],
             modal = this.flux.store("tool").getModalToolState(),
             typeOptions = _getTypeOptions(document.id, strings.ACTIONS.APPLY_TEXT_STYLE,
-                modal, options && options.coalesce, options);
+                modal, actionOptions.coalesce, actionOptions);
+
+        applyObjects.push(textLayerLib.applyTextStyle(textLayerRefs, style));
 
         if (style.textAlignment) {
-            var alignObj = textLayerLib.setAlignment(layerRefs, style.textAlignment);
+            var alignObj = textLayerLib.setAlignment(textLayerRefs, style.textAlignment);
 
-            applyObj = [applyObj, alignObj];
+            applyObjects.push(alignObj);
         }
+        
+        if (!options.ignoreAlpha && style.color) {
+            var normalizedColor = style.color.value.normalizeAlpha(),
+                opacity = Math.round(normalizedColor.opacity),
+                layerRefs = layerIDs.map(layerLib.referenceBy.id).toArray(),
+                opacityPlayObject = layerLib.setOpacity(layerRefs, opacity);
+        
+            applyObjects.push(opacityPlayObject);
+        }
+        
         this.dispatchAsync(events.style.HIDE_HUD);
         
-        return layerActionsUtil.playSimpleLayerActions(document, targetLayers, applyObj, true, typeOptions)
+        return layerActionsUtil.playSimpleLayerActions(document, targetLayers, applyObjects, true, typeOptions)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
