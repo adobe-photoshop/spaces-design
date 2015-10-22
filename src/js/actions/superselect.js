@@ -396,8 +396,17 @@ define(function (require, exports) {
 
                 if (!clickedSelectableLayerIDs.isEmpty()) {
                     // due to way hitTest works, the top z-order layer is the last one in the list
-                    var topLayerID = clickedSelectableLayerIDs.last(),
-                        topLayer = layerTree.byID(topLayerID),
+                    var topLayerID = clickedSelectableLayerIDs.findLast(function (layerID) {
+                        var layer = layerTree.byID(layerID);
+                        if (layerTree.minumumChildBounds(layer).contains(coords.x, coords.y)) {
+                            return true;
+                        }
+                    });
+
+                    if (!topLayerID) {
+                        return Promise.resolve(false);
+                    }
+                    var topLayer = layerTree.byID(topLayerID),
                         modifier = "select";
 
                     if (add && topLayer.selected) {

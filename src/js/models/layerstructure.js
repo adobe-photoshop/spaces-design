@@ -854,6 +854,39 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Calculate the vector masked child-encompassing bounds of the given layer. Returns null
+     * for end-group layers and otherwise-empty groups. If layer is artboard, returns the bounds of it
+     *
+     * @param {Layer} layer
+     * @return {?Bounds}
+     */
+    Object.defineProperty(LayerStructure.prototype, "minumumChildBounds", objUtil.cachedLookupSpec(function (layer) {
+        switch (layer.kind) {
+            case layer.layerKinds.GROUP:
+                if (layer.isArtboard) {
+                    return layer.maskBounds;
+                }
+
+                var childBounds = this.children(layer)
+                    .map(this.minumumChildBounds, this)
+                    .filter(function (bounds) {
+                        return bounds && bounds.area > 0;
+                    }),
+                    unionChildBounds = Bounds.union(childBounds);
+                if (layer.vectorMaskEnabled) {
+                    return Bounds.intersection(layer.maskBounds, unionChildBounds);
+                } else {
+                    return unionChildBounds;
+                }
+                break;
+            case layer.layerKinds.GROUPEND:
+                return null;
+            default:
+                return layer.maskBounds;
+        }
+    }));
+
+    /**
      * Calculate the child-encompassing bounds of the given layer in relation to it's owner artboard. 
      * Returns null for end-group layers and otherwise-empty groups. 
      * If layer is artboard, returns the bounds of it
