@@ -73,7 +73,10 @@ define(function (require, exports, module) {
         _updatePanelSizesDebounced: null,
 
         componentDidMount: function () {
-            this._updatePanelSizesDebounced = synchronization.debounce(this._updatePanelSizes, this, 500);
+            this._updatePanelSizesDebounced = synchronization.debounce(function () {
+                return this._updatePanelSizes();
+            }, this, 500);
+
             os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
             this._updatePanelSizes();
         },
