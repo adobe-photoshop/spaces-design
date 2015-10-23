@@ -1100,15 +1100,11 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.setProperties = function (layerIDs, properties) {
-        var nextProperties = Immutable.Map(properties),
-            updatedLayers = Immutable.Map(layerIDs.reduce(function (layers, layerID) {
-                layers.set(layerID, nextProperties);
-                return layers;
-            }.bind(this), new Map()));
+        var updatedLayers = Immutable.Map(layerIDs.map(function (layerID) {
+                return [layerID, this.byID(layerID).setProperties(properties)];
+            }, this));
 
-        return this.mergeDeep({
-            layers: updatedLayers
-        });
+        return this.set("layers", this.layers.merge(updatedLayers));
     };
 
     /**
