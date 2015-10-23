@@ -30,8 +30,7 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         classnames = require("classnames");
 
-    var strings = require("i18n!nls/strings"),
-        ui = require("js/util/ui");
+    var strings = require("i18n!nls/strings");
 
     var LibraryDialog = require("jsx!js/jsx/sections/libraries/LibraryDialog"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -162,6 +161,22 @@ define(function (require, exports, module) {
         _handleEndEditingTitle: function () {
             this._isEditingTitle = false;
         },
+            
+        /**
+         * Handle element button clicked
+         *
+         * @private
+         * @param {string} event - name of the click event
+         * @param {string} url
+         */
+        _handleElementButtonClicked: function (event, url) {
+            this.getFlux().actions.menu.openURL({
+                category: "libraries",
+                subcategory: "library",
+                eventName: event,
+                url: url
+            });
+        },
 
         render: function () {
             var sectionContent,
@@ -193,11 +208,11 @@ define(function (require, exports, module) {
                         <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
                             iconId="libraries-share"
-                            onClick={ui.openURL.bind(null, shareLink)} />
+                            onClick={this._handleElementButtonClicked.bind(this, "share-public-link", shareLink)} />
                         <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
                             iconId="libraries-viewonsite"
-                            onClick={ui.openURL.bind(null, elementLink)} />
+                            onClick={this._handleElementButtonClicked.bind(this, "view-online", elementLink)} />
                          <SplitButtonItem
                             title={strings.TOOLTIPS.LIBRARY_DELETE}
                             iconId="delete"

@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         classnames = require("classnames");
         
     var libraryUtil = require("js/util/libraries"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        headlights = require("js/util/headlights");
         
     var Draggable = require("jsx!js/jsx/shared/Draggable"),
         AssetSection = require("jsx!./AssetSection"),
@@ -87,6 +88,7 @@ define(function (require, exports, module) {
          */
         _handleOpenForEdit: function () {
             this.getFlux().actions.libraries.openGraphicForEdit(this.props.element);
+            headlights.logEvent("libraries", "element", "open-graphic-for-edit");
         },
         
         /**

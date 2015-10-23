@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
-    var adapterOS = require("adapter/os");
+    var adapterOS = require("adapter/os"),
+        headlights = require("js/util/headlights");
 
     var PolicyOverlay = require("jsx!js/jsx/tools/PolicyOverlay"),
         GuidesOverlay = require("jsx!js/jsx/tools/GuidesOverlay"),
@@ -335,6 +336,8 @@ define(function (require, exports, module) {
             dropTarget = dndState.dragTargets.first(),
             uiStore = flux.store("ui"),
             canvasLocation = uiStore.transformWindowToCanvas(dropPosition.x, dropPosition.y);
+            
+        headlights.logEvent("libraries", "element", "place-graphic");
         
         return flux.actions.libraries.createLayerFromElement(dropTarget, canvasLocation);
     };

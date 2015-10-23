@@ -46,6 +46,7 @@ define(function (require, exports) {
         layerActionsUtil = require("js/util/layeractions"),
         collection = require("js/util/collection"),
         librariesUtil = require("js/util/libraries"),
+        headlights = require("js/util/headlights"),
         layerActions = require("./layers"),
         exportActions = require("./export"),
         documentActions = require("./documents"),
@@ -1199,6 +1200,35 @@ define(function (require, exports) {
 
                         callback(JSON.stringify({ port: port }));
                     });
+            },
+            // Enable and log CC Libraries analytic events
+            // https://git.corp.adobe.com/pages/ProjectCentral/cc-libraries-api-js/tutorial-analytics_example.html
+            analytics: {
+                reportEvent: function (event, properties) {
+                    // elementType: color, characterstyle, layerstyle, graphic
+                    // ("image" type is replaced with "graphic" to keep naming consistency)
+                    var elementType = properties.elementType === "image" ? "graphic" : properties.elementType;
+                    
+                    switch (event) {
+                        case "createLibrary":
+                            headlights.logEvent("libraries", "library", "create");
+                            break;
+                        case "deleteLibrary":
+                            headlights.logEvent("libraries", "library", "delete");
+                            break;
+                        case "createElement":
+                            headlights.logEvent("libraries", "element", ["create", elementType].join("-"));
+                            break;
+                        case "deleteElement":
+                            headlights.logEvent("libraries", "element", ["delete", elementType].join("-"));
+                            break;
+                        case "updateElement":
+                            // updateType: info (rename), representation (update content)
+                            headlights.logEvent("libraries", "element",
+                                ["update", elementType, properties.updateType].join("-"));
+                            break;
+                    }
+                }
             }
         };
 

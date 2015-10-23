@@ -31,13 +31,15 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         Promise = require("bluebird"),
         Immutable = require("immutable");
+        
+    var headlights = require("js/util/headlights"),
+        strings = require("i18n!nls/strings");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         LibraryList = require("jsx!./LibraryList"),
         LibraryBar = require("jsx!./LibraryBar"),
         Library = require("jsx!./Library"),
-        Droppable = require("jsx!js/jsx/shared/Droppable"),
-        strings = require("i18n!nls/strings");
+        Droppable = require("jsx!js/jsx/shared/Droppable");
 
     var LibrariesPanel = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("library", "draganddrop")],
@@ -83,7 +85,10 @@ define(function (require, exports, module) {
 
         /** @ignore */
         _handleLibraryChange: function (libraryID) {
-            this.getFlux().actions.libraries.selectLibrary(libraryID);
+            if (this.state.selectedLibrary.id !== libraryID) {
+                this.getFlux().actions.libraries.selectLibrary(libraryID);
+                headlights.logEvent("libraries", "library", "switch-library");
+            }
         },
 
         /** @ignore */
