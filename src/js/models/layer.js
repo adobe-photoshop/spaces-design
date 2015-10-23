@@ -682,6 +682,28 @@ define(function (require, exports, module) {
     Layer.prototype.getLibraryElementReference = function () {
         return this.isCloudLinkedSmartObject() ? this.smartObject.link.elementReference : null;
     };
+    
+    /**
+     * Batch update layer properties.
+     *
+     * @param {object} properties
+     * @return {Layer}
+     */
+    Layer.prototype.setProperties = function (properties) {
+        var nextLayer = this.merge(properties);
+        
+        // If the update layer is text layer, and the updated attributes include opacity, 
+        // then we have to sync the new opacity to its CharacterStyle.
+        if (properties.opacity && this.isTextLayer()) {
+            var charStyleColorPath = ["text", "characterStyle", "color"],
+                charStyleColor = this.getIn(charStyleColorPath),
+                nextCharStyleColor = charStyleColor.setOpacity(nextLayer.opacity);
+
+            nextLayer = nextLayer.setIn(charStyleColorPath, nextCharStyleColor);
+        }
+
+        return nextLayer;
+    };
 
     module.exports = Layer;
 });
