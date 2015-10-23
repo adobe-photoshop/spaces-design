@@ -31,7 +31,6 @@ define(function (require, exports, module) {
 
     var Carousel = require("jsx!js/jsx/shared/Carousel"),
         strings = require("i18n!nls/strings"),
-        ui = require("js/util/ui"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
  
     var FirstLaunch = React.createClass({
@@ -60,6 +59,22 @@ define(function (require, exports, module) {
             if (_.isFunction(this.props.dismissDialog)) {
                 this.props.dismissDialog(event);
             }
+        },
+
+        /**
+         * Calls for the URL to be opened and then logs the headlights data
+         *
+         * @private
+         * @param {string} url
+         * @param {string} name
+         */
+        _handleClick: function (url, name) {
+            this.getFlux().actions.menu.openURL({
+                category: "user-interface",
+                subcategory: "introduction-link",
+                eventName: name,
+                url: url
+            });
         },
 
         render: function () {
@@ -105,7 +120,7 @@ define(function (require, exports, module) {
                             <ul className="carousel__slide__three__list">
                                 <li>
                                     <div
-                                        onClick={ui.openURL.bind(null, psDesignTwitterURL, "twitter")}>
+                                        onClick={this._handleClick.bind(this, psDesignTwitterURL, "twitter")}>
                                         <SVGIcon
                                             CSSID="bird"/>
                                         <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_FIRST}</h2>
@@ -115,7 +130,7 @@ define(function (require, exports, module) {
                             <ul className="carousel__slide__three__list">
                                 <li>
                                     <div
-                                        onClick={ui.openURL.bind(null, githubURL, "github")}>
+                                        onClick={this._handleClick.bind(this, githubURL, "github")}>
                                         <SVGIcon
                                             CSSID="github"/>
                                         <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_SECOND}</h2>
@@ -125,7 +140,7 @@ define(function (require, exports, module) {
                             <ul className="carousel__slide__three__list">
                                 <li>
                                     <div
-                                        onClick={ui.openURL.bind(null, psForumURL, "forum")}>
+                                        onClick={this._handleClick.bind(this, psForumURL, "forum")}>
                                         <SVGIcon
                                             CSSID="workspace"/>
                                         <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_THIRD}</h2>

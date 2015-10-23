@@ -40,6 +40,7 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         ExportAsset = require("js/models/exportasset"),
         synchronization = require("js/util/synchronization"),
+        headlights = require("js/util/headlights"),
         Dialog = require("jsx!js/jsx/shared/Dialog");
 
     var ExportPanel = React.createClass({
@@ -121,6 +122,7 @@ define(function (require, exports, module) {
          * Add a new Asset to this list
          *
          * @private
+         * @param {string=} preset
          */
         _addAssetClickHandler: function (preset) {
             var document = this.props.document,
@@ -130,6 +132,12 @@ define(function (require, exports, module) {
             
             this._forceVisible();
             this.getFlux().actions.export.addAssetThrottled(document, documentExports, selectedLayers, props);
+            
+            if (preset) {
+                headlights.logEvent("export", "preset", preset);
+            } else {
+                headlights.logEvent("export", "create", "single-asset");
+            }
         },
 
         /**
@@ -162,6 +170,8 @@ define(function (require, exports, module) {
                         exportDisabled: false
                     });
                 });
+
+            headlights.logEvent("export", "export-all", "in-panel");
         },
 
         /**

@@ -40,6 +40,7 @@ define(function (require, exports) {
         preferences = require("./preferences"),
         synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
+        headlights = require("js/util/headlights"),
         tools = require("./tools");
 
     /**
@@ -161,6 +162,8 @@ define(function (require, exports) {
             singleColumnModeEnabled = preferenceState.get("singleColumnModeEnabled", false);
 
         var newsingleColumnModeEnabled = !singleColumnModeEnabled;
+
+        headlights.logEvent("user-interface", "panels", "single-column-mode-" + newsingleColumnModeEnabled);
 
         return this.transfer(preferences.setPreference, "singleColumnModeEnabled", newsingleColumnModeEnabled);
     };

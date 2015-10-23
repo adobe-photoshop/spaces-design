@@ -244,9 +244,9 @@ define(function (require, exports, module) {
 
             // Log whether the user has read the introduction until last slide
             if (this.state.index < this.props.items.length - 1) {
-                headlights.logEvent("UserInterface", "introduction", "earlyDismiss");
+                headlights.logEvent("user-interface", "introduction", "early-dismiss");
             } else {
-                headlights.logEvent("UserInterface", "introduction", "dismissOnEnd");
+                headlights.logEvent("user-interface", "introduction", "dismiss-on-end");
             }
         }
     });

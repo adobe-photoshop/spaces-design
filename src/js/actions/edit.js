@@ -211,7 +211,7 @@ define(function (require, exports) {
                         },
                         rawPayload = JSON.stringify(payload);
 
-                    headlights.logEvent("edit", "layers", "copy_layers");
+                    headlights.logEvent("edit", "layers", "copy-layers");
                     return os.clipboardWrite(rawPayload, LAYER_CLIPBOARD_FORMAT);
                 }
             });
@@ -312,7 +312,7 @@ define(function (require, exports) {
                                     return layers;
                                 }, []));
 
-                            headlights.logEvent("edit", "layers", "paste_layers");
+                            headlights.logEvent("edit", "layers", "paste-layers");
                             return this.transfer(layers.duplicate, document, fromDocument, fromLayers);
                         });
                 }

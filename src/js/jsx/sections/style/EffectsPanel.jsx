@@ -29,13 +29,10 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable"),
+        _ = require("lodash"),
         classnames = require("classnames");
 
-    var os = require("adapter/os"),
-        LayerEffect = require("js/models/effects/layereffect"),
-        strings = require("i18n!nls/strings"),
-        collection = require("js/util/collection"),
-        synchronization = require("js/util/synchronization");
+    var os = require("adapter/os");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
@@ -45,6 +42,11 @@ define(function (require, exports, module) {
         InnerShadowList = require("jsx!./ShadowList").InnerShadowList,
         ColorOverlayList = require("jsx!./ColorOverlayList"),
         StrokeList = require("jsx!./StrokeList"),
+        LayerEffect = require("js/models/effects/layereffect"),
+        strings = require("i18n!nls/strings"),
+        collection = require("js/util/collection"),
+        headlights = require("js/util/headlights"),
+        synchronization = require("js/util/synchronization"),
         UnsupportedEffectList = require("jsx!./UnsupportedEffectList");
 
     /**
@@ -148,6 +150,7 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.sampler.copyLayerEffects(document, source);
             event.stopPropagation();
+            headlights.logEvent("tools", "sampler", "copy-all-effects");
         },
 
         /**
@@ -161,6 +164,7 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.sampler.pasteLayerEffects(document, targetLayers);
             event.stopPropagation();
+            headlights.logEvent("tools", "sampler", "paste-all-effects");
         },
 
         /**
@@ -186,6 +190,8 @@ define(function (require, exports, module) {
             dialog.toggle(event);
             this._forceVisible();
             this.getFlux().actions.layerEffects.addEffect(this.props.document, layers, effectType);
+
+            headlights.logEvent("effect", "create", _.kebabCase(effectType));
         },
         
         /**

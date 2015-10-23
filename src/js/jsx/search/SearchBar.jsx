@@ -36,6 +36,7 @@ define(function (require, exports, module) {
     var collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
+        headlights = require("js/util/headlights"),
         Button = require("jsx!js/jsx/shared/Button");
 
     /**
@@ -408,11 +409,26 @@ define(function (require, exports, module) {
                 return;
             }
 
+            var filters = this.state.filter,
+                filtersString,
+                idSplit = id.split("-"),
+                // Possible current types are Menu_Command, Current_Doc, Recent_Doc, All_Layers
+                type = idSplit[0],
+                category = "category-" + type;
+
+            // Seeing if filters are active or not for analytics
+            if (filters.length === 0) {
+                filtersString = "filter-inactive";
+            } else {
+                filtersString = "filter-active";
+            }
+            
             if (id !== PLACEHOLDER_ID) {
                 if (_.contains(this.state.filterIDs, id)) {
                     this._updateFilter(id);
                 } else {
                     this.props.executeOption(id);
+                    headlights.logEvent("search", filtersString, category);
                 }
             }
         },
@@ -446,6 +462,9 @@ define(function (require, exports, module) {
                     break;
                 }
                 case "Escape":
+                    if (this.refs.datalist.getSelected() === PLACEHOLDER_ID) {
+                        headlights.logEvent("tools", "search", "failed-search");
+                    }
                     this.props.dismissDialog();
                     return;
                 case "Backspace": {

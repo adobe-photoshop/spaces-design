@@ -41,6 +41,7 @@ define(function (require, exports, module) {
         svgUtil = require("js/util/svg"),
         collection = require("js/util/collection"),
         gridSort = require("js/util/gridsort"),
+        headlights = require("js/util/headlights"),
         ExportAsset = require("js/models/exportasset");
 
     /**
@@ -181,6 +182,8 @@ define(function (require, exports, module) {
                         exportDisabled: false
                     });
                 });
+
+            headlights.logEvent("export", "export-selected", "export-dialog");
         },
 
         /**
@@ -202,6 +205,7 @@ define(function (require, exports, module) {
          */
         _setUseArtboardPrefix: function (event, enabled) {
             this.getFlux().actions.export.setUseArtboardPrefix(enabled);
+            headlights.logEvent("export", "batch-export", "prefix-enabled-" + enabled);
         },
 
         render: function () {

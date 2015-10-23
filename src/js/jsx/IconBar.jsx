@@ -34,6 +34,7 @@ define(function (require, exports, module) {
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
         menu = require("i18n!nls/menu"),
+        headlights = require("js/util/headlights"),
         synchronization = require("js/util/synchronization");
 
     var PanelSet = React.createClass({
@@ -110,6 +111,7 @@ define(function (require, exports, module) {
          */
         _handleBackToPSClick: function () {
             this.getFlux().actions.menu.native({ commandID: 5999 });
+            headlights.logEvent("user-interface", "switch", "back-to-PS");
         }
     });
 

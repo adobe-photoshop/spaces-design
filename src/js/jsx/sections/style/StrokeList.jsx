@@ -33,7 +33,8 @@ define(function (require, exports, module) {
     var LayerEffect = require("js/models/effects/layereffect"),
         StrokeEffect = require("js/models/effects/stroke"),
         collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        headlights = require("js/util/headlights");
 
     var Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
@@ -116,6 +117,7 @@ define(function (require, exports, module) {
                     this.props.index,
                     blendMode,
                     LayerEffect.STROKE);
+            headlights.logEvent("edit", "stroke-blendmode-input", blendMode);
         },
         
         /**
@@ -167,6 +169,7 @@ define(function (require, exports, module) {
         _handleDelete: function () {
             this.getFlux().actions.layerEffects.deleteEffect(
                 this.props.document, this.props.layers, this.props.index, LayerEffect.STROKE);
+            headlights.logEvent("effect", "delete", "stroke");
         },
 
         /**
