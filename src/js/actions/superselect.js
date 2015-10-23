@@ -25,7 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var descriptor = require("adapter/ps/descriptor"),
         toolLib = require("adapter/lib/tool"),
@@ -53,7 +54,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _logSuperselect = function (eventName) {
-        return headlights.logEvent("tools", "superselect", eventName);
+        return headlights.logEvent("tools", "superselect", _.kebabCase(eventName));
     };
 
     /**

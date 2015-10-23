@@ -428,7 +428,7 @@ define(function (require, exports, module) {
                     this._updateFilter(id);
                 } else {
                     this.props.executeOption(id);
-                    headlights.logEvent("search", filtersString, category);
+                    headlights.logEvent("search", filtersString, _.kebabCase(category));
                 }
             }
         },

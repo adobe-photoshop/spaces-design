@@ -755,7 +755,7 @@ define(function (require, exports) {
             }
         }
 
-        headlights.logEvent("tools", "mask-mode-" + currentLayer.kind);
+        headlights.logEvent("tools", "mask-mode", String(currentLayer.kind));
     };
     changeVectorMaskMode.reads = [locks.JS_APP, locks.JS_TOOL, locks.PS_DOC, locks.PS_TOOL];
     changeVectorMaskMode.writes = [locks.JS_TOOL, locks.PS_DOC];

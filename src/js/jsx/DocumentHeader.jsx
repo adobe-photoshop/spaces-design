@@ -39,6 +39,7 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization"),
         searchStore = require("js/stores/search"),
+        headlights = require("js/util/headlights"),
         exportStore = require("js/stores/export");
 
     var DocumentHeader = React.createClass({
@@ -218,6 +219,7 @@ define(function (require, exports, module) {
          */
         _openExportPanel: function () {
             this.getFlux().actions.export.openExportPanel();
+            headlights.logEvent("user-interface", "document-header-button", "export-panel");
         },
 
         /**
@@ -225,6 +227,7 @@ define(function (require, exports, module) {
          */
         _toggleSearch: function () {
             this.getFlux().actions.search.toggleSearchBar();
+            headlights.logEvent("user-interface", "document-header-button", "search");
         },
 
         /**
@@ -232,6 +235,7 @@ define(function (require, exports, module) {
          */
         _changeMaskMode: function () {
             this.getFlux().actions.tools.changeVectorMaskMode(!this.state.maskModeActive);
+            headlights.logEvent("user-interface", "document-header-button", "mask-mode-" + !this.state.maskModeActive);
         },
 
         render: function () {

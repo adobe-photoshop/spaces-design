@@ -33,15 +33,25 @@ define(function (require, exports, module) {
     var LayerEffect = require("js/models/effects/layereffect"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights");
 
     var BlendMode = require("jsx!./BlendMode"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton");
 
+    /**
+     * Debounced version of headlights.logEvents to help prevent false changes from 
+     * datalists from being logged. 
+     *
+     * @private
+     * @type {function(*)}
+     */
+    var logEventDebounced = synchronization.debounce(headlights.logEvent, null, 10000);
+
     var ColorOverlay = React.createClass({
         mixins: [FluxMixin],
-        
+
         shouldComponentUpdate: function (nextProps) {
             var sameLayerIDs = collection.pluck(this.props.layers, "id")
                 .equals(collection.pluck(nextProps.layers, "id"));
@@ -104,7 +114,8 @@ define(function (require, exports, module) {
                     this.props.index,
                     blendMode,
                     LayerEffect.COLOR_OVERLAY);
-            headlights.logEvent("edit", "color-overlay-blendmode-input", blendMode);
+
+            logEventDebounced("edit", "color-overlay-blendmode-input", blendMode);
         },
 
         /**

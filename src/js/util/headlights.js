@@ -49,6 +49,6 @@ define(function (require, exports) {
             return adapterPS.logHeadlightsEvent(category, subcategory, event);
         }
     };
-    
+
     exports.logEvent = logEvent;
 });

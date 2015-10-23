@@ -45,6 +45,7 @@ define(function (require, exports) {
         transformActions = require("./transform"),
         toolActions = require("./tools"),
         layerActionsUtil = require("js/util/layeractions"),
+        headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings");
 
     /**
@@ -345,6 +346,12 @@ define(function (require, exports) {
             docStore = this.flux.store("document"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
+        
+        if (secondary) {
+            headlights.logEvent("tools", "eyedropper-secondary", "copy-all-effects");
+        } else {
+            headlights.logEvent("tools", "eyedropper-primary", "copy-all-effects");
+        }
         
         return uiUtil.hitTestLayers(doc.id, coords.x, coords.y)
             .bind(this)

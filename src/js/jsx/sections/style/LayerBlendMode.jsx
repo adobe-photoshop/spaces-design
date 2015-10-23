@@ -31,8 +31,18 @@ define(function (require, exports, module) {
 
     var BlendMode = require("jsx!./BlendMode"),
         strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
         collection = require("js/util/collection");
+
+    /**
+     * Debounced version of headlights.logEvents to help prevent false changes from 
+     * datalists from being logged. 
+     *
+     * @private
+     * @type {function(*)}
+     */
+    var logEventDebounced = synchronization.debounce(headlights.logEvent, null, 10000);
 
     var LayerBlendMode = React.createClass({
         mixins: [FluxMixin],
@@ -61,7 +71,8 @@ define(function (require, exports, module) {
         _handleChange: function (mode) {
             this.getFlux().actions.layers
                 .setBlendModeThrottled(this.props.document, this.props.layers, mode);
-            headlights.logEvent("edit", "layer-blendmode-input", mode);
+
+            logEventDebounced("edit", "layer-blendmode-input", mode);
         },
 
         render: function () {

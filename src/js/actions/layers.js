@@ -2468,7 +2468,7 @@ define(function (require, exports) {
                 // Log the tool used to make this layer
                 if (currentTool) {
                     var toolID = currentTool.id;
-                    headlights.logEvent("tools", "create", toolID);
+                    headlights.logEvent("tools", "create", _.kebabCase(toolID));
                 }
 
                 break;

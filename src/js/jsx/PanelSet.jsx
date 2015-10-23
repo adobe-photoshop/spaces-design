@@ -227,6 +227,11 @@ define(function (require, exports, module) {
                 propertiesPanel = nextState[components.PROPERTIES_COL];
             }
 
+            if (swapModifier) {
+                layersLibPanel = !layersLibPanel;
+                propertiesPanel = !propertiesPanel;
+            }
+
             if (layersLibPanel && propertiesPanel) {
                 currentlyVisible = "layersLibrary-properties-visible";
             } else if (layersLibPanel) {
@@ -253,6 +258,7 @@ define(function (require, exports, module) {
             nextState[panelName] = !this.state[panelName];
 
             this.getFlux().actions.preferences.setPreferences(nextState);
+            headlights.logEvent("user-interface", "panel-toggle", panelName);
         },
 
         render: function () {
