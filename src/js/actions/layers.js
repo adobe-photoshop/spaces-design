@@ -578,20 +578,48 @@ define(function (require, exports) {
                     _property: property
                 }
             ];
-        }).toArray();
+        }).toArray(),
+            maskPropertyRefs = layers.map(function (layer) {
+                var property;
+                if (layer.vectorMaskEnabled && layer.kind !== layer.layerKinds.VECTOR) {
+                    property = "boundsNoEffects";
+                    
+                    return [
+                        documentLib.referenceBy.id(document.id),
+                        layerLib.referenceBy.id(layer.id),
+                        {
+                            _ref: "property",
+                            _property: property
+                        }
+                    ];
+                } else {
+                    return undefined;
+                }
+            }).filter(function (refs) {
+                return refs;
+            }).toArray();
+        propertyRefs = propertyRefs.concat(maskPropertyRefs);
 
         return descriptor.batchGet(propertyRefs)
             .bind(this)
             .then(function (bounds) {
                 var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
+                    maskIndex = 0,
                     payload = {
                         documentID: document.id
                     };
 
                 payload.bounds = layers.map(function (layer) {
+                    var descriptor = bounds[index++];
+
+                    if (layer.vectorMaskEnabled && layer.kind !== layer.layerKinds.VECTOR)
+                    {  
+                        var maskDescriptor =bounds[layers.size + maskIndex ++];
+                        descriptor.boundsNoEffects = maskDescriptor.boundsNoEffects
+                    }
                     return {
                         layerID: layer.id,
-                        descriptor: bounds[index++]
+                        descriptor: descriptor
                     };
                 });
 

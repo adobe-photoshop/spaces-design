@@ -1111,7 +1111,7 @@ define(function (require, exports, module) {
                     layerBounds = layer.bounds;
 
                 // Ignore updates to layers that don't have bounds like groups and groupends
-                if (!layerBounds) {
+                if (!layer.vectorMaskEnabled && !layerBounds) {
                     return;
                 }
 
@@ -1121,7 +1121,12 @@ define(function (require, exports, module) {
                 // Also inject the artboard flag so we read the correct property
                 descriptor.artboardEnabled = layer.isArtboard;
 
-                var nextBounds = layer.bounds.resetFromDescriptor(descriptor),
+                if (layer.vectorMaskEnabled && layer.layerKind !== layer.layerKinds.VECTOR) {
+                    var nextMaskBounds = layer.bounds.resetFromDescriptor(descriptor, true);
+                    layer = layer.set("maskBounds", nextMaskBounds);
+                }
+
+                var nextBounds = layer.bounds.resetFromDescriptor(descriptor),  
                     nextLayer = layer.set("bounds", nextBounds);
 
                 layers.set(layerID, nextLayer);
