@@ -825,8 +825,17 @@ define(function (require, exports) {
 
                 return layerActionsUtil.playLayerActions(document, replaceActions, true, options);
             })
+            .delay(300)
             .then(function () {
-                return this.transfer(layerActions.resetLayers, document, targets);
+                // FIXME see GH issue #3084 and watson #4077984
+                // Hacky workaround for undesirable behavior of the above batchPlay command
+                // which resolves before the graphic has been fully replaced/re-linked by photoshop.
+                // This delay allows time (hopefully) for the operation to complete before fetching the correct bounds.
+                // We enqueue a new action (instead of transferring) to workaround
+                // a related bit of weird core behavior which creates TWO history states for this operation.
+                // The intermediate history state should contain the "old" bounds,
+                // so this separately queued layer reset will occur after the history state event is handled.
+                this.flux.actions.layers.resetLayers(document, targets, true);
             });
     };
     replaceGraphic.reads = [locks.JS_DOC];
