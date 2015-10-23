@@ -692,8 +692,8 @@ define(function (require, exports, module) {
     Layer.prototype.setProperties = function (properties) {
         var nextLayer = this.merge(properties);
         
-        // If the update layer is text layer, and the updated attributes include opacity, 
-        // then we have to sync the new opacity to its CharacterStyle.
+        // If the layer is text layer, and the updated attributes include opacity, 
+        // then we sync the new opacity to its CharacterStyle.
         if (properties.opacity && this.isTextLayer()) {
             var charStyleColorPath = ["text", "characterStyle", "color"],
                 charStyleColor = this.getIn(charStyleColorPath),

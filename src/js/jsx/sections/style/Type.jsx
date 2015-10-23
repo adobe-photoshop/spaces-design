@@ -157,6 +157,26 @@ define(function (require, exports, module) {
                 return;
             }
 
+            this._setPostScript(postScriptName);
+        },
+        
+        /**
+         * Handle change of type weight.
+         *
+         * @private
+         * @param {string} postScriptName
+         */
+        _handleTypeWeightChange: function (postScriptName) {
+            this._setPostScript(postScriptName);
+        },
+        
+        /**
+         * Set the type face of the selected text layers.
+         *
+         * @private
+         * @param {string} postScriptName
+         */
+        _setPostScript: function (postScriptName) {
             var document = this.props.document,
                 layers = document.layers.selected.filter(function (layer) {
                     return layer.kind === layer.layerKinds.TEXT;
@@ -510,25 +530,25 @@ define(function (require, exports, module) {
 
             // Alternate font styles for the chosen type family
             var familyFontOptions = familyFonts && familyFonts
-                .valueSeq()
-                .sortBy(function (familyFontObj) {
-                    return familyFontObj.postScriptName;
-                })
-                .map(function (familyFontObj) {
-                    var style = familyFontObj.style,
-                        searchableStyle = style;
+                    .valueSeq()
+                    .sortBy(function (familyFontObj) {
+                        return familyFontObj.postScriptName;
+                    })
+                    .map(function (familyFontObj) {
+                        var style = familyFontObj.style,
+                            searchableStyle = style;
 
-                    return {
-                        id: familyFontObj.postScriptName,
-                        title: style,
-                        style: {
-                            "fontFamily": familyName,
-                            "fontStyle": this._getCSSFontStyle(searchableStyle),
-                            "fontWeight": this._getCSSFontWeight(searchableStyle)
-                        }
-                    };
-                }, this)
-                .toList();
+                        return {
+                            id: familyFontObj.postScriptName,
+                            title: style,
+                            style: {
+                                "fontFamily": familyName,
+                                "fontStyle": this._getCSSFontStyle(searchableStyle),
+                                "fontWeight": this._getCSSFontWeight(searchableStyle)
+                            }
+                        };
+                    }, this)
+                    .toList();
 
             var typeOverlay = function (colorTiny) {
                 if (familyName === strings.STYLE.TYPE.MIXED) {
@@ -657,7 +677,7 @@ define(function (require, exports, module) {
                                 value={styleTitle}
                                 defaultSelected={postScriptFamilyName}
                                 options={familyFontOptions}
-                                onChange={this._handleTypefaceChange}
+                                onChange={this._handleTypeWeightChange}
                                 size="column-22" />
                         </div>
                     </div>
