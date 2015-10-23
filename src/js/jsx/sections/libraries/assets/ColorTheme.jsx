@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         tinycolor = require("tinycolor"),
         _ = require("lodash");
 
-    var ColorModel = require("js/models/color");
+    var ColorModel = require("js/models/color"),
+        headlights = require("js/util/headlights");
 
     var AssetSection = require("jsx!./AssetSection");
 
@@ -50,6 +51,7 @@ define(function (require, exports, module) {
             var color = new ColorModel({ r: colorData.value.r, g: colorData.value.g, b: colorData.value.b });
 
             this.getFlux().actions.libraries.applyColor(color);
+            headlights.logEvent("libraries", "element", "apply-color-theme");
         },
         
         /**

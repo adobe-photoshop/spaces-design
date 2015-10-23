@@ -28,11 +28,11 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
+    var strings = require("i18n!nls/strings"),
+        Document = require("js/models/document");
+    
     var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        SplitButtonItem = SplitButton.SplitButtonItem,
-        strings = require("i18n!nls/strings"),
-        Document = require("js/models/document"),
-        ui = require("js/util/ui");
+        SplitButtonItem = SplitButton.SplitButtonItem;
 
     var LibraryBar = React.createClass({
         mixins: [FluxMixin],
@@ -169,14 +169,28 @@ define(function (require, exports, module) {
         
         /**
          * Sync all libraries.
+         *
+         * @private
          */
         _handleSyncLibraries: function () {
             this.getFlux().actions.libraries.syncLibraries();
         },
+        
+        /**
+         * Handle stock button clicked
+         *
+         * @private
+         */
+        _handleStockButtonClicked: function () {
+            this.getFlux().actions.menu.openURL({
+                category: "libraries",
+                subcategory: "library",
+                eventName: "search-stock",
+                url: "https://stock.adobe.com"
+            });
+        },
 
         render: function () {
-            var adobeStockURL = "https://stock.adobe.com";
-
             var addFillButton = this._createColorButton(function (layer) {
                 return !layer.fill ? null :
                     { color: layer.fill.color, title: strings.TOOLTIPS.ADD_FILL_COLOR };
@@ -222,7 +236,7 @@ define(function (require, exports, module) {
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SEARCH_ADOBE_STOCK}
                             iconId="libraries-stock"
-                            onClick={ui.openURL.bind(null, adobeStockURL)}/>
+                            onClick={this._handleStockButtonClicked}/>
                         <SplitButtonItem
                             title={strings.TOOLTIPS.SYNC_LIBRARIES}
                             iconId={this.props.isSyncing ? "loader" : "libraries-cc"}

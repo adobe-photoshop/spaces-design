@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var strings = require("i18n!nls/strings"),
-        ColorModel = require("js/models/color");
+        ColorModel = require("js/models/color"),
+        headlights = require("js/util/headlights");
 
     var AssetSection = require("jsx!./AssetSection");
 
@@ -99,6 +100,7 @@ define(function (require, exports, module) {
             event.stopPropagation();
 
             this.getFlux().actions.libraries.applyColor(this._getColor());
+            headlights.logEvent("libraries", "element", "apply-color");
         },
 
         render: function () {

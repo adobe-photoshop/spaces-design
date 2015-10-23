@@ -30,8 +30,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
         
-    var ui = require("js/util/ui"),
-        strings = require("i18n!nls/strings");
+    var strings = require("i18n!nls/strings"),
+        headlights = require("js/util/headlights");
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -226,6 +226,7 @@ define(function (require, exports, module) {
                 case _RENAME_LIBRARY:
                     if (libraryName.length !== 0) {
                         commandPromise = libraryActions.renameLibrary(this.props.selected.id, libraryName);
+                        headlights.logEvent("libraries", "library", "update-library-info");
                     }
                     break;
                 
@@ -252,6 +253,22 @@ define(function (require, exports, module) {
             }
             
             this.setState({ command: null });
+        },
+        
+        /**
+         * Handle library button clicked
+         *
+         * @private
+         * @param {string} event - name of the click event
+         * @param {string} url - url to open in the browser
+         */
+        _handleLibraryButtonClicked: function (event, url) {
+            this.getFlux().actions.menu.openURL({
+                category: "libraries",
+                subcategory: "library",
+                eventName: event,
+                url: url
+            });
         },
 
         /**
@@ -335,17 +352,17 @@ define(function (require, exports, module) {
                         iconId="libraries-collaborate"
                         className={isSharedLibrary && "libraries__split-button-collaborate"}
                         disabled={!selectedLibrary}
-                        onClick={ui.openURL.bind(null, collaborateLink)} />
+                        onClick={this._handleLibraryButtonClicked.bind(this, "share-library", collaborateLink)} />
                     <SplitButtonItem
                         title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
                         iconId="libraries-share"
                         disabled={!selectedLibrary}
-                        onClick={ui.openURL.bind(null, shareLink)} />
+                        onClick={this._handleLibraryButtonClicked.bind(this, "share-public-link", shareLink)} />
                     <SplitButtonItem
                         title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
                         iconId="libraries-viewonsite"
                         disabled={!selectedLibrary}
-                        onClick={ui.openURL.bind(null, libraryLink)} />
+                        onClick={this._handleLibraryButtonClicked.bind(this, "view-online", libraryLink)} />
                 </SplitButtonList>
             </div>);
         },

@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var strings = require("i18n!nls/strings"),
-        librariesUtil = require("js/util/libraries");
+        librariesUtil = require("js/util/libraries"),
+        headlights = require("js/util/headlights");
 
     var AssetSection = require("jsx!./AssetSection"),
         AssetPreviewImage = require("jsx!./AssetPreviewImage");
@@ -53,6 +54,7 @@ define(function (require, exports, module) {
             event.stopPropagation();
             
             this.getFlux().actions.libraries.applyCharacterStyle(this.props.element);
+            headlights.logEvent("libraries", "element", "apply-characterstyle");
         },
         
         /**
