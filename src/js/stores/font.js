@@ -228,7 +228,7 @@ define(function (require, exports, module) {
                 };
             }
 
-            if (textStyle.tracking) {
+            if (Number.isFinite(textStyle.tracking)) {
                 obj.adbeTracking = textStyle.tracking;
                 // Adobe tracking is a value of thousandths of an em so store that value for CSS letter-spacing
                 obj.letterSpacing = {
