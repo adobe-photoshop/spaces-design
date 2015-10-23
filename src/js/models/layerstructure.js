@@ -863,8 +863,8 @@ define(function (require, exports, module) {
     Object.defineProperty(LayerStructure.prototype, "minumumChildBounds", objUtil.cachedLookupSpec(function (layer) {
         switch (layer.kind) {
             case layer.layerKinds.GROUP:
-                if (layer.isArtboard) {
-                    return layer.maskBounds;
+                if (layer.isArtboard && !layer.vectorMaskEnabled) {
+                    return layer.bounds;
                 }
 
                 var childBounds = this.children(layer)
@@ -873,6 +873,7 @@ define(function (require, exports, module) {
                         return bounds && bounds.area > 0;
                     }),
                     unionChildBounds = Bounds.union(childBounds);
+
                 if (layer.vectorMaskEnabled) {
                     return Bounds.intersection(layer.maskBounds, unionChildBounds);
                 } else {
@@ -882,7 +883,12 @@ define(function (require, exports, module) {
             case layer.layerKinds.GROUPEND:
                 return null;
             default:
-                return layer.maskBounds;
+                if (layer.vectorMaskEnabled && layer.kind !== layer.layerKinds.VECTOR){
+                    return layer.maskBounds;
+                } else {
+                    return layer.bounds;
+                }
+
         }
     }));
 

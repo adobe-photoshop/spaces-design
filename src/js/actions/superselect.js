@@ -398,9 +398,7 @@ define(function (require, exports) {
                     // due to way hitTest works, the top z-order layer is the last one in the list
                     var topLayerID = clickedSelectableLayerIDs.findLast(function (layerID) {
                         var layer = layerTree.byID(layerID);
-                        if (layerTree.minumumChildBounds(layer).contains(coords.x, coords.y)) {
-                            return true;
-                        }
+                        return (layer && layerTree.minumumChildBounds(layer).contains(coords.x, coords.y));
                     });
 
                     if (!topLayerID) {

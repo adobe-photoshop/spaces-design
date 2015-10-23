@@ -510,7 +510,7 @@ define(function (require, exports, module) {
             proportionalScaling: false,
             isArtboard: !!isArtboard,
             bounds: isArtboard ? new Bounds(boundsDescriptor) : null,
-            maskbounds: isArtboard ? new Bounds(boundsDescriptor) : null,
+            maskbounds: new Bounds(boundsDescriptor),
             isLinked: false,
             vectorMaskEnabled: false,
             vectorMaskEmpty: true,
