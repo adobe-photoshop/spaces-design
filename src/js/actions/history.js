@@ -296,7 +296,6 @@ define(function (require, exports) {
         var payload = {
             source: "listener", // for human convenience
             documentID: documentID,
-            id: event.ID,
             name: event.name,
             totalStates: event.historyStates + 1, // yes, seriously.
             currentState: event.currentHistoryState // seems to be zero-base already (unlike get historyState)
