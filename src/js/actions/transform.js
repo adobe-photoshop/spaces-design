@@ -1139,7 +1139,7 @@ define(function (require, exports) {
                     nextDoc = appStore.getCurrentDocument();
                     this.flux.actions.layers.resetIndex(nextDoc, true);
                 });
-        }, this);
+        }, this, 500);
 
         // Handle the normal move events with a debounced function
         var debouncedMoveHandler = synchronization.debounce(function (event) {

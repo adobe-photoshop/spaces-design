@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
     
-    var Fluxxor = require("fluxxor");
+    var Fluxxor = require("fluxxor"),
+        _ = require("lodash");
     
     var events = require("../events"),
         log = require("js/util/log"),
@@ -80,7 +81,9 @@ define(function (require, exports, module) {
          * @private
          * @type {boolean}
          */
-        _overlaysEnabled: null,
+        _overlaysEnabled: true,
+
+        _overlaysForced: false,
 
         /**
          * Current root font size, which is used to calculated rem units
@@ -171,6 +174,8 @@ define(function (require, exports, module) {
                 events.document.history.nonOptimistic.RESET_BOUNDS, this._handleLayersUpdated
             );
 
+            this._enableOverlaysDebounced = _.debounce(this._enableOverlays.bind(this), 500);
+
             // HACK: Do not reset panel sizes because they should remain constant.
             this._panelWidth = 0;
             this._columnCount = 0;
@@ -189,6 +194,7 @@ define(function (require, exports, module) {
         _handleReset: function () {
             this._setRootSize();
             this._overlaysEnabled = true;
+            this._overlaysEnabled = false;
             this._marqueeEnabled = false;
             this._marqueeStart = null;
             this._zoom = null;
@@ -197,6 +203,33 @@ define(function (require, exports, module) {
             this._referencePoint = "lt";
         },
         
+        _enableOverlays: function () {
+            this._overlaysEnabled = true;
+            this.emit("change");
+        },
+
+        _enableOverlaysDebounced: null,
+
+        _toggleOverlays: function (enabled, force) {
+            if (!force && this._overlaysForced && this._overlaysForced !== enabled) {
+                return;
+            }
+
+            if (!enabled) {
+                this._overlaysEnabled = false;
+                if (force) {
+                    this._overlaysForced = true;
+                }
+                this._enableOverlaysDebounced.cancel();
+                this.emit("change");
+            } else {
+                if (force && this._overlaysForced) {
+                    this._overlaysForced = false;
+                }
+                this._enableOverlaysDebounced();
+            }
+        },
+
         /** @ignore */
         getState: function () {
             return {
@@ -454,9 +487,7 @@ define(function (require, exports, module) {
             }
 
             this._zoom = payload.zoom;
-            this._overlaysEnabled = true;
-
-            this.emit("change");
+            this._toggleOverlays(true, payload.force);
         },
 
         /**
@@ -504,8 +535,7 @@ define(function (require, exports, module) {
          * @param {{enabled: boolean}} payload
          */
         _handleOverlayToggle: function (payload) {
-            this._overlaysEnabled = payload.enabled;
-            this.emit("change");
+            this._toggleOverlays(payload.enabled, payload.force);
         },
 
         /**
@@ -520,8 +550,7 @@ define(function (require, exports, module) {
             }
             
             this.waitFor(["document"], function () {
-                this._overlaysEnabled = true;
-                this.emit("change");
+                this._toggleOverlays(true, payload.force);
             });
         },
 

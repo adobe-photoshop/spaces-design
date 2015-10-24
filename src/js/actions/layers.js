@@ -2514,7 +2514,7 @@ define(function (require, exports) {
         // Listens to layer shift events caused by auto canvas resize feature of artboards
         // and shifts all the layers correctly
         _autoCanvasResizeShiftHandler = synchronization.debounce(function (event) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false, force: true });
             return this.flux.actions.layers.handleCanvasShift(event);
         }, this, 1000);
         descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);
