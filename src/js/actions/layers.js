@@ -54,7 +54,8 @@ define(function (require, exports) {
         headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings"),
         global = require("js/util/global"),
-        Bounds = require("js/models/bounds");
+        Bounds = require("js/models/bounds"),
+        synchronization = require("js/util/synchronization");
 
     var templatesJSON = require("text!static/templates.json"),
         templates = JSON.parse(templatesJSON);
@@ -552,9 +553,10 @@ define(function (require, exports) {
      * @param {Immutable.Iterable.<Layer>} layers
      * @param {boolean=} suppressHistory Optional. If true, emit an event that does NOT add a new history state
      * @param {boolean=} amendHistory Optional. If true, update the current state (requires suppressHistory)
+     * @param {boolean=} suppressOverlay If true, overlays will not be toggled back on automatically afterwards
      * @return {Promise}
      */
-    var resetBounds = function (document, layers, suppressHistory, amendHistory) {
+    var resetBounds = function (document, layers, suppressHistory, amendHistory, suppressOverlay) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         }
@@ -585,7 +587,8 @@ define(function (require, exports) {
             .then(function (bounds) {
                 var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
                     payload = {
-                        documentID: document.id
+                        documentID: document.id,
+                        suppressOverlay: !!suppressOverlay
                     };
 
                 payload.bounds = layers.map(function (layer) {
@@ -2294,7 +2297,7 @@ define(function (require, exports) {
         // TODO this action used to translate layer bounds and dispatch events.document.REPOSITION_LAYERS,
         // but this was incompatible with undo/redo.  When stepping back into a history state we might also get
         // a canvas shift event which would cause us to shift our already-correct cached history state
-        return this.transfer(resetBounds, document, document.layers.all, true, true);
+        return this.transfer(resetBounds, document, document.layers.all, true, true, true);
     };
     handleCanvasShift.reads = [locks.JS_DOC];
     handleCanvasShift.writes = [];
@@ -2510,9 +2513,10 @@ define(function (require, exports) {
 
         // Listens to layer shift events caused by auto canvas resize feature of artboards
         // and shifts all the layers correctly
-        _autoCanvasResizeShiftHandler = function (event) {
-            this.flux.actions.layers.handleCanvasShift(event);
-        }.bind(this);
+        _autoCanvasResizeShiftHandler = synchronization.debounce(function (event) {
+            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+            return this.flux.actions.layers.handleCanvasShift(event);
+        }, this, 1000);
         descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);
 
         // Listeners for shift / option shape drawing

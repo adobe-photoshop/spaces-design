@@ -511,9 +511,14 @@ define(function (require, exports, module) {
         /**
          * Re-enables the overlays once document layers are updated.
          *
+         * @param {boolean} suppressOverlay
          * @private
          */
-        _handleLayersUpdated: function () {
+        _handleLayersUpdated: function (payload) {
+            if (payload.suppressOverlay) {
+                return;
+            }
+            
             this.waitFor(["document"], function () {
                 this._overlaysEnabled = true;
                 this.emit("change");

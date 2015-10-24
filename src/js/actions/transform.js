@@ -1141,43 +1141,53 @@ define(function (require, exports) {
                 });
         }, this);
 
-        _layerTransformHandler = function (event) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-
+        // Handle the normal move events with a debounced function
+        var debouncedMoveHandler = synchronization.debounce(function (event) {
+            // short circuit based on this trackerEndedWithoutBreakingHysteresis event flag
+            if (event.trackerEndedWithoutBreakingHysteresis) {
+                this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                return Promise.resolve();
+            } else {
             var appStore = this.flux.store("application"),
                 currentDoc = appStore.getCurrentDocument();
 
-            // Handle the normal move events with a debounced function
-            var debouncedMoveHandler = synchronization.debounce(function () {
-                // short circuit based on this trackerEndedWithoutBreakingHysteresis event flag
-                if (event.trackerEndedWithoutBreakingHysteresis) {
-                    return Promise.resolve();
-                } else {
-                    var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
-                            // Reset these layers completely because their impliedFontSize may have changed
-                            return layer.kind === layer.layerKinds.TEXT;
-                        }),
-                        otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
-                            return layer.kind === layer.layerKinds.TEXT;
-                        }),
-
-                        // note that in this case, the debouncing is critical even for just one "move" event
-                        // because the historyState event must be processed first for the following
-                        // "amend history" workflow to function correctly
-                        textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
-                        otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers, true);
-
-                    // When moving a mixture of both text and non-text layers, the individual actions do not
-                    // affect history.  Instead, a single, separate event is dispatched to provide a unified
-                    // finalization of this history transaction with the updated model.
-                    return Promise.join(textLayersPromise, otherLayersPromise)
-                        .bind(this)
-                        .then(function () {
-                            return this.dispatchAsync(events.history.FINALIZE_HISTORY_STATE,
-                                { documentID: currentDoc.id });
-                        });
+                if (!currentDoc) {
+                    return;
                 }
-            }, this, 200);
+
+                var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
+                        // Reset these layers completely because their impliedFontSize may have changed
+                        return layer.kind === layer.layerKinds.TEXT;
+                    }),
+                    otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
+                        return layer.kind === layer.layerKinds.TEXT;
+                    }),
+
+                    // note that in this case, the debouncing is critical even for just one "move" event
+                    // because the historyState event must be processed first for the following
+                    // "amend history" workflow to function correctly
+                    textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
+                    otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers, true);
+
+                // When moving a mixture of both text and non-text layers, the individual actions do not
+                // affect history.  Instead, a single, separate event is dispatched to provide a unified
+                // finalization of this history transaction with the updated model.
+                return Promise.join(textLayersPromise, otherLayersPromise)
+                    .bind(this)
+                    .then(function () {
+                        this.dispatch(events.history.FINALIZE_HISTORY_STATE, { documentID: currentDoc.id });
+                        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                    });
+            }
+        }, this, 500);
+
+        _layerTransformHandler = function (event) {
+            var appStore = this.flux.store("application"),
+                currentDoc = appStore.getCurrentDocument();
+
+            if (!currentDoc) {
+                return;
+            }
 
             // newDuplicateSheets move events should be processed immediately, not debounced
             if (event.newDuplicateSheets) {
@@ -1190,9 +1200,14 @@ define(function (require, exports) {
                 // a somewhat more optimistic copy routine, instead of addLayers
                 // which doesn't know that the layers being added are copies of
                 // existing layers.
-                return this.flux.actions.layers.addLayers(currentDoc, toIDs, true, false);
+
+                return this.flux.actions.layers.addLayers(currentDoc, toIDs, true, false)
+                    .bind(this)
+                    .then(function () {
+                        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                    });
             } else {
-                return debouncedMoveHandler();
+                return debouncedMoveHandler(event);
             }
         }.bind(this);
 
