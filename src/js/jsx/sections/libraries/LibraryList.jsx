@@ -395,10 +395,7 @@ define(function (require, exports, module) {
             return (<div className="libraries__bar__top__content libraries__bar__top__content-input">
                 <TextInput
                     ref="libraryNameInput"
-                    type="text"
-                    live={true}
-                    continuous={true}
-                    className="libraires__bar__input"
+                    className="libraries__bar__input"
                     value={inputDefaultValue}
                     placeholderText={nls.localize("strings.LIBRARIES.LIBRARY_NAME")}
                     onKeyDown={this._handleLibraryNameInputKeydown}/>

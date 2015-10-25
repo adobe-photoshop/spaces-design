@@ -182,9 +182,6 @@ define(function (require, exports, module) {
                     <div className="control-group__vertical">
                         <TextInput
                             value={exportAsset.suffix}
-                            singleClick={true}
-                            editable={true}
-                            live={true}
                             onChange={this._handleUpdateSuffix}
                             size="column-8" />
                     </div>

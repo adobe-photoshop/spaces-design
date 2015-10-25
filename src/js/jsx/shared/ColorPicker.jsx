@@ -649,10 +649,8 @@ define(function (require, exports, module) {
                     <Gutter/>
                     <TextInput
                         ref="input"
-                        live={this.props.editable}
-                        editable={this.props.editable}
+                        disabled={!this.props.editable}
                         value={label}
-                        singleClick={true}
                         onKeyDown={this._handleKeyDown}
                         onChange={this._handleInputChanged}
                         onFocus={this._handleFocus}
