@@ -84,6 +84,7 @@ define(function (require, exports, module) {
                 events.history.LOAD_HISTORY_STATE, this._loadHistoryState,
                 events.history.LOAD_HISTORY_STATE_REVERT, this._loadLastSavedHistoryState,
                 events.history.ADJUST_HISTORY_STATE, this._adjustHistoryState,
+                events.history.FINISH_ADJUSTING_HISTORY_STATE, this._finishAdjustingHistoryState,
                 events.history.FINALIZE_HISTORY_STATE, this._handlePostHistoryEvent,
                 events.history.DELETE_DOCUMENT_HISTORY, this._deleteHistory,
                 events.document.CLOSE_DOCUMENT, this._deleteHistory,
@@ -476,9 +477,11 @@ define(function (require, exports, module) {
         },
 
         /**
-         * This simply adjusts the 'current' pointer
-         * emits a change.
-         * This is used in the "cache miss" flow, to pre-increment our history before the updateDocument completes
+         * This simply adjusts the 'current' pointer and emits a change event.
+         * This is used in the "cache miss" flow, to pre-increment our history
+         * before the updateDocument completes. This does NOT emit a timetravel
+         * event because the document may not have updated at this point. (That
+         * happens in the handler for FINISH_ADJUSTING_HISTORY_STATE.)
          *
          * @param {object} payload provides a document ID and count(offset)
          */
@@ -502,6 +505,15 @@ define(function (require, exports, module) {
 
             this._current = this._current.set(documentID, next);
             this.emit("change");
+        },
+
+        /**
+         * This happens after the history state has been adjusted and the document
+         * model has finished loading. Emits a timetravel event.
+         *
+         * @private
+         */
+        _finishAdjustingHistoryState: function () {
             this.emit("timetravel");
         },
 

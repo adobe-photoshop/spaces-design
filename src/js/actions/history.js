@@ -167,12 +167,16 @@ define(function (require, exports) {
             return descriptor.playObject(historyPlayObject)
                 .bind(this)
                 .then(function () {
-                    return this.dispatchAsync(events.history.ADJUST_HISTORY_STATE, {
-                            documentID: documentID,
-                            count: count });
+                    this.dispatch(events.history.ADJUST_HISTORY_STATE, {
+                        documentID: documentID,
+                        count: count
+                    });
                 })
                 .then(function () {
                     return this.transfer(documentActions.updateDocument);
+                })
+                .then(function () {
+                    this.dispatch(events.history.FINISH_ADJUSTING_HISTORY_STATE);
                 });
         }
     };
