@@ -635,6 +635,8 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
             } else {
                 // Hide transform controls
+                this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+
                 return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
                     .bind(this)
                     .then(function () {

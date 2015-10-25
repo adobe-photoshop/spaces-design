@@ -583,7 +583,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartup = function (reset) {
-        var DEBOUNCE_DELAY = 500;
+        var DEBOUNCE_DELAY = 1000;
 
         var setTransformDebounced = synchronization.debounce(function (event) {
             if (event.transform) {
