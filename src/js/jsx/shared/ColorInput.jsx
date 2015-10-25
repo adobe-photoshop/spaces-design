@@ -213,7 +213,9 @@ define(function (require, exports, module) {
         _handleHistoryStateChange: function () {
             var dialog = this.refs.dialog;
             if (dialog.isOpen()) {
-                var color = this.refs.colorpicker.props.color;
+                var info = this._extractColorInfo(),
+                    color = info.color;
+
                 this.updateColorPicker(color, true); // don't emit a change event
             }
         },
@@ -303,13 +305,13 @@ define(function (require, exports, module) {
             this.refs.colorpicker.focusInput();
         },
 
-        render: function () {
-            var swatchClassSet = null,
-                swatchClassProps = {
-                    "color-input": true
-                };
-
-            // Normalize to arrays
+        /**
+         * Extract color information from the value supplied to the component.
+         *
+         * @private
+         * @return {{value: ?Color, label: string, color: Color, colorTiny: object=}}
+         */
+        _extractColorInfo: function () {
             var defaultValue = this.props.defaultValue,
                 valueArray = !Immutable.Iterable.isIterable(defaultValue) ?
                     Immutable.List.of(defaultValue) : defaultValue,
@@ -323,7 +325,6 @@ define(function (require, exports, module) {
                 if (typeof value === "string") {
                     label = value;
                     color = Color.DEFAULT;
-                    swatchClassProps["color-input__invalid-color"] = true;
                 } else {
                     if (this.props.opaque) {
                         value = value.opaque();
@@ -336,7 +337,6 @@ define(function (require, exports, module) {
                 }
             } else {
                 label = strings.TRANSFORM.MIXED;
-                swatchClassProps["color-input__mixed"] = true;
 
                 // The colors aren't completely uniform, but maybe the opaque colors are?
                 value = collection.uniformValue(valueArray.map(function (color) {
@@ -358,10 +358,36 @@ define(function (require, exports, module) {
                 }
             }
 
-            // swatch
-            swatchClassSet = classnames(swatchClassProps);
+            return {
+                value: value,
+                label: label,
+                color: color,
+                colorTiny: colorTiny
+            };
+        },
 
-            var swatchOverlayFunc = this.props.swatchOverlay || _DEFAULT_SWATCH_OVERLAY,
+        render: function () {
+            var colorInfo = this._extractColorInfo(),
+                value = colorInfo.value,
+                label = colorInfo.label,
+                color = colorInfo.color,
+                colorTiny = colorInfo.colorTiny;
+
+            var swatchClassProps = {
+                    "color-input": true
+                };
+
+            // setup text and swatch based on the mixed-ness of the inputs
+            if (value) {
+                if (typeof value === "string") {
+                    swatchClassProps["color-input__invalid-color"] = true;
+                }
+            } else {
+                swatchClassProps["color-input__mixed"] = true;
+            }
+
+            var swatchClassSet = classnames(swatchClassProps),
+                swatchOverlayFunc = this.props.swatchOverlay || _DEFAULT_SWATCH_OVERLAY,
                 overlay = swatchOverlayFunc(colorTiny, !this.props.editable),
                 dialogClasses = classnames("color-picker", this.props.className);
 
