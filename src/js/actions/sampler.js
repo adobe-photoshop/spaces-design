@@ -76,7 +76,7 @@ define(function (require, exports) {
                 
                 return Promise.resolve(color);
             case layerKinds.TEXT:
-                color = sourceLayer.text.characterStyle.color;
+                color = sourceLayer.text.firstCharacterStyle.color;
                 color = color && color.setOpacity(sourceLayer.opacity);
 
                 return Promise.resolve(color);
@@ -499,7 +499,7 @@ define(function (require, exports) {
             break;
         case source.layerKinds.TEXT:
             var fontStore = this.flux.store("font"),
-                textColor = source.text.characterStyle.color;
+                textColor = source.text.firstCharacterStyle.color;
 
             style.fillColor = textColor && textColor.setOpacity(100);
             style.typeStyle = fontStore.getTypeObjectFromLayer(source);
@@ -551,18 +551,19 @@ define(function (require, exports) {
     var pasteLayerStyle = function (document, targetLayers) {
         var applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            selectedLayers = currentDocument.layers.selected;
+            selectedLayers = currentDocument.layers.selected,
+            styleStore = this.flux.store("style"),
+            style = styleStore.getClipboardStyle();
 
         document = document || currentDocument;
         targetLayers = targetLayers || document ? selectedLayers : null;
 
-        if (!targetLayers) {
+        if (!targetLayers || !style) {
             return Promise.resolve();
         }
         
-        var styleStore = this.flux.store("style"),
-            style = styleStore.getClipboardStyle(),
-            shapeLayers = Immutable.List(),
+    
+        var shapeLayers = Immutable.List(),
             textLayers = Immutable.List(),
             nonTextLayers = Immutable.List(),
             transactionOpts = {
