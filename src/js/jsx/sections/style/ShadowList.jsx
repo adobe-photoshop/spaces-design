@@ -34,13 +34,23 @@ define(function (require, exports) {
     var LayerEffect = require("js/models/effects/layereffect"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings");
+        strings = require("i18n!nls/strings"),
+        synchronization = require("js/util/synchronization");
 
     var Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         BlendMode = require("jsx!./BlendMode"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton");
+
+    /**
+     * Debounced version of headlights.logEvents to help prevent false changes from 
+     * datalists from being logged. 
+     *
+     * @private
+     * @type {function(*)}
+     */
+    var logEventDebounced = synchronization.debounce(headlights.logEvent, null, 10000);
 
     var MIN_SPREAD = 0,
         MAX_SPREAD = 100,
@@ -219,7 +229,7 @@ define(function (require, exports) {
                     blendMode,
                     this.props.type);
             // Currently does not differentiate between inner and drop shadows
-            headlights.logEvent("edit", "shadow-blendmode-input", blendMode);
+            logEventDebounced("edit", "shadow-blendmode-input", blendMode);
         },
 
         /**
@@ -242,6 +252,7 @@ define(function (require, exports) {
         _handleDelete: function () {
             this.getFlux().actions.layerEffects.deleteEffect(
                 this.props.document, this.props.layers, this.props.index, this.props.type);
+            
             headlights.logEvent("effect", "delete", "shadow");
         },
 

@@ -150,7 +150,7 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.sampler.copyLayerEffects(document, source);
             event.stopPropagation();
-            headlights.logEvent("tools", "sampler", "copy-all-effects");
+            headlights.logEvent("tools", "effects-panel-icon", "copy-all-effects");
         },
 
         /**
@@ -164,7 +164,7 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.sampler.pasteLayerEffects(document, targetLayers);
             event.stopPropagation();
-            headlights.logEvent("tools", "sampler", "paste-all-effects");
+            headlights.logEvent("tools", "effects-panel-icon", "paste-all-effects");
         },
 
         /**

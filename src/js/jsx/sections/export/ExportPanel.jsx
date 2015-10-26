@@ -133,7 +133,7 @@ define(function (require, exports, module) {
             this._forceVisible();
             this.getFlux().actions.export.addAssetThrottled(document, documentExports, selectedLayers, props);
             
-            if (preset) {
+            if (typeof preset === "string") {
                 headlights.logEvent("export", "preset", preset);
             } else {
                 headlights.logEvent("export", "create", "single-asset");

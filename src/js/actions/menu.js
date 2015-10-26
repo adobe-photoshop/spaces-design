@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
+    var Promise = require("bluebird"),
+        _ = require("lodash");
 
     var adapter = require("adapter"),
         ps = require("adapter/ps"),
@@ -292,7 +293,7 @@ define(function (require, exports) {
         }
 
         if (!$dontLog) {
-            headlights.logEvent("menu", subcategory, event);
+            headlights.logEvent("menu", subcategory, _.kebabCase(event));
         }
 
         action($payload);

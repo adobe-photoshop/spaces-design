@@ -34,7 +34,8 @@ define(function (require, exports, module) {
         StrokeEffect = require("js/models/effects/stroke"),
         collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
-        headlights = require("js/util/headlights");
+        headlights = require("js/util/headlights"),
+        synchronization = require("js/util/synchronization");
 
     var Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
@@ -42,6 +43,15 @@ define(function (require, exports, module) {
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         StrokeAlignment = require("jsx!./StrokeAlignment");
+
+    /**
+     * Debounced version of headlights.logEvents to help prevent false changes from 
+     * datalists from being logged. 
+     *
+     * @private
+     * @type {function(*)}
+     */
+    var logEventDebounced = synchronization.debounce(headlights.logEvent, null, 10000);
         
     /**
      * Limits of stroke size.
@@ -117,7 +127,8 @@ define(function (require, exports, module) {
                     this.props.index,
                     blendMode,
                     LayerEffect.STROKE);
-            headlights.logEvent("edit", "stroke-blendmode-input", blendMode);
+
+            logEventDebounced("edit", "stroke-blendmode-input", blendMode);
         },
         
         /**

@@ -132,7 +132,7 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.sampler.copyLayerStyle(document, source);
             event.stopPropagation();
-            headlights.logEvent("style", "create", "copy-all-styles");
+            headlights.logEvent("tools", "appearance-panel-icon", "copy-all-styles");
         },
 
         /**
@@ -146,7 +146,7 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.sampler.pasteLayerStyle(document, targetLayers);
             event.stopPropagation();
-            headlights.logEvent("style", "create", "paste-all-styles");
+            headlights.logEvent("tools", "appearance-panel-icon", "paste-all-styles");
         },
 
         render: function () {
