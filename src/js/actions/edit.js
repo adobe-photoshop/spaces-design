@@ -98,9 +98,11 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var nativePaste = function () {
-        // FIXME: the suspend/restore policies hack is for pasting smart object from other sources (e.g. Illustrator).
+        // FIXME: this suspend policies hack is for pasting smart object from other sources (e.g. Illustrator).
         // The cause is similar to the place-object menu commands: DS is not receiving "toolModalStateChanged" events
         // until the object is committed.
+        // To avoid restoring policies while in a modal state, text in particular, first check the tool store
+        // modal state before restoring policies.  Super. Hack.
         var policyStore = this.flux.store("policy"),
             suspendPromise;
 
@@ -114,11 +116,15 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 return this.transfer(menu.nativeModal, {
-                    commandID: PASTE_NATIVE_MENU_COMMMAND_ID
+                    commandID: PASTE_NATIVE_MENU_COMMMAND_ID,
+                    waitForCompletion: true
                 });
             })
             .finally(function () {
-                if (this.flux.store("policy").areAllSuspended()) {
+                var toolStore = this.flux.store("tool"),
+                    policyStore = this.flux.store("policy");
+
+                if (!toolStore.getModalToolState() && policyStore.areAllSuspended()) {
                     return this.transfer(policyActions.restoreAllPolicies);
                 }
             });
