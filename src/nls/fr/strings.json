@@ -61,7 +61,7 @@
                 "HEADLINE": "Ensemble d'outils réduit et panneau de propriétés contextuel."
             },
             {
-                "TITLE": "Rechercher",
+                "TITLE": "Recherche",
                 "HEADLINE_FIRST": "Recherchez des calques, ouvrez des documents, importez des ressources de la bibliothèque, et plus encore.",
                 "HEADLINE_SECOND": "Utilisez Commande+F sous Mac ou Ctrl+F sous Windows."
             },
@@ -459,7 +459,7 @@
     "SEARCH": {
         "PLACEHOLDER": "Rechercher, ouvrir et sélectionner",
         "PLACEHOLDER_INITIALIZING": "Initialisation…",
-        "PLACEHOLDER_FILTER": "Recherche ",
+        "PLACEHOLDER_FILTER": "Rechercher",
         "NO_OPTIONS": "Votre recherche n'a renvoyé aucun résultat",
         "HEADERS": {
             "ALL_LAYER": "Calques",
