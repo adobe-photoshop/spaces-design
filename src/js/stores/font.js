@@ -204,7 +204,7 @@ define(function (require, exports, module) {
 
             if (textStyle.textSize) {
                 obj.fontSize = {
-                    "type": "pt",
+                    "type": "px",
                     "value": textStyle.textSize
                 };
             }
@@ -239,7 +239,7 @@ define(function (require, exports, module) {
 
             if (textStyle.leading >= 0) {
                 obj.lineHeight = {
-                    type: "pt",
+                    type: "px",
                     value: textStyle.leading
                 };
             } else {
