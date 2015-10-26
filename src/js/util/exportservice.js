@@ -65,7 +65,7 @@ define(function (require, exports, module) {
      * @param {boolean=} quickCheck If truthy, perform an abbreviated attempt establish a connection
      */
     var ExportService = function (port, quickCheck) {
-        var maxConnectionAttempts = quickCheck ? (CONNECTION_MAX_ATTEMPTS / 10) : CONNECTION_MAX_ATTEMPTS,
+        var maxConnectionAttempts = quickCheck ? (CONNECTION_MAX_ATTEMPTS / 2) : CONNECTION_MAX_ATTEMPTS,
             getRemotePort = function (callback) {
                 callback(null, port || GENERATOR_DEFAULT_PORT);
             };
