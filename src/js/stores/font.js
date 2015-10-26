@@ -162,7 +162,7 @@ define(function (require, exports, module) {
             }
 
             var obj = {},
-                textStyle = layer.text.characterStyle,
+                textStyle = layer.text.firstCharacterStyle,
                 psName = textStyle.postScriptName,
                 fontObj = this._postScriptMap.get(psName, null),
                 paragraphStyle = layer.text.paragraphStyle;

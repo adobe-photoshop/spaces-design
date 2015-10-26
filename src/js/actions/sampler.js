@@ -76,7 +76,7 @@ define(function (require, exports) {
                 
                 return Promise.resolve(color);
             case layerKinds.TEXT:
-                color = sourceLayer.text.characterStyle.color;
+                color = sourceLayer.text.firstCharacterStyle.color;
                 color = color && color.setOpacity(sourceLayer.opacity);
 
                 return Promise.resolve(color);
@@ -499,7 +499,7 @@ define(function (require, exports) {
             break;
         case source.layerKinds.TEXT:
             var fontStore = this.flux.store("font"),
-                textColor = source.text.characterStyle.color;
+                textColor = source.text.firstCharacterStyle.color;
 
             style.fillColor = textColor && textColor.setOpacity(100);
             style.typeStyle = fontStore.getTypeObjectFromLayer(source);

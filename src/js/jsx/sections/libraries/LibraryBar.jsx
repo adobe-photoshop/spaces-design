@@ -149,7 +149,7 @@ define(function (require, exports, module) {
 
             var fontStore = this.getFlux().store("font"),
                 text = this.props.document.layers.selected.first().text,
-                characterStyle = text.characterStyle,
+                characterStyle = text.firstCharacterStyle,
                 textHasMissingFont = !fontStore.getFontFamilyFromPostScriptName(characterStyle.postScriptName);
 
             return !textHasMissingFont;
@@ -203,7 +203,7 @@ define(function (require, exports, module) {
 
             var addTextColorButton = this._createColorButton(function (layer) {
                 return !layer.isTextLayer() ? null :
-                    { color: layer.text.characterStyle.color, title: strings.TOOLTIPS.ADD_TEXT_COLOR };
+                    { color: layer.text.firstCharacterStyle.color, title: strings.TOOLTIPS.ADD_TEXT_COLOR };
             });
 
             return (

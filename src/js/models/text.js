@@ -32,13 +32,23 @@ define(function (require, exports, module) {
     /**
      * Represents the style and context of a text layer
      * 
-     * @constructor  
+     * @constructor
      */
     var Text = Immutable.Record({
         /**
+         * Uniform character style of multiple text ranges. If text has one text range, then `characterStyle`
+         * equals to `firstCharacterStyle`. Attribute will be null if multiple text ranges have mixed value.
+         *
          * @type {CharacterStyle}
          */
         characterStyle: null,
+        
+        /**
+         * The first character style in the text ranges
+         *
+         * @type {CharacterStyle}
+         */
+        firstCharacterStyle: null,
 
         /**
          * @type {ParagraphStyle}
@@ -73,8 +83,11 @@ define(function (require, exports, module) {
         if (textShapes.length !== 1) {
             throw new Error("Too many text shapes!");
         }
-
-        model.characterStyle = CharacterStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
+        
+        var textStyles = CharacterStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
+        
+        model.characterStyle = textStyles.uniformCharStyle;
+        model.firstCharacterStyle = textStyles.firstCharStyle;
         model.paragraphStyle = ParagraphStyle.fromTextDescriptor(documentDescriptor, layerDescriptor, textKey);
         model.box = textShapes[0].char._value === "box";
 

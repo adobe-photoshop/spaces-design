@@ -163,13 +163,16 @@ define(function (require, exports, module) {
      * @param {object} documentDescriptor
      * @param {object} layerDescriptor
      * @param {object} textDescriptor
-     * @return {CharacterStyle}
+     * @return {{firstTextStyle: CharacterStyle, uniformTextStyle: CharacterStyle}}
      */
     CharacterStyle.fromTextDescriptor = function (documentDescriptor, layerDescriptor, textDescriptor) {
         var textStyleRanges = textDescriptor.textStyleRange;
 
         if (!textStyleRanges || textStyleRanges.length === 0) {
-            return new CharacterStyle();
+            return {
+                firstCharStyle: new CharacterStyle(),
+                uniformCharStyle: new CharacterStyle()
+            };
         }
 
         // Only the first style range contains the baseParentStyle
@@ -195,7 +198,10 @@ define(function (require, exports, module) {
                 return reducedModel;
             }, {});
 
-        return new CharacterStyle(reducedModel);
+        return {
+            firstCharStyle: characterStyles.first(),
+            uniformCharStyle: new CharacterStyle(reducedModel)
+        };
     };
 
     module.exports = CharacterStyle;
