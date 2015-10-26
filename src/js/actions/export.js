@@ -180,8 +180,7 @@ define(function (require, exports) {
 
         fileName = prefix ? prefix + "-" + fileName : fileName;
 
-        headlights.logEvent("export", "asset", "scale-" + asset.scale +
-                            "-suffix-" + asset.suffix + "-setting-" + asset.format);
+        headlights.logEvent("export", "asset", "scale-" + asset.scale + "-setting-" + asset.format);
 
         return _exportService.exportAsset(document, layer, asset, fileName, baseDir)
             .bind(this)
