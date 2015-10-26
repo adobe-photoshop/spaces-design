@@ -234,7 +234,7 @@ define(function (require, exports, module) {
                 };
             }
 
-            if (textStyle.leading >= 0) {
+            if (Number.isFinite(textStyle.leading) && textStyle.leading >= 0) {
                 obj.lineHeight = {
                     type: "pt",
                     value: textStyle.leading
