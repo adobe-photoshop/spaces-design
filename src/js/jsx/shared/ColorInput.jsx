@@ -316,6 +316,7 @@ define(function (require, exports, module) {
                 valueArray = !Immutable.Iterable.isIterable(defaultValue) ?
                     Immutable.List.of(defaultValue) : defaultValue,
                 value = collection.uniformValue(valueArray),
+                mixed = false,
                 label,
                 color,
                 colorTiny;
@@ -337,6 +338,7 @@ define(function (require, exports, module) {
                 }
             } else {
                 label = strings.TRANSFORM.MIXED;
+                mixed = true;
 
                 // The colors aren't completely uniform, but maybe the opaque colors are?
                 value = collection.uniformValue(valueArray.map(function (color) {
@@ -361,6 +363,7 @@ define(function (require, exports, module) {
             return {
                 value: value,
                 label: label,
+                mixed: mixed,
                 color: color,
                 colorTiny: colorTiny
             };
@@ -371,10 +374,12 @@ define(function (require, exports, module) {
                 value = colorInfo.value,
                 label = colorInfo.label,
                 color = colorInfo.color,
+                mixed = colorInfo.mixed,
                 colorTiny = colorInfo.colorTiny;
 
             var swatchClassProps = {
-                    "color-input": true
+                    "color-input": true,
+                    "color-input__mixed": mixed
                 };
 
             // setup text and swatch based on the mixed-ness of the inputs
@@ -382,8 +387,6 @@ define(function (require, exports, module) {
                 if (typeof value === "string") {
                     swatchClassProps["color-input__invalid-color"] = true;
                 }
-            } else {
-                swatchClassProps["color-input__mixed"] = true;
             }
 
             var swatchClassSet = classnames(swatchClassProps),
