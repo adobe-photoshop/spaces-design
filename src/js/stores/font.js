@@ -28,7 +28,8 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
     
     var events = require("../events"),
-        log = require("js/util/log");
+        log = require("js/util/log"),
+        Color = require("js/models/color");
 
     var FontStore = Fluxxor.createStore({
 
@@ -219,11 +220,7 @@ define(function (require, exports, module) {
             } else {
                 obj.color = {
                     mode: "RGB",
-                    value: {
-                        r: 0,
-                        g: 0,
-                        b: 0
-                    },
+                    value: Color.DEFAULT,
                     type: "process"
                 };
             }
