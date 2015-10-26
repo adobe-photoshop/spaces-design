@@ -167,10 +167,10 @@
         "ALIGN": {
             "$MENU": "オブジェクトを整列",
             "ALIGN_LEFT": "左端",
-            "ALIGN_CENTER": "垂直中央",
+            "ALIGN_CENTER": "中央",
             "ALIGN_RIGHT": "右端",
             "ALIGN_TOP": "上端",
-            "ALIGN_MIDDLE": "水平中央",
+            "ALIGN_MIDDLE": "中央",
             "ALIGN_BOTTOM": "下端"
         },
         "FLIP_HORIZONTAL": "水平方向に反転",
