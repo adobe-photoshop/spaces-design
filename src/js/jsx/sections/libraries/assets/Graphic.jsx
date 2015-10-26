@@ -109,7 +109,14 @@ define(function (require, exports, module) {
          * @param  {SyntheticEvent} event
          */
         _handleDragStart: function (event) {
-            if (this.state.renditionPath) {
+            var isInModalToolState = this.getFlux().stores.tool.getModalToolState();
+            
+            // Disable drag-and-drop for graphics if PS is in modal tool state, because we cannot read 
+            // the correct modifier state (ALT key in this case) while in modal tool state.
+            // Check `libraries.createLayerFromElement` for the details of ALT modifier.
+            // 
+            // FIXME: modal tool state should not block the update of modifier state.
+            if (!isInModalToolState && this.state.renditionPath) {
                 this.props.handleDragStart(event);
             }
         },
