@@ -202,7 +202,7 @@
         "SET_FILL_COLOR": "塗りのカラーを設定",
         "SET_FILL_OPACITY": "塗りつぶしの不透明度を設定",
         "SET_FILL_BLENDING": "塗りつぶしの描画を設定",
-        "TOGGLE_FILL": "塗りつぶしを切り替える",
+        "TOGGLE_FILL": "塗りを切り替える",
         "SET_LAYER_VISIBILITY": "レイヤーの表示を設定",
         "LOCK_LAYER": "レイヤーをロック",
         "LAYER_COUNT": "選択されているレイヤーの数 / レイヤーの総数",
