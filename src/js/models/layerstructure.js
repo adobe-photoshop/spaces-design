@@ -1624,7 +1624,11 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.setCharacterStyleProperties = function (layerIDs, properties) {
-        return this._setTextStyleProperties("characterStyle", layerIDs, properties);
+        var nextLayers = this._setTextStyleProperties("characterStyle", layerIDs, properties);
+
+        nextLayers = nextLayers._setTextStyleProperties("firstCharacterStyle", layerIDs, properties);
+
+        return nextLayers;
     };
 
     /**

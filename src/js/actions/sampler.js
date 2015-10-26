@@ -598,6 +598,8 @@ define(function (require, exports) {
             textStylePromise = (!style.typeStyle || textLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(typeActions.applyTextStyle, document, textLayers, style.typeStyle, actionOpts,
                 { ignoreAlpha: false }),
+            textColorPromise = (style.typeStyle || !style.fillColor || textLayers.isEmpty()) ? Promise.resolve() :
+                this.transfer(typeActions.setColor, document, textLayers, style.fillColor, actionOpts),
             layerBlendModePromise = (!style.blendMode || targetLayers.isEmpty()) ? Promise.resolve() :
                 this.transfer(layerActions.setBlendMode, document, targetLayers, style.blendMode, actionOpts),
             layerOpacityPromise = Promise.resolve();
@@ -615,6 +617,7 @@ define(function (require, exports) {
                 shapeStrokePromise,
                 shapeRadiiPromise,
                 textStylePromise,
+                textColorPromise,
                 layerBlendModePromise,
                 layerOpacityPromise
             )

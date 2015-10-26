@@ -694,12 +694,19 @@ define(function (require, exports, module) {
         
         // If the layer is text layer, and the updated attributes include opacity, 
         // then we sync the new opacity to its CharacterStyle.
+        // 
+        // FIXME: we should avoid keeping multiple copies of the same attribute in different objects.
         if (properties.opacity && this.isTextLayer()) {
-            var charStyleColorPath = ["text", "characterStyle", "color"],
-                charStyleColor = this.getIn(charStyleColorPath),
-                nextCharStyleColor = charStyleColor.setOpacity(nextLayer.opacity);
+            var charStyle = nextLayer.text.characterStyle,
+                nextCharStyle = !charStyle.color ? charStyle :
+                    charStyle.set("color", charStyle.color.setOpacity(nextLayer.opacity)),
+                firstCharStyle = nextLayer.text.firstCharacterStyle,
+                nextFirstCharStyle = firstCharStyle.set("color", firstCharStyle.color.setOpacity(nextLayer.opacity));
 
-            nextLayer = nextLayer.setIn(charStyleColorPath, nextCharStyleColor);
+            nextLayer = nextLayer.set("text", nextLayer.text.merge({
+                characterStyle: nextCharStyle,
+                firstCharacterStyle: nextFirstCharStyle
+            }));
         }
 
         return nextLayer;
