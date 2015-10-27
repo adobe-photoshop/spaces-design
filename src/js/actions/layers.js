@@ -386,7 +386,7 @@ define(function (require, exports) {
             var layer = document.layers.byID(layerID);
 
             if (layer) {
-                throw new Error("Trying to add a layer that is already existed: " + layerID + " " + layer.name);
+                throw new Error("Trying to add a layer that already exists: " + layerID + " " + layer.name);
             }
         });
 
