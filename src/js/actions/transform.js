@@ -253,13 +253,13 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Layer} targetLayer
-     * @param {{w: number=, h: number=}} size
+     * @param {{w: number=, h: number=}} nextSize
      * @param {Array.<{layer: Layer, w: number, h: number}>} resizeResults payload for updating each layer's bounds
      * @param {string} refPoint in the format of vertical direction then horizontal
      *
      * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
-    var _getResizeLayerActions = function (document, targetLayer, size, resizeResults, refPoint) {
+    var _getResizeLayerActions = function (document, targetLayer, nextSize, resizeResults, refPoint) {
         var overallBounds = document.layers.childBounds(targetLayer),
             documentRef = documentLib.referenceBy.id(document.id),
             resizingLayers;
@@ -274,10 +274,7 @@ define(function (require, exports) {
 
         resizeResults = resizeResults || [];
 
-        var tempSize = _calculateNewSize(overallBounds, size, targetLayer.proportionalScaling);
-
-        size.w = tempSize.w;
-        size.h = tempSize.h;
+        var size = _calculateNewSize(overallBounds, nextSize, targetLayer.proportionalScaling);
 
         // Used to calculate the new top/left positions of all layers in relation to top/left
         // of the group
