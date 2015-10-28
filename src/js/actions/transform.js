@@ -40,7 +40,6 @@ define(function (require, exports) {
         locks = require("js/locks"),
         log = require("js/util/log"),
         layerActions = require("./layers"),
-        toolActions = require("./tools"),
         collection = require("js/util/collection"),
         locking = require("js/util/locking"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -423,10 +422,7 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
-            .bind(this).then(function () {
-                return this.transfer(toolActions.resetBorderPolicies);
-            }),
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
                 var layerActions = _getMoveLayerActions.call(this,
                         document, layer, position, refPoint, payload.positions);
@@ -443,7 +439,7 @@ define(function (require, exports) {
     };
     setPosition.reads = [];
     setPosition.writes = [locks.PS_DOC, locks.JS_DOC];
-    setPosition.transfers = [toolActions.resetBorderPolicies, layerActions.resetIndex];
+    setPosition.transfers = [layerActions.resetIndex];
 
     /**
      * Swaps the two given layers top-left positions
@@ -474,11 +470,7 @@ define(function (require, exports) {
                 .call(this, document, layers.get(1), newPositions.get(1), "lt", payload.positions),
             translateActions = layerOneActions.concat(layerTwoActions);
                 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload)
-            .bind(this)
-            .then(function () {
-                return this.transfer(toolActions.resetBorderPolicies);
-            });
+        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload);
 
         // Make sure to show this action as one history state
         var options = {
@@ -535,7 +527,7 @@ define(function (require, exports) {
     };
     swapLayers.reads = [];
     swapLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    swapLayers.transfers = [toolActions.resetBorderPolicies, layerActions.resetIndex];
+    swapLayers.transfers = [layerActions.resetIndex];
 
     /**
      * Sets the given layers' sizes
@@ -631,15 +623,12 @@ define(function (require, exports) {
                 // Reset type layers to pick up their implicit font size changes.
                 // Final true parameter indicates that history should be amended
                 // with this change.
-                var typePromise = this.transfer(layerActions.resetLayers, document, typeLayers, true),
-                    policyPromise = this.transfer(toolActions.resetBorderPolicies);
-
-                return Promise.join(typePromise, policyPromise);
+                return this.transfer(layerActions.resetLayers, document, typeLayers, true);
             });
     };
     setSize.reads = [];
     setSize.writes = [locks.PS_DOC, locks.JS_DOC];
-    setSize.transfers = [toolActions.resetBorderPolicies, layerActions.resetLayers];
+    setSize.transfers = [layerActions.resetLayers];
     
     /**
      * Asks photoshop to flip, either horizontally or vertically.
@@ -684,9 +673,6 @@ define(function (require, exports) {
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
 
                 return this.transfer(layerActions.resetBounds, document, descendants);
-            })
-            .then(function () {
-                return this.transfer(toolActions.resetBorderPolicies);
             });
     };
     
@@ -703,7 +689,7 @@ define(function (require, exports) {
     };
     flipX.reads = [];
     flipX.writes = [locks.JS_DOC, locks.PS_DOC];
-    flipX.transfers = [layerActions.resetBounds, toolActions.resetBorderPolicies];
+    flipX.transfers = [layerActions.resetBounds];
     
     /**
      * Helper command to flip vertically
@@ -718,7 +704,7 @@ define(function (require, exports) {
     };
     flipY.reads = [];
     flipY.writes = [locks.JS_DOC, locks.JS_DOC];
-    flipY.transfers = [layerActions.resetBounds, toolActions.resetBorderPolicies];
+    flipY.transfers = [layerActions.resetBounds];
     
     /**
      * Helper command to flip selected layers in the current document horizontally

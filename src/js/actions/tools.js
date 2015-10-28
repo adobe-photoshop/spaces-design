@@ -441,15 +441,11 @@ define(function (require, exports) {
             .then(function (result) {
                 // After setting everything, dispatch to stores
                 this.dispatch(events.tool.SELECT_TOOL, result);
-
-                if (!toolStore.getVectorMode() || !nextTool.handleVectorMaskMode) {
-                    return this.transfer(resetBorderPolicies);
-                }
             });
     };
     selectTool.reads = [];
     selectTool.writes = [locks.JS_TOOL, locks.PS_TOOL];
-    selectTool.transfers = [resetBorderPolicies, installShapeDefaults, shortcuts.addShortcut,
+    selectTool.transfers = [installShapeDefaults, shortcuts.addShortcut,
         shortcuts.removeShortcut, "layers.deleteSelected", "layers.resetLayers",
         policy.removePointerPolicies, policy.removeKeyboardPolicies, policy.addPointerPolicies,
         policy.addKeyboardPolicies, policy.setMode];
@@ -553,6 +549,7 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _toolModalStateChangedHandler,
+        _documentChangeHandler,
         _vectorMaskHandler,
         _vectorSelectMaskHandler;
 
@@ -800,6 +797,12 @@ define(function (require, exports) {
             toolStore = this.flux.store("tool"),
             tools = toolStore.getAllTools();
 
+        var _documentChangeHandler = function () {
+            this.transfer(resetBorderPolicies);
+        }.bind(this);
+
+        this.flux.store("document").on("change", _documentChangeHandler);
+
         // Listen for modal tool state entry/exit events
         _toolModalStateChangedHandler = this.flux.actions.tools.handleToolModalStateChanged.bind(this);
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
@@ -878,7 +881,8 @@ define(function (require, exports) {
     beforeStartup.modal = true;
     beforeStartup.reads = [locks.JS_APP, locks.JS_TOOL];
     beforeStartup.writes = [locks.PS_TOOL];
-    beforeStartup.transfers = [shortcuts.addShortcuts, initTool, changeModalState, changeVectorMaskMode];
+    beforeStartup.transfers = [shortcuts.addShortcuts, initTool, changeModalState, changeVectorMaskMode,
+        resetBorderPolicies];
 
     /**
      * Remove event handlers.
@@ -888,7 +892,7 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
-
+        this.flux.store("document").removeListener("change", _documentChangeHandler);
         _currentTransformPolicyID = null;
 
         return Promise.resolve();

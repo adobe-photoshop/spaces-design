@@ -40,8 +40,7 @@ define(function (require, exports) {
         preferences = require("./preferences"),
         synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
-        headlights = require("js/util/headlights"),
-        tools = require("./tools");
+        headlights = require("js/util/headlights");
 
     /**
      * Tooltip property key that determines the delay until tooltips are shown.
@@ -204,13 +203,11 @@ define(function (require, exports) {
                     zoom: result.zoom._value
                 };
 
-                this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
-                return this.transfer(tools.resetBorderPolicies);
+                return this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
             });
     };
     updateTransform.reads = [locks.PS_APP, locks.JS_APP];
     updateTransform.writes = [locks.JS_UI];
-    updateTransform.transfers = ["tools.resetBorderPolicies"];
 
     /**
      * Using the center offsets, creates a cloaking rectangle on the canvas outside panels
@@ -264,14 +261,11 @@ define(function (require, exports) {
                     zoom: zoom
                 };
 
-                this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
-
-                return this.transfer(tools.resetBorderPolicies);
+                return this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
             });
     };
     setTransform.reads = [locks.PS_APP];
     setTransform.writes = [locks.JS_UI];
-    setTransform.transfers = ["tools.resetBorderPolicies"];
     setTransform.modal = true;
 
     /**
