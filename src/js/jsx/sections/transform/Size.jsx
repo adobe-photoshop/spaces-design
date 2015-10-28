@@ -36,8 +36,12 @@ define(function (require, exports, module) {
         strings = require("i18n!nls/strings"),
         collection = require("js/util/collection");
 
+    // The minimum layer size in PS is 0.1 pixel, but it has an issue with some smart objects and graphic layers 
+    // when set to less than 0.5 pixel.
+    // 
+    // FIXME: restore to 0.1 pixel when the issue is fixed https://watsonexp.corp.adobe.com/#bug=4080692
     var MAX_LAYER_SIZE = 32000,
-        MIN_LAYER_SIZE = 0.1;
+        MIN_LAYER_SIZE = 0.5;
 
     var Size = React.createClass({
         mixins: [FluxMixin],
