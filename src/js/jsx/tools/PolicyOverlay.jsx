@@ -118,13 +118,13 @@ define(function (require, exports, module) {
                         .style("fill-opacity", "0.0")
                         .style("stroke-opacity", "0.0");
     
-                    if (policy.action === UI.policyAction.ALWAYS_PROPAGATE) {
+                    if (policy.action === UI.policyAction.PROPAGATE_TO_PHOTOSHOP) {
                         policyRect.style("stroke", "#008800")
                             .style("stroke-opacity", "1.0");
-                    } else if (policy.action === UI.policyAction.NEVER_PROPAGATE) {
+                    } else if (policy.action === UI.policyAction.PROPAGATE_TO_BROWSER) {
                         policyRect.style("stroke", "#FF2200")
                             .style("stroke-opacity", "1.0");
-                    } else if (policy.action === UI.policyAction.ALPHA_PROPAGATE) {
+                    } else if (policy.action === UI.policyAction.PROPAGATE_BY_ALPHA) {
                         policyRect.style("stroke", "#0066FF")
                             .style("stroke-opacity", "0.25");
                     }

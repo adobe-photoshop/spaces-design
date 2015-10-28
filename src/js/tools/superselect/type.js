@@ -100,7 +100,7 @@ define(function (require, exports, module) {
         Tool.call(this, "superselectType", "Superselect-Type", "typeCreateOrEditTool");
         this.icon = "typeCreateOrEdit";
 
-        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
         this.keyboardPolicyList = [escapeKeyPolicy];
         this.selectHandler = _selectHandler;

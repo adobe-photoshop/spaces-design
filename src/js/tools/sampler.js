@@ -63,7 +63,7 @@ define(function (require, exports, module) {
             OS.addListener("externalMouseMove", _mouseMoveHandler);
 
             return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
-                UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY);
+                UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_WITH_NOTIFY);
         };
 
         var deselectHandler = function () {
@@ -73,14 +73,14 @@ define(function (require, exports, module) {
                 .bind(this)
                 .then(function () {
                     return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
-                        UI.pointerPropagationMode.ALPHA_PROPAGATE);
+                        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
                 });
         };
 
         this.selectHandler = selectHandler;
         this.deselectHandler = deselectHandler;
 
-        var pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+        var pointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.LEFT_MOUSE_DOWN);
         this.pointerPolicyList = [
             pointerPolicy

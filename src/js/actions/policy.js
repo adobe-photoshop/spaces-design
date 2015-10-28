@@ -130,8 +130,8 @@ define(function (require, exports) {
      */
     var addKeydownPolicy = function (propagate, key, modifiers) {
         var policyAction = propagate ?
-                adapterUI.policyAction.ALWAYS_PROPAGATE :
-                adapterUI.policyAction.NEVER_PROPAGATE,
+                adapterUI.policyAction.PROPAGATE_TO_PHOTOSHOP :
+                adapterUI.policyAction.PROPAGATE_TO_BROWSER,
             eventKind = adapterOS.eventKind.KEY_DOWN;
 
         var policy = new KeyboardEventPolicy(policyAction, eventKind, modifiers, key);
@@ -207,13 +207,13 @@ define(function (require, exports) {
         case PolicyStore.eventKind.KEYBOARD:
             setModeFn = adapterUI.setKeyboardPropagationMode;
             if (mode === undefined) {
-                mode = adapterUI.keyboardPropagationMode.FOCUS_PROPAGATE;
+                mode = adapterUI.keyboardPropagationMode.PROPAGATE_BY_FOCUS;
             }
             break;
         case PolicyStore.eventKind.POINTER:
             setModeFn = adapterUI.setPointerPropagationMode;
             if (mode === undefined) {
-                mode = adapterUI.pointerPropagationMode.ALPHA_PROPAGATE;
+                mode = adapterUI.pointerPropagationMode.PROPAGATE_BY_ALPHA;
             }
             break;
         default:
@@ -320,10 +320,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartup = function () {
-        var defaultKeyboardMode = adapterUI.keyboardPropagationMode.NEVER_PROPAGATE,
+        var defaultKeyboardMode = adapterUI.keyboardPropagationMode.PROPAGATE_TO_BROWSER,
             keyboardModePromise = this.transfer(setMode, PolicyStore.eventKind.KEYBOARD,
                 defaultKeyboardMode),
-            defaultPointerMode = adapterUI.pointerPropagationMode.ALPHA_PROPAGATE,
+            defaultPointerMode = adapterUI.pointerPropagationMode.PROPAGATE_BY_ALPHA,
             // Alpha is the default pointer mode, but we set it here anyway so that we can reset 
             // to the correct default mode when error occurs.
             pointerModePromise = this.transfer(setMode, PolicyStore.eventKind.POINTER,

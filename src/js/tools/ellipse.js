@@ -82,13 +82,13 @@ define(function (require, exports, module) {
      * @constructor
      */
     var EllipseTool = function () {
-        var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+        var shiftUKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, { shift: true }, shortcuts.GLOBAL.TOOLS.SHAPE),
-            escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
-            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
-            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE);
         
         Tool.call(this, "ellipse", "Ellipse", "ellipseTool", _selectHandler);

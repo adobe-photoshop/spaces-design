@@ -170,42 +170,42 @@ define(function (require, exports) {
                 height: psSelectionHeight + (outset * 2)
             };
 
-        var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
+        var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_TO_BROWSER,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 {}, // no modifiers inside
                 innerRect
             ),
-            insideCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.NEVER_PROPAGATE,
+            insideCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_TO_BROWSER,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 distortModifier,
                 innerRect
             ),
             // Used for distort/skew transformations
-            noOutsetCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
+            noOutsetCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 distortModifier,
                 middleRect
             ),
             // Used for proportional resize
-            noOutsetShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
+            noOutsetShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 { shift: true },
                 middleRect
             ),
             // Used for proportional distort/skew
-            noOutsetCommandShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
+            noOutsetCommandShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 _.merge({ shift: true }, distortModifier),
                 middleRect
             ),
             // Used for rotation
-            outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
+            outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 {},
                 outerRect
             ),
             // Used for constrained rotation
-            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.ALPHA_PROPAGATE,
+            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 { shift: true },
                 outerRect
@@ -636,14 +636,14 @@ define(function (require, exports) {
         }
          
         if (vectorMaskMode) {
-            var pointerPolicy = new PointerEventPolicy(UI.policyAction.ALPHA_PROPAGATE,
+            var pointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_BY_ALPHA,
                     OS.eventKind.LEFT_MOUSE_DOWN),
-                rightPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                rightPointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                     OS.eventKind.RIGHT_MOUSE_DOWN, { control: true }),
                 pointerPolicyList;
 
             if (system.isMac) {
-                var contextPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                var contextPointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                     OS.eventKind.LEFT_MOUSE_DOWN, { control: true });
                 
                 pointerPolicyList = [rightPointerPolicy, contextPointerPolicy, pointerPolicy];
