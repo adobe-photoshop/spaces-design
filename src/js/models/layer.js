@@ -127,6 +127,12 @@ define(function (require, exports, module) {
         bounds: null,
 
         /**
+         * Minumum Layer Bounds including any masking that may exist
+         * @type {Bounds}
+         */
+        maskBounds: null,
+
+        /**
          * True if this layer is a background layer
          * @type {boolean}
          */
@@ -504,6 +510,7 @@ define(function (require, exports, module) {
             proportionalScaling: false,
             isArtboard: !!isArtboard,
             bounds: isArtboard ? new Bounds(boundsDescriptor) : null,
+            maskbounds: new Bounds(boundsDescriptor),
             isLinked: false,
             vectorMaskEnabled: false,
             vectorMaskEmpty: true,
@@ -550,6 +557,7 @@ define(function (require, exports, module) {
             opacity: _extractOpacity(layerDescriptor),
             selected: selected,
             bounds: Bounds.fromLayerDescriptor(layerDescriptor),
+            maskBounds: Bounds.fromLayerDescriptor(layerDescriptor, true),
             radii: Radii.fromLayerDescriptor(layerDescriptor),
             stroke: Stroke.fromLayerDescriptor(layerDescriptor),
             fill: Fill.fromLayerDescriptor(layerDescriptor),
@@ -597,6 +605,7 @@ define(function (require, exports, module) {
                 isBackground: layerDescriptor.background,
                 opacity: _extractOpacity(layerDescriptor),
                 bounds: Bounds.fromLayerDescriptor(layerDescriptor),
+                maskBounds: Bounds.fromLayerDescriptor(layerDescriptor, true),
                 radii: Radii.fromLayerDescriptor(layerDescriptor),
                 stroke: Stroke.fromLayerDescriptor(layerDescriptor),
                 fill: Fill.fromLayerDescriptor(layerDescriptor),

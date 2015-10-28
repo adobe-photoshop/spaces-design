@@ -128,10 +128,11 @@ define(function (require, exports, module) {
      * Create a new Bounds object from the given layer descriptor.
      * 
      * @param {object} descriptor Photoshop layer descriptor
+     * @param {boolean=} mask use mask bounds if applicable
      * @return {Bounds}
      */
-    Bounds.fromLayerDescriptor = function (descriptor) {
-        var boundsObject = this.parseLayerDescriptor(descriptor);
+    Bounds.fromLayerDescriptor = function (descriptor, mask) {
+        var boundsObject = this.parseLayerDescriptor(descriptor, mask);
             
         return new Bounds(boundsObject);
     };
@@ -146,10 +147,11 @@ define(function (require, exports, module) {
      * @param {object?} descriptor.pathBounds If available, will be parsed as shape layer
      * @param {object?} descriptor.boundsNoEffects Bounds object available for all layers
      * @param {object?} descriptor.boundsNoMask Bounds object available for all layers
+     * @param {boolean=} mask if truthy return the vector mask bounds if applicalble
      *
      * @return {?{top: number, left: number, bottom: number, right: number}}
      */
-    Bounds.parseLayerDescriptor = function (descriptor) {
+    Bounds.parseLayerDescriptor = function (descriptor, mask) {
         var boundsObject;
 
         // artboards are also groups. so we handle them separately 
@@ -163,7 +165,12 @@ define(function (require, exports, module) {
                 // Photoshop's group bounds are not useful, so ignore them.
                 case layerLib.layerKinds.GROUP:
                 case layerLib.layerKinds.GROUPEND:
-                    return null;
+                    if (mask && descriptor.vectorMaskEnabled) {
+                        boundsObject = descriptor.boundsNoEffects;
+                    } else {
+                        return null;
+                    }
+                    break;
                 case layerLib.layerKinds.TEXT:
                     boundsObject = descriptor.boundingBox;
                     break;
@@ -171,7 +178,11 @@ define(function (require, exports, module) {
                     boundsObject = descriptor.boundsNoEffects;
                     break;
                 default:
-                    boundsObject = descriptor.boundsNoMask;
+                    if (mask) {
+                        boundsObject = descriptor.boundsNoEffects;
+                    } else {
+                        boundsObject = descriptor.boundsNoMask;
+                    }
                     break;
             }
 
@@ -194,10 +205,11 @@ define(function (require, exports, module) {
      * Updates the bound object with new properties
      *
      * @param {object} descriptor Photoshop layer descriptor
+     * @param {boolean=} mask use mask bounds if applicable
      * @return {Bounds} [description]
      */
-    Bounds.prototype.resetFromDescriptor = function (descriptor) {
-        var newBoundObject = Bounds.parseLayerDescriptor(descriptor);
+    Bounds.prototype.resetFromDescriptor = function (descriptor, mask) {
+        var newBoundObject = Bounds.parseLayerDescriptor(descriptor, mask);
 
         return this.merge(newBoundObject);
     };

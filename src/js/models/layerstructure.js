@@ -854,6 +854,45 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Calculate the vector masked child-encompassing bounds of the given layer. Returns null
+     * for end-group layers and otherwise-empty groups. If layer is artboard, returns the bounds of it
+     *
+     * @param {Layer} layer
+     * @return {?Bounds}
+     */
+    Object.defineProperty(LayerStructure.prototype, "minumumChildBounds", objUtil.cachedLookupSpec(function (layer) {
+        switch (layer.kind) {
+            case layer.layerKinds.GROUP:
+                if (layer.isArtboard && !layer.vectorMaskEnabled) {
+                    return layer.bounds;
+                }
+
+                var childBounds = this.children(layer)
+                    .map(this.minumumChildBounds, this)
+                    .filter(function (bounds) {
+                        return bounds && bounds.area > 0;
+                    }),
+                    unionChildBounds = Bounds.union(childBounds);
+
+                if (layer.vectorMaskEnabled) {
+                    return Bounds.intersection(layer.maskBounds, unionChildBounds);
+                } else {
+                    return unionChildBounds;
+                }
+                break;
+            case layer.layerKinds.GROUPEND:
+                return null;
+            default:
+                if (layer.vectorMaskEnabled && layer.kind !== layer.layerKinds.VECTOR){
+                    return layer.maskBounds;
+                } else {
+                    return layer.bounds;
+                }
+
+        }
+    }));
+
+    /**
      * Calculate the child-encompassing bounds of the given layer in relation to it's owner artboard. 
      * Returns null for end-group layers and otherwise-empty groups. 
      * If layer is artboard, returns the bounds of it
@@ -1072,7 +1111,7 @@ define(function (require, exports, module) {
                     layerBounds = layer.bounds;
 
                 // Ignore updates to layers that don't have bounds like groups and groupends
-                if (!layerBounds) {
+                if (!layer.vectorMaskEnabled && !layerBounds) {
                     return;
                 }
 
@@ -1082,7 +1121,12 @@ define(function (require, exports, module) {
                 // Also inject the artboard flag so we read the correct property
                 descriptor.artboardEnabled = layer.isArtboard;
 
-                var nextBounds = layer.bounds.resetFromDescriptor(descriptor),
+                if (layer.vectorMaskEnabled && layer.layerKind !== layer.layerKinds.VECTOR) {
+                    var nextMaskBounds = layer.bounds.resetFromDescriptor(descriptor, true);
+                    layer = layer.set("maskBounds", nextMaskBounds);
+                }
+
+                var nextBounds = layer.bounds.resetFromDescriptor(descriptor),  
                     nextLayer = layer.set("bounds", nextBounds);
 
                 layers.set(layerID, nextLayer);
