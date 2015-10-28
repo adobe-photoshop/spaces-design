@@ -111,7 +111,7 @@ define(function (require, exports, module) {
             allStores = _.merge(stores, testStores || {});
 
         this._flux = new Fluxxor.Flux(allStores, actions);
-        this._resetHelper = synchronization.throttle(this._resetWithDelay, this);
+        this._resetHelper = synchronization.throttle(this._resetWithDelay, this, 100);
         this._actionReceivers = this._createActionReceivers(this._flux);
     };
     util.inherits(FluxController, EventEmitter);
@@ -710,8 +710,8 @@ define(function (require, exports, module) {
             var throttledName = name + THROTTLED_ACTION_SUFFIX,
                 debouncedName = name + DEBOUNCED_ACTION_SUFFIX,
                 synchronizedAction = this._synchronize(namespace, module, name),
-                throttledAction = synchronization.throttle(synchronizedAction),
-                debouncedAction = synchronization.debounce(synchronizedAction);
+                throttledAction = synchronization.throttle(synchronizedAction, 100),
+                debouncedAction = synchronization.debounce(synchronizedAction, 100);
 
             exports[name] = synchronizedAction;
             exports[throttledName] = throttledAction;
