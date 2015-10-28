@@ -273,15 +273,12 @@ define(function (require, exports) {
      * Initialize document and layer state, emitting DOCUMENT_UPDATED events, for
      * all the inactive documents.
      *
-     * @param {number} currentIndex
+     * @param {number} currentDocID
      * @param {number} docCount
      * @return {Promise}
      */
-    var initInactiveDocuments = function (currentIndex, docCount) {
+    var initInactiveDocuments = function (currentDocID, docCount) {
         var otherDocPromises = _.range(1, docCount + 1)
-            .filter(function (index) {
-                return index !== currentIndex;
-            })
             .map(function (index) {
                 var indexRef = documentLib.referenceBy.index(index);
 
@@ -289,9 +286,11 @@ define(function (require, exports) {
                 return _getInactiveDocumentByRef(indexRef)
                     .bind(this)
                     .then(function (document) {
-                        this.dispatch(events.document.DOCUMENT_UPDATED, {
-                            document: document
-                        });
+                        if (document.documentID !== currentDocID) {
+                            this.dispatch(events.document.DOCUMENT_UPDATED, {
+                                document: document
+                            });
+                        }
                     });
             }, this);
 
@@ -351,7 +350,7 @@ define(function (require, exports) {
                             })
                             .then(function () {
                                 return {
-                                    currentIndex: currentDoc.itemIndex,
+                                    currentIndex: currentDoc.documentID,
                                     docCount: docCount
                                 };
                             });
