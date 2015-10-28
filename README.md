@@ -5,7 +5,7 @@ Photoshop Design Space [![Build Status](https://travis-ci.org/adobe-photoshop/sp
 
 **Design Space is a work in progress.** We're still building essential features and experimenting with new ideas, and we want your help! Follow us on Twitter at [@psdesign](https://twitter.com/psdesign) for updates from the team. If you find a bug or have an idea for a new feature, please help us by [filing an issue](https://github.com/adobe-photoshop/spaces-design/issues/new). If you're an adventurous developer, you can [download and hack the HTML5 sources](https://github.com/adobe-photoshop/spaces-design/wiki/Design-Space-Development-Setup), and even submit pull requests.
 
-![Photoshop Design Space](https://s3.amazonaws.com/f.cl.ly/items/2D1B2K032H13072C2v0z/Image%202015-06-15%20at%2011.28.13%20PM.png)
+![Photoshop Design Space (Preview)](https://s3.amazonaws.com/f.cl.ly/items/3207083Y1i1l0U2R3i2L/Image%202015-10-28%20at%203.49.09%20PM.png "Photoshop Design Space (Preview)")
 
 Contributing
 ------------
