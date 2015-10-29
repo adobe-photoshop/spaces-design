@@ -28,7 +28,8 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var events = require("../events");
+    var events = require("../events"),
+        DocumentIndex = require("js/models/documentindex");
 
     var ApplicationStore = Fluxxor.createStore({
         // Photoshop Version
@@ -42,32 +43,19 @@ define(function (require, exports, module) {
         _initialized: Immutable.Set(),
 
         /**
-         * An ordered list of document IDs
-         * @private
-         * @type {Immutable.List.<number>}
-         */
-        _documentIDs: Immutable.List(),
-
-        /**
-         * The index of the currently active document, or null if there are none
-         * @private
-         * @type {?number}
-         */
-        _selectedDocumentIndex: null,
-
-        /**
-         * The ID of the currently active document, or null if there are none
-         * @private
-         * @type {?number}
-         */
-        _selectedDocumentID: null,
-
-        /**
          * List of paths for recent files opened in Photoshop
          * @private
          * @type {Immutable.List.<string>}
          */
         _recentFiles: Immutable.List(),
+
+        /**
+         * Index of currently open documents in Photoshop.
+         *
+         * @private
+         * @type {DocumentIndex}
+         */
+        _documentIndex: new DocumentIndex(),
 
         initialize: function () {
             this.bindActions(
@@ -87,24 +75,24 @@ define(function (require, exports, module) {
          * @private
          */
         _handleReset: function () {
+            this._documentIndex = new DocumentIndex();
             this._hostVersion = null;
-            this._selectedDocumentIndex = null;
-            this._selectedDocumentID = null;
-            this._documentIDs = Immutable.List();
             this._recentFiles = Immutable.List();
             this._initialized = Immutable.Set();
         },
         
         getState: function () {
+            var documentIndex = this._documentIndex;
+
             return {
                 hostVersion: this._hostVersion,
                 activeDocumentInitialized: this._initialized.get("activeDocument"),
                 inactiveDocumentsInitialized: this._initialized.get("inactiveDocuments"),
                 recentFilesInitialized: this._initialized.get("recentFiles"),
-                documentIDs: this._documentIDs,
-                selectedDocumentIndex: this._selectedDocumentIndex,
-                selectedDocumentID: this._selectedDocumentID,
-                recentFiles: this._recentFiles
+                recentFiles: this._recentFiles,
+                documentIDs: documentIndex.openDocumentIDs,
+                selectedDocumentIndex: documentIndex.activeDocumentIndex,
+                selectedDocumentID: documentIndex.activeDocumentID
             };
         },
 
@@ -114,7 +102,7 @@ define(function (require, exports, module) {
          * @return {number}
          */
         getCurrentDocumentID: function () {
-            return this._selectedDocumentID;
+            return this._documentIndex.activeDocumentID;
         },
 
         /**
@@ -123,7 +111,7 @@ define(function (require, exports, module) {
          * @return {Immutable.List.<number>}
          */
         getOpenDocumentIDs: function () {
-            return this._documentIDs;
+            return this._documentIndex.openDocumentIDs;
         },
 
         /**
@@ -142,7 +130,7 @@ define(function (require, exports, module) {
          */
         getCurrentDocument: function () {
             var documentStore = this.flux.store("document");
-            return documentStore.getDocument(this._selectedDocumentID);
+            return documentStore.getDocument(this._documentIndex.activeDocumentID);
         },
 
         /**
@@ -152,11 +140,27 @@ define(function (require, exports, module) {
          */
         getOpenDocuments: function () {
             var documentStore = this.flux.store("document"),
-                documents = this._documentIDs.map(function (id) {
-                    return documentStore.getDocument(id);
-                });
+                documents = this._documentIndex.openDocumentIDs
+                    .map(function (id) {
+                        return documentStore.getDocument(id);
+                    })
+                    .filter(function (document) {
+                        return document;
+                    });
 
             return documents;
+        },
+
+        /**
+         * Get the list of open but uninitialized document models.
+         *
+         * @return {Immutable.List.<Document>}
+         */
+        getInitializedDocuments: function () {
+            return this.getOpenDocuments()
+                .filter(function (document) {
+                    return document.layers;
+                });
         },
 
         /**
@@ -177,34 +181,7 @@ define(function (require, exports, module) {
          * @return {number}
          */
         getDocumentCount: function () {
-            return this._documentIDs.size;
-        },
-
-        /**
-         * Find either the next or previous document in the document index.
-         * 
-         * @private
-         * @param {boolean} next Whether to find the next or previous document
-         * @return {?Document}
-         */
-        _getNextPrevDocument: function (next) {
-            if (this._selectedDocumentID === null) {
-                return null;
-            }
-
-            var increment = next ? 1 : -1,
-                nextDocumentIndex = this._selectedDocumentIndex + increment;
-
-            if (nextDocumentIndex === this._documentIDs.size) {
-                nextDocumentIndex = 0;
-            } else if (nextDocumentIndex === -1) {
-                nextDocumentIndex = this._documentIDs.size - 1;
-            }
-
-            var documentStore = this.flux.store("document"),
-                nextDocmentID = this._documentIDs.get(nextDocumentIndex);
-
-            return documentStore.getDocument(nextDocmentID);
+            return this._documentIndex.openDocumentIDs.size;
         },
 
         /**
@@ -213,7 +190,10 @@ define(function (require, exports, module) {
          * @return {?Document}
          */
         getNextDocument: function () {
-            return this._getNextPrevDocument(true);
+            var documentStore = this.flux.store("document"),
+                nextDocumentID = this._documentIndex.nextID;
+
+            return documentStore.getDocument(nextDocumentID);
         },
 
         /**
@@ -222,7 +202,10 @@ define(function (require, exports, module) {
          * @return {?Document}
          */
         getPreviousDocument: function () {
-            return this._getNextPrevDocument(false);
+            var documentStore = this.flux.store("document"),
+                previousDocumentID = this._documentIndex.previousID;
+
+            return documentStore.getDocument(previousDocumentID);
         },
         
         /** @ignore */
@@ -251,32 +234,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Set the position of the given document ID in the document index.
-         * 
-         * @private
-         * @param {number} documentID
-         * @param {number} itemIndex
-         */
-        _updateDocumentPosition: function (documentID, itemIndex) {
-            // find the document in the array of indices
-            var currentIndex = -1;
-            this._documentIDs.some(function (id, index) {
-                if (id === documentID) {
-                    currentIndex = index;
-                    return true;
-                }
-            });
-
-            // remove it from the array
-            if (currentIndex > -1) {
-                this._documentIDs = this._documentIDs.splice(currentIndex, 1);
-            }
-
-            // add it back at the correct index
-            this._documentIDs = this._documentIDs.splice(itemIndex, 0, documentID);
-        },
-
-        /**
          * Updates the recent file list
          *
          * @private
@@ -299,14 +256,10 @@ define(function (require, exports, module) {
             this.waitFor(["document"], function () {
                 var rawDocument = payload.document,
                     documentID = rawDocument.documentID,
-                    itemIndex = rawDocument.itemIndex - 1; // doc indices start at 1
+                    itemIndex = rawDocument.itemIndex - 1, // doc indices start at 1
+                    current = payload.current;
 
-                this._updateDocumentPosition(documentID, itemIndex);
-
-                if (payload.current) {
-                    this._selectedDocumentID = documentID;
-                    this._selectedDocumentIndex = itemIndex;
-                }
+                this._documentIndex = this._documentIndex.setPosition(documentID, itemIndex, current);
 
                 this.emit("change");
             });
@@ -324,31 +277,7 @@ define(function (require, exports, module) {
                 var documentID = payload.documentID,
                     selectedDocumentID = payload.selectedDocumentID;
 
-                var documentIndex = this._documentIDs.indexOf(documentID);
-                if (documentIndex === -1) {
-                    throw new Error("Closed document ID not found in index: " + documentID);
-                }
-
-                this._documentIDs = this._documentIDs.splice(documentIndex, 1);
-
-                var openDocumentCount = this._documentIDs.size;
-                if ((openDocumentCount === 0) !== (selectedDocumentID === null)) {
-                    throw new Error("Next selected document ID should be null iff there are no open documents");
-                }
-
-                if (openDocumentCount === 0) {
-                    this._selectedDocumentID = null;
-                    this._selectedDocumentIndex = null;
-                    return;
-                }
-
-                var selectedDocumentIndex = this._documentIDs.indexOf(selectedDocumentID);
-                if (selectedDocumentIndex === -1) {
-                    throw new Error("Selected document ID not found in index: " + documentID);
-                }
-
-                this._selectedDocumentID = selectedDocumentID;
-                this._selectedDocumentIndex = selectedDocumentIndex;
+                this._documentIndex = this._documentIndex.remove(documentID, selectedDocumentID);
 
                 this.emit("change");
             });
@@ -361,8 +290,9 @@ define(function (require, exports, module) {
          * @param {{selectedDocumentID: number}} payload
          */
         _documentSelected: function (payload) {
-            this._selectedDocumentID = payload.selectedDocumentID;
-            this._selectedDocumentIndex = this._documentIDs.indexOf(payload.selectedDocumentID);
+            var selectedDocumentID = payload.selectedDocumentID;
+
+            this._documentIndex = this._documentIndex.setActive(selectedDocumentID);
 
             this.emit("change");
         }
