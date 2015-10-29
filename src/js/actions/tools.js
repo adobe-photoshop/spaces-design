@@ -51,6 +51,7 @@ define(function (require, exports) {
         system = require("js/util/system"),
         headlights = require("js/util/headlights"),
         utilShortcuts = require("js/util/shortcuts"),
+        synchronization = require("js/util/synchronization"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
@@ -549,7 +550,7 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _toolModalStateChangedHandler,
-        _documentChangeHandler,
+        _documentOrApplicationChangeHandler,
         _vectorMaskHandler,
         _vectorSelectMaskHandler;
 
@@ -794,14 +795,30 @@ define(function (require, exports) {
      */
     var beforeStartup = function () {
         var flux = this.flux,
+            appStore = flux.store("application"),
             toolStore = this.flux.store("tool"),
-            tools = toolStore.getAllTools();
+            tools = toolStore.getAllTools(),
+            documentLayerBounds;
 
-        var _documentChangeHandler = function () {
-            this.transfer(resetBorderPolicies);
-        }.bind(this);
+        var throttledResetBorderPolicies =
+            synchronization.throttle(this.flux.actions.tools.resetBorderPolicies, this, 100),
+            _documentOrApplicationChangeHandler = function () {
+                var currentDocument = appStore.getCurrentDocument();
 
-        this.flux.store("document").on("change", _documentChangeHandler);
+                if (currentDocument) {
+                    var nextDocumentLayerBounds = currentDocument.layers.selectedChildBounds;
+                    
+                    if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds)) {
+                        documentLayerBounds = nextDocumentLayerBounds;
+                        throttledResetBorderPolicies();
+                    }
+                } else {
+                    documentLayerBounds = null;
+                }
+            }.bind(this);
+
+        this.flux.store("document").on("change", _documentOrApplicationChangeHandler);
+        this.flux.store("application").on("change", _documentOrApplicationChangeHandler);
 
         // Listen for modal tool state entry/exit events
         _toolModalStateChangedHandler = this.flux.actions.tools.handleToolModalStateChanged.bind(this);
@@ -881,8 +898,7 @@ define(function (require, exports) {
     beforeStartup.modal = true;
     beforeStartup.reads = [locks.JS_APP, locks.JS_TOOL];
     beforeStartup.writes = [locks.PS_TOOL];
-    beforeStartup.transfers = [shortcuts.addShortcuts, initTool, changeModalState, changeVectorMaskMode,
-        resetBorderPolicies];
+    beforeStartup.transfers = [shortcuts.addShortcuts, initTool, changeModalState, changeVectorMaskMode];
 
     /**
      * Remove event handlers.
@@ -892,7 +908,8 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
-        this.flux.store("document").removeListener("change", _documentChangeHandler);
+        this.flux.store("document").removeListener("change", _documentOrApplicationChangeHandler);
+        this.flux.store("application").removeListener("change", _documentOrApplicationChangeHandler);
         _currentTransformPolicyID = null;
 
         return Promise.resolve();
