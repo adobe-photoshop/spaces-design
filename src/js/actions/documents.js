@@ -278,21 +278,29 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var initInactiveDocuments = function (currentDocID, docCount) {
-        var otherDocPromises = _.range(1, docCount + 1)
+        var docReferences = _.range(1, docCount + 1)
             .map(function (index) {
-                var indexRef = documentLib.referenceBy.index(index);
-
-                // Only load essential properties for inactive documents
-                return _getInactiveDocumentByRef(indexRef)
-                    .bind(this)
-                    .then(function (document) {
-                        if (document.documentID !== currentDocID) {
+                return documentLib.referenceBy.index(index);
+            }),
+            otherDocPromises = descriptor.batchGetProperty(docReferences, "documentID")
+                .bind(this)
+                .then(function (documentIDs) {
+                    return documentIDs.filter(function (documentID) {
+                        return documentID !== currentDocID;
+                    });
+                })
+                .map(function (documentID) {
+                    var docRef = documentLib.referenceBy.id(documentID);
+                   
+                    // Only load essential properties for inactive documents
+                    return _getInactiveDocumentByRef(docRef)
+                        .bind(this)
+                        .then(function (document) {
                             this.dispatch(events.document.DOCUMENT_UPDATED, {
                                 document: document
                             });
-                        }
-                    });
-            }, this);
+                        });
+                });
 
         return Promise.all(otherDocPromises)
             .bind(this)
@@ -306,7 +314,7 @@ define(function (require, exports) {
     /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED.
      *
-     * @return {Promise.<{currentIndex: number, docCount: number}>}
+     * @return {Promise.<{currentID: number, docCount: number}>}
      */
     var initActiveDocument = function () {
         return descriptor.getProperty("application", "numberOfDocuments")
@@ -350,7 +358,7 @@ define(function (require, exports) {
                             })
                             .then(function () {
                                 return {
-                                    currentIndex: currentDoc.documentID,
+                                    currentID: currentDoc.documentID,
                                     docCount: docCount
                                 };
                             });
@@ -932,7 +940,7 @@ define(function (require, exports) {
      * Register event listeners for active and open document change events, and
      * initialize the active document list.
      *
-     * @return {Promise.<{currentIndex: number, docCount: number}>}
+     * @return {Promise.<{currentID: number, docCount: number}>}
      */
     var beforeStartup = function () {
         var applicationStore = this.flux.store("application"),
@@ -1094,17 +1102,17 @@ define(function (require, exports) {
      * Send info to search store about searching for documents and
      * initialize the inactive documents. (The active document is initialized beforeStartup.)
      *
-     * @param {{currentIndex: number, docCount: number}=} payload
+     * @param {{currentID: number, docCount: number}=} payload
      * @return {Promise}
      */
     var afterStartup = function (payload) {
         searchActions.registerCurrentDocumentSearch.call(this);
         searchActions.registerRecentDocumentSearch.call(this);
 
-        var currentIndex = payload && payload.currentIndex,
+        var currentID = payload && payload.currentID,
             docCount = payload ? payload.docCount : 0;
 
-        return this.transfer(initInactiveDocuments, currentIndex, docCount);
+        return this.transfer(initInactiveDocuments, currentID, docCount);
     };
     afterStartup.reads = [locks.PS_DOC];
     afterStartup.writes = [locks.JS_DOC, locks.JS_SEARCH];
