@@ -85,10 +85,18 @@ define(function (require, exports) {
      */
     var handleDeleteVectorMask = function () {
         var appStore = this.flux.store("application"),
+            toolStore = this.flux.store("tool"),
             currentDocument = appStore.getCurrentDocument();
 
         if (!currentDocument) {
             return Promise.resolve();
+        }
+
+        if (toolStore.getModalToolState()) {
+            return this.transfer(layerActions.deleteVectorMask)
+                .then(function () {
+                    return this.transfer(toolActions.changeVectorMaskMode, false);
+                });
         }
 
         var currentLayer = currentDocument.layers.selected.first();

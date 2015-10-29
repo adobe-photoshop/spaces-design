@@ -82,14 +82,7 @@ define(function (require, exports, module) {
                 toolStore = flux.store("tool");
 
             if (toolStore.getVectorMode()) {
-                if (toolStore.getModalToolState()) {
-                    flux.actions.layers.deleteVectorMask()
-                        .then(function () {
-                            flux.actions.tools.changeVectorMaskMode(false);
-                        });
-                } else {
-                    flux.actions.mask.handleDeleteVectorMask();
-                }
+                flux.actions.mask.handleDeleteVectorMask();
             } else {
                 return PS.performMenuCommand(_CLEAR_PATH)
                     .catch(function () {
