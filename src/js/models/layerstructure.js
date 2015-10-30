@@ -1488,7 +1488,7 @@ define(function (require, exports, module) {
      * @param {number | Immutable.List.<number>} layerEffectIndex index of effect, or per-layer List thereof
      * @param {string} layerEffectType type of layer effect
      * @param {object | Immutable.List.<object>} layerEffectProperties properties to merge, or per-layer List thereof.
-     *                  				         If property is null, the layer effect will be deleted.
+     *  If property is null, the layer effect will be deleted.
      * @return {LayerStructure}
      */
     LayerStructure.prototype.setLayerEffectProperties = function (layerIDs,

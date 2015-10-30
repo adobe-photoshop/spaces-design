@@ -18,6 +18,9 @@
     ],
     "disallowMixedSpacesAndTabs": true,
     "disallowMultipleSpaces": true,
+    "disallowNestedTernaries": {
+        "maxLevel": 1
+    },
     "disallowNewlineBeforeBlockStatements": true,
     "disallowOperatorBeforeLineBreak": [
         "."
@@ -43,6 +46,7 @@
     "disallowSpacesInsideArrayBrackets": "nested",
     "disallowSpacesInsideBrackets": true,
     "disallowSpacesInsideParentheses": true,
+    "disallowTabs": true,
     "disallowTrailingComma": true,
     "disallowTrailingWhitespaceInSource": true,
     "esnext": true,
@@ -90,6 +94,9 @@
     "requireParenthesesAroundIIFE": true,
     "requireSemicolons": true,
     "requireSpaceAfterBinaryOperators": true,
+    "requireSpaceAfterComma": {
+        "allExcept": ["trailing"]
+    },
     "requireSpaceAfterKeywords": true,
     "requireSpaceAfterLineComment": true,
     "requireSpaceBeforeBinaryOperators": true,
@@ -144,7 +151,9 @@
         "checkReturnTypes": true,
         "checkRedundantReturns": true,
         "requireReturnTypes": true,
-        "enforceExistence": "exceptExports",
+        "enforceExistence": {
+            "allExcept": ["exports"]
+        },
         "enforceExistenceExcept": [
             "get",
             "setup",
