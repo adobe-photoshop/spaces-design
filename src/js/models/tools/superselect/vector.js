@@ -31,6 +31,7 @@ define(function (require, exports, module) {
     var Tool = require("js/models/tool"),
         system = require("js/util/system"),
         EventPolicy = require("js/models/eventpolicy"),
+        SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
@@ -107,6 +108,8 @@ define(function (require, exports, module) {
             flux.actions.tools.select(toolStore.getToolByID("newSelect"));
         }
     };
+    
+    SuperSelectVectorTool.prototype.toolOverlay = SuperselectOverlay;
 
     module.exports = SuperSelectVectorTool;
 });

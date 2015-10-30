@@ -80,6 +80,13 @@ define(function (require, exports, module) {
         _scrimGroup: null,
 
         /**
+         * Owner group for the HUD elements
+         *
+         * @type {SVGElement}
+         */
+        _hudGroup: null,
+
+        /**
          * IDs of layers that are being highlighted by marquee select
          *
          * @type {Array.<number>}
@@ -112,14 +119,16 @@ define(function (require, exports, module) {
                 currentDocument = applicationStore.getCurrentDocument(),
                 modifierStore = flux.store("modifier"),
                 modifiers = modifierStore.getState(),
-                leafModifier = system.isMac ? modifiers.command : modifiers.control;
+                leafModifier = system.isMac ? modifiers.command : modifiers.control,
+                vectorMaskMode = toolStore.getVectorMode();
 
             return {
                 document: currentDocument,
                 marqueeEnabled: uiState.marqueeEnabled,
                 marqueeStart: uiState.marqueeStart,
                 modalState: modalState,
-                leafBounds: leafModifier
+                leafBounds: leafModifier,
+                vectorMaskMode: vectorMaskMode
             };
         },
 
@@ -210,9 +219,22 @@ define(function (require, exports, module) {
             svg.selectAll(".superselect-bounds").remove();
             svg.selectAll(".superselect-marquee").remove();
             svg.selectAll(".artboard-adder").remove();
+            svg.selectAll(".vector-mask-hud").remove();
 
             if (!currentDocument || this.state.modalState) {
                 return null;
+            }
+
+            this._hudGroup = svg.insert("g", ".hud-group")
+                .classed("vector-mask-hud", true);
+            
+            var currentLayer = currentDocument.layers.selected.first();
+                
+            if (currentLayer && currentLayer.vectorMaskEmpty) {
+                if (this.state.vectorMaskMode) {
+                    this._drawVectorMaskHUDObjects(50);
+                    return;
+                }
             }
 
             this._scrimGroup = svg.insert("g", ".transform-control-group")
@@ -743,6 +765,135 @@ define(function (require, exports, module) {
             this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "e");
             this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "s");
             this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "w");
+        },
+
+        /**
+         * Draws the clickable icons on the vector Mask HUD
+         *
+         * @private
+         * @param {number} size Icon size
+         */
+        _drawVectorMaskHUDObjects: function (size) {
+            var uiStore = this.getFlux().store("ui"),
+                cloakRect = uiStore.getCloakRect();
+    
+            var fluxActions = this.getFlux().actions,
+                toolStore = this.getFlux().store("tool"),
+                iconSize = Math.round(size),
+                iconOffset = Math.round(size / 2),
+                numIcons = 3;
+
+            var rectWidth = size * numIcons + (iconOffset * (numIcons + 1)),
+                rectHeight = size + (iconOffset * 2),
+                left = (cloakRect.left + cloakRect.right) / 2 - (rectWidth / 2),
+                top = (cloakRect.top + cloakRect.bottom) / 2 - (rectHeight / 2),
+                iconLeft = left + iconOffset,
+                iconTop = top + iconOffset,
+                rectRound = size / 6;
+
+            var rectTLX = Math.round(left),
+                rectTLY = Math.round(top);
+
+            // Draw the frame
+            // A rounded rectangle
+            this._hudGroup
+                .append("rect")
+                .attr("x", rectTLX)
+                .attr("y", rectTLY)
+                .attr("width", rectWidth)
+                .attr("height", rectHeight)
+                .attr("rx", rectRound)
+                .attr("ry", rectRound)
+                .classed("vector-mask-hud", true)
+                .classed("vector-mask-hud-outline", true)
+                .on("click", function () {
+                    d3.event.stopPropagation();
+                });
+ 
+            // background of ellipse 
+            this._hudGroup
+                .append("use")
+                .attr("xlink:href", "img/ico-sampler-fill-swatch-bg.svg#sampler-fill-swatch-bg")
+                .attr("x", iconLeft)
+                .attr("y", iconTop)
+                .attr("width", iconSize)
+                .attr("height", iconSize)
+                .on("click", function () {
+                    // Apply the color to selected layers
+                    fluxActions.mask.applyEllipse();
+                    d3.event.stopPropagation();
+                }.bind(this));
+            // ellipse
+            // 
+            this._hudGroup
+                .append("use")
+                .attr("xlink:href", "img/ico-tool-ellipse.svg#tool-ellipse")
+                .attr("x", iconLeft)
+                .attr("y", iconTop)
+                .attr("width", iconSize)
+                .attr("height", iconSize)
+                .on("click", function () {
+                    // Apply the color to selected layers
+                    fluxActions.mask.applyEllipse();
+                    d3.event.stopPropagation();
+                }.bind(this));
+            
+            iconLeft = iconLeft + size + iconOffset ;
+            // background of rect 
+            this._hudGroup
+                .append("use")
+                .attr("xlink:href", "img/ico-sampler-fill-swatch-bg.svg#sampler-fill-swatch-bg")
+                .attr("x", iconLeft)
+                .attr("y", iconTop)
+                .attr("width", iconSize)
+                .attr("height", iconSize)
+                .on("click", function () {
+                    // Apply the color to selected layers
+                    fluxActions.mask.applyRectangle();
+                    d3.event.stopPropagation();
+                }.bind(this));
+            // rect
+            this._hudGroup
+                .append("use")
+                .attr("xlink:href", "img/ico-tool-rectangle.svg#tool-rectangle")
+                .attr("x", iconLeft)
+                .attr("y", iconTop)
+                .attr("width", iconSize)
+                .attr("height", iconSize)
+                .on("click", function () {
+                    // Apply the color to selected layers
+                    fluxActions.mask.applyRectangle();
+                    d3.event.stopPropagation();
+                }.bind(this));
+
+            iconLeft = iconLeft + size + iconOffset;
+
+            // background of pen 
+            this._hudGroup
+                .append("use")
+                .attr("xlink:href", "img/ico-sampler-fill-swatch-bg.svg#sampler-fill-swatch-bg")
+                .attr("x", iconLeft)
+                .attr("y", iconTop)
+                .attr("width", iconSize)
+                .attr("height", iconSize)
+                .on("click", function () {
+                    // Apply the color to selected layers
+                    fluxActions.tools.select(toolStore.getToolByID("pen"));
+                    d3.event.stopPropagation();
+                }.bind(this));
+            // pen
+            this._hudGroup
+                .append("use")
+                .attr("xlink:href", "img/ico-tool-pen.svg#tool-pen")
+                .attr("x", iconLeft)
+                .attr("y", iconTop)
+                .attr("width", iconSize)
+                .attr("height", iconSize)
+                .on("click", function () {
+                    // Apply the color to selected layers
+                    fluxActions.tools.select(toolStore.getToolByID("pen"));
+                    d3.event.stopPropagation();
+                }.bind(this));
         },
 
         render: function () {
