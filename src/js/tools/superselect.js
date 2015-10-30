@@ -72,7 +72,7 @@ define(function (require, exports, module) {
                 .bind(this)
                 .then(function () {
                     return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
-                        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_WITH_NOTIFY);
+                        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_AND_NOTIFY);
                 });
         } else {
             var currentLayers = currentDocument.layers.selected;
