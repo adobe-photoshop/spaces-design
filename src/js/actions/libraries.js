@@ -850,6 +850,7 @@ define(function (require, exports) {
                         //
                         // FIXME: we should instead get IDs back from Photoshop when layers are placed with modifier, 
                         //        so we don't have to get all the layer IDs.
+                        //        https://watsonexp.corp.adobe.com/#bug=4080071
                         if (hasAlt) {
                             return this.transfer(layerActions._getLayerIDsForDocumentID, currentDocument.id)
                                 .bind(this)

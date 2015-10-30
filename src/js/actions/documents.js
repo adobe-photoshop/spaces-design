@@ -908,11 +908,23 @@ define(function (require, exports) {
             return this.transfer(updateDocument);
         }
 
+        var layer = document.layers.byID(newLayerID);
+        
+        // If the new layer is already existed (by expanding a libraries graphic that is an embedded SO),
+        // we reset the layer to update its smart object type and position.
+        if (layer) {
+            return this.transfer(layerActions.resetLayers, document, layer)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(layerActions.resetIndex, document);
+                });
+        }
+
         return this.transfer(layerActions.addLayers, document, newLayerID, true, replacedLayerID || false);
     };
     handlePlaceEvent.reads = [locks.JS_APP];
     handlePlaceEvent.writes = [];
-    handlePlaceEvent.transfers = [updateDocument, "layers.addLayers"];
+    handlePlaceEvent.transfers = [updateDocument, "layers.addLayers", "layers.resetLayers", "layers.resetIndex"];
     handlePlaceEvent.modal = true;
 
     /**

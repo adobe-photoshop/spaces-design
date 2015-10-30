@@ -381,6 +381,14 @@ define(function (require, exports) {
         if (typeof layerSpec === "number") {
             layerSpec = [layerSpec];
         }
+        
+        layerSpec.forEach(function (layerID) {
+            var layer = document.layers.byID(layerID);
+
+            if (layer) {
+                throw new Error("Trying to add a layer that already exists: " + layerID + " " + layer.name);
+            }
+        });
 
         if (selected === undefined) {
             selected = true;
