@@ -63,7 +63,7 @@ define(function (require, exports, module) {
             OS.addListener("externalMouseMove", _mouseMoveHandler);
 
             return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
-                UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_WITH_NOTIFY);
+                UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_AND_NOTIFY);
         };
 
         var deselectHandler = function () {
