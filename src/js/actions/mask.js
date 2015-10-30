@@ -178,6 +178,7 @@ define(function (require, exports) {
                 }
             }
 
+
         return descriptor.batchPlayObjects([vectorMaskLib.deleteVectorMask(),
             vectorMaskLib.makeBoundsWorkPath(bounds),
             vectorMaskLib.makeVectorMaskFromWorkPath(),
