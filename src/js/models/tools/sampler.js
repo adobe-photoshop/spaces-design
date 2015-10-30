@@ -101,7 +101,7 @@ define(function (require, exports, module) {
         }
     };
 
-    SamplerTool.prototype.toolOverlay = SamplerOverlay;
+    SamplerTool.prototype.toolOverlays = [SamplerOverlay];
 
     module.exports = SamplerTool;
 });

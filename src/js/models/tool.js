@@ -148,10 +148,10 @@ define(function (require, exports, module) {
     Tool.prototype.activationKey = null;
 
     /**
-     * Pointer to the Tool Overlay class that allows us to draw things on the screen
-     * @type {?Object}
+     * aArray of pointers to the Tool Overlay class that allows us to draw things on the screen
+     * @type {?Array<Object>}
      */
-    Tool.prototype.toolOverlay = null;
+    Tool.prototype.toolOverlays = null;
 
     /**
      * Optional indicate is a tool is usable in vector make mode 
