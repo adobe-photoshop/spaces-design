@@ -183,7 +183,8 @@ define(function (require, exports, module) {
                 applicationState = applicationStore.getState(),
                 policyFrames = preferenceStore.getState().get("policyFramesEnabled"),
                 document = applicationStore.getCurrentDocument(),
-                appIsModal = flux.store("dialog").getState().appIsModal;
+                appIsModal = flux.store("dialog").getState().appIsModal,
+                vectorMaskMode = flux.store("tool").getVectorMode();
 
             return {
                 current: toolState.current,
@@ -193,7 +194,8 @@ define(function (require, exports, module) {
                 document: document,
                 activeDocumentInitialized: applicationState.activeDocumentInitialized,
                 recentFilesInitialized: applicationState.recentFilesInitialized,
-                appIsModal: appIsModal
+                appIsModal: appIsModal,
+                vectorMaskMode: vectorMaskMode
             };
         },
 
@@ -210,7 +212,9 @@ define(function (require, exports, module) {
                 return false;
             }
             
-            if (this.state.isDropTarget === nextState.isDropTarget) {
+            if (this.state.isDropTarget === nextState.isDropTarget && 
+                this.state.vectorMaskMode === nextState.vectorMaskMode &&
+                this.state.current === nextState.current) {
                 return false;
             }
 
