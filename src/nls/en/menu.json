@@ -108,7 +108,8 @@
             "APPLE_WATCH_42MM": "Apple Watch 42mm",
             "WEB_1440_900": "Web (1440 x 900)",
             "WEB_1920_1080": "Web (1920 x 1080)"
-        }
+        },
+        "NEW_VECTOR_MASK_FROM_SHAPE" : "Create Vector Mask from Layer"
     },
     "TYPE": {
         "$MENU": "Type",

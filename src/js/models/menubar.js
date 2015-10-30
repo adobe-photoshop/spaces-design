@@ -268,7 +268,20 @@ define(function (require, exports, module) {
                 (document !== null) && hasPreviousHistoryState,
             "later-history":
                 (document !== null) && hasNextHistoryState,
-            "not-vector-mask-mode": !vectorMaskMode
+            "not-vector-mask-mode":
+                !vectorMaskMode,
+            "vector-mask-from-shape":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                (document.layers.selectedNormalized.size === 2) &&
+                (document.layers.selected.some(function (layer) {
+                    return layer.isVector;
+                })) &&
+                (document.layers.selected.some(function (layer) {
+                    return document.layers.canSupportVectorMask(layer) &&
+                        !layer.vectorMaskEnabled;
+                }))
         };
     };
 

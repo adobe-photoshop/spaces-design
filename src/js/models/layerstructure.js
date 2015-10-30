@@ -1004,6 +1004,19 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Given a layers, return if that layer can support a vector mask
+     *
+     * @param {Layer} layer
+     * @return {boolean}
+     */
+    Object.defineProperty(LayerStructure.prototype, "canSupportVectorMask", objUtil.cachedLookupSpec(function (layer) {
+        return !layer.isGroupEnd &&
+            !layer.isVector &&
+            !layer.isBackground &&
+            !layer.locked;
+    }));
+
+    /**
      * Create a new non-group layer model from a Photoshop layer descriptor and
      * add it to the structure.
      *
