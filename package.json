@@ -26,7 +26,7 @@
     "grunt-jsxhint": "^0.6.0",
     "grunt-lintspaces": "^0.7.0",
     "node-lintspaces": "shaoshing/node-lintspaces",
-    "jscs-jsdoc": "shaoshing/jscs-jsdoc#v1.1.0.x",
+    "jscs-jsdoc": "shaoshing/jscs-jsdoc#7fbf64b",
     "jscs-trailing-whitespace-in-source": "0.0.1",
     "lodash": "^3.10.1",
     "react-tools": "^0.13.1"
