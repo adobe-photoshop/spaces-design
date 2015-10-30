@@ -115,19 +115,19 @@ define(function (require, exports, module) {
             return Promise.join(backspacePromise, deletePromise);
         };
 
-        var backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+        var backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
-            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
-            escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
-            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
-            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT),
-            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN),
-            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT);
             
         this.keyboardPolicyList = [

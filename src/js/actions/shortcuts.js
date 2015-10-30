@@ -102,7 +102,7 @@ define(function (require, exports) {
         }
 
         var keyboardPolicies = specs.map(function (spec) {
-            var policyAction = ui.policyAction.NEVER_PROPAGATE,
+            var policyAction = ui.policyAction.PROPAGATE_TO_BROWSER,
                 eventKind = os.eventKind.KEY_DOWN,
                 modifiers = spec.modifiers,
                 key = spec.key;

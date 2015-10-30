@@ -133,21 +133,21 @@ define(function (require, exports, module) {
         this.isMainTool = false;
         this.handleVectorMaskMode = true;
 
-        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
-            enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER),
-            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
-            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
-            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
-            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT),
-            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN),
-            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT);
             
         this.keyboardPolicyList = [
@@ -161,13 +161,13 @@ define(function (require, exports, module) {
             arrowLeftKeyPolicy
         ];
 
-        var vectorMaskPointerPolicy = new PointerEventPolicy(UI.policyAction.ALPHA_PROPAGATE,
+        var vectorMaskPointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_BY_ALPHA,
                 OS.eventKind.LEFT_MOUSE_DOWN),
-            rightPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            rightPointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.RIGHT_MOUSE_DOWN);
             
         if (system.isMac) {
-            var controlpointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            var controlpointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                     OS.eventKind.LEFT_MOUSE_DOWN, { control: true });
             this.pointerPolicyList = [rightPointerPolicy, controlpointerPolicy, vectorMaskPointerPolicy];
         } else {

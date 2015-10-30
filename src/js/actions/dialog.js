@@ -63,7 +63,7 @@ define(function (require, exports) {
 
         if (isModal) {
             var neverPropagatePolicy = new PointerEventPolicy(
-                adapterUI.policyAction.NEVER_PROPAGATE,
+                adapterUI.policyAction.PROPAGATE_TO_BROWSER,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN
             );
             

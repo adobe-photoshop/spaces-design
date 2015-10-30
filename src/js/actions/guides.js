@@ -138,7 +138,7 @@ define(function (require, exports) {
 
         // Each guide is either horizontal or vertical with a specific position on canvas space
         // We need to create a rectangle around this guide that fits the window boundaries
-        // that lets the mouse clicks go to Photoshop (ALWAYS_PROPAGATE)
+        // that lets the mouse clicks go to Photoshop (PROPAGATE_TO_PHOTOSHOP)
         var guidePolicyList = visibleGuides.map(function (guide) {
             var horizontal = guide.orientation === "horizontal",
                 guideTL = uiStore.transformCanvasToWindow(
@@ -163,7 +163,7 @@ define(function (require, exports) {
                 };
             }
             
-            return new PointerEventPolicy(adapterUI.policyAction.ALWAYS_PROPAGATE,
+            return new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_TO_PHOTOSHOP,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
                 {}, // no modifiers
                 guideArea);

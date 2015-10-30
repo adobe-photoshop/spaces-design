@@ -72,7 +72,7 @@ define(function (require, exports, module) {
                 .bind(this)
                 .then(function () {
                     return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
-                        UI.pointerPropagationMode.ALPHA_PROPAGATE_WITH_NOTIFY);
+                        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_WITH_NOTIFY);
                 });
         } else {
             var currentLayers = currentDocument.layers.selected;
@@ -107,7 +107,7 @@ define(function (require, exports, module) {
      */
     var _deselectHandler = function () {
         return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
-            UI.pointerPropagationMode.ALPHA_PROPAGATE);
+            UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
     };
 
     /**
@@ -136,20 +136,20 @@ define(function (require, exports, module) {
             pointerPolicyList;
 
         if (vectorMode) {
-            pointerPolicy = new PointerEventPolicy(UI.policyAction.ALPHA_PROPAGATE,
+            pointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_BY_ALPHA,
                 OS.eventKind.LEFT_MOUSE_DOWN);
-            var rightPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            var rightPointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.RIGHT_MOUSE_DOWN);
 
             if (system.isMac) {
-                var contextPointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+                var contextPointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                     OS.eventKind.LEFT_MOUSE_DOWN, { control: true });
                 pointerPolicyList = [rightPointerPolicy, contextPointerPolicy, pointerPolicy];
             } else {
                 pointerPolicyList = [rightPointerPolicy, pointerPolicy];
             }
         } else {
-            pointerPolicy = new PointerEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            pointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.LEFT_MOUSE_DOWN);
             pointerPolicyList = [pointerPolicy];
         }
@@ -174,23 +174,23 @@ define(function (require, exports, module) {
         this.selectHandler = _selectHandler;
         this.deselectHandler = _deselectHandler;
 
-        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
-            tabKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            tabKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.TAB),
-            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
-            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
-            enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.NEVER_PROPAGATE,
+            enterKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ENTER),
-            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
-            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT),
-            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN),
-            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.FOCUS_PROPAGATE,
+            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT);
 
         this.keyboardPolicyList = [
