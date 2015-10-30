@@ -60,7 +60,7 @@
 @focus-highlight: #3691ff;
 @text-highlight: #1B8BE9;
 
-@warm-gray: mix(@item-active, @bg-alt, 70%);
+@mid-bg-alt: mix(@item-active, @bg-alt, 70%);
 @black: mix(black, @bg-alt, 80%);
 @color-checkerboard: @item-hover;
 @color-preview-background: white;
@@ -86,7 +86,7 @@
 /* General Utilities */
 
 .shadow() {
-    -webkit-filter: shadow(0 1px 0 @warm-gray)
+    -webkit-filter: shadow(0 1px 0 @mid-bg-alt)
 }
 
 .color-transparency(@color, @alpha: 1) {
