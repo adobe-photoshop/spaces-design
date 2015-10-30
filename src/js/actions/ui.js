@@ -595,7 +595,7 @@ define(function (require, exports) {
         _activationChangeHandler = function (event) {
             this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: event.becameActive });
         }.bind(this);
-        adapterOS.addListener("activationChanged", _activationChangeHandler);
+        // adapterOS.addListener("activationChanged", _activationChangeHandler);
 
         var windowResizeDebounced = synchronization.debounce(function () {
             return this.flux.actions.ui.setOverlayCloaking();

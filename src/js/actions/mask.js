@@ -31,6 +31,10 @@ define(function (require, exports) {
         toolActions = require("./tools"),
         locks = require("../locks");
 
+    var descriptor = require("adapter/ps/descriptor"),
+        boundsLib = require("adapter/lib/bounds"),
+        vectorMaskLib = require("adapter/lib/vectorMask");
+
     var _CLEAR_PATH = 106;
 
     /**
@@ -94,6 +98,7 @@ define(function (require, exports) {
 
         if (toolStore.getModalToolState()) {
             return this.transfer(layerActions.deleteVectorMask)
+                .bind(this)
                 .then(function () {
                     return this.transfer(toolActions.changeVectorMaskMode, false);
                 });
@@ -139,6 +144,80 @@ define(function (require, exports) {
     handleDeleteVectorMask.transfers = [layerActions.resetLayers, layerActions.deleteVectorMask,
         toolActions.changeVectorMaskMode, menuActions.native];
 
+    /**
+     * Create an circular mask the size of the currently selected layer
+     *
+     * @return {Promise}
+     */
+    var applyRectangle = function () {
+        var appStore = this.flux.store("application"),
+            toolStore = this.flux.store("tool"),
+            currentDocument = appStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var currentLayers = currentDocument.layers.selected;
+
+        if (currentLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var currentLayer = currentLayers.first(),
+            bounds = boundsLib.bounds(currentLayer.bounds);
+
+        return descriptor.batchPlayObjects([vectorMaskLib.deleteVectorMask(),
+            vectorMaskLib.makeBoundsWorkPath(bounds),
+            vectorMaskLib.makeVectorMaskFromWorkPath(),
+            vectorMaskLib.deleteWorkPath()])
+            .bind(this)
+            .then(function () {
+                return this.transfer(toolActions.select, toolStore.getToolByID("newSelect"));
+            });
+    };
+    applyRectangle.reads = [locks.JS_APP, locks.JS_DOC];
+    applyRectangle.writes = [locks.PS_DOC];
+    applyRectangle.transfers = [toolActions.select];
+
+    /**
+     * Create an circular mask the size of the currently selected layer
+     *
+     * @return {Promise}
+     */
+    var applyEllipse = function () {
+        var appStore = this.flux.store("application"),
+            toolStore = this.flux.store("tool"),
+            currentDocument = appStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var currentLayers = currentDocument.layers.selected;
+
+        if (currentLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var currentLayer = currentLayers.first(),
+            bounds = currentLayer.bounds;
+            
+        return descriptor.batchPlayObjects([vectorMaskLib.deleteVectorMask(),
+            vectorMaskLib.makeCircularBoundsWorkPath(bounds),
+            vectorMaskLib.makeVectorMaskFromWorkPath(),
+            vectorMaskLib.deleteWorkPath()])
+            .bind(this)
+            .then(function () {
+                return this.transfer(toolActions.select, toolStore.getToolByID("newSelect"));
+            });
+    };
+    applyEllipse.reads = [locks.JS_APP, locks.JS_DOC];
+    applyEllipse.writes = [locks.PS_DOC];
+    applyEllipse.transfers = [toolActions.select];
+
     exports.handleDeleteVectorMask = handleDeleteVectorMask;
     exports.handleEscapeVectorMask = handleEscapeVectorMask;
+    exports.applyEllipse = applyEllipse;
+    exports.applyRectangle = applyRectangle;
 });
