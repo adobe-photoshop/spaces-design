@@ -1022,7 +1022,7 @@ define(function (require, exports, module) {
             }, this);
         }.bind(this));
 
-        return this.set("layers", this.layers.merge(nextLayers));
+        return this.mergeIn(["layers"], nextLayers);
     };
 
     /**
@@ -1093,6 +1093,20 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Set the visibility of the given layer IDs.
+     *
+     * @param {Immutable.Map.<number, boolean>} visibilityMap Map from layerID to visibility
+     * @return {LayerStructure}
+     */
+    LayerStructure.prototype.setVisibility = function (visibilityMap) {
+        var layerMap = visibilityMap.map(function (visible, layerID) {
+            return this.byID(layerID).set("visible", visible);
+        }, this);
+
+        return this.mergeIn(["layers"], layerMap);
+    };
+
+    /**
      * Update basic properties of the given layers.
      *
      * @param {Immutable.Iterable.<number>} layerIDs
@@ -1104,18 +1118,7 @@ define(function (require, exports, module) {
                 return [layerID, this.byID(layerID).setProperties(properties)];
             }, this));
 
-        return this.set("layers", this.layers.merge(updatedLayers));
-    };
-
-    /**
-     * Merges properties into the layers based on a map of simple property maps, keyed by layer ID
-     *
-     * @param {Immutable.Map.<number, Immutable.Map>} layerMap
-     */
-    LayerStructure.prototype.setLayerPropsMap = function (layerMap) {
-        return this.mergeDeep({
-            layers: layerMap
-        });
+        return this.mergeIn(["layers"], updatedLayers);
     };
 
     /**
@@ -1126,15 +1129,11 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype._updateBounds = function (allBounds) {
-        var nextBounds = allBounds.map(function (bounds) {
-            return Immutable.Map({
-                bounds: bounds
-            });
-        });
+        var layerMap = allBounds.map(function (bounds, layerID) {
+            return this.byID(layerID).set("bounds", bounds);
+        }, this);
 
-        return this.mergeDeep({
-            layers: nextBounds
-        });
+        return this.mergeIn(["layers"], layerMap);
     };
 
     /**
@@ -1166,15 +1165,14 @@ define(function (require, exports, module) {
      * @return {LayerStructure}
      */
     LayerStructure.prototype.setLayersProportional = function (layerIDs, proportional) {
-        var nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
-                return map.set(layerID, Immutable.Map({
-                    proportionalScaling: proportional
-                }));
-            }, new Map()));
+        var nextLayerMap = Immutable.Map(layerIDs.reduce(function (map, layerID) {
+            var layer = this.byID(layerID),
+                nextLayer = layer.set("proportionalScaling", proportional);
 
-        return this.mergeDeep({
-            layers: nextLayers
-        });
+            return map.set(layerID, nextLayer);
+        }, new Map(), this));
+
+        return this.mergeIn(["layers"], nextLayerMap);
     };
 
     /**
@@ -1385,15 +1383,14 @@ define(function (require, exports, module) {
      */
     LayerStructure.prototype.setBorderRadii = function (layerIDs, radii) {
         var nextRadii = new Radii(radii),
-            nextLayers = Immutable.Map(layerIDs.reduce(function (map, layerID) {
-                return map.set(layerID, Immutable.Map({
-                    radii: nextRadii
-                }));
-            }, new Map()));
+            nextLayerMap = layerIDs.reduce(function (map, layerID) {
+                var layer = this.byID(layerID),
+                    nextLayer = layer.set("radii", nextRadii);
 
-        return this.mergeDeep({
-            layers: nextLayers
-        });
+                return map.set(layerID, nextLayer);
+            }, new Map(), this);
+
+        return this.mergeIn(["layers"], nextLayerMap);
     };
 
     /**
@@ -1418,9 +1415,7 @@ define(function (require, exports, module) {
             return map.set(layerID, nextLayer);
         }, new Map(), this));
 
-        return this.mergeDeep({
-            layers: nextLayers
-        });
+        return this.mergeIn(["layers"], nextLayers);
     };
 
     /**
@@ -1449,9 +1444,7 @@ define(function (require, exports, module) {
             return map.set(layerID, nextLayer);
         }, new Map(), this));
        
-        return this.mergeDeep({
-            layers: nextLayers
-        });
+        return this.mergeIn(["layers"], nextLayers);
     };
 
     /**
@@ -1476,9 +1469,7 @@ define(function (require, exports, module) {
             return map.set(layerID, nextLayer);
         }, new Map(), this));
 
-        return this.mergeDeep({
-            layers: nextLayers
-        });
+        return this.mergeIn(["layers"], nextLayers);
     };
 
     /**
@@ -1613,7 +1604,7 @@ define(function (require, exports, module) {
             return map.set(layerID, nextLayer);
         }, new Map(), this));
 
-        return this.set("layers", this.layers.merge(nextLayers));
+        return this.mergeIn(["layers"], nextLayers);
     };
 
     /**
@@ -1660,7 +1651,7 @@ define(function (require, exports, module) {
                 return layer;
             });
 
-        return this.set("layers", this.layers.merge(nextLayers));
+        return this.mergeIn(["layers"], nextLayers);
     };
 
     module.exports = LayerStructure;
