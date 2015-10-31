@@ -81,11 +81,8 @@ define(function (require, exports, module) {
             var flux = this.flux,
                 toolStore = flux.store("tool");
 
-            if (toolStore.getVectorMode() && toolStore.getModalToolState()) {
-                flux.actions.layers.deleteVectorMask()
-                    .then(function () {
-                        flux.actions.tools.changeVectorMaskMode(false);
-                    });
+            if (toolStore.getVectorMode()) {
+                flux.actions.mask.handleDeleteVectorMask();
             } else {
                 return PS.performMenuCommand(_CLEAR_PATH)
                     .catch(function () {
