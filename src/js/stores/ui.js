@@ -155,6 +155,14 @@ define(function (require, exports, module) {
          */
         _referencePoint: null,
 
+        /**
+         * The coordinates of the current mouse position if it's being tracked; otherwise null.
+         *
+         * @private
+         * @type {?{currentMouseX: number, currentMouseY: number}}
+         */
+        _currentMousePosition: null,
+
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
@@ -164,6 +172,7 @@ define(function (require, exports, module) {
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
                 events.ui.REFERENCE_POINT_CHANGED, this._handleReferencePointChanged,
                 events.ui.DISPLAY_CHANGED, this._handleDisplayChanged,
+                events.ui.MOUSE_POSITION_CHANGED, this._handleMousePositionChanged,
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
                 events.document.RESET_LAYERS, this._handleLayersUpdated,
                 events.document.RESET_BOUNDS, this._handleLayersUpdated,
@@ -195,6 +204,7 @@ define(function (require, exports, module) {
             this._transformMatrix = null;
             this._inverseTransformMatrix = null;
             this._referencePoint = "lt";
+            this._currentMousePosition = null;
         },
         
         /** @ignore */
@@ -554,6 +564,25 @@ define(function (require, exports, module) {
         _handleDisplayChanged: function () {
             this._setRootSize();
             this.emit("change");
+        },
+
+        /**
+         * Update the current mouse position.
+         *
+         * @private
+         * @param {?{currentMouseX: number, currentMouseY: number}} payload
+         */
+        _handleMousePositionChanged: function (payload) {
+            this._currentMousePosition = payload;
+        },
+
+        /**
+         * Get the current mouse position if it's being tracked; otherwise null.
+         * 
+         * @return {?{currentMouseX: number, currentMouseY: number}}
+         */
+        getCurrentMousePosition: function () {
+            return this._currentMousePosition;
         }
     });
 

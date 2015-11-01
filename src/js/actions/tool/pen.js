@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2015 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,24 +21,19 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird");
     
-    var util = require("adapter").util,
-        OS = require("adapter").os,
+    var OS = require("adapter").os,
         UI = require("adapter").ps.ui,
         toolLib = require("adapter").lib.tool,
         descriptor = require("adapter").ps.descriptor,
         vectorMaskLib = require("adapter").lib.vectorMask;
 
-    var Tool = require("js/models/tool"),
-        shortcuts = require("js/actions/shortcuts"),
-        layerActions = require("js/actions/layers"),
-        EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        shortcutUtil = require("js/util/shortcuts");
+    var shortcuts = require("js/actions/shortcuts"),
+        locks = require("js/locks");
 
     var _CLEAR_PATH = 106;
     
@@ -47,7 +42,7 @@ define(function (require, exports, module) {
      *
      * @private
      */
-    var _selectHandler = function () {
+    var select = function () {
         var toolStore = this.flux.store("tool"),
             vectorMode = toolStore.getVectorMode(),
             toolMode = toolLib.toolModes.SHAPE;
@@ -79,7 +74,7 @@ define(function (require, exports, module) {
                     .bind(this)
                     .then(function (pathCleared) {
                         if (!pathCleared) {
-                            return this.transfer(layerActions.deleteSelected);
+                            this.flux.actions.layers.deleteSelected();
                         }
                     });
             }
@@ -100,67 +95,27 @@ define(function (require, exports, module) {
         return Promise.join(setPromise, selectVectorMask, disableSuppressionPromise,
             backspacePromise, deletePromise);
     };
+    select.reads = [locks.JS_TOOL];
+    select.writes = [];
+    select.transfers = ["shortcuts.addShortcut", "layers.deleteSelected"];
+    select.modal = true;
 
     /**
-     * @implements {Tool}
-     * @constructor
-     */
-    var PenTool = function () {
-        Tool.call(this, "pen", "Pen", "penTool");
-
-        var deselectHandler = function () {
-            var backspacePromise = this.transfer(shortcuts.removeShortcut, "penBackspace"),
-                deletePromise = this.transfer(shortcuts.removeShortcut, "penDelete");
-
-            return Promise.join(backspacePromise, deletePromise);
-        };
-
-        var backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),
-            deleteKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.DELETE),
-            escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
-            arrowUpKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_UP),
-            arrowRightKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_RIGHT),
-            arrowDownKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_DOWN),
-            arrowLeftKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_BY_FOCUS,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ARROW_LEFT);
-            
-        this.keyboardPolicyList = [
-            backspaceKeyPolicy,
-            deleteKeyPolicy,
-            escapeKeyPolicy,
-            arrowUpKeyPolicy, // Arrow keys for nudging points
-            arrowRightKeyPolicy,
-            arrowDownKeyPolicy,
-            arrowLeftKeyPolicy
-        ];
-        
-        this.selectHandler = _selectHandler;
-        this.deselectHandler = deselectHandler;
-        this.activationKey = shortcutUtil.GLOBAL.TOOLS.PEN;
-        this.handleVectorMaskMode = true;
-    };
-    util.inherits(PenTool, Tool);
-
-    /**
-     * Handler for keydown events, installed when the tool is active.
+     * Remove pen tool shortcuts.
      *
-     * @param {CustomEvent} event
+     * @return {Promise}
      */
-    PenTool.prototype.onKeyDown = function (event) {
-        var flux = this.getFlux(),
-            toolStore = flux.store("tool"),
-            detail = event.detail;
-  
-        if (toolStore.getVectorMode() && detail.keyCode === OS.eventKeyCode.ESCAPE) {
-            flux.actions.tools.changeVectorMaskMode(false);
-        }
-    };
+    var deselect = function () {
+        var backspacePromise = this.transfer(shortcuts.removeShortcut, "penBackspace"),
+            deletePromise = this.transfer(shortcuts.removeShortcut, "penDelete");
 
-    module.exports = PenTool;
+        return Promise.join(backspacePromise, deletePromise);
+    };
+    deselect.reads = [];
+    deselect.writes = [locks.PS_TOOL, locks.PS_APP];
+    deselect.transfers = ["shortcuts.removeShortcut"];
+    deselect.modal = true;
+
+    exports.select = select;
+    exports.deselect = deselect;
 });

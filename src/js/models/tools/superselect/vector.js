@@ -24,101 +24,15 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Promise = require("bluebird");
-
     var util = require("adapter").util,
-        PS = require("adapter").ps,
         OS = require("adapter").os,
-        UI = require("adapter").ps.ui,
-        descriptor = require("adapter").ps.descriptor,
-        toolLib = require("adapter").lib.tool;
+        UI = require("adapter").ps.ui;
         
     var Tool = require("js/models/tool"),
-        shortcuts = require("js/actions/shortcuts"),
         system = require("js/util/system"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
-
-    var _TOGGLE_TARGET_PATH = 3502,
-        _CLEAR_PATH = 106;
-
-    /**
-     * Handler for pathComponentSelectionChanged events
-     */
-    var _pathSelectionhandler;
-
-    /**
-     * Updates current document because we may have changed bounds in Photoshop
-     * @private
-     */
-    var _deselectHandler = function () {
-        var currentDocument = this.flux.store("application").getCurrentDocument();
-
-        var backspacePromise = this.transfer(shortcuts.removeShortcut, "vectorBackspace"),
-            deletePromise = this.transfer(shortcuts.removeShortcut, "vectorDelete");
-
-        descriptor.removeListener("pathComponentSelectionChanged", _pathSelectionhandler);
-        _pathSelectionhandler = null;
-
-        return Promise.join(backspacePromise, deletePromise)
-            .bind(this)
-            .then(function () {
-                if (currentDocument) {
-                    this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
-                }
-            });
-    };
-
-    /**
-     * Sets the selection mode to only active layers for direct select tool
-     * @private
-     */
-    var _selectHandler = function () {
-        var deleteFn = function (event) {
-            event.stopPropagation();
-            
-            var flux = this.flux,
-                toolStore = flux.store("tool");
-
-            if (toolStore.getVectorMode()) {
-                flux.actions.mask.handleDeleteVectorMask();
-            } else {
-                return PS.performMenuCommand(_CLEAR_PATH)
-                    .catch(function () {
-                        // Silence the errors here
-                    });
-            }
-        }.bind(this);
-
-        _pathSelectionhandler = function (event) {
-            if (event.pathID && event.pathID.length === 0) {
-                var toolStore = this.flux.store("tool");
-
-                this.flux.actions.tools.select(toolStore.getToolByID("newSelect"));
-            }
-        }.bind(this);
-        descriptor.addListener("pathComponentSelectionChanged", _pathSelectionhandler);
-        
-        var optionsPromise = descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false)),
-            suppressionPromise = UI.setSuppressTargetPaths(false),
-            backspacePromise = this.transfer(shortcuts.addShortcut,
-                OS.eventKeyCode.BACKSPACE, {}, deleteFn, "vectorBackspace", true),
-            deletePromise = this.transfer(shortcuts.addShortcut,
-                OS.eventKeyCode.DELETE, {}, deleteFn, "vectorDelete", true),
-            getPathVisiblePromise = descriptor.getProperty("document", "targetPathVisibility");
-
-        return Promise.join(getPathVisiblePromise,
-            optionsPromise,
-            suppressionPromise,
-            backspacePromise,
-            deletePromise,
-            function (visible) {
-                if (!visible) {
-                    return PS.performMenuCommand(_TOGGLE_TARGET_PATH);
-                }
-            });
-    };
 
     /**
      * @implements {Tool}
@@ -171,8 +85,8 @@ define(function (require, exports, module) {
             this.pointerPolicyList = [rightPointerPolicy, vectorMaskPointerPolicy];
         }
 
-        this.selectHandler = _selectHandler;
-        this.deselectHandler = _deselectHandler;
+        this.selectHandler = "toolSuperselectVector.select";
+        this.deselectHandler = "toolSuperselectVector.deselect";
     };
     util.inherits(SuperSelectVectorTool, Tool);
 

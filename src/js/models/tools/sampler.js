@@ -28,26 +28,11 @@ define(function (require, exports, module) {
         UI = require("adapter").ps.ui,
         util = require("adapter").util;
 
-    var events = require("js/events"),
-        Tool = require("js/models/tool"),
+    var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy,
         SamplerOverlay = require("jsx!js/jsx/tools/SamplerOverlay"),
-        shortcuts = require("js/util/shortcuts"),
-        policyActions = require("js/actions/policy"),
-        PolicyStore = require("js/stores/policy");
-
-    /**
-     * Used by sampler HUD, we listen to OS notifications to update the locations
-     */
-    var _currentMouseX,
-        _currentMouseY;
-
-    /** @ignore */
-    var _mouseMoveHandler = function (event) {
-        _currentMouseX = event.location[0];
-        _currentMouseY = event.location[1];
-    };
+        shortcuts = require("js/util/shortcuts");
 
     /**
      * @implements {Tool}
@@ -59,26 +44,8 @@ define(function (require, exports, module) {
         this.icon = "eyedropper";
         this.activationKey = shortcuts.GLOBAL.TOOLS.SAMPLER;
 
-        var selectHandler = function () {
-            OS.addListener("externalMouseMove", _mouseMoveHandler);
-
-            return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
-                UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_AND_NOTIFY);
-        };
-
-        var deselectHandler = function () {
-            OS.removeListener("externalMouseMove", _mouseMoveHandler);
-
-            return this.dispatchAsync(events.style.HIDE_HUD)
-                .bind(this)
-                .then(function () {
-                    return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
-                        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
-                });
-        };
-
-        this.selectHandler = selectHandler;
-        this.deselectHandler = deselectHandler;
+        this.selectHandler = "toolSampler.select";
+        this.deselectHandler = "toolSampler.deselect";
 
         var pointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.LEFT_MOUSE_DOWN);
@@ -119,9 +86,16 @@ define(function (require, exports, module) {
         if (!currentDocument) {
             return;
         }
-        
+
         if (event.detail.keyChar === " ") {
-            flux.actions.sampler.showHUD(currentDocument, _currentMouseX, _currentMouseY);
+            var uiStore = flux.store("ui"),
+                position = uiStore.getCurrentMousePosition();
+
+            if (!position) {
+                return;
+            }
+
+            flux.actions.sampler.showHUD(currentDocument, position.currentMouseX, position.currentMouseY);
         } else if (event.detail.keyCode === OS.eventKeyCode.ESCAPE) {
             flux.actions.sampler.hideHUD();
         }

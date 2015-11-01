@@ -409,16 +409,24 @@ define(function (require, exports, module) {
              * that that action doesn't require additional locks, and preserving the
              * receiver of that action.
              *
-             * @param {Action} nextAction
+             * @param {string|Action} nextAction
              * @return {Promise} The result of executing the next action
              */
             transfer: {
                 value: function (nextAction) {
+                    var nextActionName;
+
+                    if (typeof nextAction === "string") {
+                        nextActionName = nextAction;
+                        nextAction = self._actionsByName.get(nextActionName);
+                    } else {
+                        nextActionName = self._actionNames.get(nextAction);
+                    }
+
                     if (!nextAction || (typeof nextAction !== "function")) {
                         throw new Error("Transfer passed an undefined action");
                     }
 
-                    var nextActionName = self._actionNames.get(nextAction);
                     if (!currentTransfers.has(nextAction) && !currentTransfers.has(nextActionName)) {
                         var message = "Invalid transfer from " + actionName + " to " + nextActionName +
                                 ". Add " + nextActionName + " to the list of transfers declared for " +

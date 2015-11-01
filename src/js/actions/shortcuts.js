@@ -144,7 +144,7 @@ define(function (require, exports) {
             return Promise.reject(new Error("Shortcut does not exist: " + id));
         }
 
-        return this.transfer(policy.removeKeyboardPolicies, shortcut.policy, true)
+        return this.transfer(policy.removeKeyboardPolicies, shortcut.policy)
             .bind(this)
             .then(function () {
                 this.dispatch(events.shortcut.REMOVE_SHORTCUT, {

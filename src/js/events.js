@@ -137,7 +137,8 @@ define(function (require, exports, module) {
             TOGGLE_OVERLAYS: "toggleOverlays",
             SUPERSELECT_MARQUEE: "superselectMarquee",
             REFERENCE_POINT_CHANGED: "referencePointChanged",
-            DISPLAY_CHANGED: "displayChanged"
+            DISPLAY_CHANGED: "displayChanged",
+            MOUSE_POSITION_CHANGED: "mousePositionChanged"
         },
         modifiers: {
             MODIFIERS_CHANGED: "modifiersChanged"

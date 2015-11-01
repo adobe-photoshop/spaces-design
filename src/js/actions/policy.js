@@ -42,9 +42,16 @@ define(function (require, exports) {
      * @return {Promise} Resolves when polices are set in photoshop
      */
     var syncPolicies = function (kind) {
-        var policyStore = this.flux.store("policy"),
-            masterPolicyList = policyStore.getMasterPolicyList(kind),
-            dispatchPromise = this.dispatchAsync(events.policies.POLICIES_INSTALLED),
+        var policyStore = this.flux.store("policy");
+
+        if (!policyStore.isDirty(kind)) {
+            return Promise.resolve();
+        }
+
+        var masterPolicyList = policyStore.getMasterPolicyList(kind),
+            dispatchPromise = this.dispatchAsync(events.policies.POLICIES_INSTALLED, {
+                kind: kind
+            }),
             policyPromise;
 
         if (kind === PolicyStore.eventKind.KEYBOARD) {
@@ -61,17 +68,35 @@ define(function (require, exports) {
     syncPolicies.modal = true;
 
     /**
+     * Sync all policies to Photoshop.
+     *
+     * @return {Promise}
+     */
+    var syncAllPolicies = function () {
+        var keyboardPromise = this.transfer(syncPolicies, PolicyStore.eventKind.KEYBOARD),
+            pointerPromise = this.transfer(syncPolicies, PolicyStore.eventKind.POINTER);
+
+        return Promise.join(keyboardPromise, pointerPromise);
+    };
+    syncAllPolicies.reads = [];
+    syncAllPolicies.writes = [];
+    syncAllPolicies.transfers = [syncPolicies];
+    syncAllPolicies.modal = true;
+
+    /**
      * Install a new policy list.
      *
      * @param {string} kind A value defined in PolicyStore.eventKind
      * @param {Array.<KeyboardEventPolicy>} policies
+     * @param {boolean=} noCommit Whether or not to commit the change to Photoshop.
      * @return {Promise.<number>} Resolves with the new policy list ID
      */
-    var addPolicies = function (kind, policies) {
+    var addPolicies = function (kind, policies, noCommit) {
         var policyStore = this.flux.store("policy"),
-            policyListID = policyStore.addPolicyList(kind, policies);
+            policyListID = policyStore.addPolicyList(kind, policies),
+            syncPromise = noCommit ? Promise.resolve() : this.transfer(syncPolicies, kind, policyListID);
 
-        return this.transfer(syncPolicies, kind, policyListID).return(policyListID);
+        return syncPromise.return(policyListID);
     };
     addPolicies.reads = [];
     addPolicies.writes = [locks.JS_POLICY];
@@ -83,19 +108,17 @@ define(function (require, exports) {
      *
      * @param {string} kind A value defined in PolicyStore.eventKind
      * @param {number} id The ID of the installed policy list
-     * @param {boolean=} commit Whether to commit the removal to Photoshop. If
-     *  not set, the state will be changed locally, but Photoshop state will
-     *  not be updated until the next commit. Useful when swapping policies.
+     * @param {boolean=} noCommit Whether or not to commit the change to Photoshop.
      * @return {Promise}
      */
-    var removePolicies = function (kind, id, commit) {
+    var removePolicies = function (kind, id, noCommit) {
         var policyStore = this.flux.store("policy");
 
         if (policyStore.removePolicyList(kind, id)) {
-            if (commit) {
-                return this.transfer(syncPolicies, kind);
-            } else {
+            if (noCommit) {
                 return Promise.resolve();
+            } else {
+                return this.transfer(syncPolicies, kind);
             }
         } else {
             return Promise.reject(new Error("No policies found for id: " + id));
@@ -110,10 +133,11 @@ define(function (require, exports) {
      * Install a new keyboard policy list.
      *
      * @param {Array.<KeyboardEventPolicy>} policies
+     * @param {boolean=} noCommit
      * @return {Promise.<number>}
      */
-    var addKeyboardPolicies = function (policies) {
-        return this.transfer(addPolicies, PolicyStore.eventKind.KEYBOARD, policies);
+    var addKeyboardPolicies = function (policies, noCommit) {
+        return this.transfer(addPolicies, PolicyStore.eventKind.KEYBOARD, policies, noCommit);
     };
     addKeyboardPolicies.reads = [];
     addKeyboardPolicies.writes = [];
@@ -126,9 +150,10 @@ define(function (require, exports) {
      * @param {boolean} propagate Whether to propagate the keydown to Photoshop
      * @param {number|string} key Either a keyCode or a keyChar
      * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
+     * @param {boolean=} noCommit 
      * @return {Promise.<number>} Resolves with the installed policy list ID
      */
-    var addKeydownPolicy = function (propagate, key, modifiers) {
+    var addKeydownPolicy = function (propagate, key, modifiers, noCommit) {
         var policyAction = propagate ?
                 adapterUI.policyAction.PROPAGATE_TO_PHOTOSHOP :
                 adapterUI.policyAction.PROPAGATE_TO_BROWSER,
@@ -136,7 +161,7 @@ define(function (require, exports) {
 
         var policy = new KeyboardEventPolicy(policyAction, eventKind, modifiers, key);
 
-        return this.transfer(addKeyboardPolicies, [policy], true);
+        return this.transfer(addKeyboardPolicies, [policy], noCommit);
     };
     addKeydownPolicy.reads = [];
     addKeydownPolicy.writes = [locks.PS_APP, locks.JS_POLICY];
@@ -147,14 +172,11 @@ define(function (require, exports) {
      * Remove an already-installed keyboard policy list.
      *
      * @param {number} id The ID of the installed keyboard policy list
-     * @param {boolean=} commit Whether to commit the removal to Photoshop. If
-     *  not set, the state will be changed locally, but Photoshop state will
-     *  not be updated until the next commit. Useful when swapping keyboard
-     *  policies.
+     * @param {boolean=} noCommit Whether or not to commit the change to Photoshop.
      * @return {Promise}
      */
-    var removeKeyboardPolicies = function (id, commit) {
-        return this.transfer(removePolicies, PolicyStore.eventKind.KEYBOARD, id, commit);
+    var removeKeyboardPolicies = function (id, noCommit) {
+        return this.transfer(removePolicies, PolicyStore.eventKind.KEYBOARD, id, noCommit);
     };
     removeKeyboardPolicies.reads = [];
     removeKeyboardPolicies.writes = [];
@@ -165,10 +187,11 @@ define(function (require, exports) {
      * Install a new pointer policy list.
      *
      * @param {Array.<PointerEventPolicy>} policies
+     * @param {boolean=} noCommit
      * @return {Promise.<number>}
      */
-    var addPointerPolicies = function (policies) {
-        return this.transfer(addPolicies, PolicyStore.eventKind.POINTER, policies);
+    var addPointerPolicies = function (policies, noCommit) {
+        return this.transfer(addPolicies, PolicyStore.eventKind.POINTER, policies, noCommit);
     };
     addPointerPolicies.reads = [];
     addPointerPolicies.writes = [];
@@ -179,14 +202,11 @@ define(function (require, exports) {
      * Remove an already-installed pointer policy list.
      *
      * @param {number} id The ID of the installed pointer policy list
-     * @param {boolean=} commit Whether to commit the removal to Photoshop. If
-     *  not set, the state will be changed locally, but Photoshop state will
-     *  not be updated until the next commit. Useful when swapping pointer
-     *  policies.
+     * @param {boolean=} noCommit Whether or not to commit the change to Photoshop.
      * @return {Promise}
      */
-    var removePointerPolicies = function (id, commit) {
-        return this.transfer(removePolicies, PolicyStore.eventKind.POINTER, id, commit);
+    var removePointerPolicies = function (id, noCommit) {
+        return this.transfer(removePolicies, PolicyStore.eventKind.POINTER, id, noCommit);
     };
     removePointerPolicies.reads = [];
     removePointerPolicies.writes = [];
@@ -336,6 +356,7 @@ define(function (require, exports) {
     beforeStartup.transfers = ["policy.setMode"];
 
     exports.syncPolicies = syncPolicies;
+    exports.syncAllPolicies = syncAllPolicies;
     exports.setMode = setMode;
     exports.addPolicies = addPolicies;
     exports.removePolicies = removePolicies;

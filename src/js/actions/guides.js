@@ -110,7 +110,7 @@ define(function (require, exports) {
             currentPolicy = _currentGuidePolicyID,
             currentTool = toolStore.getCurrentTool(),
             removePromise = currentPolicy ?
-                this.transfer(policy.removePointerPolicies, currentPolicy, true) : Promise.resolve();
+                this.transfer(policy.removePointerPolicies, currentPolicy) : Promise.resolve();
             
         // Make sure to always remove the remaining policies
         // even if there is no document, guides are invisible, there are no guides
