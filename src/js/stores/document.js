@@ -300,7 +300,7 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextDocument = document.merge(props);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument);
         },
 
         /**
