@@ -35,6 +35,7 @@ define(function (require, exports, module) {
         OS = require("adapter/os");
 
     var system = require("js/util/system"),
+        collection = require("js/util/collection"),
         mathUtil = require("js/util/math"),
         keyUtil = require("js/util/key"),
         uiUtil = require("js/util/ui");
@@ -497,7 +498,11 @@ define(function (require, exports, module) {
             uiUtil.hitTestLayers(this.state.document.id, canvasMouse.x, canvasMouse.y)
                 .bind(this)
                 .then(function (hitLayerIDs) {
-                    return hitLayerIDs.findLast(function (id) {
+                    var selectableLayers = this.state.document.layers.selectable,
+                        selectableLayerIDs = collection.pluck(selectableLayers, "id"),
+                        considerIDs = collection.intersection(hitLayerIDs, selectableLayerIDs);
+
+                    return considerIDs.findLast(function (id) {
                         var layer = this.state.document.layers.byID(id);
 
                         return layer && !layer.isArtboard;
