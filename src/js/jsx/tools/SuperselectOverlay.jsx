@@ -500,7 +500,7 @@ define(function (require, exports, module) {
                 .then(function (hitLayerIDs) {
                     var selectableLayers = this.state.document.layers.selectable,
                         selectableLayerIDs = collection.pluck(selectableLayers, "id"),
-                        considerIDs = collection.intersection(selectableLayerIDs, hitLayerIDs);
+                        considerIDs = collection.intersection(hitLayerIDs, selectableLayerIDs);
 
                     return considerIDs.findLast(function (id) {
                         var layer = this.state.document.layers.byID(id);
