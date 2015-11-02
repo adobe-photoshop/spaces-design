@@ -552,11 +552,11 @@ define(function (require, exports, module) {
      * @return {Promise}
      */
     FluxController.prototype._applyAction = function (action, actionReceiver, params, parentActionName) {
-        var lockUI = action.lockUI,
+        var flux = this.flux,
+            lockUI = action.lockUI,
             post = action.post,
+            modal = action.modal || false,
             actionName = this._actionNames.get(action),
-            preferences = this.flux.store("preferences").getState(),
-            checkPost = preferences.get("postConditionsEnabled"),
             actionTitle;
 
         if (parentActionName) {
@@ -565,22 +565,38 @@ define(function (require, exports, module) {
             actionTitle = "action " + actionName;
         }
 
-        var actionPromise = action.apply(actionReceiver, params);
-        if (!(actionPromise instanceof Promise)) {
-            var valueError = new Error("Action " + actionName + " did not return a promise");
-            valueError.returnValue = actionPromise;
-            actionPromise = Promise.reject(valueError);
-        }
-
         var uiWasLocked = this._uiLocked;
         if (lockUI && !uiWasLocked) {
             this._lockUI();
         }
 
-        return actionPromise
+        var modalPromise;
+        if (!modal && flux.store("tool").getModalToolState()) {
+            log.warn("Killing modal state for " + actionTitle);
+            modalPromise = ps.endModalToolState(true)
+                .catch(function () {
+                    // If the modal state has already ended, quietly continue
+                });
+        } else {
+            modalPromise = Promise.resolve();
+        }
+
+        return modalPromise
             .bind(this)
+            .then(function () {
+                var actionPromise = action.apply(actionReceiver, params);
+                if (!(actionPromise instanceof Promise)) {
+                    var valueError = new Error("Action " + actionName + " did not return a promise");
+                    valueError.returnValue = actionPromise;
+
+                    throw valueError;
+                }
+
+                return actionPromise;
+            })
             .tap(function () {
-                if (global.debug && checkPost && post && post.length > 0) {
+                if (global.debug && post && post.length > 0 &&
+                    flux.store("preferences").get("postConditionsEnabled")) {
                     var postStart = Date.now(),
                         postTitle = post.length + " postcondition" + (post.length > 1 ? "s" : "");
 
@@ -590,7 +606,7 @@ define(function (require, exports, module) {
                         return conjunct.apply(this)
                             .catch(function (err) {
                                 var errMessage = err && err.message || "no error message";
-                                
+
                                 log.error("Verification of postcondition %s failed for %s - %s",
                                     index, actionTitle, errMessage);
                             });
@@ -626,7 +642,6 @@ define(function (require, exports, module) {
             actionQueue = this._actionQueue,
             action = module[name],
             actionName = namespace + "." + name,
-            modal = action.modal || false,
             reads = this._transitiveReads.get(action),
             writes = this._transitiveWrites.get(action);
 
@@ -642,28 +657,13 @@ define(function (require, exports, module) {
                 actionName, actionQueue.active(), actionQueue.pending());
 
             var jobPromise = actionQueue.push(function () {
-                var start = Date.now(),
-                    toolStore = this.flux.store("tool"),
-                    modalPromise;
+                var start = Date.now();
 
-                if (toolStore.getModalToolState() && !modal) {
-                    log.warn("Killing modal state for action %s", actionName);
-                    modalPromise = ps.endModalToolState(true);
-                } else {
-                    modalPromise = Promise.resolve();
-                }
+                log.debug("Executing action %s after waiting %dms; %d/%d",
+                    actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
 
-                return modalPromise
-                    .catch(function () {
-                        // If modal state already ended, quietly continue
-                    })
+                return this._applyAction(action, actionReceiver, args)
                     .bind(this)
-                    .then(function () {
-                        log.debug("Executing action %s after waiting %dms; %d/%d",
-                            actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
-
-                        return this._applyAction(action, actionReceiver, args);
-                    })
                     .tap(function () {
                         var finished = Date.now(),
                             elapsed = finished - start,
