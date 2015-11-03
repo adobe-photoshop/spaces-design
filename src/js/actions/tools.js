@@ -308,6 +308,7 @@ define(function (require, exports) {
         policy.addPointerPolicies,
         guides.resetGuidePolicies
     ];
+    resetBorderPolicies.modal = true;
 
     /**
      * Swaps the policies of the current tool with the next tool

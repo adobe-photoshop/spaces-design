@@ -551,6 +551,7 @@ define(function (require, exports) {
     resetLayers.reads = [locks.PS_DOC];
     resetLayers.writes = [locks.JS_DOC];
     resetLayers.transfers = [tools.resetBorderPolicies];
+    resetLayers.modal = true;
 
     /**
      * Emit a RESET_BOUNDS with bounds descriptors for the given layers.
@@ -765,6 +766,7 @@ define(function (require, exports) {
     initializeLayers.reads = [];
     initializeLayers.writes = [];
     initializeLayers.transfers = [resetLayers];
+    initializeLayers.modal = true;
 
     /**
      * Expand or collapse the given group layers in the layers panel.
