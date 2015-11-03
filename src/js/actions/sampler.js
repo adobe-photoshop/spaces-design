@@ -561,7 +561,7 @@ define(function (require, exports) {
         if (!targetLayers || !style) {
             return Promise.resolve();
         }
-        
+
         var shapeLayers = Immutable.List(),
             textLayers = Immutable.List(),
             nonTextLayers = Immutable.List(),
