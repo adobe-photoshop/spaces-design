@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Fluxxor = require("fluxxor");
+    var Fluxxor = require("fluxxor"),
+        Promise = require("bluebird");
 
     var events = require("../events");
 
@@ -49,7 +50,7 @@ define(function (require, exports, module) {
          * @private
          * @type {Map.<number, Map.<number, object>>}
          */
-        _dropTargetsByZone: null,
+        // _dropTargetsByZone: null,
 
         /**
          * Drop target keys, orderized by recency, categorized by zone.
@@ -57,7 +58,7 @@ define(function (require, exports, module) {
          * @private
          * @type {Map.<number, Array.<number>>}
          */
-        _dropTargetOrderingsByZone: null,
+        // _dropTargetOrderingsByZone: null,
 
         /**
          * Currently Active drag targets
@@ -74,6 +75,10 @@ define(function (require, exports, module) {
          * @type {object}
          */
         _dropTarget: null,
+        _isDropping: null,
+
+        _reactIDToDropTarget: null,
+        _droppableIDToReactID: null,
         
         /**
          * Indicates whether _dropTarget is valid for the dragged targets.
@@ -82,14 +87,6 @@ define(function (require, exports, module) {
          * @type {boolean}
          */
         _hasValidDropTarget: null,
-
-        /**
-         * Past drag target (for maintaining position during render)
-         * 
-         * @private
-         * @type {Object} 
-         */
-        _pastDragTargets: null,
         
         /**
          * The initial mouse position when a drag event is triggered.
@@ -112,8 +109,8 @@ define(function (require, exports, module) {
             );
             
             // These setting attributes should be initialized once.
-            this._dropTargetsByZone = new Map();
-            this._dropTargetOrderingsByZone = new Map();
+            this._droppableIDToReactID = new Map();
+            this._reactIDToDropTarget = new Map();
 
             this._handleReset();
         },
@@ -126,15 +123,61 @@ define(function (require, exports, module) {
         _handleReset: function () {
             var hasDragTargets = !!this._dragTargets;
             
-            this._pastDragTargets = null;
+            this._dragTargetType = null;
             this._dragTargets = null;
             this._dropTarget = null;
             this._hasValidDropTarget = false;
             this._dragPosition = null;
+            this._isDropping = false;
             
             if (hasDragTargets) {
                 this.emit("change");
             }
+        },
+        
+        _handleMouseMove: function (payload) {
+            if (this._isDropping) {
+                return;
+            }
+            
+            this._dragPosition = { x: payload.clientX, y: payload.clientY };
+            
+            var nextDropTarget = this._findDropTarget(payload.element);
+
+            if (this._dropTarget) {
+                if (this._dropTarget !== nextDropTarget) {
+                    this._dropTarget.handleDragTargetLeave(this._dragTargets, this._dragPosition);
+                    this._dropTarget = null;
+                }
+            }
+
+            if (nextDropTarget && nextDropTarget.accept === this._dragTargetType) {
+                if (!this._dropTarget) {
+                    nextDropTarget.handleDragTargetEnter(this._dragTargets, this._dragPosition);
+                }
+
+                this._dropTarget = nextDropTarget;
+                this._dropTarget.handleDragTargetMove(this._dragTargets, this._dragPosition);
+            }
+
+            this.emit("change");
+        },
+        
+        _findDropTarget: function (element) {
+            do {
+                if (element.dataset) {
+                    var reactID = element.dataset.reactid,
+                        dropTarget = this._reactIDToDropTarget[reactID];
+                    
+                    if (dropTarget) {
+                        return dropTarget;
+                    }
+                }
+                
+                element = element.parentNode;
+            } while (element);
+
+            return null;
         },
 
         /**
@@ -144,10 +187,8 @@ define(function (require, exports, module) {
             return {
                 dragTargets: this._dragTargets,
                 dropTarget: this._dropTarget,
-                hasValidDropTarget: this._hasValidDropTarget,
                 initialDragPosition: this._initialDragPosition,
-                dragPosition: this._dragPosition,
-                pastDragTargets: this._pastDragTargets
+                dragPosition: this._dragPosition
             };
         },
 
@@ -157,22 +198,22 @@ define(function (require, exports, module) {
          * @param {number} zone
          * @param {object} droppable
          */
-        registerDroppable: function (zone, droppable) {
-            var dropTargets = this._dropTargetsByZone.get(zone);
-            if (!dropTargets) {
-                dropTargets = new Map();
-                this._dropTargetsByZone.set(zone, dropTargets);
-            }
-
-            var dropTargetOrderings = this._dropTargetOrderingsByZone.get(zone);
-            if (!dropTargetOrderings) {
-                dropTargetOrderings = [];
-                this._dropTargetOrderingsByZone.set(zone, dropTargetOrderings);
-            }
-
-            var key = droppable.key;
-            dropTargets.set(key, droppable);
-            dropTargetOrderings.push(key);
+        registerDroppable: function (id, dropTarget) {
+            var reactID = dropTarget.component.getDOMNode().dataset.reactid;
+            
+            this._droppableIDToReactID[id] = reactID;
+            this._reactIDToDropTarget[reactID] = dropTarget;
+        },
+        
+        
+        updateDroppable: function (id) {
+            var reactID = this._droppableIDToReactID[id],
+                dropTarget = this._reactIDToDropTarget[reactID],
+                nextReactid = dropTarget.component.getDOMNode().dataset.reactid;
+            
+            this._droppableIDToReactID[id] = nextReactid;
+            this._reactIDToDropTarget[reactID] = null;
+            this._reactIDToDropTarget[nextReactid] = dropTarget;
         },
 
         /**
@@ -181,20 +222,11 @@ define(function (require, exports, module) {
          * @param {number} zone
          * @param {number} key
          */
-        deregisterDroppable: function (zone, key) {
-            var dropTargets = this._dropTargetsByZone.get(zone),
-                dropTargetOrderings = this._dropTargetOrderingsByZone.get(zone);
+        deregisterDroppable: function (id) {
+            var reactID = this._droppableIDToReactID[id];
 
-            if (!dropTargets || !dropTargetOrderings) {
-                throw new Error("Unable to remove droppables from an empty drop target zone");
-            }
-
-            dropTargets.delete(key);
-
-            var index = dropTargetOrderings.indexOf(key);
-            if (index > -1) {
-                dropTargetOrderings.splice(index, 1);
-            }
+            this._droppableIDToReactID[id] = null;
+            this._reactIDToDropTarget[reactID] = null;
         },
         
         /**
@@ -202,9 +234,12 @@ define(function (require, exports, module) {
          *
          * @param {Immutalbe.Iterable.<object>} dragTargets
          */
-        startDrag: function (dragTargets, point) {
+        startDrag: function (type, dragTargets, point) {
+            this._dragTargetType = type;
             this._dragTargets = dragTargets;
             this._initialDragPosition = point;
+            this._dragPosition = point;
+
             // Provide optional way for listening on start-drag event only.
             this.emit("start-drag");
             this.emit("change");
@@ -214,75 +249,26 @@ define(function (require, exports, module) {
          * End the current drag operation.
          */
         stopDrag: function () {
-            var _reset = function () {
-                this._pastDragTargets = this._dragTargets;
-                this._dragTargets = null;
-                this._dropTarget = null;
-                this._hasValidDropTarget = false;
-                this._dragPosition = null; // Removing this causes an offset
-                this.emit("change");
-            }.bind(this);
+            var onDropPromise = Promise.resolve();
+
+            if (this._dropTarget) {
+                onDropPromise = this._dropTarget.onDrop(this._dragTargets, this._dragPosition, this._dropTarget);
+            }
             
-            if (this._hasValidDropTarget) {
-                // It uses Promise to get completion confirmation from the onDrop callback before reset everything.
-                // This will keep the dragged target(s) in the "dragging" state until the drop event is completed. 
-                // Otherwise, the target(s) will snap back immediately before they get handled and updated completely.
-                this._dropTarget
-                    .onDrop(this._dropTarget, this._dragTargets)
-                    .then(_reset);
-            } else {
-                _reset();
-            }
-        },
+            this._isDropping = true;
 
-        /**
-         * Checks the bounds of all the drop targets for this point
-         * Sets this._dropTarget if an intersection and valid target are found
-         * Sets _dragPosition which is used for moving dragged object on screen 
-         * Emits change event which causes re-render
-         *
-         * @param {number} zone
-         * @param {{x: number, y: number}} point Point were event occurred
-         */
-        updateDrag: function (zone, point) {
-            var dragTargets = this._dragTargets;
-            if (!dragTargets) {
-                return;
-            }
-
-            var dropTargets = this._dropTargetsByZone.get(zone),
-                dropTargetOrderings = this._dropTargetOrderingsByZone.get(zone),
-                foundDropTargetIndex = -1;
-        
-            this._dropTarget = null;
-            this._hasValidDropTarget = false;
-            this._dragPosition = point;
-
-            dropTargetOrderings.some(function (key, index) {
-                var dropTarget = dropTargets.get(key),
-                    validationInfo = dropTarget.isValid(dropTarget, dragTargets, point),
-                    compatible = validationInfo.compatible,
-                    valid = validationInfo.valid;
-
-                if (!compatible) {
-                    return false;
-                }
-
-                foundDropTargetIndex = index;
-                
-                this._dropTarget = dropTarget;
-                this._hasValidDropTarget = valid;
-
-                return true;
-            }, this);
-
-            // Move this drop target to the front of the list for the next search
-            if (foundDropTargetIndex > -1) {
-                var removedKeys = dropTargetOrderings.splice(foundDropTargetIndex, 1);
-                dropTargetOrderings.unshift(removedKeys[0]);
-            }
-
-            this.emit("change");
+            onDropPromise
+                .bind(this)
+                .then(function () {
+                    this._dragTargetType = null;
+                    this._dragTargets = null;
+                    this._dropTarget = null;
+                    this._hasValidDropTarget = false;
+                    this._dragPosition = null; // Removing this causes an offset
+                    this._isDropping = false;
+                    this.emit("stop-drag");
+                    this.emit("change");
+                });
         }
     });
 

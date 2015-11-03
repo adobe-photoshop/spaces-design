@@ -45,15 +45,11 @@ define(function (require, exports, module) {
         mixins: [FluxMixin, StoreWatchMixin("library", "draganddrop")],
 
         getStateFromFlux: function () {
-            var libraryState = this.getFlux().store("library").getState(),
-                dndState = this.getFlux().store("draganddrop").getState(),
-                isDropTarget = dndState.dropTarget && dndState.dropTarget.key === DroppablePanel.DROPPABLE_KEY;
+            var libraryState = this.getFlux().store("library").getState();
 
             return {
                 libraries: libraryState.libraries,
                 isSyncing: libraryState.isSyncing,
-                isDropTarget: isDropTarget,
-                isValidDropTarget: dndState.hasValidDropTarget,
                 selectedLibrary: libraryState.currentLibrary,
                 lastLocallyCreatedElement: libraryState.lastLocallyCreatedElement,
                 lastLocallyUpdatedGraphic: libraryState.lastLocallyUpdatedGraphic
@@ -110,6 +106,49 @@ define(function (require, exports, module) {
         _handleCreateLibrary: function (isCreating) {
             this.setState({
                 isCreatingLibrary: isCreating
+            });
+        },
+        
+        _handleDropLayers: function (draggedLayers) {
+            if (!this.state.canDropLayer) {
+                this.setState({ isDropTarget: false });
+                return Promise.resolve();
+            }
+            
+            this.setState({ 
+                isDropTarget: false,
+                canDropLayer: false
+            });
+
+            var flux = this.getFlux(),
+                document = flux.store("application").getCurrentDocument(),
+                selectedLayers = document.layers.selected,
+                promise = Promise.resolve();
+
+            // Select the dragged layers if they are not selected
+            if (!Immutable.is(selectedLayers, draggedLayers)) {
+                promise = flux.actions.layers.select(document, draggedLayers, "select");
+            }
+
+            return promise.then(function () {
+                flux.actions.libraries.createGraphicFromSelectedLayer();
+            });
+        },
+        
+        _handleDragTargetEnter: function (draggedLayers) {
+            // Single linked layer is not accepted, but multiple linked (or mixed) layers are accepted.
+            var isSingleLinkedLayer = draggedLayers.size === 1 && draggedLayers.first().isLinked;
+            
+            this.setState({ 
+                isDropTarget: true,
+                canDropLayer: this.state.selectedLibrary && !isSingleLinkedLayer
+            });
+        },
+        
+        _handleDragTargetLeave: function () {
+            this.setState({ 
+                isDropTarget: false,
+                canDropLayer: false
             });
         },
 
@@ -187,80 +226,34 @@ define(function (require, exports, module) {
             if (this.state.isDropTarget) {
                 var classes = classnames({
                     "libraries__drop-overlay": true,
-                    "libraries__drop-overlay__disallow": !this.state.isValidDropTarget
+                    "libraries__drop-overlay__disallow": !this.state.canDropLayer
                 });
 
                 dropOverlay = (<div className={classes}/>);
             }
 
             return (
-                <section
-                    className={sectionClasses}
-                    onMouseEnter={this.props.onMouseEnterDroppable}
-                    onMouseLeave={this.props.onMouseLeaveDroppable}>
-                    {dropOverlay}
-                    <TitleHeader
-                        title={nls.localize("strings.TITLE_LIBRARIES")}
-                        visible={this.props.visible}
-                        disabled={this.props.disabled}
-                        onDoubleClick={this.props.onVisibilityToggle} />
-                    {librariesContent}
-                </section>
+                <Droppable
+                    accept="layer"
+                    onDrop={this._handleDropLayers}
+                    onDragTargetEnter={this._handleDragTargetEnter}
+                    onDragTargetLeave={this._handleDragTargetLeave}>
+                    <section
+                        className={sectionClasses}
+                        onMouseEnter={this.props.onMouseEnterDroppable}
+                        onMouseLeave={this.props.onMouseLeaveDroppable}>
+                        {dropOverlay}
+                        <TitleHeader
+                            title={nls.localize("strings.TITLE_LIBRARIES")}
+                            visible={this.props.visible}
+                            disabled={this.props.disabled}
+                            onDoubleClick={this.props.onVisibilityToggle} />
+                        {librariesContent}
+                    </section>
+                </Droppable>
             );
         }
     });
 
-    /**
-     * Droppabl callback. Decide whether the draged layers can be droped into the libraries.
-     * @return {{valid: boolean, compatible: boolean}}
-     */
-    var canDropLayers = function (dropInfo, dragTargets) {
-        var droppablePanel = dropInfo.droppable,
-            flux = require("js/main").getController().flux,
-            currentLibrary = flux.store("library").getState().currentLibrary,
-            // Single linked layer is not accepted, but multiple linked (or mixed) layers are accepted.
-            isSingleLinkedLayer = dragTargets.size === 1 && dragTargets.first().isLinked;
-
-        return {
-            valid: droppablePanel.state.isMouseOver && currentLibrary && !isSingleLinkedLayer,
-            compatible: droppablePanel.state.isMouseOver
-        };
-    };
-
-    /**
-     * Droppable callback. Handle dropped layers.
-     * @return {Promise}
-     */
-    var handleDropLayers = function (dropInfo, droppedLayers) {
-        var flux = require("js/main").getController().flux,
-            document = flux.store("application").getCurrentDocument(),
-            selectedLayers = document.layers.selected,
-            promise = Promise.resolve();
-
-        if (!Immutable.is(selectedLayers, droppedLayers)) {
-            promise = flux.actions.layers.select(document, droppedLayers, "select");
-        }
-
-        return promise.then(function () {
-            flux.actions.libraries.createGraphicFromSelectedLayer();
-        });
-    };
-
-    /**
-     * Droppable callback. Return required settings that will allow DroppablePanel to work.
-     */
-    var droppableSettings = function (props) {
-        return {
-            zone: props.document.id,
-            key: DroppablePanel.DROPPABLE_KEY,
-            keyObject: { key: DroppablePanel.DROPPABLE_KEY },
-            isValid: canDropLayers,
-            handleDrop: handleDropLayers
-        };
-    };
-
-    var DroppablePanel = Droppable.createWithComponent(LibrariesPanel, droppableSettings);
-    DroppablePanel.DROPPABLE_KEY = "LibrariesPanel";
-
-    module.exports = DroppablePanel;
+    module.exports = LibrariesPanel;
 });

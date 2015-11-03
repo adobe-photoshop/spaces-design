@@ -25,56 +25,84 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        Promise = require("bluebird"),
+        Fluxxor = require("fluxxor"),
+        FluxMixin = Fluxxor.FluxMixin(React);
+        
+    var collection = require("js/util/collection");
 
-    var Draggable = require("jsx!js/jsx/shared/Draggable"),
-        Droppable = require("jsx!js/jsx/shared/Droppable");
-
-    /**
-     * Function for checking whether React component should update
-     * Passed to Droppable composed component in order to save on extraneous renders
-     *
-     * @param {object} nextProps - Next set of properties for this component
-     * @return {boolean}
-     */
-    var shouldComponentUpdate = function (nextProps) {
-        // Only drop states are compared
-        return this.props.dropPosition !== nextProps.dropPosition ||
-            this.props.isDropTarget !== nextProps.isDropTarget;
-    };
+    var Droppable = require("jsx!js/jsx/shared/Droppable");
 
     var DummyLayerFace = React.createClass({
+        mixins: [FluxMixin],
+        
+        getInitialState: function () {
+            return { isDropTarget: false };
+        },
+        
+        /**
+         * Function for checking whether React component should update
+         * Passed to Droppable composed component in order to save on extraneous renders
+         *
+         * @param {object} nextProps - Next set of properties for this component
+         * @return {boolean}
+         */
+        shouldComponentUpdate: function (nextProps, nextState) {
+            // Only drop states are compared
+            return this.state.isDropTarget !== nextState.isDropTarget;
+        },
+        
+        _handleDropLayers: function (draggedLayers) {
+            if (!this.state.isDropTarget) {
+                return Promise.resolve();
+            }
+            
+            this.setState({ isDropTarget: false });
+            
+            var dropIndex = 0,
+                dragSource = collection.pluck(draggedLayers, "id");
+
+            return this.getFlux().actions.layers.reorder(this.props.document, dragSource, dropIndex);
+        },
+        
+        _handleDragTargetEnter: function (draggedLayers) {
+            // Dropping on the dummy layer is valid as long as a group is not
+            // being dropped below itself. The dummy layer only exists
+            // when there is a bottom group layer. Drop position is fixed.
+
+            var bottomLayer = this.props.document.layers.top.last(),
+                isGroup = bottomLayer.kind === bottomLayer.layerKinds.GROUP,
+                isDropTarget = !isGroup || !draggedLayers.contains(bottomLayer);
+
+            this.setState({ isDropTarget: isDropTarget });
+        },
+        
+        _handleDragTargetLeave: function () {
+            this.setState({ isDropTarget: false });
+        },
+        
         render: function () {
             var dummyClassNames = classnames({
-                layer: true,
+                "layer": true,
                 "layer__dummy": true,
-                "layer__dummy_drop": this.props.isDropTarget
+                "face__drop_target": this.state.isDropTarget,
+                "layer__dummy_drop": this.state.isDropTarget
             });
 
             // The dummy layer only has enough structure to support styling of
             // drops at the bottom of the layer index.
             return (
-                <li className={dummyClassNames} />
+                <Droppable
+                    accept="layer"
+                    onDrop={this._handleDropLayers}
+                    onDragTargetEnter={this._handleDragTargetEnter}
+                    onDragTargetLeave={this._handleDragTargetLeave}>
+                    <li className={dummyClassNames}/>
+                </Droppable>
             );
         }
     });
 
-    // Create a Droppable from a Draggable from a DummyLayerFace.
-    var draggedVersion = Draggable.createWithComponent(DummyLayerFace, "y"),
-        /** @ignore */
-        isEqual = function (layerA, layerB) {
-            return layerA.key === layerB.key;
-        },
-        /** @ignore */
-        droppableSettings = function (props) {
-            return {
-                zone: props.zone,
-                key: "dummy",
-                keyObject: { key: "dummy" },
-                isValid: props.isValid,
-                handleDrop: props.onDrop
-            };
-        };
-
-    module.exports = Droppable.createWithComponent(draggedVersion, droppableSettings, isEqual, shouldComponentUpdate);
+    module.exports = DummyLayerFace;
 });

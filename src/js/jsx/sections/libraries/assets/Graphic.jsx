@@ -165,7 +165,7 @@ define(function (require, exports, module) {
         }
     });
 
-    var DraggableGraphic = Draggable.createWithComponent(Graphic, "both");
+    var DraggableGraphic = Draggable.createWithComponent("graphic", Graphic, "both");
 
     module.exports = DraggableGraphic;
 });

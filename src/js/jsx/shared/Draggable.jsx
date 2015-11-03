@@ -57,22 +57,13 @@ define(function (require, exports, module) {
     var math = require("js/util/math");
 
     /**
-     * Distance in pixels before a mousedown+mousemove becomes a drag event.
-     * Prevents false drags on Windows.
-     *
-     * @const
-     * @type {number}
-     */
-    var MIN_DRAG_DISTANCE = 5;
-
-    /**
      * Create a composed Droppoable component
      *
      * @param {ReactComponent} Component to wrap
      * @param {string} axis is either "x", "y" or "both" for which axis dragging is allowed
      * @return {ReactComponent}
      */
-    var createWithComponent = function (Component, axis) {
+    var createWithComponent = function (type, Component, axis) {
         if (typeof axis === "undefined") {
             axis = "both";
         }
@@ -89,14 +80,6 @@ define(function (require, exports, module) {
             mixins: [FluxMixin],
 
             propTypes: {
-                zone: React.PropTypes.number.isRequired,
-                
-                /**
-                 * Object representing the draggabe target. This will be the default value for 
-                 * the *getDragItems* prop when it is null.
-                 */
-                keyObject: React.PropTypes.object.isRequired,
-                
                 /**
                  * Optional callback to return a Immutable.List of draged items. It is useful when you want to support 
                  * dragging on multiple items.
@@ -217,16 +200,6 @@ define(function (require, exports, module) {
             },
 
             /**
-             * Position of the original mousedown event. Used to measure the distance
-             * of each mousemove event. The drag is not started until mousemove events
-             * reach the MIN_DRAG_DISTANCE threshold.
-             *
-             * @private
-             * @type {?{x: number, y: number}}
-             */
-            _mousedownPosition: null,
-
-            /**
              * Handles the start of a dragging operation by setting up initial position
              * and adding event listeners to the window
              *
@@ -234,11 +207,6 @@ define(function (require, exports, module) {
              * @param {SyntheticEvent} event
              */
             _handleDragStart: function (event) {
-                this._mousedownPosition = {
-                    x: event.clientX,
-                    y: event.clientY
-                };
-
                 window.addEventListener("mousemove", this._handleDragMove, true);
                 window.addEventListener("mouseup", this._handleDragFinish, true);
             },
@@ -257,14 +225,6 @@ define(function (require, exports, module) {
                 };
     
                 if (!this.state.dragging) {
-                    var distance = math.distance(position.x, position.y,
-                        this._mousedownPosition.x, this._mousedownPosition.y);
-                    if (distance < MIN_DRAG_DISTANCE) {
-                        // Do not start the drag until the distance reaches a
-                        // threshold to prevent false drags on Windows.
-                        return;
-                    }
-
                     var dragItems = this.props.getDragItems ?
                             this.props.getDragItems(this) : Immutable.List([this.props.keyObject]);
                     
@@ -279,9 +239,7 @@ define(function (require, exports, module) {
                         this.props.onDragStart();
                     }
                     
-                    dndStore.startDrag(dragItems, position);
-                } else {
-                    dndStore.updateDrag(this.props.zone, position);
+                    dndStore.startDrag(type, dragItems, position);
                 }
             },
 
