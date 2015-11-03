@@ -41,6 +41,7 @@ define(function (require, exports) {
         log = require("js/util/log"),
         layerActions = require("./layers"),
         collection = require("js/util/collection"),
+        historyActions = require("./history"),
         locking = require("js/util/locking"),
         layerActionsUtil = require("js/util/layeractions"),
         headlights = require("js/util/headlights"),
@@ -665,9 +666,12 @@ define(function (require, exports) {
                     name: strings.ACTIONS.FLIP_LAYERS,
                     target: documentLib.referenceBy.id(document.id)
                 }
-            };
+            },
+            historyPromise = this.transfer(historyActions.newHistoryState, document.id,
+                strings.ACTIONS.FLIP_LAYERS),
+            playPromise = locking.playWithLockOverride(document, layers, flipAction, options);
 
-        return locking.playWithLockOverride(document, layers, flipAction, options)
+        return Promise.join(historyPromise, playPromise)
             .bind(this)
             .then(function () {
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
@@ -689,7 +693,7 @@ define(function (require, exports) {
     };
     flipX.reads = [];
     flipX.writes = [locks.JS_DOC, locks.PS_DOC];
-    flipX.transfers = [layerActions.resetBounds];
+    flipX.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
     
     /**
      * Helper command to flip vertically
@@ -704,7 +708,7 @@ define(function (require, exports) {
     };
     flipY.reads = [];
     flipY.writes = [locks.JS_DOC, locks.JS_DOC];
-    flipY.transfers = [layerActions.resetBounds];
+    flipY.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
     
     /**
      * Helper command to flip selected layers in the current document horizontally
@@ -757,7 +761,7 @@ define(function (require, exports) {
      * @param {string} align either left right top bottom hCenter or vCenter
      * @return {Promise}
      */
-    var _align = function (document, layers, align) {
+    var align = function (document, layers, align) {
         layers = _filterTransform(document, layers);
 
         // validate layers input
@@ -777,9 +781,12 @@ define(function (require, exports) {
                     name: strings.ACTIONS.ALIGN_LAYERS,
                     target: documentLib.referenceBy.id(document.id)
                 }
-            };
-        
-        return locking.playWithLockOverride(document, layers, alignAction, options)
+            },
+            historyPromise = this.transfer(historyActions.newHistoryState, document.id,
+                strings.ACTIONS.ALIGN_LAYERS),
+            playPromise = locking.playWithLockOverride(document, layers, alignAction, options);
+
+        return Promise.join(historyPromise, playPromise)
             .bind(this)
             .then(function () {
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
@@ -787,6 +794,9 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
+    align.reads = [locks.JS_APP];
+    align.writes = [locks.PS_DOC, locks.JS_DOC];
+    align.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
     
     /**
      * Helper command to align Left
@@ -801,11 +811,11 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return _align.call(this, document, layers, "left");
+        return this.transfer(align, document, layers, "left");
     };
     alignLeft.reads = [locks.JS_APP];
-    alignLeft.writes = [locks.PS_DOC, locks.JS_DOC];
-    alignLeft.transfers = [layerActions.resetBounds];
+    alignLeft.writes = [];
+    alignLeft.transfers = [align];
 
     /**
      * Helper command to align right
@@ -820,11 +830,11 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return _align.call(this, document, layers, "right");
+        return this.transfer(align, document, layers, "right");
     };
     alignRight.reads = [locks.JS_APP];
-    alignRight.writes = [locks.PS_DOC, locks.JS_DOC];
-    alignRight.transfers = [layerActions.resetBounds];
+    alignRight.writes = [];
+    alignRight.transfers = [align];
     
     /**
      * Helper command to align top
@@ -839,11 +849,11 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return _align.call(this, document, layers, "top");
+        return this.transfer(align, document, layers, "top");
     };
     alignTop.reads = [locks.JS_APP];
-    alignTop.writes = [locks.PS_DOC, locks.JS_DOC];
-    alignTop.transfers = [layerActions.resetBounds];
+    alignTop.writes = [];
+    alignTop.transfers = [align];
 
     /**
      * Helper command to align bottom
@@ -858,11 +868,11 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return _align.call(this, document, layers, "bottom");
+        return this.transfer(align, document, layers, "bottom");
     };
     alignBottom.reads = [locks.JS_APP];
-    alignBottom.writes = [locks.PS_DOC, locks.JS_DOC];
-    alignBottom.transfers = [layerActions.resetBounds];
+    alignBottom.writes = [];
+    alignBottom.transfers = [align];
 
     /**
      * Helper command to align vCenter
@@ -877,11 +887,11 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return _align.call(this, document, layers, "vCenter");
+        return this.transfer(align, document, layers, "vCenter");
     };
     alignVCenter.reads = [locks.JS_APP];
-    alignVCenter.writes = [locks.PS_DOC, locks.JS_DOC];
-    alignVCenter.transfers = [layerActions.resetBounds];
+    alignVCenter.writes = [];
+    alignVCenter.transfers = [align];
 
     /**
      * Helper command to align hCenter
@@ -896,11 +906,11 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
             layers = document.layers.selected;
         }
-        return _align.call(this, document, layers, "hCenter");
+        return this.transfer(align, document, layers, "hCenter");
     };
     alignHCenter.reads = [locks.JS_APP];
-    alignHCenter.writes = [locks.PS_DOC, locks.JS_DOC];
-    alignHCenter.transfers = [layerActions.resetBounds];
+    alignHCenter.writes = [];
+    alignHCenter.transfers = [align];
 
     /**
      * Asks photoshop to align layers either Left, right or center. (horizontally or vertically).
@@ -931,9 +941,12 @@ define(function (require, exports) {
                     name: strings.ACTIONS.DISTRIBUTE_LAYERS,
                     target: documentLib.referenceBy.id(document.id)
                 }
-            };
+            },
+            historyPromise = this.transfer(historyActions.newHistoryState, document.id,
+                strings.ACTIONS.DISTRIBUTE_LAYERS),
+            playPromise = locking.playWithLockOverride(document, layers, distributeAction, options);
         
-        return locking.playWithLockOverride(document, layers, distributeAction, options)
+        return Promise.join(historyPromise, playPromise)
             .bind(this)
             .then(function () {
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
@@ -959,7 +972,7 @@ define(function (require, exports) {
     };
     distributeX.reads = [locks.JS_APP];
     distributeX.writes = [locks.PS_DOC, locks.JS_DOC];
-    distributeX.transfers = [layerActions.resetBounds];
+    distributeX.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
 
     /**
      * Helper command to dstribute along the horizontal axis
@@ -978,7 +991,7 @@ define(function (require, exports) {
     };
     distributeY.reads = [locks.JS_APP];
     distributeY.writes = [locks.PS_DOC, locks.JS_DOC];
-    distributeY.transfers = [layerActions.resetBounds];
+    distributeY.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
 
     /**
      * Set the radius of the rectangle shapes in the given layers of the given
@@ -1078,9 +1091,12 @@ define(function (require, exports) {
                     name: strings.ACTIONS.ROTATE_LAYERS,
                     target: documentLib.referenceBy.id(document.id)
                 }
-            };
+            },
+            historyPromise = this.transfer(historyActions.newHistoryState, document.id,
+                strings.ACTIONS.ROTATE_LAYERS),
+            playPromise = locking.playWithLockOverride(document, layers, rotateObj, options);
 
-        return locking.playWithLockOverride(document, layers, rotateObj, options)
+        return Promise.join(historyPromise, playPromise)
             .bind(this)
             .then(function () {
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
@@ -1090,7 +1106,7 @@ define(function (require, exports) {
     };
     rotate.reads = [locks.JS_DOC];
     rotate.writes = [locks.PS_DOC];
-    rotate.transfers = [layerActions.resetBounds];
+    rotate.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
 
     /**
      * Helper command to rotate layers in currently selected document through the menu
@@ -1171,11 +1187,13 @@ define(function (require, exports) {
                         // because the historyState event must be processed first for the following
                         // "amend history" workflow to function correctly
                         textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
-                        otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers, true);
+                        otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers);
 
                     // When moving a mixture of both text and non-text layers, the individual actions do not
                     // affect history.  Instead, a single, separate event is dispatched to provide a unified
                     // finalization of this history transaction with the updated model.
+                    // TODO in the new unifiedHistory system, can the two above separate calls just amend history?
+                    // if so, then remove the following
                     return Promise.join(textLayersPromise, otherLayersPromise)
                         .bind(this)
                         .then(function () {
@@ -1241,6 +1259,7 @@ define(function (require, exports) {
     exports.flipY = flipY;
     exports.flipXCurrentDocument = flipXCurrentDocument;
     exports.flipYCurrentDocument = flipYCurrentDocument;
+    exports.align = align;
     exports.alignLeft = alignLeft;
     exports.alignRight = alignRight;
     exports.alignTop = alignTop;

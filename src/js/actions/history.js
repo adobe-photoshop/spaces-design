@@ -227,6 +227,32 @@ define(function (require, exports) {
     decrementHistory.modal = true;
 
     /**
+     * Create a new history state for the given document, with the given name.
+     * This is useful for complex workflows that may require several subsequent actions, and this action
+     * will generically create a new history state at the beginning of that process.
+     *
+     * @param {number} documentID
+     * @param {string} name
+     * @param {boolean=} coalesce TODO possibly deprecated
+     * @return {Promise}
+     */
+    var newHistoryState = function (documentID, name, coalesce) {
+        var payload = {
+            documentID: documentID,
+            coalesce: !!coalesce,
+            history: {
+                newState: true,
+                name: name
+            }
+        };
+
+        return this.dispatchAsync(events.history.NEW_HISTORY_STATE, payload);
+    };
+    newHistoryState.reads = [];
+    newHistoryState.writes = [locks.JS_HISTORY];
+    newHistoryState.modal = true;
+
+    /**
      * Revert to the document's last saved state.
      *
      * @return {Promise}
@@ -412,6 +438,7 @@ define(function (require, exports) {
     exports.queryCurrentHistory = queryCurrentHistory;
     exports.incrementHistory = incrementHistory;
     exports.decrementHistory = decrementHistory;
+    exports.newHistoryState = newHistoryState;
     exports.revertCurrentDocument = revertCurrentDocument;
     exports.handleHistoryState = handleHistoryState;
     exports.handleHistoryStateAfterSelect = handleHistoryStateAfterSelect;

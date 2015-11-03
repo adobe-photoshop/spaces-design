@@ -449,15 +449,14 @@ define(function (require, exports) {
      *
      * @param {Document} document
      * @param {Layer|Immutable.Iterable.<Layer>} layers
-     * @param {boolean=} amendHistory If truthy, update the current history state
-     *  with latest document, and also do NOT dirty the document.
+     * @param {boolean=} suppressDirty If truthy, do NOT dirty the document.
      * @param {boolean=} lazy If true, non-selected layers will only have their
      *  non-lazy properties updated, and will be returned to an uninitialized
      *  state. This is a performance optimization. NOTE: the selection state
      *  of the layer models passed in must be accurate for this to work correctly!
      * @return {Promise}
      */
-    var resetLayers = function (document, layers, amendHistory, lazy) {
+    var resetLayers = function (document, layers, suppressDirty, lazy) {
         if (layers instanceof Layer) {
             layers = Immutable.List.of(layers);
         } else if (layers.isEmpty()) {
@@ -524,6 +523,7 @@ define(function (require, exports) {
                 var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
                     payload = {
                         documentID: document.id,
+                        suppressDirty: suppressDirty,
                         lazy: lazy
                     };
 
@@ -533,12 +533,7 @@ define(function (require, exports) {
                         descriptor: descriptors[index++]
                     };
                 });
-                if (amendHistory) {
-                    payload.suppressDirty = true;
-                    this.dispatch(events.document.history.amendment.RESET_LAYERS, payload);
-                } else {
-                    this.dispatch(events.document.RESET_LAYERS, payload);
-                }
+                this.dispatch(events.document.history.unifiedHistory.RESET_LAYERS, payload);
             });
     };
     resetLayers.reads = [locks.PS_DOC];
@@ -547,15 +542,12 @@ define(function (require, exports) {
 
     /**
      * Emit a RESET_BOUNDS with bounds descriptors for the given layers.
-     * Based on noHistory, emit the correct flavor of event
      *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
-     * @param {boolean=} suppressHistory Optional. If true, emit an event that does NOT add a new history state
-     * @param {boolean=} amendHistory Optional. If true, update the current state (requires suppressHistory)
      * @return {Promise}
      */
-    var resetBounds = function (document, layers, suppressHistory, amendHistory) {
+    var resetBounds = function (document, layers) {
         if (layers.isEmpty()) {
             return Promise.resolve();
         }
@@ -596,15 +588,7 @@ define(function (require, exports) {
                     };
                 });
 
-                if (suppressHistory) {
-                    if (amendHistory) {
-                        this.dispatch(events.document.history.amendment.RESET_BOUNDS, payload);
-                    } else {
-                        this.dispatch(events.document.RESET_BOUNDS, payload);
-                    }
-                } else {
-                    this.dispatch(events.document.history.nonOptimistic.RESET_BOUNDS, payload);
-                }
+                this.dispatch(events.document.history.amendment.RESET_BOUNDS, payload);
             })
             .then(function () {
                 return this.transfer(guides.queryCurrentGuides);
@@ -620,11 +604,10 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>} layers
-     * @param {boolean=} noHistory Optional. If true, emit an event that does NOT change history
      * @return {Promise}
      */
-    var resetBoundsQuietly = function (document, layers, noHistory) {
-        return this.transfer(resetBounds, document, layers, noHistory)
+    var resetBoundsQuietly = function (document, layers) {
+        return this.transfer(resetBounds, document, layers)
             .catch(function () {});
     };
     resetBoundsQuietly.reads = [];
@@ -651,7 +634,7 @@ define(function (require, exports) {
         if (linkedLayers.isEmpty()) {
             return Promise.resolve();
         }
-        return this.transfer(resetBounds, document, linkedLayers, true);
+        return this.transfer(resetBounds, document, linkedLayers);
     };
     resetLinkedLayers.reads = [locks.JS_DOC];
     resetLinkedLayers.writes = [];
@@ -1724,13 +1707,15 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
+                // TODO this resetIndex causes a history state, eventually want to move this to a more explicit
+                // history state creation action
                 return this.transfer(resetIndex, document, false, false);
             })
             .then(function () {
                 // The selected layers may have changed after the reorder.
                 var nextDocument = this.flux.store("document").getDocument(document.id);
 
-                return this.transfer(resetBounds, nextDocument, nextDocument.layers.allSelected, true);
+                return this.transfer(resetBounds, nextDocument, nextDocument.layers.allSelected);
             });
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
@@ -2281,7 +2266,7 @@ define(function (require, exports) {
         // TODO this action used to translate layer bounds and dispatch events.document.REPOSITION_LAYERS,
         // but this was incompatible with undo/redo.  When stepping back into a history state we might also get
         // a canvas shift event which would cause us to shift our already-correct cached history state
-        return this.transfer(resetBounds, document, document.layers.all, true, true);
+        return this.transfer(resetBounds, document, document.layers.all);
     };
     handleCanvasShift.reads = [locks.JS_DOC];
     handleCanvasShift.writes = [];

@@ -76,6 +76,7 @@ define(function (require, exports, module) {
             storeUtil.bindEvents(events.export.history.optimistic, this._handlePreHistoryEvent, binder);
             storeUtil.bindEvents(events.document.history.optimistic, this._handlePreHistoryEvent, binder);
             storeUtil.bindEvents(events.document.history.nonOptimistic, this._handlePostHistoryEvent, binder);
+            storeUtil.bindEvents(events.document.history.unifiedHistory, this._handleUnifiedHistory, binder);
             storeUtil.bindEvents(events.document.history.amendment, this._handleHistoryAmendment, binder);
 
             this.bindActions(
@@ -83,6 +84,7 @@ define(function (require, exports, module) {
                 events.history.PS_HISTORY_EVENT, this._handleHistoryFromPhotoshop,
                 events.history.LOAD_HISTORY_STATE, this._loadHistoryState,
                 events.history.LOAD_HISTORY_STATE_REVERT, this._loadLastSavedHistoryState,
+                events.history.NEW_HISTORY_STATE, this._handleUnifiedHistory,
                 events.history.ADJUST_HISTORY_STATE, this._adjustHistoryState,
                 events.history.FINISH_ADJUSTING_HISTORY_STATE, this._finishAdjustingHistoryState,
                 events.history.FINALIZE_HISTORY_STATE, this._handlePostHistoryEvent,
@@ -619,7 +621,7 @@ define(function (require, exports, module) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
                     documentExports = exportStore.getDocumentExports(documentID),
-                    nextState = { document: document, documentExports: documentExports };
+                    stateProps = { document: document, documentExports: documentExports };
 
                 if (!document) {
                     throw new Error("Could not amend history state, document not found: " + documentID);
@@ -627,14 +629,36 @@ define(function (require, exports, module) {
 
                 var history = this._history.get(documentID) || Immutable.List(),
                     current = this._current.get(documentID) || -1,
-                    currentState = history.get(current);
+                    currentState = history.get(current),
+                    nextState;
 
-                if (history && currentState && current > -1) {
-                    history = history.splice(current, 1, currentState.merge(nextState));
+                if (!history || !currentState || current < 0) {
+                    throw new Error("Could not amend history, document not properly initialized: " + documentID);
+                }
+
+                nextState = currentState.merge(stateProps);
+
+                if (!nextState.equals(currentState)) {
+                    history = history.splice(current, 1, nextState);
                     this._history = this._history.set(documentID, history);
                     this.emit("change");
                 }
             });
+        },
+
+        /**
+         * New and improved "unified" history event handler.  payload.history determines
+         * whether or not history state is created or amended.
+         *
+         * @param {object} payload
+         */
+        _handleUnifiedHistory: function (payload) {
+            if (payload.history && payload.history.newState) {
+                log.debug("UnifiedHistory: Creating new history state");
+                this._handlePreHistoryEvent.call(this, payload);
+            } else {
+                this._handleHistoryAmendment.call(this, payload);
+            }
         },
 
         /**

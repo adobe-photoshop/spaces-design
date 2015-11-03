@@ -87,7 +87,10 @@ define(function (require, exports) {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
                 strokeProperties: strokeProperties,
-                coalesce: coalesce
+                coalesce: coalesce,
+                history: {
+                    newState: true
+                }
             };
 
         return this.dispatchAsync(eventName, payload);
@@ -180,7 +183,7 @@ define(function (require, exports) {
             options.enabled = true;
             eventName = events.document.history.optimistic.STROKE_CHANGED;
         } else {
-            eventName = events.document.STROKE_ENABLED_CHANGED;
+            eventName = events.document.history.unifiedHistory.STROKE_ENABLED_CHANGED;
         }
 
         var layerRef = contentLayerLib.referenceBy.current,
@@ -212,22 +215,6 @@ define(function (require, exports) {
     setStroke.transfers = [layerActions.resetBounds];
 
     /**
-     * Sets the enabled flag for all selected Layers on a given doc.
-     * 
-     * @param {Document} document
-     * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {object} options
-     * @param {boolean=} options.enabled
-     * @return {Promise}
-     */
-    var setStrokeEnabled = function (document, layers, options) {
-        return setStrokeColor.call(this, document, layers, null, options);
-    };
-    setStrokeEnabled.reads = [];
-    setStrokeEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeEnabled.transfers = [layerActions.resetBounds];
-
-    /**
      * Set the color of the stroke for the given layers of the given document
      * If there are selected layers that do not currently have a stroke, then a subsequent call
      * will be made to fetch the stroke style for each layer, and the result will be used to update the stroke store.
@@ -257,7 +244,7 @@ define(function (require, exports) {
             options.enabled = true;
             eventName = events.document.history.optimistic.STROKE_COLOR_CHANGED;
         } else {
-            eventName = events.document.STROKE_ENABLED_CHANGED;
+            eventName = events.document.history.unifiedHistory.STROKE_ENABLED_CHANGED;
             enabledChanging = true;
         }
 
@@ -338,6 +325,22 @@ define(function (require, exports) {
     setStrokeColor.transfers = [layerActions.resetBounds];
 
     /**
+     * Sets the enabled flag for all selected Layers on a given doc.
+     *
+     * @param {Document} document
+     * @param {Immutable.List.<Layer>} layers list of layers being updating
+     * @param {object} options
+     * @param {boolean=} options.enabled
+     * @return {Promise}
+     */
+    var setStrokeEnabled = function (document, layers, options) {
+        return this.transfer(setStrokeColor, document, layers, null, options);
+    };
+    setStrokeEnabled.reads = [];
+    setStrokeEnabled.writes = [];
+    setStrokeEnabled.transfers = [setStrokeColor];
+
+    /**
      * Set the alignment of the stroke for all selected layers of the given document.
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
@@ -357,7 +360,7 @@ define(function (require, exports) {
                     document,
                     layers,
                     { alignment: alignmentType, enabled: true },
-                    events.document.STROKE_ALIGNMENT_CHANGED);
+                    events.document.history.unifiedHistory.STROKE_ALIGNMENT_CHANGED);
 
             var alignmentPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
@@ -441,7 +444,7 @@ define(function (require, exports) {
                 document,
                 layers,
                 { width: width, enabled: true },
-                events.document.STROKE_WIDTH_CHANGED);
+                events.document.history.unifiedHistory.STROKE_WIDTH_CHANGED);
 
             var widthPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
@@ -593,19 +596,24 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _playCombine = function (document, layers, playObject) {
-        var deleteLayersPromise;
-
         if (layers.isEmpty()) {
             return Promise.resolve();
-        } else if (layers.size > 1) {
-            var payload = {
+        }
+
+        var dispatchPromise,
+            payload = {
                 documentID: document.id,
-                layerIDs: collection.pluck(layers.butLast(), "id")
+                history: {
+                    newState: true,
+                    name: strings.ACTIONS.COMBINE_SHAPES
+                }
             };
 
-            deleteLayersPromise = this.dispatchAsync(events.document.DELETE_LAYERS_NO_HISTORY, payload);
+        if (layers.size > 1) {
+            payload.layerIDs = collection.pluck(layers.butLast(), "id");
+            dispatchPromise = this.dispatchAsync(events.document.history.optimistic.DELETE_LAYERS, payload);
         } else {
-            deleteLayersPromise = Promise.resolve();
+            dispatchPromise = this.dispatchAsync(events.history.NEW_HISTORY_STATE, payload);
         }
 
         var options = {
@@ -616,7 +624,7 @@ define(function (require, exports) {
             },
             playPromise = descriptor.playObject(playObject, options);
 
-        return Promise.join(deleteLayersPromise, playPromise)
+        return Promise.join(dispatchPromise, playPromise)
             .bind(this)
             .then(function () {
                 if (layers.size > 1) {
@@ -630,11 +638,6 @@ define(function (require, exports) {
                 } else {
                     return this.transfer(layerActions.resetLayers, document, layers);
                 }
-            })
-            .then(function () {
-                // wrap up this operation with a history changing event
-                return this.dispatchAsync(events.document.history.nonOptimistic.COMBINE_SHAPES,
-                    { documentID: document.id });
             });
     };
 

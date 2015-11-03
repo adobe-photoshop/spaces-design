@@ -468,20 +468,23 @@ define(function (require, exports) {
 
                 this.dispatch(events.document.CLOSE_DOCUMENT, payload);
 
-                var newDocument = this.flux.store("application").getCurrentDocument(),
-                    resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
-                    resetHistoryPromise = newDocument ?
-                        this.transfer(historyActions.queryCurrentHistory, newDocument.id) : Promise.resolve(),
+                return this.flux.store("application").getCurrentDocument();
+            })
+            .tap(function (newDocument) {
+                return newDocument ?
+                    this.transfer(historyActions.queryCurrentHistory, newDocument.id) : Promise.resolve();
+            })
+            .then(function (newDocument) {
+                var resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, newDocument),
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles,
                         documentID, isDocumentSaved);
 
                 return Promise.join(resetLinkedPromise,
-                        resetHistoryPromise,
-                        updateTransformPromise,
-                        recentFilesPromise,
-                        deleteTempFilesPromise);
+                    updateTransformPromise,
+                    recentFilesPromise,
+                    deleteTempFilesPromise);
             });
     };
     disposeDocument.reads = [];
@@ -734,15 +737,16 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
+                return this.transfer(historyActions.queryCurrentHistory, documentID);
+            })
+            .then(function () {
                 var currentDocument = this.flux.store("document").getDocument(documentID),
                     resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, currentDocument),
-                    historyPromise = this.transfer(historyActions.queryCurrentHistory, documentID),
                     guidesPromise = this.transfer(guideActions.queryCurrentGuides, currentDocument),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deselectPromise = descriptor.playObject(selectionLib.deselectAll());
 
                 return Promise.join(resetLinkedPromise,
-                    historyPromise,
                     guidesPromise,
                     updateTransformPromise,
                     deselectPromise);
