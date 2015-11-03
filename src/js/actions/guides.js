@@ -182,6 +182,7 @@ define(function (require, exports) {
     resetGuidePolicies.reads = [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI];
     resetGuidePolicies.writes = [];
     resetGuidePolicies.transfers = [policy.removePointerPolicies, policy.addPointerPolicies];
+    resetGuidePolicies.modal = true;
 
     /**
      * Creates a guide and starts tracking it for user to place in desired location
