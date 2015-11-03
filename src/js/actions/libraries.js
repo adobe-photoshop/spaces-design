@@ -1035,10 +1035,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var selectLibrary = function (id) {
-        var libraryState = this.flux.stores.library.getState();
-        
         this.dispatch(events.libraries.LIBRARY_SELECTED, { id: id });
         
+        var libraryState = this.flux.stores.library.getState();
+
         return this.transfer(preferencesActions.setPreference,
             _LAST_SELECTED_LIBRARY_ID_PREF, libraryState.currentLibraryID);
     };
