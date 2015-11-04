@@ -180,6 +180,11 @@ define(function (require, exports) {
                 distortModifier,
                 innerRect
             ),
+            insideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_TO_BROWSER,
+                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+                { shift: true },
+                innerRect
+            ),
             // Used for distort/skew transformations
             noOutsetCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
                 adapterOS.eventKind.LEFT_MOUSE_DOWN,
@@ -214,6 +219,7 @@ define(function (require, exports) {
         var pointerPolicyList = [
             insidePolicy,
             insideCommandPolicy,
+            insideShiftPolicy,
             noOutsetCommandPolicy,
             noOutsetShiftPolicy,
             noOutsetCommandShiftPolicy,
