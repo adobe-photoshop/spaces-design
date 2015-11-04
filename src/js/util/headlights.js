@@ -46,7 +46,7 @@ define(function (require, exports) {
         if (global.debug) {
             return Promise.resolve();
         } else {
-            return adapterPS.logHeadlightsEvent(category, subcategory, event);
+            return adapterPS.logHeadlightsEvent(category, subcategory, String(event));
         }
     };
 
