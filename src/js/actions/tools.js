@@ -902,8 +902,5 @@ define(function (require, exports) {
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 
-    // This module must have a higher priority than the document module to avoid
-    // duplicate current-document updates on startup, but lower priority than the
-    // ui module so that defaults, which tool select handlers rely on, can be set.
     exports._priority = 0;
 });

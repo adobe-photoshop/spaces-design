@@ -359,7 +359,7 @@ define(function (require, exports) {
             });
     };
     initActiveDocument.reads = [locks.PS_DOC];
-    initActiveDocument.writes = [locks.JS_DOC];
+    initActiveDocument.writes = [locks.JS_DOC, locks.JS_APP];
     initActiveDocument.transfers = [historyActions.queryCurrentHistory, "layers.deselectAll"];
 
     /**
@@ -1166,5 +1166,11 @@ define(function (require, exports) {
     exports.onReset = onReset;
 
     exports._getDocumentByRef = _getDocumentByRef;
-    exports._priority = -99;
+    
+    // This module needs to have a higher priority than tools
+    // Otherwise, if rectangle tool is selected, we set shape defaults
+    // which causes PS to set the fill color, and if there is an active document
+    // with a shape layer selected, this will reset the color of that shape
+    // But if document is initialized, we do a selection dance, avoiding this situation
+    exports._priority = 1;
 });
