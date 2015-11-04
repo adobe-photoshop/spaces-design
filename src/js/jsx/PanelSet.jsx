@@ -46,7 +46,6 @@ define(function (require, exports, module) {
         ExportPanel = require("jsx!./sections/export/ExportPanel"),
         LayersPanel = require("jsx!./sections/layers/LayersPanel"),
         LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
-        collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),
         synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
@@ -67,12 +66,7 @@ define(function (require, exports, module) {
                 activeDocumentInitialized = applicationState.activeDocumentInitialized,
                 recentFilesInitialized = applicationState.recentFilesInitialized,
                 recentFiles = applicationState.recentFiles,
-                currentlyMountedDocumentIDs = this.state ? this.state.mountedDocumentIDs : Immutable.Set(),
-                mountedDocumentIDs = collection.intersection(documentIDs, currentlyMountedDocumentIDs);
-                
-            if (applicationState.selectedDocumentID) {
-                mountedDocumentIDs = mountedDocumentIDs.push(applicationState.selectedDocumentID);
-            }
+                mountedDocuments = applicationStore.getInitializedDocuments();
 
             var fluxState = {
                 activeDocumentInitialized: activeDocumentInitialized,
@@ -80,7 +74,7 @@ define(function (require, exports, module) {
                 recentFiles: recentFiles,
                 activeDocument: activeDocument,
                 documentIDs: documentIDs,
-                mountedDocumentIDs: mountedDocumentIDs.toSet()
+                mountedDocuments: mountedDocuments
             };
              
             var preferencesStore = flux.store("preferences"),
@@ -276,9 +270,9 @@ define(function (require, exports, module) {
                         layerPanels: []
                     };
                     
-                this.state.mountedDocumentIDs.forEach(function (documentID) {
-                    var current = documentID === activeDocument.id,
-                        document = this.getFlux().store("document").getDocument(documentID),
+                this.state.mountedDocuments.forEach(function (document) {
+                    var documentID = document.id,
+                        current = documentID === activeDocument.id,
                         disabled = document && document.unsupported,
                         panelProps = {
                             key: documentID,
