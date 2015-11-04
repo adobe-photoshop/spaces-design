@@ -583,14 +583,42 @@ define(function (require, exports) {
             dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RESIZE_DOCUMENT, payload);
             sizePromise = descriptor.playObject(resizeObj);
         } else {
-            var resizeLayerActions = layerSpec.reduce(function (actions, layer) {
-                var layerActions = _getResizeLayerActions.call(this, document, layer, size, payload.sizes, refPoint);
-                return actions.concat(layerActions);
-            }, Immutable.List(), this);
+            var documentRef = documentLib.referenceBy.id(document.id),
+                autoExpandEnabled = false,
+                resizeLayerActions = layerSpec.reduce(function (actions, layer) {
+                    var action = _getResizeLayerActions.call(this, document, layer, size, payload.sizes, refPoint);
+                    return actions.concat(action);
+                }, Immutable.List(), this);
 
             dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RESIZE_LAYERS, payload);
 
-            sizePromise = layerActionsUtil.playLayerActions(document, resizeLayerActions, true, options);
+            sizePromise = descriptor.getProperty(documentRef, "artboards")
+                .bind(this)
+                .then(function (artboardInfo) {
+                    autoExpandEnabled = artboardInfo.autoExpandEnabled;
+
+                    if (!autoExpandEnabled) {
+                        return Promise.resolve();
+                    } else {
+                        var setObj = documentLib.setArtboardAutoAttributes(documentRef, {
+                            autoExpandEnabled: false
+                        });
+
+                        return descriptor.playObject(setObj);
+                    }
+                })
+                .then(function () {
+                    return layerActionsUtil.playLayerActions(document, resizeLayerActions, true, options);
+                })
+                .then(function () {
+                    if (autoExpandEnabled) {
+                        var setObj = documentLib.setArtboardAutoAttributes(documentRef, {
+                            autoExpandEnabled: true
+                        });
+
+                        return descriptor.playObject(setObj);
+                    }
+                });
         }
 
         return Promise.join(dispatchPromise, sizePromise)
