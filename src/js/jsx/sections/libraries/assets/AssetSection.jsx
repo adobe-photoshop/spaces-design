@@ -32,9 +32,9 @@ define(function (require, exports, module) {
 
     var nls = require("js/util/nls");
 
-    var LibraryDialog = require("jsx!js/jsx/sections/libraries/LibraryDialog"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
-        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+    var LibraryDialog = require("js/jsx/sections/libraries/LibraryDialog"),
+        TextInput = require("js/jsx/shared/TextInput"),
+        SplitButton = require("js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem;
 

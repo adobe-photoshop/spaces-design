@@ -29,8 +29,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var Stroke = require("jsx!./Stroke"),
-        Radius = require("jsx!./Radius");
+    var Stroke = require("./Stroke"),
+        Radius = require("./Radius");
 
     /**
      * VectorAppearance Component displays information of appearance properties for non-type only sets of layers

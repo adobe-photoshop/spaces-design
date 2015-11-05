@@ -52,7 +52,7 @@
     "dojo"          : false,
     "jquery"        : false,
     "mootools"      : false,
-    "node"          : false,
+    "node"          : true,
     "nonstandard"   : false,
     "prototypejs"   : false,
     "rhino"         : false,

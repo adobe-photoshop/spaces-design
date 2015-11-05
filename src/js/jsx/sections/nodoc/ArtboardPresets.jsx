@@ -29,10 +29,9 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var nls = require("js/util/nls"),
-        TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
+        TitleHeader = require("js/jsx/shared/TitleHeader");
 
-    var templatesJSON = require("text!static/templates.json"),
-        templates = JSON.parse(templatesJSON);
+    var templates = require("static/templates.json");
 
     var ArtboardPresets = React.createClass({
         mixins: [FluxMixin],

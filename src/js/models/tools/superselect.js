@@ -36,7 +36,7 @@ define(function (require, exports, module) {
         TypeTool = require("./superselect/type"),
         system = require("js/util/system"),
         shortcuts = require("js/util/shortcuts"),
-        SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay"),
+        SuperselectOverlay = require("js/jsx/tools/SuperselectOverlay"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;

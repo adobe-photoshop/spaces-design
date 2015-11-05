@@ -30,14 +30,14 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
-    var Toolbar = require("jsx!js/jsx/Toolbar"),
-        Scrim = require("jsx!js/jsx/Scrim"),
-        PanelSet = require("jsx!js/jsx/PanelSet"),
-        DocumentHeader = require("jsx!js/jsx/DocumentHeader"),
-        Help = require("jsx!js/jsx/Help"),
-        Search = require("jsx!js/jsx/Search"),
-        ExportModal = require("jsx!js/jsx/sections/export/ExportModal"),
-        Guard = require("jsx!js/jsx/Guard"),
+    var Toolbar = require("js/jsx/Toolbar"),
+        Scrim = require("js/jsx/Scrim"),
+        PanelSet = require("js/jsx/PanelSet"),
+        DocumentHeader = require("js/jsx/DocumentHeader"),
+        Help = require("js/jsx/Help"),
+        Search = require("js/jsx/Search"),
+        ExportModal = require("js/jsx/sections/export/ExportModal"),
+        Guard = require("js/jsx/Guard"),
         system = require("js/util/system");
         
     /**
@@ -47,7 +47,7 @@ define(function (require, exports, module) {
      * 
      * @private
      */
-    var _ICO_LOADER = require("text!img/ico-loader.svg");
+    var _ICO_LOADER = require("img/ico-loader.svg");
 
     var LAYERS_LIBRARY_COL = "layersLibrariesVisible",
         PROPERTIES_COL = "propertiesVisible";

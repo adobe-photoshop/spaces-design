@@ -33,9 +33,9 @@ define(function (require, exports, module) {
         nls = require("js/util/nls"),
         headlights = require("js/util/headlights");
         
-    var Draggable = require("jsx!js/jsx/shared/Draggable"),
-        AssetSection = require("jsx!./AssetSection"),
-        AssetPreviewImage = require("jsx!./AssetPreviewImage");
+    var Draggable = require("js/jsx/shared/Draggable"),
+        AssetSection = require("./AssetSection"),
+        AssetPreviewImage = require("./AssetPreviewImage");
 
     var Graphic = React.createClass({
         mixins: [FluxMixin],

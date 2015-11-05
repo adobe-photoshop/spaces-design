@@ -26,7 +26,7 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         Promise = require("bluebird"),
-        EventEmitter = require("eventEmitter"),
+        EventEmitter = require("events").EventEmitter,
         _ = require("lodash");
 
     var ps = require("adapter").ps,
@@ -745,7 +745,7 @@ define(function (require, exports, module) {
             .bind(this)
             .then(function () {
                 var actionPromise = action.apply(actionReceiver, params);
-                if (!(actionPromise instanceof Promise)) {
+                if (!(actionPromise.then)) {
                     var valueError = new Error("Action " + actionName + " did not return a promise");
                     valueError.returnValue = actionPromise;
 

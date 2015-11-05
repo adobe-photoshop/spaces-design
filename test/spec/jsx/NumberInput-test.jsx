@@ -29,7 +29,7 @@ define(function (require) {
     var React = require("react"),
         TestUtils = React.addons.TestUtils;
 
-    var NumberInput = require("jsx!js/jsx/shared/NumberInput");
+    var NumberInput = require("js/jsx/shared/NumberInput");
 
     module("jsx/NumberInput");
 

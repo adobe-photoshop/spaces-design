@@ -26,11 +26,12 @@ define(function (require, exports) {
 
     /**
      * Indicates whether the application is running in debug mode.
+     * __PG_DEBUG__ is defined through webpack
      * 
      * @const
      * @type {boolean} 
      */
-    var DEBUG = !!window.__PG_DEBUG__;
+    var DEBUG = !!__PG_DEBUG__; // jshint ignore:line
 
     /**
      * Namespace used for photoshop extension data

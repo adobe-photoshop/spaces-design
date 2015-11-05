@@ -67,7 +67,8 @@ module.exports = function (grunt) {
                 "src/**/*.js",
                 "src/**/*.jsx",
                 "test/**/*.js",
-                "test/**/*.jsx"
+                "test/**/*.jsx",
+                "!src/vendor/**/*"
             ]
         },
         jscs: {
@@ -76,7 +77,8 @@ module.exports = function (grunt) {
                     "*.js",
                     "*.json",
                     "src/**/*.js",
-                    "src/**/*.jsx"
+                    "src/**/*.jsx",
+                    "!src/vendor/**/*"
                 ],
                 options: {
                     config: ".jscsrc"
@@ -106,7 +108,8 @@ module.exports = function (grunt) {
             src: [
                 "*.json",
                 "src/**/*.json",
-                "test/**/*.json"
+                "test/**/*.json",
+                "!src/vendor/**/*"
             ]
         },
         lintspaces: {
@@ -117,7 +120,8 @@ module.exports = function (grunt) {
                 "src/**/*.js",
                 "src/**/*.svg",
                 "src/**/*.less",
-                "!src/**/*.gif"
+                "!src/**/*.gif",
+                "!src/vendor/**/*"
             ],
             options: {
                 newline: true,

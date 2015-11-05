@@ -55,8 +55,7 @@ define(function (require, exports) {
         global = require("js/util/global"),
         Bounds = require("js/models/bounds");
 
-    var templatesJSON = require("text!static/templates.json"),
-        templates = JSON.parse(templatesJSON);
+    var templates = require("static/templates.json");
 
     var PS_MAX_NEST_DEPTH = 9;
 

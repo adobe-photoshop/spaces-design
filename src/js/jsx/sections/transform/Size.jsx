@@ -29,10 +29,10 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
         
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
+    var Gutter = require("js/jsx/shared/Gutter"),
+        Label = require("js/jsx/shared/Label"),
+        NumberInput = require("js/jsx/shared/NumberInput"),
+        ToggleButton = require("js/jsx/shared/ToggleButton"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection");
 

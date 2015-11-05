@@ -32,10 +32,10 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var Button = require("jsx!js/jsx/shared/Button"),
-        CheckBox = require("jsx!js/jsx/shared/CheckBox"),
-        TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+    var Button = require("js/jsx/shared/Button"),
+        CheckBox = require("js/jsx/shared/CheckBox"),
+        TitleHeader = require("js/jsx/shared/TitleHeader"),
+        SVGIcon = require("js/jsx/shared/SVGIcon");
 
     var nls = require("js/util/nls"),
         svgUtil = require("js/util/svg"),

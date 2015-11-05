@@ -33,15 +33,15 @@ define(function (require, exports, module) {
 
     var os = require("adapter").os;
 
-    var ExportList = require("jsx!js/jsx/sections/export/ExportList"),
-        TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+    var ExportList = require("js/jsx/sections/export/ExportList"),
+        TitleHeader = require("js/jsx/shared/TitleHeader"),
+        Button = require("js/jsx/shared/Button"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
         nls = require("js/util/nls"),
         ExportAsset = require("js/models/exportasset"),
         synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
-        Dialog = require("jsx!js/jsx/shared/Dialog");
+        Dialog = require("js/jsx/shared/Dialog");
 
     var ExportPanel = React.createClass({
 

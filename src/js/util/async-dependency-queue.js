@@ -24,7 +24,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var EventEmitter = require("eventEmitter"),
+    var EventEmitter = require("events").EventEmitter,
         Promise = require("bluebird"),
         _ = require("lodash");
 

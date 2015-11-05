@@ -33,9 +33,9 @@ define(function (require, exports, module) {
 
     var os = require("adapter").os;
 
-    var DocumentHeaderTab = require("jsx!js/jsx/DocumentHeaderTab"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+    var DocumentHeaderTab = require("js/jsx/DocumentHeaderTab"),
+        Button = require("js/jsx/shared/Button"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
         nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization"),
         searchStore = require("js/stores/search"),

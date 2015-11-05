@@ -31,8 +31,8 @@ define(function (require, exports, module) {
     var nls = require("js/util/nls"),
         headlights = require("js/util/headlights");
 
-    var AssetSection = require("jsx!./AssetSection"),
-        AssetPreviewImage = require("jsx!./AssetPreviewImage");
+    var AssetSection = require("./AssetSection"),
+        AssetPreviewImage = require("./AssetPreviewImage");
 
     var LayerStyle = React.createClass({
         mixins: [FluxMixin],

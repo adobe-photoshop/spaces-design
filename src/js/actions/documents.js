@@ -52,8 +52,7 @@ define(function (require, exports) {
         objUtil = require("js/util/object"),
         global = require("js/util/global");
 
-    var templatesJSON = require("text!static/templates.json"),
-        templates = JSON.parse(templatesJSON);
+    var templates = require("static/templates.json");
 
     /**
      * Properties to be included when requesting document

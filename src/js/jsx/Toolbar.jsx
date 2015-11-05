@@ -32,8 +32,8 @@ define(function (require, exports, module) {
 
     var os = require("adapter").os;
 
-    var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
-        Zoom = require("jsx!js/jsx/Zoom"),
+    var ToolbarIcon = require("js/jsx/ToolbarIcon"),
+        Zoom = require("js/jsx/Zoom"),
         synchronization = require("js/util/synchronization");
 
     var Toolbar = React.createClass({

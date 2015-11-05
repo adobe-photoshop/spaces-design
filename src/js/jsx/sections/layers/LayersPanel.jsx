@@ -32,9 +32,9 @@ define(function (require, exports, module) {
 
     var os = require("adapter").os;
 
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        LayerFace = require("jsx!./LayerFace"),
-        DummyLayerFace = require("jsx!./DummyLayerFace"),
+    var TitleHeader = require("js/jsx/shared/TitleHeader"),
+        LayerFace = require("./LayerFace"),
+        DummyLayerFace = require("./DummyLayerFace"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         synchronization = require("js/util/synchronization");

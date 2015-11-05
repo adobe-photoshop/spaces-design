@@ -28,9 +28,9 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var Dialog = require("jsx!./shared/Dialog"),
-        FirstLaunch = require("jsx!./help/FirstLaunch"),
-        KeyboardShortcuts = require("jsx!./help/KeyboardShortcuts"),
+    var Dialog = require("./shared/Dialog"),
+        FirstLaunch = require("./help/FirstLaunch"),
+        KeyboardShortcuts = require("./help/KeyboardShortcuts"),
         os = require("adapter").os;
 
     /**

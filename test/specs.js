@@ -35,8 +35,8 @@ define(function (require, exports) {
             "test/spec/stores/document-test",
             "test/spec/stores/stroke-test",
             "test/spec/stores/example-test",
-            "jsx!test/spec/jsx/NumberInput-test",
-            "jsx!test/spec/jsx/SplitButton-test"
+            "test/spec/jsx/NumberInput-test",
+            "test/spec/jsx/SplitButton-test"
         ],
         integration: [
         ]

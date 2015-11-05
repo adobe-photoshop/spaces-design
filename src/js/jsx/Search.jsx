@@ -29,8 +29,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React);
 
     var os = require("adapter").os,
-        Dialog = require("jsx!./shared/Dialog"),
-        SearchBar = require("jsx!./search/SearchBar"),
+        Dialog = require("./shared/Dialog"),
+        SearchBar = require("./search/SearchBar"),
         search = require("js/stores/search");
 
     var Search = React.createClass({

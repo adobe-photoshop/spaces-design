@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var Datalist = require("jsx!js/jsx/shared/Datalist"),
+    var Datalist = require("js/jsx/shared/Datalist"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection");
 

@@ -33,7 +33,7 @@ define(function (require, exports, module) {
 
     var synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
         nls = require("js/util/nls");
 
     /**

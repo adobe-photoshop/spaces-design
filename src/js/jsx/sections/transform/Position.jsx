@@ -30,9 +30,9 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+    var Gutter = require("js/jsx/shared/Gutter"),
+        Label = require("js/jsx/shared/Label"),
+        NumberInput = require("js/jsx/shared/NumberInput"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         uiUtil = require("js/util/ui");

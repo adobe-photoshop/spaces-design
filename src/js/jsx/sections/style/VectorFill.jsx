@@ -31,12 +31,12 @@ define(function (require, exports, module) {
 
     var contentLayerLib = require("adapter").lib.contentLayer;
 
-    var LayerBlendMode = require("jsx!./LayerBlendMode"),
-        Opacity = require("jsx!./Opacity"),
-        Fill = require("jsx!./Fill"),
+    var LayerBlendMode = require("./LayerBlendMode"),
+        Opacity = require("./Opacity"),
+        Fill = require("./Fill"),
         FillColor = Fill.FillColor,
         FillVisiblity = Fill.FillVisibility,
-        Label = require("jsx!js/jsx/shared/Label"),
+        Label = require("js/jsx/shared/Label"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         classnames = require("classnames");
