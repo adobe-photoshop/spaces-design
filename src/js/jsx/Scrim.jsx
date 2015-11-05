@@ -33,9 +33,10 @@ define(function (require, exports, module) {
     var adapterOS = require("adapter").os,
         headlights = require("js/util/headlights");
 
-    var PolicyOverlay = require("jsx!js/jsx/tools/PolicyOverlay"),
-        GuidesOverlay = require("jsx!js/jsx/tools/GuidesOverlay"),
-        Droppable = require("jsx!js/jsx/shared/Droppable");
+    var main = require("js/main"),
+        PolicyOverlay = require("js/jsx/tools/PolicyOverlay"),
+        GuidesOverlay = require("js/jsx/tools/GuidesOverlay"),
+        Droppable = require("js/jsx/shared/Droppable");
     
     var Scrim = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("dialog", "tool", "ui", "application", "preferences")],

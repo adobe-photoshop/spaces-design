@@ -31,7 +31,7 @@ define(function (require, exports, module) {
     
     var LayerEffect = require("js/models/effects/layereffect");
 
-    var ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
+    var ToggleButton = require("js/jsx/shared/ToggleButton"),
         headlights = require("js/util/headlights"),
         nls = require("js/util/nls");
 

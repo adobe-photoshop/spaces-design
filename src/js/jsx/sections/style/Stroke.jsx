@@ -34,10 +34,10 @@ define(function (require, exports, module) {
     var contentLayerLib = require("adapter").lib.contentLayer;
 
     var Color = require("js/models/color"),
-        StrokeAlignment = require("jsx!./StrokeAlignment"),
-        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        ColorInput = require("jsx!js/jsx/shared/ColorInput"),
-        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
+        StrokeAlignment = require("./StrokeAlignment"),
+        NumberInput = require("js/jsx/shared/NumberInput"),
+        ColorInput = require("js/jsx/shared/ColorInput"),
+        ToggleButton = require("js/jsx/shared/ToggleButton"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights");

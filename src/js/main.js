@@ -28,7 +28,7 @@ define(function (require, exports) {
         Promise = require("bluebird"),
         adapter = require("adapter");
 
-    var MainCl = require("jsx!js/jsx/Main"),
+    var MainCl = require("js/jsx/Main"),
         FluxController = require("./fluxcontroller"),
         log = require("js/util/log"),
         nls = require("js/util/nls"),

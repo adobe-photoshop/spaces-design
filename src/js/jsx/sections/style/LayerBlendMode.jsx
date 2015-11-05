@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var BlendMode = require("jsx!./BlendMode"),
+    var BlendMode = require("./BlendMode"),
         nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),

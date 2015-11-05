@@ -37,12 +37,12 @@ define(function (require, exports, module) {
         collection = require("js/util/collection"),
         nls = require("js/util/nls");
 
-    var Draggable = require("jsx!js/jsx/shared/Draggable"),
-        Droppable = require("jsx!js/jsx/shared/Droppable"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        TextInput = require("jsx!js/jsx/shared/TextInput");
+    var Draggable = require("js/jsx/shared/Draggable"),
+        Droppable = require("js/jsx/shared/Droppable"),
+        Button = require("js/jsx/shared/Button"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
+        ToggleButton = require("js/jsx/shared/ToggleButton"),
+        TextInput = require("js/jsx/shared/TextInput");
     
     var PS_MAX_NEST_DEPTH = 10;
 

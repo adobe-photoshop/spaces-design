@@ -27,21 +27,13 @@
     <title>Photoshop Design Space (development build)</title>
     <link rel="stylesheet/less" type="text/css" href="style/main.less" />
     <script type="text/javascript">
-        window.__PG_DEBUG__ = true;
-    </script>
-    <script src="../bower_components/less/dist/less.js"></script>
-    <script src="../bower_components/requirejs/require.js"></script>
-    <script src="js/config.js"></script>
-    <script type="text/javascript">
-        require.config({
-            config: {
-                i18n: {
-                    locale: window.navigator.language
-                }
-            }
-        });
+      var locale = window.navigator.language,
+        js = document.createElement("script");
 
-        require(["js/init"]);
+      js.src = "../build/spaces-design-" + locale + ".js";
+      js.type = "text/javascript";
+
+      document.head.appendChild(js);
     </script>
 </head>
 <body>

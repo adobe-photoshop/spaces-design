@@ -35,8 +35,8 @@ define(function (require, exports, module) {
     var os = require("adapter").os;
 
     var Focusable = require("js/jsx/mixin/Focusable"),
-        Dialog = require("jsx!js/jsx/shared/Dialog"),
-        ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
+        Dialog = require("js/jsx/shared/Dialog"),
+        ColorPicker = require("js/jsx/shared/ColorPicker"),
         Color = require("js/models/color"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection");

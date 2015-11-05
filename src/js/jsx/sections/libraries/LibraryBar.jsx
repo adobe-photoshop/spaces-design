@@ -31,7 +31,7 @@ define(function (require, exports, module) {
     var nls = require("js/util/nls"),
         Document = require("js/models/document");
     
-    var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+    var SplitButton = require("js/jsx/shared/SplitButton"),
         SplitButtonItem = SplitButton.SplitButtonItem;
 
     var LibraryBar = React.createClass({

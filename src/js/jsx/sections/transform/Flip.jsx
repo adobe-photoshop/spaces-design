@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+    var SplitButton = require("js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
         headlights = require("js/util/headlights"),

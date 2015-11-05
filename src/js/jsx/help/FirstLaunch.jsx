@@ -29,9 +29,9 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         _ = require("lodash");
 
-    var Carousel = require("jsx!js/jsx/shared/Carousel"),
+    var Carousel = require("js/jsx/shared/Carousel"),
         nls = require("js/util/nls"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+        SVGIcon = require("js/jsx/shared/SVGIcon");
  
     var FirstLaunch = React.createClass({
         mixins: [FluxMixin],

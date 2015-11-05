@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         classnames = require("classnames");
 
-    var SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+    var SVGIcon = require("js/jsx/shared/SVGIcon");
     
     /**
      * A Component which represents an individual button within a SplitButtonList

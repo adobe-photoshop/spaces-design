@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var NumberInput = require("jsx!js/jsx/shared/NumberInput"),
+    var NumberInput = require("js/jsx/shared/NumberInput"),
         collection = require("js/util/collection");
 
     var Opacity = React.createClass({

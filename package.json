@@ -14,7 +14,16 @@
   },
   "homepage": "https://github.com/adobe-photoshop/spaces-design",
   "devDependencies": {
+    "babel-core": "^6.1.2",
+    "babel-loader": "volfied/babel-loader",
+    "babel-preset-es2015": "^6.1.2",
+    "babel-preset-react": "^6.1.2",
+    "clean-webpack-plugin": "^0.1.4",
+    "css-loader": "^0.22.0",
+    "es6-promise": "^3.0.2",
     "esprima-fb": "^15001.1.0-dev-harmony-fb",
+    "extract-text-webpack-plugin": "^0.9.1",
+    "file-loader": "^0.8.4",
     "grunt": "^0.4.5",
     "grunt-concurrent": "^2.0.4",
     "grunt-contrib-clean": "^0.6.0",
@@ -28,8 +37,18 @@
     "grunt-lintspaces": "^0.7.0",
     "jscs-jsdoc": "shaoshing/jscs-jsdoc#7fbf64b",
     "jscs-trailing-whitespace-in-source": "0.0.1",
+    "json-loader": "^0.5.3",
+    "jsx-loader": "^0.13.2",
+    "less": "^2.5.3",
+    "less-loader": "^2.2.1",
+    "loader-utils": "^0.2.11",
     "lodash": "^3.10.1",
     "node-lintspaces": "shaoshing/node-lintspaces",
-    "react-tools": "^0.13.1"
+    "react-tools": "^0.13.1",
+    "style-loader": "^0.13.0",
+    "uglify-loader": "^1.2.0",
+    "uglifyjs": "^2.4.10",
+    "url-loader": "^0.5.6",
+    "webpack": "^1.12.3"
   }
 }

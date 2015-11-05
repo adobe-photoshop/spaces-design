@@ -31,7 +31,7 @@ define(function (require, exports, module) {
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy,
-        SamplerOverlay = require("jsx!js/jsx/tools/SamplerOverlay"),
+        SamplerOverlay = require("js/jsx/tools/SamplerOverlay"),
         shortcuts = require("js/util/shortcuts");
 
     /**

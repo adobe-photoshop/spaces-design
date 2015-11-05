@@ -37,11 +37,11 @@ define(function (require, exports) {
         nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization");
 
-    var Label = require("jsx!js/jsx/shared/Label"),
-        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        BlendMode = require("jsx!./BlendMode"),
-        ColorInput = require("jsx!js/jsx/shared/ColorInput"),
-        ToggleButton = require("jsx!js/jsx/shared/ToggleButton");
+    var Label = require("js/jsx/shared/Label"),
+        NumberInput = require("js/jsx/shared/NumberInput"),
+        BlendMode = require("./BlendMode"),
+        ColorInput = require("js/jsx/shared/ColorInput"),
+        ToggleButton = require("js/jsx/shared/ToggleButton");
 
     /**
      * Debounced version of headlights.logEvents to help prevent false changes from 

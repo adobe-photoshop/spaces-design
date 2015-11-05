@@ -36,9 +36,9 @@ define(function (require, exports, module) {
         synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights");
 
-    var BlendMode = require("jsx!./BlendMode"),
-        ColorInput = require("jsx!js/jsx/shared/ColorInput"),
-        ToggleButton = require("jsx!js/jsx/shared/ToggleButton");
+    var BlendMode = require("./BlendMode"),
+        ColorInput = require("js/jsx/shared/ColorInput"),
+        ToggleButton = require("js/jsx/shared/ToggleButton");
 
     /**
      * Debounced version of headlights.logEvents to help prevent false changes from 

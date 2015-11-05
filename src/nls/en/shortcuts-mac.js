@@ -24,7 +24,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var json = require("text!./shortcuts-win.json");
+    var json = require("./shortcuts-mac.json");
 
-    module.exports = JSON.parse(json);
+    module.exports = json;
 });

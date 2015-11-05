@@ -32,7 +32,7 @@ define(function (require) {
         TestUtils = React.addons.TestUtils,
         _ = require("lodash");
 
-    var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+    var SplitButton = require("js/jsx/shared/SplitButton"),
         SplitButtonItem = SplitButton.SplitButtonItem,
         SplitButtonList = SplitButton.SplitButtonList;
 

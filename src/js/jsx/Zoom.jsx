@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var NumberInput = require("jsx!js/jsx/shared/NumberInput");
+    var NumberInput = require("js/jsx/shared/NumberInput");
 
     var Zoom = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("ui")],
