@@ -163,59 +163,6 @@ define(function (require, exports, module) {
             }
         },
 
-        /** 
-         * Tests to make sure layer we're trying to drag is draggable
-         * For now, we only check for background layer, but we might prevent locked layers dragging later
-         *
-         * @param {Layer} layer Layer being tested for drag
-         */
-        _validDragTarget: function (layer) {
-            return !layer.isBackground;
-        },
-
-        /**
-         * Grabs the list of Layer objects that are currently being dragged
-         * Photoshop logic is, if we drag a selected layers, all selected layers are being reordered
-         * If we drag an unselected layer, only that layer will be reordered
-         *
-         * @param {ReactElement} dragComponent Layer the user is dragging
-         * @return {Immutable.List.<Layer>}
-         */
-        _getDraggingLayers: function (dragComponent) {
-            var dragLayer = dragComponent.props.layer;
-
-            if (dragLayer.selected) {
-                var doc = this.props.document;
-                return doc.layers.selected.filter(function (layer) {
-                    return this._validDragTarget(layer);
-                }, this);
-            } else {
-                return Immutable.List.of(dragLayer);
-            }
-        },
-
-        /**
-         * Initialize the boundingClientRect cache at the beginning of the drag.
-         */
-        _handleStart: function () {
-            this.getFlux().actions.ui.disableTooltips();
-        },
-
-        /**
-         * Nullify the boundingClientRect cache at the end of the drag.
-         */
-        _handleStop: function () {
-            this.getFlux().actions.ui.enableTooltips();
-
-            // HACK: The cursor does not seem to revert from "grabbing" to "default"
-            // after the drag ends until the next mouse move, so we explicitly reset
-            // it. Mysteriously, this does not seem sufficient in case the drag
-            // succeeds and some reordering takes place. This may be a facet of the
-            // adapter bug that prevents mousemove events from being delivered while
-            // the main PS thread is busy.
-            os.resetCursor();
-        },
-
         /**
          * Deselects all layers.
          */
@@ -257,12 +204,7 @@ define(function (require, exports, module) {
                                 disabled={this.props.disabled}
                                 document={doc}
                                 layer={layer}
-                                keyObject={layer}
-                                visibleLayerIndex={visibleIndex}
-                                dragPlaceholderClass="face__placeholder"
-                                onDragStart={this._handleStart}
-                                onDragStop={this._handleStop}
-                                getDragItems={this._getDraggingLayers}/>
+                                visibleLayerIndex={visibleIndex}/>
                         );
                     }, this);
 

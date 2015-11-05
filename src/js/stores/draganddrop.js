@@ -25,7 +25,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var Fluxxor = require("fluxxor"),
-        Promise = require("bluebird");
+        Promise = require("bluebird"),
+        Immutable = require("immutable");
 
     var events = require("../events");
 
@@ -124,7 +125,7 @@ define(function (require, exports, module) {
             var hasDragTargets = !!this._dragTargets;
             
             this._dragTargetType = null;
-            this._dragTargets = null;
+            this._dragTargets = Immutable.List();
             this._dropTarget = null;
             this._hasValidDropTarget = false;
             this._dragPosition = null;
@@ -141,6 +142,7 @@ define(function (require, exports, module) {
             }
             
             this._dragPosition = { x: payload.clientX, y: payload.clientY };
+            this._initialDragPosition = this._initialDragPosition || this._dragPosition;
             
             var nextDropTarget = this._findDropTarget(payload.element);
 
@@ -234,11 +236,9 @@ define(function (require, exports, module) {
          *
          * @param {Immutalbe.Iterable.<object>} dragTargets
          */
-        startDrag: function (type, dragTargets, point) {
+        startDrag: function (type, dragTargets) {
             this._dragTargetType = type;
             this._dragTargets = dragTargets;
-            this._initialDragPosition = point;
-            this._dragPosition = point;
 
             // Provide optional way for listening on start-drag event only.
             this.emit("start-drag");
@@ -261,10 +261,11 @@ define(function (require, exports, module) {
                 .bind(this)
                 .then(function () {
                     this._dragTargetType = null;
-                    this._dragTargets = null;
+                    this._dragTargets = Immutable.List();
                     this._dropTarget = null;
                     this._hasValidDropTarget = false;
                     this._dragPosition = null; // Removing this causes an offset
+                    this._initialDragPosition = null;
                     this._isDropping = false;
                     this.emit("stop-drag");
                     this.emit("change");

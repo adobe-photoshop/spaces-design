@@ -42,7 +42,8 @@ define(function (require, exports, module) {
 
         getInitialState: function () {
             return {
-                dragging: false,
+                isDragging: false,
+                dragPosition: null,
                 renditionPath: null
             };
         },
@@ -53,13 +54,13 @@ define(function (require, exports, module) {
          * @return {?ReactComponent}
          */
         _renderDragPreview: function () {
-            if (!this.props.dragPosition || !this.state.renditionPath) {
+            if (!this.state.dragPosition || !this.state.renditionPath) {
                 return null;
             }
 
             var styles = {
-                left: this.props.dragPosition.x,
-                top: this.props.dragPosition.y
+                left: this.state.dragPosition.x,
+                top: this.state.dragPosition.y
             };
 
             return (
@@ -102,13 +103,7 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
         
-        /**
-         * Handle drag start event. If the element does not have a renditionPath yet, we will cancel
-         * the drag-n-drop event because its content is likely broken and cannot be placed on the canvas. 
-         * 
-         * @param  {SyntheticEvent} event
-         */
-        _handleDragStart: function (event) {
+        _handleBeforeDragStart: function () {
             var isInModalToolState = this.getFlux().stores.tool.getModalToolState();
             
             // Disable drag-and-drop for graphics if PS is in modal tool state, because we cannot read 
@@ -116,9 +111,27 @@ define(function (require, exports, module) {
             // Check `libraries.createLayerFromElement` for the details of ALT modifier.
             // 
             // FIXME: modal tool state should not block the update of modifier state.
-            if (!isInModalToolState && this.state.renditionPath) {
-                this.props.handleDragStart(event);
-            }
+            return { continue: !isInModalToolState && !!this.state.renditionPath };
+        },
+        
+        _handleDragStart: function () {
+            this.props.onDragStart();
+        },
+        
+        _handleDrag: function (dragPosition) {
+            this.setState({
+                isDragging: true,
+                dragPosition: dragPosition
+            });
+        },
+        
+        _handleDragStop: function () {
+            this.setState({
+                isDragging: false,
+                dragPosition: null
+            });
+            
+            this.props.onDragStop();
         },
 
         render: function () {
@@ -137,7 +150,7 @@ define(function (require, exports, module) {
             }
 
             var classNames = classnames({
-                "assets__graphic__dragging": this.props.isDragging
+                "assets__graphic__dragging": this.state.isDragging
             });
 
             return (
@@ -149,23 +162,28 @@ define(function (require, exports, module) {
                     title={title}
                     className={classNames}
                     key={element.id}>
-                    <div className="libraries__asset__preview libraries__asset__preview-graphic"
-                         key={this.props.element.id + this.props.element.modified}
-                         onMouseDown={this._handleDragStart}
-                         onClick={this._handleClickPreview}
-                         onDoubleClick={this._handleOpenForEdit}>
-                        <AssetPreviewImage
-                            title={previewTitle}
-                            element={this.props.element}
-                            onComplete={this._handlePreviewCompleted}/>
-                    </div>
+                    <Draggable
+                        type="graphic"
+                        keyObject={this.props.element}
+                        beforeDragStart={this._handleBeforeDragStart}
+                        onDragStart={this._handleDragStart}
+                        onDrag={this._handleDrag}
+                        onDragStop={this._handleDragStop}>
+                        <div className="libraries__asset__preview libraries__asset__preview-graphic"
+                             key={this.props.element.id + this.props.element.modified}
+                             onClick={this._handleClickPreview}
+                             onDoubleClick={this._handleOpenForEdit}>
+                            <AssetPreviewImage
+                                title={previewTitle}
+                                element={this.props.element}
+                                onComplete={this._handlePreviewCompleted}/>
+                        </div>
+                    </Draggable>
                     {dragPreview}
                 </AssetSection>
             );
         }
     });
 
-    var DraggableGraphic = Draggable.createWithComponent("graphic", Graphic, "both");
-
-    module.exports = DraggableGraphic;
+    module.exports = Graphic;
 });

@@ -61,14 +61,16 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return { 
                 isDropTarget: false,
-                dropPosition: null
+                dropPosition: null,
+                isDragging: false,
+                dragStyle: null
             };
         },
         
         shouldComponentUpdate: function (nextProps, nextState) {
             // Drag states
-            if (this.props.isDragging !== nextProps.isDragging ||
-                this.props.dragStyle !== nextProps.dragStyle ||
+            if (this.state.isDragging !== nextState.isDragging ||
+                this.state.dragStyle !== nextState.dragStyle ||
                 this.state.dropPosition !== nextState.dropPosition ||
                 this.state.isDropTarget !== nextState.isDropTarget) {
                 return true;
@@ -355,6 +357,46 @@ define(function (require, exports, module) {
             return dropPosition;
         },
         
+        _handleBeforeDragStart: function () {
+            // Photoshop logic is, if we drag a selected layers, all selected layers are being reordered
+            // If we drag an unselected layer, only that layer will be reordered
+            var draggedLayers = Immutable.List([this.props.layer]);
+
+            if (this.props.layer.selected) {
+                draggedLayers = this.props.document.layers.selected.filter(function (layer) {
+                    // For now, we only check for background layer, but we might prevent locked layers dragging later
+                    return !layer.isBackground;
+                }, this);
+            }
+            
+            return { draggedTargets: draggedLayers };
+        },
+        
+        _handleDragStart: function () {
+            this.getFlux().actions.ui.disableTooltips();
+        },
+        
+        _handleDragStop: function () {
+            this.getFlux().actions.ui.enableTooltips();
+            
+            this.setState({
+                isDragging: false,
+                dragStyle: null
+            });
+        },
+        
+        _handleDrag: function (dragPosition, dragOffset, initialDragPosition, initialBounds) {
+            var dragStyle = {
+                top: initialBounds.top + dragOffset.y,
+                left: initialBounds.left
+            };
+
+            this.setState({
+                isDragging: true,
+                dragStyle: dragStyle
+            });
+        },
+        
         _handleDrop: function (draggedLayers) {
             if (!this.state.isDropTarget) {
                 return Promise.resolve();
@@ -420,7 +462,7 @@ define(function (require, exports, module) {
                     layerStructure.parent(layer) &&
                     layerStructure.parent(layer).selected,
                 isStrictDescendantOfSelected = !isChildOfSelected && layerStructure.hasStrictSelectedAncestor(layer),
-                isDragging = this.props.isDragging,
+                isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
                 isGroupStart = layer.kind === layer.layerKinds.GROUP || layer.isArtboard;
@@ -430,8 +472,8 @@ define(function (require, exports, module) {
                 isLastInGroup = false,
                 dragStyle;
 
-            if (isDragging && this.props.dragStyle) {
-                dragStyle = this.props.dragStyle;
+            if (isDragging && this.state.dragStyle) {
+                dragStyle = this.state.dragStyle;
             } else {
                 // We can skip some rendering calculations if dragging
                 isLastInGroup = layerIndex > 0 &&
@@ -468,7 +510,7 @@ define(function (require, exports, module) {
                 "face__select_immediate": isSelected,
                 "face__select_child": isChildOfSelected,
                 "face__select_descendant": isStrictDescendantOfSelected,
-                "face__drag_target": isDragging && this.props.dragStyle,
+                "face__drag_target": isDragging && this.state.dragStyle,
                 "face__drop_target": isDropTarget,
                 "face__drop_target_above": isDropTarget && dropPosition === "above",
                 "face__drop_target_below": isDropTarget && dropPosition === "below",
@@ -521,6 +563,13 @@ define(function (require, exports, module) {
             }
 
             return (
+                <Draggable
+                    type="layer"
+                    keyObject={this.props.layer}
+                    beforeDragStart={this._handleBeforeDragStart}
+                    onDragStart={this._handleDragStart}
+                    onDrag={this._handleDrag}
+                    onDragStop={this._handleDragStop}>
                 <Droppable
                     accept="layer"
                     onDrop={this._handleDrop}
@@ -532,7 +581,6 @@ define(function (require, exports, module) {
                             className={classnames(faceClasses)}
                             data-layer-id={layer.id}
                             data-kind={layer.kind}
-                            onMouseDown={!this.props.disabled && this.props.handleDragStart}
                             onClick={!this.props.disabled && this._handleLayerClick}>
                             <Button
                                 title={tooltipTitle + tooltipPadding}
@@ -571,12 +619,10 @@ define(function (require, exports, module) {
                         </div>
                     </li>
                 </Droppable>
+                </Draggable>
             );
         }
     });
 
-    // Create a Droppable from a Draggable from a LayerFace.
-    var draggedVersion = Draggable.createWithComponent("layer", LayerFace, "y");
-
-    module.exports = draggedVersion;
+    module.exports = LayerFace;
 });

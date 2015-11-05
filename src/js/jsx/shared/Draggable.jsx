@@ -54,248 +54,214 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var math = require("js/util/math");
+    var math = require("js/util/math"),
+        log = require("js/util/log");
 
-    /**
-     * Create a composed Droppoable component
-     *
-     * @param {ReactComponent} Component to wrap
-     * @param {string} axis is either "x", "y" or "both" for which axis dragging is allowed
-     * @return {ReactComponent}
-     */
-    var createWithComponent = function (type, Component, axis) {
-        if (typeof axis === "undefined") {
-            axis = "both";
-        }
+    var Draggable = React.createClass({
+        mixins: [FluxMixin],
         
-        var _canDragY = function () {
-            return axis === "both" || axis === "y";
-        };
+        _isDragging: false,
+        _childDOM: null,
+        _initialBounds: null,
 
-        var _canDragX = function () {
-            return axis === "both" || axis === "x";
-        };
+        propTypes: {
+            // The type of the draggable item.
+            type: React.PropTypes.string,
 
-        var Draggable = React.createClass({
-            mixins: [FluxMixin],
-
-            propTypes: {
-                /**
-                 * Optional callback to return a Immutable.List of draged items. It is useful when you want to support 
-                 * dragging on multiple items.
-                 */
-                getDragItems: React.PropTypes.func
-            },
-            
-            componentDidMount: function () {
-                this.getFlux().store("draganddrop").on("start-drag", this._handleDNDStoreDrag);
-            },
-
-            componentWillUnmount: function () {
-                // Remove any leftover event handlers
-                window.removeEventListener("mousemove", this._handleDragMove, true);
-                window.removeEventListener("mouseup", this._handleDragFinish, true);
-                
-                this.getFlux().store("draganddrop").removeListener("start-drag", this._handleDNDStoreDrag);
-            },
-
-            getDefaultProps: function () {
-                return {
-                    // What axis dragging works in {"both", "x", "y"}
-                    axis: axis,
-                    dragPlaceholderClass: "drag_placeholder"
-                };
-            },
-
-            getInitialState: function () {
-                return {
-                    // Whether or not currently dragging
-                    dragging: false,
-                    initialDragPosition: null
-                };
-            },
-            
             /**
-             * Handle the "start-drag" event of draganddrop store.
-             * @private
+             * Optional callback to return a Immutable.List of draged items. It is useful when you want to support 
+             * dragging on multiple items.
              */
-            _handleDNDStoreDrag: function () {
-                var flux = this.getFlux(),
-                    dragTargets = flux.store("draganddrop").getState().dragTargets,
-                    // Only dragged targets should listen to the "change" event. This will
-                    // improve the overall performance.
-                    isDragTarget = dragTargets && dragTargets.includes(this.props.keyObject);
-                    
-                if (isDragTarget) {
-                    flux.store("draganddrop").on("change", this._handleDNDStoreChange);
+            getDragItems: React.PropTypes.func
+        },
+        
+        componentDidMount: function () {
+            this.getFlux().store("draganddrop").on("start-drag", this._handleDNDStoreDrag);
+            this._listenToChildClickEvent();
+        },
+        
+        componentDidUpdate: function () {
+            this._listenToChildClickEvent();
+        },
+        
+        _listenToChildClickEvent: function () {
+            if (this._childDOM) {
+                var nextChildDOM = this.getDOMNode();
+                if (this._childDOM === nextChildDOM) {
+                    return;
                 }
-            },
+            }
+
+            this._childDOM = this.getDOMNode();
+            this._childDOM.addEventListener("mousedown", this._handleMouseDown);
+        },
+
+        componentWillUnmount: function () {
+            // Remove any leftover event handlers
+            window.removeEventListener("mousemove", this._handleMouseMove, true);
+            window.removeEventListener("mouseup", this._handleMouserUp, true);
             
-            /**
-             * Handle the "change" event of draganddrop store.
-             * @private
-             */
-            _handleDNDStoreChange: function () {
-                var flux = this.getFlux(),
-                    dndState = flux.store("draganddrop").getState(),
-                    initialDragPosition = dndState.initialDragPosition,
-                    dragTargets = dndState.dragTargets,
-                    nextState = {
-                        dragging: dragTargets && dragTargets.includes(this.props.keyObject),
-                        dragPosition: dndState.dragPosition,
-                        startX: null,
-                        startY: null,
-                        offsetX: null,
-                        offsetY: null,
-                        dragStyle: null
-                    };
+            this.getFlux().store("draganddrop").removeListener("start-drag", this._handleDNDStoreDrag);
+        },
+        
+        /**
+         * Handle the "start-drag" event of draganddrop store.
+         * @private
+         */
+        _handleDNDStoreDrag: function () {
+            var flux = this.getFlux(),
+                dragTargets = flux.store("draganddrop").getState().dragTargets,
+                // Only dragged targets should listen to the "change" event. This will
+                // improve the overall performance.
+                isDragTarget = dragTargets.includes(this.props.keyObject);
                 
-                if (nextState.dragging) {
-                    nextState.startY = this.state.startY;
-                    nextState.startX = this.state.startX;
+            if (isDragTarget) {
+                this._isDragging = true;
+                flux.store("draganddrop").on("change", this._handleDNDStoreChange);
+                
+                if (this.props.onDragStart) {
+                    this.props.onDragStart();
+                }
+            }
+        },
+        
+        /**
+         * Handle the "change" event of draganddrop store.
+         * @private
+         */
+        _handleDNDStoreChange: function () {
+            var flux = this.getFlux(),
+                dndState = flux.store("draganddrop").getState(),
+                dragPosition = dndState.dragPosition,
+                dragTargets = dndState.dragTargets,
+                isDragging = !dragTargets.isEmpty();
+            
+            if (isDragging) {
+                if (this.props.onDrag && dragPosition) {
+                    if (!this._initialPosition) {
+                        var bounds = this._childDOM.getBoundingClientRect();
                         
-                    if (!nextState.startY || !nextState.startX) {
-                        var node = React.findDOMNode(this),
-                            bounds = node.getBoundingClientRect();
-
-                        nextState.startX = bounds.left;
-                        nextState.startY = bounds.top;
-                        nextState.dragStyle = {
-                            top: nextState.startY,
-                            left: nextState.startX
-                        };
-                    } else if (nextState.dragPosition) {
-                        nextState.offsetY = this.state.offsetY;
-                        nextState.offsetX = this.state.offsetX;
-                        
-                        if (!nextState.offsetY) {
-                            nextState.offsetY = initialDragPosition.y;
-                            nextState.offsetX = initialDragPosition.x;
-                        }
-
-                        nextState.dragStyle = {
-                            top: _canDragY() ?
-                                nextState.startY + (nextState.dragPosition.y - nextState.offsetY) : nextState.startY,
-                            left: _canDragX() ?
-                                nextState.startX + (nextState.dragPosition.x - nextState.offsetX) : nextState.startX
+                        this._initialBounds = {
+                            top: bounds.top,
+                            left: bounds.left
                         };
                     }
-                } else {
-                    // Remove the listenner when it is dropped.
-                    flux.store("draganddrop").removeListener("change", this._handleDNDStoreChange);
-                }
-
-                this.setState(nextState);
-            },
-
-            /**
-             * Suppress the single click event that follows the mouseup event at
-             * the end of the drag.
-             *
-             * @param {SyntheticEvent} event
-             */
-            _handleDragClick: function (event) {
-                event.stopPropagation();
-                window.removeEventListener("click", this._handleDragClick, true);
-            },
-
-            /**
-             * Handles the start of a dragging operation by setting up initial position
-             * and adding event listeners to the window
-             *
-             * @private
-             * @param {SyntheticEvent} event
-             */
-            _handleDragStart: function (event) {
-                window.addEventListener("mousemove", this._handleDragMove, true);
-                window.addEventListener("mouseup", this._handleDragFinish, true);
-            },
-
-            /**
-             * Handles move for a dragging object
-             * Registers dragging objects with store
-             *
-             * @param {Event} event
-             */
-            _handleDragMove: function (event) {
-                var dndStore = this.getFlux().store("draganddrop");
-                var position = {
-                    x: event.clientX,
-                    y: event.clientY
-                };
-    
-                if (!this.state.dragging) {
-                    var dragItems = this.props.getDragItems ?
-                            this.props.getDragItems(this) : Immutable.List([this.props.keyObject]);
                     
-                    if (dragItems.isEmpty()) {
+                    var initialDragPosition = dndState.initialDragPosition,
+                        dragOffset = {
+                            x: dragPosition.x - initialDragPosition.x,
+                            y: dragPosition.y - initialDragPosition.y
+                        };
+
+                    this.props.onDrag(dragPosition, dragOffset, initialDragPosition, this._initialBounds);
+                }
+            } else {
+                // Remove the listenner when it is dropped.
+                flux.store("draganddrop").removeListener("change", this._handleDNDStoreChange);
+
+                if (this._isDragging) {
+                    this._isDragging = false;
+                    this._initialBounds = null;
+
+                    if (this.props.onDragStop) {
+                        this.props.onDragStop();
+                    }
+                }
+            }
+        },
+
+        /**
+         * Suppress the single click event that follows the mouseup event at
+         * the end of the drag.
+         *
+         * @param {SyntheticEvent} event
+         */
+        _handleDragClick: function (event) {
+            event.stopPropagation();
+            window.removeEventListener("click", this._handleDragClick, true);
+        },
+
+        /**
+         * Handles the start of a dragging operation by setting up initial position
+         * and adding event listeners to the window
+         *
+         * @private
+         */
+        _handleMouseDown: function () {
+            window.addEventListener("mousemove", this._handleMouseMove, true);
+            window.addEventListener("mouseup", this._handleMouserUp, true);
+        },
+
+        /**
+         * Handles move for a dragging object
+         * Registers dragging objects with store
+         *
+         * @param {Event} event
+         */
+        _handleMouseMove: function (event) {
+            var dndStore = this.getFlux().store("draganddrop"),
+                dragTargets = dndStore.getState().dragTargets;
+
+            if (dragTargets.isEmpty()) {
+                var draggedTargets = Immutable.List([this.props.keyObject]);
+                
+                if (this.props.beforeDragStart) {
+                    var options = this.props.beforeDragStart();
+                    
+                    if (options.continue === false) {
+                        window.removeEventListener("mousemove", this._handleMouseMove, true);
+                        window.removeEventListener("mouseup", this._handleMouserUp, true);
                         return;
                     }
-
-                    // Suppress the following click event
-                    window.addEventListener("click", this._handleDragClick, true);
-
-                    if (this.props.onDragStart) {
-                        this.props.onDragStart();
-                    }
                     
-                    dndStore.startDrag(type, dragItems, position);
+                    if (options.draggedTargets) {
+                        draggedTargets = options.draggedTargets;
+                    }
                 }
-            },
-
-            /**
-             * Handles finish of drag operation
-             * Removes drag event listeners from window
-             * Resets state
-             *
-             * @param {SyntheticEvent} event
-             */
-            _handleDragFinish: function (event) {
-                window.removeEventListener("mousemove", this._handleDragMove, true);
-                window.removeEventListener("mouseup", this._handleDragFinish, true);
-
-                this._mousedownPosition = null;
-
-                // Short circuit if not currently dragging
-                if (!this.state.dragging) {
+                
+                if (draggedTargets.isEmpty()) {
                     return;
                 }
 
-                // If the mouseup event is outside the window, there won't be an
-                // associated click event. In this case, remove the handler explicitly
-                // instead of waiting for (and suppressing) the following unrelated
-                // click event.
-                if (event.target === window.document.documentElement) {
-                    window.removeEventListener("click", this._handleDragClick, true);
-                } else {
-                    // The following click event sometimes never arrives, so just
-                    // remove the handler after a short timeout.
-                    window.setTimeout(function () {
-                        window.removeEventListener("click", this._handleDragClick, true);
-                    }.bind(this), 100);
-                }
+                // Suppress the following click event
+                window.addEventListener("click", this._handleDragClick, true);
 
-                if (this.props.onDragStop) {
-                    this.props.onDragStop();
-                }
-                
-                this.getFlux().store("draganddrop").stopDrag();
-            },
-
-            render: function () {
-                return (
-                    <Component
-                        {...this.props}
-                        isDragging={this.state.dragging}
-                        dragPosition={this.state.dragPosition}
-                        dragStyle={this.state.dragStyle}
-                        handleDragStart={this._handleDragStart} />
-                );
+                dndStore.startDrag(this.props.type, draggedTargets);
             }
-        });
+        },
 
-        return Draggable;
-    };
+        /**
+         * Handles finish of drag operation
+         * Removes drag event listeners from window
+         * Resets state
+         *
+         * @param {SyntheticEvent=} event
+         */
+        _handleMouserUp: function (event) {
+            window.removeEventListener("mousemove", this._handleMouseMove, true);
+            window.removeEventListener("mouseup", this._handleMouserUp, true);
 
-    module.exports = { createWithComponent: createWithComponent };
+            // If the mouseup event is outside the window, there won't be an
+            // associated click event. In this case, remove the handler explicitly
+            // instead of waiting for (and suppressing) the following unrelated
+            // click event.
+            if (event.target === window.document.documentElement) {
+                window.removeEventListener("click", this._handleDragClick, true);
+            } else {
+                // The following click event sometimes never arrives, so just
+                // remove the handler after a short timeout.
+                window.setTimeout(function () {
+                    window.removeEventListener("click", this._handleDragClick, true);
+                }.bind(this), 100);
+            }
+            
+            this.getFlux().store("draganddrop").stopDrag();
+        },
+
+        render: function () {
+            return ( this.props.children );
+        }
+    });
+
+    module.exports = Draggable;
 });

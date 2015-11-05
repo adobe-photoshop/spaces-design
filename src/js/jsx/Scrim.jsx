@@ -276,6 +276,8 @@ define(function (require, exports, module) {
         
         // TODO
         _handleDropGraphic: function (draggedTargets) {
+            this.setState({ isDropTarget: false });
+
             var flux = this.getFlux(),
                 dndState = flux.store("draganddrop").getState(),
                 dropPosition = dndState.dragPosition,
