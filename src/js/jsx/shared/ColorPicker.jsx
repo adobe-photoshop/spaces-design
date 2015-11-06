@@ -420,13 +420,12 @@ define(function (require, exports, module) {
 
         render: function () {
             var classes = classnames({
-                "color-picker-map": true,
-                "color-picker-map__active": this.state.active
-            });
-
+                "color-picker-map": true
+            }, this.props.className);
+            
             return (
                 <div
-                    className={this.props.className + " " + classes}
+                    className={classes}
                     onMouseUp={this._handleMouseUp}
                     onMouseDown={this._handleMouseDown}
                     onTouchStart={this._startUpdates}>
