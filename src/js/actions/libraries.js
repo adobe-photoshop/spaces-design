@@ -317,7 +317,7 @@ define(function (require, exports) {
     };
     createGraphicFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
     createGraphicFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createGraphicFromSelectedLayer.transfers = [layerActions.resetLayers];
+    createGraphicFromSelectedLayer.transfers = ["layers.resetLayers"];
 
     /**
      * Uploads the selected single layer's character style to the current library
