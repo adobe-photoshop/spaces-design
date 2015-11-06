@@ -1453,7 +1453,7 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Layer} layer
      * @param {boolean} visible Whether to show or hide the layer
-
+     * 
      * @returns {Promise}
      */
     var setVisibility = function (document, layer, visible) {
@@ -1660,7 +1660,7 @@ define(function (require, exports) {
      * @param {boolean=} suppressHistory Optional. If true, emit an event that does NOT add a new history state
      * @param {boolean=} amendHistory Optional. If true, update the current state (requires suppressHistory)
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
-     **/
+     */
     var resetIndex = function (document, suppressHistory, amendHistory) {
         if (typeof document === "undefined") {
             document = this.flux.store("application").getCurrentDocument();
@@ -1714,8 +1714,8 @@ define(function (require, exports) {
      *                               If a string, the reference enum type ("front", "back", "previous", "next")
      *
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
-     *, or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
-     **/
+     * , or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
+     */
     var reorderLayers = function (document, layerSpec, target) {
         if (!Immutable.Iterable.isIterable(layerSpec)) {
             layerSpec = Immutable.List.of(layerSpec);

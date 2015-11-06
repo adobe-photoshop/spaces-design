@@ -136,7 +136,7 @@ define(function (require, exports) {
     };
     handleDeleteVectorMask.reads = [locks.JS_APP, locks.JS_DOC];
     handleDeleteVectorMask.writes = [];
-    handleDeleteVectorMask.transfers = [layerActions.resetLayers,layerActions.deleteVectorMask,
+    handleDeleteVectorMask.transfers = [layerActions.resetLayers, layerActions.deleteVectorMask,
         toolActions.changeVectorMaskMode, menuActions.native];
 
     exports.handleDeleteVectorMask = handleDeleteVectorMask;

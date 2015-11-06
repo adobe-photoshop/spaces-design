@@ -43,7 +43,7 @@ define(function (require, exports, module) {
          *  keyObject: object,
          *  validate: function:
          *  onDrop: function(keyObject) 
-         *  	function should return a Promise instance to indicate the completion of an onDrop event. 
+         *      function should return a Promise instance to indicate the completion of an onDrop event. 
          * }
          * 
          * @private
