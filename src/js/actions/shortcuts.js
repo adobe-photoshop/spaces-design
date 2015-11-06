@@ -27,8 +27,8 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         _ = require("lodash");
 
-    var os = require("adapter/os"),
-        ui = require("adapter/ps/ui");
+    var os = require("adapter").os,
+        ui = require("adapter").ps.ui;
 
     var events = require("js/events"),
         locks = require("js/locks"),

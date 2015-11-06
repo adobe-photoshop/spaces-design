@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         Immutable = require("immutable");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var DocumentHeaderTab = require("jsx!js/jsx/DocumentHeaderTab"),
         Button = require("jsx!js/jsx/shared/Button"),

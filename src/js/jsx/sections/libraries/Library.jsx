@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var os = require("adapter/os"),
+    var os = require("adapter").os,
         synchronization = require("js/util/synchronization"),
         strings = require("i18n!nls/strings"),
         ui = require("js/util/ui"),

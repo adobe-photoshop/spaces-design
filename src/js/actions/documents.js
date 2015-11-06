@@ -27,10 +27,10 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         _ = require("lodash");
 
-    var photoshopEvent = require("adapter/lib/photoshopEvent"),
-        descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        selectionLib = require("adapter/lib/selection");
+    var photoshopEvent = require("adapter").lib.photoshopEvent,
+        descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        selectionLib = require("adapter").lib.selection;
 
     var guideActions = require("./guides"),
         exportActions = require("./export"),

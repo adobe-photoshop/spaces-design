@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         classnames = require("classnames");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),

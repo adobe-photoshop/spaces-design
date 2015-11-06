@@ -26,12 +26,12 @@ define(function (require, exports, module) {
 
     var Promise = require("bluebird");
     
-    var util = require("adapter/util"),
-        OS = require("adapter/os"),
-        UI = require("adapter/ps/ui"),
-        toolLib = require("adapter/lib/tool"),
-        descriptor = require("adapter/ps/descriptor"),
-        vectorMaskLib = require("adapter/lib/vectorMask");
+    var util = require("adapter").util,
+        OS = require("adapter").os,
+        UI = require("adapter").ps.ui,
+        toolLib = require("adapter").lib.tool,
+        descriptor = require("adapter").ps.descriptor,
+        vectorMaskLib = require("adapter").lib.vectorMask;
 
     var Tool = require("js/models/tool"),
         shortcuts = require("js/actions/shortcuts"),

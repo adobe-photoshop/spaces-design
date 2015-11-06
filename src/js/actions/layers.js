@@ -28,14 +28,14 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var photoshopEvent = require("adapter/lib/photoshopEvent"),
-        artboardLib = require("adapter/lib/artboard"),
-        boundsLib = require("adapter/lib/bounds"),
-        descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer"),
-        vectorMaskLib = require("adapter/lib/vectorMask"),
-        OS = require("adapter/os");
+    var photoshopEvent = require("adapter").lib.photoshopEvent,
+        artboardLib = require("adapter").lib.artboard,
+        boundsLib = require("adapter").lib.bounds,
+        descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer,
+        vectorMaskLib = require("adapter").lib.vectorMask,
+        OS = require("adapter").os;
 
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),

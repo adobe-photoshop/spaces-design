@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         d3 = require("d3"),
         _ = require("lodash");
 
-    var OS = require("adapter/os");
+    var OS = require("adapter").os;
 
     var system = require("js/util/system"),
         headlights = require("js/util/headlights"),

@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var Dialog = require("jsx!js/jsx/shared/Dialog"),
         ExportAllPanel = require("jsx!./ExportAllPanel");

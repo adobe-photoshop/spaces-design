@@ -27,8 +27,8 @@ define(function (require, exports) {
     var _ = require("lodash"),
         Immutable = require("immutable");
 
-    var layerEffectLib = require("adapter/lib/layerEffect"),
-        documentLib = require("adapter/lib/document");
+    var layerEffectLib = require("adapter").lib.layerEffect,
+        documentLib = require("adapter").lib.document;
 
     var Color = require("js/models/color"),
         LayerEffect = require("js/models/effects/layereffect"),

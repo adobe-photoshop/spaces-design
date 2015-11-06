@@ -27,7 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var events = require("../events"),
         locks = require("../locks"),

@@ -26,10 +26,10 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable");
 
-    var util = require("adapter/util"),
-        descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool"),
-        UI = require("adapter/ps/ui");
+    var util = require("adapter").util,
+        descriptor = require("adapter").ps.descriptor,
+        toolLib = require("adapter").lib.tool,
+        UI = require("adapter").ps.ui;
 
     var Color = require("js/models/color"),
         Tool = require("js/models/tool"),

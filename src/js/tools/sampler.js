@@ -24,9 +24,9 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var OS = require("adapter/os"),
-        UI = require("adapter/ps/ui"),
-        util = require("adapter/util");
+    var OS = require("adapter").os,
+        UI = require("adapter").ps.ui,
+        util = require("adapter").util;
 
     var events = require("js/events"),
         Tool = require("js/models/tool"),

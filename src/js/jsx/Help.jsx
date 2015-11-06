@@ -31,7 +31,7 @@ define(function (require, exports, module) {
     var Dialog = require("jsx!./shared/Dialog"),
         FirstLaunch = require("jsx!./help/FirstLaunch"),
         KeyboardShortcuts = require("jsx!./help/KeyboardShortcuts"),
-        os = require("adapter/os");
+        os = require("adapter").os;
 
     /**
      * Unique identifier for the First Launch Dialog

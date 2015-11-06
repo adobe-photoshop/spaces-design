@@ -24,11 +24,11 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var os = require("adapter/os"),
+    var os = require("adapter").os,
         _ = require("lodash"),
         Immutable = require("immutable");
 
-    var UI = require("adapter/ps/ui");
+    var UI = require("adapter").ps.ui;
 
     var menuLabels = require("i18n!nls/menu"),
         keyutil = require("js/util/key"),

@@ -25,7 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        adapterPS = require("adapter/ps"),
+        adapterPS = require("adapter").ps,
         global = require("./global");
 
     /**

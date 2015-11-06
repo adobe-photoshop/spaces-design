@@ -28,10 +28,10 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool"),
-        adapterOS = require("adapter/os"),
-        adapterUI = require("adapter/ps/ui");
+    var descriptor = require("adapter").ps.descriptor,
+        toolLib = require("adapter").lib.tool,
+        adapterOS = require("adapter").os,
+        adapterUI = require("adapter").ps.ui;
 
     var keyUtil = require("js/util/key"),
         system = require("js/util/system"),

@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         classnames = require("classnames");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var synchronization = require("js/util/synchronization");
 

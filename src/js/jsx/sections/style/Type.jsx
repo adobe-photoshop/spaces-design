@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         classnames = require("classnames");
 
-    var textLayer = require("adapter/lib/textLayer");
+    var textLayer = require("adapter").lib.textLayer;
 
     var Label = require("jsx!js/jsx/shared/Label"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),

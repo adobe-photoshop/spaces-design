@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Promise = require("bluebird"),
         _ = require("lodash");
 
-    var util = require("adapter/util");
+    var util = require("adapter").util;
 
     /**
      * A job managed by an AsyncDependencyQueue instance.

@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         classnames = require("classnames");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         LayerFace = require("jsx!./LayerFace"),

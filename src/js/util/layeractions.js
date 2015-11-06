@@ -27,9 +27,9 @@ define(function (require, exports) {
     var _ = require("lodash"),
         Promise = require("bluebird");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer");
+    var descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer;
 
     var log = require("js/util/log"),
         lockingUtil = require("js/util/locking"),
