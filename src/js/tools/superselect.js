@@ -26,13 +26,13 @@ define(function (require, exports, module) {
 
     var _ = require("lodash");
 
-    var util = require("adapter/util"),
-        descriptor = require("adapter/ps/descriptor"),
-        adapterPS = require("adapter/ps"),
-        OS = require("adapter/os"),
-        UI = require("adapter/ps/ui"),
-        toolLib = require("adapter/lib/tool"),
-        vectorMaskLib = require("adapter/lib/vectorMask");
+    var util = require("adapter").util,
+        descriptor = require("adapter").ps.descriptor,
+        adapterPS = require("adapter").ps,
+        OS = require("adapter").os,
+        UI = require("adapter").ps.ui,
+        toolLib = require("adapter").lib.tool,
+        vectorMaskLib = require("adapter").lib.vectorMask;
 
     var Tool = require("js/models/tool"),
         VectorTool = require("./superselect/vector"),

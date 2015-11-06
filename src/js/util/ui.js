@@ -27,9 +27,9 @@ define(function (require, exports) {
     var Immutable = require("immutable");
     
     var adapter = require("adapter"),
-        descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        hitTestLib = require("adapter/lib/hitTest");
+        descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        hitTestLib = require("adapter").lib.hitTest;
 
     var Bounds = require("js/models/bounds"),
         Color = require("js/models/color");

@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var ToolbarIcon = require("jsx!js/jsx/ToolbarIcon"),
         Zoom = require("jsx!js/jsx/Zoom"),

@@ -28,12 +28,12 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
         
-    var descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer"),
-        artboardLib = require("adapter/lib/artboard"),
-        contentLib = require("adapter/lib/contentLayer"),
-        unitLib = require("adapter/lib/unit"),
+    var descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer,
+        artboardLib = require("adapter").lib.artboard,
+        contentLib = require("adapter").lib.contentLayer,
+        unitLib = require("adapter").lib.unit,
         uiUtil = require("js/util/ui");
 
     var events = require("../events"),

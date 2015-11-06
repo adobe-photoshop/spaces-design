@@ -28,16 +28,16 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        toolLib = require("adapter/lib/tool"),
-        layerLib = require("adapter/lib/layer"),
-        documentLib = require("adapter/lib/document"),
-        adapterOS = require("adapter/os"),
-        adapterUI = require("adapter/ps/ui"),
-        adapterPS = require("adapter/ps"),
-        UI = require("adapter/ps/ui"),
-        OS = require("adapter/os"),
-        vectorMaskLib = require("adapter/lib/vectorMask");
+    var descriptor = require("adapter").ps.descriptor,
+        toolLib = require("adapter").lib.tool,
+        layerLib = require("adapter").lib.layer,
+        documentLib = require("adapter").lib.document,
+        adapterOS = require("adapter").os,
+        adapterUI = require("adapter").ps.ui,
+        adapterPS = require("adapter").ps,
+        UI = require("adapter").ps.ui,
+        OS = require("adapter").os,
+        vectorMaskLib = require("adapter").lib.vectorMask;
 
     var events = require("../events"),
         guides = require("./guides"),

@@ -29,14 +29,14 @@ define(function (require, exports) {
         _ = require("lodash"),
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        docAdapter = require("adapter/lib/document"),
-        colorAdapter = require("adapter/lib/color"),
-        layerEffectAdapter = require("adapter/lib/layerEffect"),
-        textLayerAdapter = require("adapter/lib/textLayer"),
-        libraryAdapter = require("adapter/lib/libraries"),
-        documentLib = require("adapter/lib/document"),
-        os = require("adapter/os");
+    var descriptor = require("adapter").ps.descriptor,
+        docAdapter = require("adapter").lib.document,
+        colorAdapter = require("adapter").lib.color,
+        layerEffectAdapter = require("adapter").lib.layerEffect,
+        textLayerAdapter = require("adapter").lib.textLayer,
+        libraryAdapter = require("adapter").lib.libraries,
+        documentLib = require("adapter").lib.document,
+        os = require("adapter").os;
 
     var events = require("js/events"),
         locks = require("js/locks"),

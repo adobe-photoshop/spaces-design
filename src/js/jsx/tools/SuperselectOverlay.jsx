@@ -31,8 +31,8 @@ define(function (require, exports, module) {
         d3 = require("d3"),
         _ = require("lodash");
 
-    var UI = require("adapter/ps/ui"),
-        OS = require("adapter/os");
+    var UI = require("adapter").ps.ui,
+        OS = require("adapter").os;
 
     var system = require("js/util/system"),
         collection = require("js/util/collection"),

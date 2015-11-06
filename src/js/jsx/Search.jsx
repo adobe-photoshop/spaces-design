@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var os = require("adapter/os"),
+    var os = require("adapter").os,
         Dialog = require("jsx!./shared/Dialog"),
         SearchBar = require("jsx!./search/SearchBar"),
         search = require("js/stores/search");

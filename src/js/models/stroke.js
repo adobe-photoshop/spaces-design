@@ -30,7 +30,7 @@ define(function (require, exports, module) {
     var Color = require("./color"),
         unit = require("../util/unit"),
         objUtil = require("js/util/object"),
-        contentLayerLib = require("adapter/lib/contentLayer"),
+        contentLayerLib = require("adapter").lib.contentLayer,
         log = require("js/util/log");
 
     /**

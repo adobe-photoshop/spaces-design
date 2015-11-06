@@ -26,7 +26,7 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var events = require("../events"),
         log = require("js/util/log"),

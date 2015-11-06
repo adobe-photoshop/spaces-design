@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var contentLayerLib = require("adapter/lib/contentLayer");
+    var contentLayerLib = require("adapter").lib.contentLayer;
 
     var LayerBlendMode = require("jsx!./LayerBlendMode"),
         Opacity = require("jsx!./Opacity"),

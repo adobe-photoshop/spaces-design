@@ -27,11 +27,11 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        layerLib = require("adapter/lib/layer"),
-        documentLib = require("adapter/lib/document"),
-        generatorLib = require("adapter/lib/generator"),
-        preferenceLib = require("adapter/lib/preference");
+    var descriptor = require("adapter").ps.descriptor,
+        layerLib = require("adapter").lib.layer,
+        documentLib = require("adapter").lib.document,
+        generatorLib = require("adapter").lib.generator,
+        preferenceLib = require("adapter").lib.preference;
 
     var dialog = require("./dialog"),
         preferences = require("./preferences"),

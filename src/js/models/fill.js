@@ -27,8 +27,8 @@ define(function (require, exports, module) {
     var Immutable = require("immutable");
 
     var Color = require("./color"),
-        layerLib = require("adapter/lib/layer"),
-        contentLayerLib = require("adapter/lib/contentLayer"),
+        layerLib = require("adapter").lib.layer,
+        contentLayerLib = require("adapter").lib.contentLayer,
         objUtil = require("js/util/object"),
         log = require("js/util/log");
 

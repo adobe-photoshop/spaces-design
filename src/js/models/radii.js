@@ -28,7 +28,7 @@ define(function (require, exports, module) {
 
     var unit = require("js/util/unit"),
         objUtil = require("js/util/object"),
-        contentLib = require("adapter/lib/contentLayer");
+        contentLib = require("adapter").lib.contentLayer;
 
     /**
      * Model for a bounds rectangle, we extract it from the layer descriptor

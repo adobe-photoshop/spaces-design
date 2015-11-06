@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         tinycolor = require("tinycolor"),
         _ = require("lodash");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var Focusable = require("js/jsx/mixin/Focusable"),
         Dialog = require("jsx!js/jsx/shared/Dialog"),

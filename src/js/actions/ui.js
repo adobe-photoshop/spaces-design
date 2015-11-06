@@ -28,10 +28,10 @@ define(function (require, exports) {
         _ = require("lodash");
 
     var adapter = require("adapter"),
-        descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        adapterUI = require("adapter/ps/ui"),
-        adapterOS = require("adapter/os");
+        descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        adapterUI = require("adapter").ps.ui,
+        adapterOS = require("adapter").os;
 
     var Bounds = require("js/models/bounds"),
         events = require("js/events"),

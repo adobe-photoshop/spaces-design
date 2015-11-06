@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var math = require("js/util/math");
 

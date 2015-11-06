@@ -29,8 +29,8 @@ define(function (require, exports, module) {
         EventEmitter = require("eventEmitter"),
         _ = require("lodash");
 
-    var ps = require("adapter/ps"),
-        util = require("adapter/util");
+    var ps = require("adapter").ps,
+        util = require("adapter").util;
 
     var locks = require("./locks"),
         events = require("./events"),

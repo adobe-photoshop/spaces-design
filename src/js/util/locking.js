@@ -28,9 +28,9 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         Promise = require("bluebird");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer");
+    var descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer;
 
     var collection = require("js/util/collection");
 

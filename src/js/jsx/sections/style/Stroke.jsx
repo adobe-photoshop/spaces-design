@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var contentLayerLib = require("adapter/lib/contentLayer");
+    var contentLayerLib = require("adapter").lib.contentLayer;
 
     var Color = require("js/models/color"),
         StrokeAlignment = require("jsx!./StrokeAlignment"),

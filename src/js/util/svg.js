@@ -25,7 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var _ = require("lodash"),
-        layerLib = require("adapter/lib/layer");
+        layerLib = require("adapter").lib.layer;
    
     /**
      * Get the class name for the layer face icon for the given layer

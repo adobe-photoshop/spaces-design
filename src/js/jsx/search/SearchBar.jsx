@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var os = require("adapter/os");
+    var os = require("adapter").os;
 
     var collection = require("js/util/collection"),
         strings = require("i18n!nls/strings"),

@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         d3 = require("d3"),
         _ = require("lodash");
 
-    var UI = require("adapter/ps/ui");
+    var UI = require("adapter").ps.ui;
 
     var PolicyOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("policy", "ui")],

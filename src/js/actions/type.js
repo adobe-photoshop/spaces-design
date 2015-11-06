@@ -27,11 +27,11 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         _ = require("lodash");
 
-    var textLayerLib = require("adapter/lib/textLayer"),
-        descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        layerLib = require("adapter/lib/layer"),
-        appLib = require("adapter/lib/application");
+    var textLayerLib = require("adapter").lib.textLayer,
+        descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer,
+        appLib = require("adapter").lib.application;
 
     var layerActions = require("./layers"),
         events = require("../events"),

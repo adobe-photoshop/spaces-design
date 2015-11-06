@@ -28,9 +28,9 @@ define(function (require, exports) {
         _ = require("lodash");
 
     var adapter = require("adapter"),
-        ps = require("adapter/ps"),
-        ui = require("adapter/ps/ui"),
-        descriptor = require("adapter/ps/descriptor");
+        ps = require("adapter").ps,
+        ui = require("adapter").ps.ui,
+        descriptor = require("adapter").ps.descriptor;
 
     var events = require("js/events"),
         locks = require("js/locks"),

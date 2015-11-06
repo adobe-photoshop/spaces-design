@@ -28,11 +28,11 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        layerLib = require("adapter/lib/layer"),
-        pathLib = require("adapter/lib/path"),
-        documentLib = require("adapter/lib/document"),
-        contentLayerLib = require("adapter/lib/contentLayer");
+    var descriptor = require("adapter").ps.descriptor,
+        layerLib = require("adapter").lib.layer,
+        pathLib = require("adapter").lib.path,
+        documentLib = require("adapter").lib.document,
+        contentLayerLib = require("adapter").lib.contentLayer;
 
     var events = require("../events"),
         locks = require("js/locks"),

@@ -27,10 +27,10 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         _ = require("lodash");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        ps = require("adapter/ps"),
-        documentLib = require("adapter/lib/document"),
-        historyLib = require("adapter/lib/history"),
+    var descriptor = require("adapter").ps.descriptor,
+        ps = require("adapter").ps,
+        documentLib = require("adapter").lib.document,
+        historyLib = require("adapter").lib.history,
         layerActions = require("./layers"),
         toolActions = require("./tools"),
         documentActions = require("./documents");

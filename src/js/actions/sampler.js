@@ -28,11 +28,11 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
 
-    var descriptor = require("adapter/ps/descriptor"),
-        layerLib = require("adapter/lib/layer"),
-        libraryLib = require("adapter/lib/libraries"),
-        documentLib = require("adapter/lib/document"),
-        adapterOS = require("adapter/os");
+    var descriptor = require("adapter").ps.descriptor,
+        layerLib = require("adapter").lib.layer,
+        libraryLib = require("adapter").lib.libraries,
+        documentLib = require("adapter").lib.document,
+        adapterOS = require("adapter").os;
 
     var Color = require("js/models/color"),
         uiUtil = require("js/util/ui"),

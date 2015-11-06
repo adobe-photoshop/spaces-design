@@ -26,7 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var OS = require("adapter/os");
+    var OS = require("adapter").os;
 
     var log = require("js/util/log");
 

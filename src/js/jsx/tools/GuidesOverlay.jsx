@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         d3 = require("d3"),
         _ = require("lodash");
 
-    var OS = require("adapter/os");
+    var OS = require("adapter").os;
 
     var mathUtil = require("js/util/math");
 

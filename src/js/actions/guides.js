@@ -27,10 +27,10 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         _ = require("lodash");
         
-    var descriptor = require("adapter/ps/descriptor"),
-        documentLib = require("adapter/lib/document"),
-        adapterUI = require("adapter/ps/ui"),
-        adapterOS = require("adapter/os");
+    var descriptor = require("adapter").ps.descriptor,
+        documentLib = require("adapter").lib.document,
+        adapterUI = require("adapter").ps.ui,
+        adapterOS = require("adapter").os;
 
     var locks = require("js/locks"),
         events = require("js/events"),

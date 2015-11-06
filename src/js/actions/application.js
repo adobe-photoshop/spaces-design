@@ -26,11 +26,11 @@ define(function (require, exports) {
 
     var Promise = require("bluebird");
 
-    var descriptor = require("adapter/ps/descriptor");
+    var descriptor = require("adapter").ps.descriptor;
 
     var events = require("../events"),
         locks = require("js/locks"),
-        ruler = require("adapter/lib/ruler");
+        ruler = require("adapter").lib.ruler;
 
     /**
      * Gets the application version
