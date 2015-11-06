@@ -141,11 +141,11 @@ define(function (require, exports, module) {
      *
      * @param {object} descriptor
      * @param {number} descriptor.layerKind
-     * @param {boolean?} descriptor.artboardEnabled If set, will parse artboard value
-     * @param {object?} descriptor.artboard Contains the artboard bounds descriptor
-     * @param {object?} descriptor.pathBounds If available, will be parsed as shape layer
-     * @param {object?} descriptor.boundsNoEffects Bounds object available for all layers
-     * @param {object?} descriptor.boundsNoMask Bounds object available for all layers
+     * @param {?boolean} descriptor.artboardEnabled If set, will parse artboard value
+     * @param {?object} descriptor.artboard Contains the artboard bounds descriptor
+     * @param {?object} descriptor.pathBounds If available, will be parsed as shape layer
+     * @param {?object} descriptor.boundsNoEffects Bounds object available for all layers
+     * @param {?object} descriptor.boundsNoMask Bounds object available for all layers
      *
      * @return {?{top: number, left: number, bottom: number, right: number}}
      */

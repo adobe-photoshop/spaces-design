@@ -48,6 +48,13 @@ define(function (require, exports, module) {
 
     var LayerFace = React.createClass({
         mixins: [FluxMixin],
+        
+        /**
+         * Indicates whether the component is the initial target of a drag event.
+         
+         * @type {boolean}
+         */
+        _isDragEventTarget: false,
 
         getInitialState: function () {
             return {
@@ -337,7 +344,7 @@ define(function (require, exports, module) {
          */
         _getDropPosition: function (dragPosition) {
             var layer = this.props.layer,
-                bounds = this.getDOMNode().getBoundingClientRect(),
+                bounds = React.findDOMNode(this).getBoundingClientRect(),
                 dropPosition;
 
             if (layer.kind === layer.layerKinds.GROUP) {
@@ -382,17 +389,10 @@ define(function (require, exports, module) {
                 }, this);
             }
             
-            return { draggedTargets: draggedLayers };
-        },
-        
-        /**
-         * Handle drag start.
-         *
-         * @private
-         * @type {Draggable~onDragStart}
-         */
-        _handleDragStart: function () {
+            this._isDragEventTarget = true;
             this.getFlux().actions.ui.disableTooltips();
+            
+            return { draggedTargets: draggedLayers };
         },
 
         /**
@@ -402,7 +402,10 @@ define(function (require, exports, module) {
          * @type {Draggable~onDragStop}
          */
         _handleDragStop: function () {
-            this.getFlux().actions.ui.enableTooltips();
+            if (this._isDragEventTarget) {
+                this.getFlux().actions.ui.enableTooltips();
+                this._isDragEventTarget = false;
+            }
             
             this.setState({
                 isDragging: false,
@@ -622,55 +625,55 @@ define(function (require, exports, module) {
                     onDragStart={this._handleDragStart}
                     onDrag={this._handleDrag}
                     onDragStop={this._handleDragStop}>
-                <Droppable
-                    accept="layer"
-                    onDrop={this._handleDrop}
-                    onDragTargetMove={this._handleDragTargetMove}
-                    onDragTargetLeave={this._handleDragTargetLeave}>
-                    <li className={classnames(layerClasses)}>
-                        <div
-                            style={dragStyle}
-                            className={classnames(faceClasses)}
-                            data-layer-id={layer.id}
-                            data-kind={layer.kind}
-                            onClick={!this.props.disabled && this._handleLayerClick}>
-                            <Button
-                                title={tooltipTitle + tooltipPadding}
-                                disabled={this.props.disabled}
-                                className={classnames("face__kind", iconClassModifier)}
-                                data-kind={layer.isArtboard ? "artboard" : layer.kind}
-                                onClick={this._handleIconClick}
-                                onDoubleClick={this._handleLayerEdit}>
-                                <SVGIcon
-                                    CSSID={iconID}
-                                    viewbox="0 0 24 24"/>
-                            </Button>
-                            <span className="face__separator">
-                                <TextInput
-                                    title={layer.name + tooltipPadding}
-                                    className="face__name"
-                                    ref="layerName"
-                                    type="text"
-                                    value={layer.name}
-                                    editable={!this.props.disabled && nameEditable}
-                                    preventHorizontalScrolling={true}
-                                    onKeyDown={this._skipToNextLayerName}
-                                    onChange={this._handleLayerNameChange}>
-                                </TextInput>
-                                {showHideButton}
-                            </span>
-                            <ToggleButton
-                                disabled={this.props.disabled}
-                                title={nls.localize("strings.TOOLTIPS.LOCK_LAYER") + tooltipPadding}
-                                className="face__button_locked"
-                                size="column-2"
-                                buttonType={layer.locked ? "toggle-lock" : "toggle-unlock"}
-                                selected={layer.locked}
-                                onClick={this._handleLockToggle}>
-                            </ToggleButton>
-                        </div>
-                    </li>
-                </Droppable>
+                    <Droppable
+                        accept="layer"
+                        onDrop={this._handleDrop}
+                        onDragTargetMove={this._handleDragTargetMove}
+                        onDragTargetLeave={this._handleDragTargetLeave}>
+                        <li className={classnames(layerClasses)}>
+                            <div
+                                style={dragStyle}
+                                className={classnames(faceClasses)}
+                                data-layer-id={layer.id}
+                                data-kind={layer.kind}
+                                onClick={!this.props.disabled && this._handleLayerClick}>
+                                <Button
+                                    title={tooltipTitle + tooltipPadding}
+                                    disabled={this.props.disabled}
+                                    className={classnames("face__kind", iconClassModifier)}
+                                    data-kind={layer.isArtboard ? "artboard" : layer.kind}
+                                    onClick={this._handleIconClick}
+                                    onDoubleClick={this._handleLayerEdit}>
+                                    <SVGIcon
+                                        CSSID={iconID}
+                                        viewbox="0 0 24 24"/>
+                                </Button>
+                                <span className="face__separator">
+                                    <TextInput
+                                        title={layer.name + tooltipPadding}
+                                        className="face__name"
+                                        ref="layerName"
+                                        type="text"
+                                        value={layer.name}
+                                        editable={!this.props.disabled && nameEditable}
+                                        preventHorizontalScrolling={true}
+                                        onKeyDown={this._skipToNextLayerName}
+                                        onChange={this._handleLayerNameChange}>
+                                    </TextInput>
+                                    {showHideButton}
+                                </span>
+                                <ToggleButton
+                                    disabled={this.props.disabled}
+                                    title={nls.localize("strings.TOOLTIPS.LOCK_LAYER") + tooltipPadding}
+                                    className="face__button_locked"
+                                    size="column-2"
+                                    buttonType={layer.locked ? "toggle-lock" : "toggle-unlock"}
+                                    selected={layer.locked}
+                                    onClick={this._handleLockToggle}>
+                                </ToggleButton>
+                            </div>
+                        </li>
+                    </Droppable>
                 </Draggable>
             );
         }

@@ -90,7 +90,7 @@ define(function (require, exports, module) {
                     // Check the existence of the input again, in case it is unmounted after the timeout.
                     if (libraryNameInput) {
                         libraryNameInput.acquireFocus();
-                        libraryNameInput.getDOMNode().focus();
+                        React.findDOMNode(libraryNameInput).focus();
                     }
                 }.bind(this), 250);
             }

@@ -471,8 +471,8 @@ define(function (require, exports) {
     /**
      * Saves the currently selected layer's style in the style store clipboard
      *
-     * @param {Document?} document Default is active document
-     * @param {Layer?} source Layer to copy style of, default is selected layer
+     * @param {?Document} document Default is active document
+     * @param {?Layer} source Layer to copy style of, default is selected layer
      *
      * @return {Promise}
      */
@@ -525,8 +525,8 @@ define(function (require, exports) {
     /**
      * Saves the currently selected layer's effects in the style store clipboard
      *
-     * @param {Document?} document Default is active document
-     * @param {Layer?} source Layer to copy style of, default is selected layer
+     * @param {?Document} document Default is active document
+     * @param {?Layer} source Layer to copy style of, default is selected layer
      *
      * @return {Promise}
      */
@@ -555,8 +555,8 @@ define(function (require, exports) {
      * Layer effects are sent across
      * Stroke color is ignored by type layers
      *
-     * @param {Document?} document Default is active document
-     * @param {Immutable.Iterable.<Layer>?} targetLayers Default is selected layers
+     * @param {?Document} document Default is active document
+     * @param {?Immutable.Iterable.<Layer>} targetLayers Default is selected layers
      *
      * @return {Promise}
      */
@@ -652,8 +652,8 @@ define(function (require, exports) {
     /**
      * Applies the saved layer effects to the given layers
      *
-     * @param {Document?} document Default is active document
-     * @param {Immutable.Iterable.<Layer>?} targetLayers Default is selected layers
+     * @param {?Document} document Default is active document
+     * @param {?Immutable.Iterable.<Layer>} targetLayers Default is selected layers
      *
      * @return {Promise}
      */

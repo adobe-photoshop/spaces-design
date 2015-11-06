@@ -80,7 +80,7 @@ define(function (require, exports, module) {
          * The HTML element that is mounted with the Draggable's child component.
          *
          * @private
-         * @type {HTMLElement?}
+         * @type {?HTMLElement}
          */
         _childElement: null,
         
@@ -88,7 +88,7 @@ define(function (require, exports, module) {
          * The initial bounds of the _childElement when a drag event is initiated.
          *
          * @private
-         * @type {{top: number, left: number}?}
+         * @type {?{top: number, left: number}}
          */
         _initialBounds: null,
         
@@ -150,7 +150,7 @@ define(function (require, exports, module) {
         componentWillUnmount: function () {
             // Remove any leftover event handlers
             window.removeEventListener("mousemove", this._handleMouseMove, true);
-            window.removeEventListener("mouseup", this._handleMouserUp, true);
+            window.removeEventListener("mouseup", this._handleMouseUp, true);
             
             this.getFlux().store("draganddrop").removeListener("start-drag", this._handleDNDStoreDrag);
         },
@@ -162,13 +162,13 @@ define(function (require, exports, module) {
          */
         _listenToChildClickEvent: function () {
             if (this._childElement) {
-                var nextChildDOM = this.getDOMNode();
+                var nextChildDOM = React.findDOMNode(this);
                 if (this._childElement === nextChildDOM) {
                     return;
                 }
             }
 
-            this._childElement = this.getDOMNode();
+            this._childElement = React.findDOMNode(this);
             this._childElement.addEventListener("mousedown", this._handleMouseDown);
         },
         
@@ -266,7 +266,7 @@ define(function (require, exports, module) {
             };
             
             window.addEventListener("mousemove", this._handleMouseMove, true);
-            window.addEventListener("mouseup", this._handleMouserUp, true);
+            window.addEventListener("mouseup", this._handleMouseUp, true);
         },
 
         /**
@@ -299,7 +299,7 @@ define(function (require, exports, module) {
                     
                     if (options.continue === false) {
                         window.removeEventListener("mousemove", this._handleMouseMove, true);
-                        window.removeEventListener("mouseup", this._handleMouserUp, true);
+                        window.removeEventListener("mouseup", this._handleMouseUp, true);
                         return;
                     }
                     
@@ -327,11 +327,11 @@ define(function (require, exports, module) {
          * Resets state
          *
          * @private
-         * @param {SyntheticEvent=} event
+         * @param {SyntheticEvent} event
          */
-        _handleMouserUp: function (event) {
+        _handleMouseUp: function (event) {
             window.removeEventListener("mousemove", this._handleMouseMove, true);
-            window.removeEventListener("mouseup", this._handleMouserUp, true);
+            window.removeEventListener("mouseup", this._handleMouseUp, true);
 
             // If the mouseup event is outside the window, there won't be an
             // associated click event. In this case, remove the handler explicitly

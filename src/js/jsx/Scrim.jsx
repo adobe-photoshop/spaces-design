@@ -342,11 +342,11 @@ define(function (require, exports, module) {
                          onMouseDown={!disabled && this._handleMouseDown}
                          onMouseMove={!disabled && this._handleMouseMove}
                          onMouseUp={!disabled && this._handleMouseUp}>
-                        <svg width="100%" height="100%">
-                            <g id="overlay" width="100%" height="100%">
-                                {policyOverlay}
-                                {toolOverlay}
-                                {guidesOverlay}
+                         <svg width="100%" height="100%">
+                             <g id="overlay" width="100%" height="100%">
+                                 {policyOverlay}
+                                 {toolOverlay}
+                                 {guidesOverlay}
                             </g>
                         </svg>
                     </div>

@@ -104,7 +104,7 @@ define(function (require, exports) {
      * Open passed URL, stops event propagation
      *
      * @param {string} url
-     * @param {SyntheticEvent?} event
+     * @param {?SyntheticEvent} event
      */
     var openURL = function (url, event) {
         adapter.openURLInDefaultBrowser(url);

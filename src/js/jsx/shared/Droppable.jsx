@@ -73,10 +73,15 @@ define(function (require, exports, module) {
         },
 
         componentDidMount: function () {
-            this._droppableID = droppableCounter++;
+            this._droppablID = droppableCounter++;
+            
+            // Mark the child HTML element with the id of the DropTarget, so that 
+            // we can regonize the DropTarget of the element during a mousemove event. 
+            // See "draganddrop._findDropTarget" for details.
+            React.findDOMNode(this).dataset.droppablid = this._droppablID;
             
             this.getFlux().store("draganddrop").registerDroppable({
-                id: this._droppableID,
+                id: this._droppablID,
                 accept: this.props.accept,
                 onDrop: this._handleDrop,
                 component: this,
@@ -87,12 +92,15 @@ define(function (require, exports, module) {
         },
         
         componentDidUpdate: function () {
-            this.getFlux().store("draganddrop").updateDroppable(this._droppableID);
+            // The child HTML element may be replaced due to re-rendering. If so, we assign 
+            // the id to the new HTML element.
+            if (!React.findDOMNode(this).dataset.droppablid) {
+                React.findDOMNode(this).dataset.droppablid = this._droppablID;
+            }
         },
-        
 
         componentWillUnmount: function () {
-            this.getFlux().store("draganddrop").deregisterDroppable(this._droppableID);
+            this.getFlux().store("draganddrop").deregisterDroppable(this._droppablID);
         },
         
         /**

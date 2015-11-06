@@ -65,20 +65,12 @@ define(function (require, exports, module) {
         _dropTarget: null,
         
         /**
-         * Map from the reactID (of the DropTarget's React component) to the DropTarget.
+         * Map from the id to the DropTarget.
          * 
          * @private
          * @type {Immutable.Map.<string, DropTarget>}
          */
-        _reactIDToDropTarget: null,
-        
-        /**
-         * Map from the DropTarget ID to the reactID.
-         * 
-         * @private
-         * @type {Immutable.Map.<string, DropTarget>}
-         */
-        _dropTargetIDToReactID: null,
+        _idToDropTarget: null,
         
         /**
          * Whether the store is processing a drop event.
@@ -113,8 +105,7 @@ define(function (require, exports, module) {
             );
             
             // These setting attributes should be initialized once.
-            this._dropTargetIDToReactID = new Map();
-            this._reactIDToDropTarget = new Map();
+            this._idToDropTarget = new Map();
 
             this._handleReset();
         },
@@ -140,24 +131,25 @@ define(function (require, exports, module) {
         },
         
         /**
-         * Find the DropTarget associated with the mouseover HTML element, by comparing the reactID attribute 
-         * of the HTML element and the reactID of the DropTarget's React component.
+         * Find the DropTarget associated with the mouseover HTML element, by comparing the "droppabled" attribute 
+         * of the HTML element and the id of the DropTarget. The "droppablid" attribute is maintained by Droppable 
+         * component. See "Droppable.componentDidMount" for details.
          *
          * @private
          * @param  {HTMLElement} element
-         * @return {DropTarget?}
+         * @return {?DropTarget}
          */
         _findDropTarget: function (element) {
             do {
                 if (element.dataset) {
-                    var reactID = element.dataset.reactid,
-                        dropTarget = this._reactIDToDropTarget[reactID];
+                    var droppablID = element.dataset.droppablid,
+                        dropTarget = this._idToDropTarget[droppablID];
                     
                     if (dropTarget) {
                         return dropTarget;
                     }
                 }
-                
+
                 element = element.parentNode;
             } while (element);
 
@@ -179,24 +171,7 @@ define(function (require, exports, module) {
          * @param {DropTarget} dropTarget
          */
         registerDroppable: function (dropTarget) {
-            var reactID = dropTarget.component.getDOMNode().dataset.reactid;
-            
-            this._dropTargetIDToReactID[dropTarget.id] = reactID;
-            this._reactIDToDropTarget[reactID] = dropTarget;
-        },
-        
-        /**
-         * Update the mapping of a DropTarget and its associated ReactComponent due to re-render.
-         * @param  {number} dropTargetID
-         */
-        updateDroppable: function (dropTargetID) {
-            var reactID = this._dropTargetIDToReactID[dropTargetID],
-                dropTarget = this._reactIDToDropTarget[reactID],
-                nextReactid = dropTarget.component.getDOMNode().dataset.reactid;
-            
-            this._dropTargetIDToReactID[dropTargetID] = nextReactid;
-            this._reactIDToDropTarget[reactID] = null;
-            this._reactIDToDropTarget[nextReactid] = dropTarget;
+            this._idToDropTarget[dropTarget.id] = dropTarget;
         },
 
         /**
@@ -205,10 +180,7 @@ define(function (require, exports, module) {
          * @param {number} dropTargetID
          */
         deregisterDroppable: function (dropTargetID) {
-            var reactID = this._dropTargetIDToReactID[dropTargetID];
-
-            this._dropTargetIDToReactID[dropTargetID] = null;
-            this._reactIDToDropTarget[reactID] = null;
+            this._idToDropTarget[dropTargetID] = null;
         },
         
         /**
