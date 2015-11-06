@@ -32,8 +32,7 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         Promise = require("bluebird");
     
-    var os = require("adapter/os"),
-        system = require("js/util/system"),
+    var system = require("js/util/system"),
         svgUtil = require("js/util/svg"),
         collection = require("js/util/collection"),
         nls = require("js/util/nls");
@@ -49,17 +48,9 @@ define(function (require, exports, module) {
 
     var LayerFace = React.createClass({
         mixins: [FluxMixin],
-        
-        /**
-         * Set the initial component state.
-         * 
-         * @return {{futureReorder: boolean, dropPosition: ?string}} Where:
-         *  futureReorder: Used to prevent flash of dragged layer back to original positiion
-         *  dropPosition: One of "above", "below" or "on" (the latter of which is only valid
-         *      for group drop targets)
-         */
+
         getInitialState: function () {
-            return { 
+            return {
                 isDropTarget: false,
                 dropPosition: null,
                 isDragging: false,
@@ -249,8 +240,17 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
         
+        /**
+         * Given that the dragged layers are compatible with the target layer,
+         * determines whether the target is a valid drop point (either above or
+         * below) for the dragged layers.
+         *
+         * @private
+         * @param {Layer} target
+         * @param {Immutable.Iterable.<Layer>} draggedLayers
+         * @param {string} dropPosition
+         */
         _validCompatibleDropTarget: function (target, draggedLayers, dropPosition) {
-            // TODO
             if (draggedLayers.size === 1 && draggedLayers.first() === target) {
                 return false;
             }
@@ -328,6 +328,13 @@ define(function (require, exports, module) {
             return true;
         },
         
+        /**
+         * Return the drop position based on the current drag position.
+         *
+         * @private
+         * @param {{x: number, y: number}} dragPosition
+         * @return {string}
+         */
         _getDropPosition: function (dragPosition) {
             var layer = this.props.layer,
                 bounds = this.getDOMNode().getBoundingClientRect(),
@@ -357,6 +364,12 @@ define(function (require, exports, module) {
             return dropPosition;
         },
         
+        /**
+         * Handle before drag start.
+         * 
+         * @private
+         * @type {Draggable~beforeDragStart}
+         */
         _handleBeforeDragStart: function () {
             // Photoshop logic is, if we drag a selected layers, all selected layers are being reordered
             // If we drag an unselected layer, only that layer will be reordered
@@ -372,10 +385,22 @@ define(function (require, exports, module) {
             return { draggedTargets: draggedLayers };
         },
         
+        /**
+         * Handle drag start.
+         *
+         * @private
+         * @type {Draggable~onDragStart}
+         */
         _handleDragStart: function () {
             this.getFlux().actions.ui.disableTooltips();
         },
-        
+
+        /**
+         * Handle drag stop.
+         *
+         * @private
+         * @type {Draggable~onDragStop}
+         */
         _handleDragStop: function () {
             this.getFlux().actions.ui.enableTooltips();
             
@@ -385,6 +410,12 @@ define(function (require, exports, module) {
             });
         },
         
+        /**
+         * Handle drag.
+         *
+         * @private
+         * @type {Draggable~onDrag}
+         */
         _handleDrag: function (dragPosition, dragOffset, initialDragPosition, initialBounds) {
             var dragStyle = {
                 top: initialBounds.top + dragOffset.y,
@@ -397,6 +428,12 @@ define(function (require, exports, module) {
             });
         },
         
+        /**
+         * Handle drop.
+         *
+         * @private
+         * @type {Droppable~onDrop}
+         */
         _handleDrop: function (draggedLayers) {
             if (!this.state.isDropTarget) {
                 return Promise.resolve();
@@ -435,20 +472,35 @@ define(function (require, exports, module) {
             return this.getFlux().actions.layers.reorder(doc, dragSource, dropIndex);
         },
         
+        /**
+         * Handle drag move.
+         *
+         * @private
+         * @type {Droppable~onDragTargetMove}
+         */
         _handleDragTargetMove: function (draggedLayers, dragPosition) {
             var isDropTarget = !draggedLayers.includes(this.props.layer),
                 dropPosition = isDropTarget ? this._getDropPosition(dragPosition) : null,
                 canDropLayer = isDropTarget && this._validCompatibleDropTarget(
                     this.props.layer, draggedLayers, dropPosition);
             
-            this.setState({ 
+            this.setState({
                 isDropTarget: canDropLayer,
                 dropPosition: dropPosition
             });
         },
         
+        /**
+         * Handle drag leave.
+         *
+         * @private
+         * @type {Droppable~onDragTargetLeave}
+         */
         _handleDragTargetLeave: function () {
-            this.setState({ isDropTarget: false });
+            this.setState({
+                isDropTarget: false,
+                dropPosition: null
+            });
         },
 
         render: function () {
@@ -565,7 +617,7 @@ define(function (require, exports, module) {
             return (
                 <Draggable
                     type="layer"
-                    keyObject={this.props.layer}
+                    target={this.props.layer}
                     beforeDragStart={this._handleBeforeDragStart}
                     onDragStart={this._handleDragStart}
                     onDrag={this._handleDrag}

@@ -33,16 +33,50 @@ define(function (require, exports, module) {
 
     var Droppable = React.createClass({
         mixins: [FluxMixin],
+        
+        propTypes: {
+            // Type of Draggable that is accepted
+            accept: React.PropTypes.string.isRequired,
+
+            /**
+             * @callback Draggable~handleDragTargetEnter
+             * @param {Immutable.List.<object>} draggedTargets
+             * @param {{x: number, y:number}} position
+             */
+            handleDragTargetEnter: React.PropTypes.func,
+            
+            /**
+             * @callback Draggable~handleDragTargetMove
+             * @param {Immutable.List.<object>} draggedTargets
+             * @param {{x: number, y:number}} position
+             */
+            handleDragTargetMove: React.PropTypes.func,
+            
+            /**
+             * @callback Draggable~handleDragTargetLeave
+             * @param {Immutable.List.<object>} draggedTargets
+             * @param {{x: number, y:number}} position
+             */
+            handleDragTargetLeave: React.PropTypes.func,
+            
+            /**
+             * @callback Draggable~handleDrop
+             * @param {Immutable.List.<object>} draggedTargets
+             * @param {{x: number, y:number}} position
+             * @return {Promise}
+             */
+            handleDrop: React.PropTypes.func
+        },
 
         getInitialState: function () {
             return { isMouseOver: false };
         },
 
-        // TODO doc
         componentDidMount: function () {
             this._droppableID = droppableCounter++;
             
-            this.getFlux().store("draganddrop").registerDroppable(this._droppableID, {
+            this.getFlux().store("draganddrop").registerDroppable({
+                id: this._droppableID,
                 accept: this.props.accept,
                 onDrop: this._handleDrop,
                 component: this,
@@ -61,29 +95,58 @@ define(function (require, exports, module) {
             this.getFlux().store("draganddrop").deregisterDroppable(this._droppableID);
         },
         
-        _handleDrop: function (dragTargets, dragPosition, dropTarget) {
+        /**
+         * Handle drop.
+         *
+         * @private
+         * @param {Immutable.List.<object>} dragTargets
+         * @param {{x: number, y: number}} dragPosition
+         * @return {Promise}
+         */
+        _handleDrop: function (dragTargets, dragPosition) {
             if (this.props.onDrop) {
-                return this.props.onDrop(dragTargets, dragPosition, dropTarget);
+                return this.props.onDrop(dragTargets, dragPosition);
             } else {
                 return Promise.resolve();
             }
         },
         
-        _handleDragTargetEnter: function (draggedLayers, dragPosition) {
+        /**
+         * Handle drag enter
+         *
+         * @private
+         * @param {Immutable.List.<object>} draggedTargets
+         * @param {{x: number, y: number}} dragPosition
+         */
+        _handleDragTargetEnter: function (draggedTargets, dragPosition) {
             if (this.props.onDragTargetEnter) {
-                this.props.onDragTargetEnter(draggedLayers, dragPosition);
+                this.props.onDragTargetEnter(draggedTargets, dragPosition);
             }
         },
         
-        _handleDragTargetMove: function (draggedLayers, dragPosition) {
+        /**
+         * Handle drag move
+         *
+         * @private
+         * @param {Immutable.List.<object>} draggedTargets
+         * @param {{x: number, y: number}} dragPosition
+         */
+        _handleDragTargetMove: function (draggedTargets, dragPosition) {
             if (this.props.onDragTargetMove) {
-                this.props.onDragTargetMove(draggedLayers, dragPosition);
+                this.props.onDragTargetMove(draggedTargets, dragPosition);
             }
         },
         
-        _handleDragTargetLeave: function (draggedLayers, dragPosition) {
+        /**
+         * Handle drag leave
+         *
+         * @private
+         * @param {Immutable.List.<object>} draggedTargets
+         * @param {{x: number, y: number}} dragPosition
+         */
+        _handleDragTargetLeave: function (draggedTargets, dragPosition) {
             if (this.props.onDragTargetLeave) {
-                this.props.onDragTargetLeave(draggedLayers, dragPosition);
+                this.props.onDragTargetLeave(draggedTargets, dragPosition);
             }
         },
 

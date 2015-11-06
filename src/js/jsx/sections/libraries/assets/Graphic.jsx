@@ -103,21 +103,43 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
         
+        /**
+         * Handle before drag start.
+         *
+         * @private
+         * @type {Draggable~beforeDragStart}
+         */
         _handleBeforeDragStart: function () {
-            var isInModalToolState = this.getFlux().stores.tool.getModalToolState();
-            
             // Disable drag-and-drop for graphics if PS is in modal tool state, because we cannot read 
             // the correct modifier state (ALT key in this case) while in modal tool state.
             // Check `libraries.createLayerFromElement` for the details of ALT modifier.
             // 
             // FIXME: modal tool state should not block the update of modifier state.
-            return { continue: !isInModalToolState && !!this.state.renditionPath };
+            var isInModalToolState = this.getFlux().stores.tool.getModalToolState();
+            
+            // If the element does not have a renditionPath yet, we will cancel
+            // the drag event as its content is likely broken and cannot be placed on the canvas.
+            var hasRendition = !!this.state.renditionPath;
+            
+            return { continue: !isInModalToolState && hasRendition };
         },
         
+        /**
+         * Handle drag start.
+         *
+         * @private
+         * @type {Draggable~onDragStart}
+         */
         _handleDragStart: function () {
             this.props.onDragStart();
         },
         
+        /**
+         * Handle drag.
+         *
+         * @private
+         * @type {Draggable~onDrag}
+         */
         _handleDrag: function (dragPosition) {
             this.setState({
                 isDragging: true,
@@ -125,6 +147,12 @@ define(function (require, exports, module) {
             });
         },
         
+        /**
+         * Handle drag stop.
+         *
+         * @private
+         * @type {Draggable~onDragStop}
+         */
         _handleDragStop: function () {
             this.setState({
                 isDragging: false,
@@ -164,7 +192,7 @@ define(function (require, exports, module) {
                     key={element.id}>
                     <Draggable
                         type="graphic"
-                        keyObject={this.props.element}
+                        target={this.props.element}
                         beforeDragStart={this._handleBeforeDragStart}
                         onDragStart={this._handleDragStart}
                         onDrag={this._handleDrag}

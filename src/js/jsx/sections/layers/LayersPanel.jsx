@@ -118,7 +118,7 @@ define(function (require, exports, module) {
             this._scrollToSelection(this.props.document.layers);
         },
 
-        shouldComponentUpdate: function (nextProps, nextState) {
+        shouldComponentUpdate: function (nextProps) {
             if (this.props.disabled !== nextProps.disabled ||
                 this.props.active !== nextProps.active) {
                 return true;
@@ -210,10 +210,11 @@ define(function (require, exports, module) {
 
             var bottomLayer = doc.layers.byIndex(1);
             if (bottomLayer.kind === bottomLayer.layerKinds.GROUPEND) {
-                layerComponents = layerComponents.push(<DummyLayerFace key="dummy" document={doc}/>);
+                layerComponents = layerComponents.push(
+                    <DummyLayerFace key="dummy" document={doc}/>
+                );
             }
 
-            // TODO: fix this
             var layerListClasses = classnames({
                 "layer-list": true
             });

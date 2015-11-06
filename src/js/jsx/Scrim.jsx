@@ -274,7 +274,12 @@ define(function (require, exports, module) {
             return "matrix(" + transformMatrix.join(",") + ")";
         },
         
-        // TODO
+        /**
+         * Handle drop graphic.
+         * 
+         * @private
+         * @type {Droppable~onDrop}
+         */
         _handleDropGraphic: function (draggedTargets) {
             this.setState({ isDropTarget: false });
 
@@ -289,11 +294,23 @@ define(function (require, exports, module) {
 
             return flux.actions.libraries.createLayerFromElement(dragGraphic, canvasLocation);
         },
-
+        
+        /**
+         * Handle drag enter.
+         * 
+         * @private
+         * @type {Droppable~onDragTargetEnter}
+         */
         _handleDragTargetEnter: function () {
             this.setState({ isDropTarget: true });
         },
         
+        /**
+         * Handle drag leave.
+         * 
+         * @private
+         * @type {Droppable~onDragTargetLeave}
+         */
         _handleDragTargetLeave: function () {
             this.setState({ isDropTarget: false });
         },
@@ -337,9 +354,6 @@ define(function (require, exports, module) {
             );
         }
     });
-
-    Scrim.DROPPABLE_KEY = "Scrim";
-    Scrim.DROPPABLE_ZONE = -1;
     
     module.exports = Scrim;
 });

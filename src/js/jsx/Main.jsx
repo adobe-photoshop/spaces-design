@@ -146,26 +146,6 @@ define(function (require, exports, module) {
 
         componentDidMount: function () {
             window.document.documentElement.lang = system.language;
-            
-            this.getFlux().store("draganddrop").addListener("start-drag", this._toggleDNDState.bind(this, true));
-            this.getFlux().store("draganddrop").addListener("stop-drag", this._toggleDNDState.bind(this, false));
-        },
-        
-        
-        _toggleDNDState: function (isDragging) {
-            this._isDragging = isDragging;
-        },
-        
-        _handleMouseMove: function (event) {
-            if (!this._isDragging) {
-                return;
-            }
-            
-            this.getFlux().stores.draganddrop._handleMouseMove({
-                element: event.target,
-                clientX: event.clientX,
-                clientY: event.clientY
-            });
         },
 
         render: function () {
@@ -181,8 +161,7 @@ define(function (require, exports, module) {
                     hasDocument && this.state.numberOfPanels === 2 && !this.state.singleColumnModeEnabled
             });
             return (
-                <div className={className}
-                    onMouseMove={this._handleMouseMove}>
+                <div className={className}>
                     <Guard
                         disabled={this.state.ready && this.state.active} />
                     <Scrim

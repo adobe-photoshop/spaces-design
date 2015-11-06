@@ -53,26 +53,89 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
-
-    var math = require("js/util/math"),
-        log = require("js/util/log");
+    
+    var math = require("js/util/math");
+        
+    /**
+     * Distance in pixels before a mousedown+mousemove becomes a drag event.
+     * Prevents false drags on Windows.
+     *
+     * @const
+     * @type {number}
+     */
+    var MIN_DRAG_DISTANCE = 5;
 
     var Draggable = React.createClass({
         mixins: [FluxMixin],
         
+        /**
+         * True if the target is in drag mode.
+         *
+         * @private
+         * @type {boolean}
+         */
         _isDragging: false,
-        _childDOM: null,
+        
+        /**
+         * The HTML element that is mounted with the Draggable's child component.
+         *
+         * @private
+         * @type {HTMLElement?}
+         */
+        _childElement: null,
+        
+        /**
+         * The initial bounds of the _childElement when a drag event is initiated.
+         *
+         * @private
+         * @type {{top: number, left: number}?}
+         */
         _initialBounds: null,
+        
+        /**
+         * Position of the original mousedown event. Used to measure the distance
+         * of each mousemove event. The drag is not started until mousemove events
+         * reach the MIN_DRAG_DISTANCE threshold.
+         *
+         * @private
+         * @type {?{x: number, y: number}}
+         */
+        _mousedownPosition: null,
 
         propTypes: {
-            // The type of the draggable item.
-            type: React.PropTypes.string,
+            // Type of the "target".
+            type: React.PropTypes.string.isRequired,
+            
+            // The object passed to the Droppable component when dropped. This value can be overwritten by the 
+            // optional callback "beforeDragStart".
+            target: React.PropTypes.object.isRequired,
 
             /**
-             * Optional callback to return a Immutable.List of draged items. It is useful when you want to support 
-             * dragging on multiple items.
+             * @callback Draggable~beforeDragStart
+             * @return {object=}
+             *         Return {continue: false} will cancel the drag event.
+             *         Return {draggedTargets: Immutable.List.<object>} can assign different drag targets.
              */
-            getDragItems: React.PropTypes.func
+            beforeDragStart: React.PropTypes.func,
+            
+            /**
+             * @callback Draggable~onDragStart
+             */
+            onDragStart: React.PropTypes.func,
+            
+            /**
+             * @callback Draggable~onDrag
+             * @param {{x: number, y: number}} dragPosition
+             * @param {{x: number, y: number}} dragOffset - The offset of the initial and current drag positions. 
+             * @param {{x: number, y: number}} initialDragPosition
+             * @param {{top: number, left: number}} initialBounds
+             */
+            onDrag: React.PropTypes.func,
+            
+            /**
+             * @callback Draggable~onDragStop
+             */
+            onDragStop: React.PropTypes.func
         },
         
         componentDidMount: function () {
@@ -82,18 +145,6 @@ define(function (require, exports, module) {
         
         componentDidUpdate: function () {
             this._listenToChildClickEvent();
-        },
-        
-        _listenToChildClickEvent: function () {
-            if (this._childDOM) {
-                var nextChildDOM = this.getDOMNode();
-                if (this._childDOM === nextChildDOM) {
-                    return;
-                }
-            }
-
-            this._childDOM = this.getDOMNode();
-            this._childDOM.addEventListener("mousedown", this._handleMouseDown);
         },
 
         componentWillUnmount: function () {
@@ -105,7 +156,25 @@ define(function (require, exports, module) {
         },
         
         /**
+         * Listen the mousedown event on the child HTML element to recognize a drag event.
+         *
+         * @private
+         */
+        _listenToChildClickEvent: function () {
+            if (this._childElement) {
+                var nextChildDOM = this.getDOMNode();
+                if (this._childElement === nextChildDOM) {
+                    return;
+                }
+            }
+
+            this._childElement = this.getDOMNode();
+            this._childElement.addEventListener("mousedown", this._handleMouseDown);
+        },
+        
+        /**
          * Handle the "start-drag" event of draganddrop store.
+         * 
          * @private
          */
         _handleDNDStoreDrag: function () {
@@ -113,7 +182,7 @@ define(function (require, exports, module) {
                 dragTargets = flux.store("draganddrop").getState().dragTargets,
                 // Only dragged targets should listen to the "change" event. This will
                 // improve the overall performance.
-                isDragTarget = dragTargets.includes(this.props.keyObject);
+                isDragTarget = dragTargets.includes(this.props.target);
                 
             if (isDragTarget) {
                 this._isDragging = true;
@@ -127,6 +196,7 @@ define(function (require, exports, module) {
         
         /**
          * Handle the "change" event of draganddrop store.
+         * 
          * @private
          */
         _handleDNDStoreChange: function () {
@@ -138,8 +208,8 @@ define(function (require, exports, module) {
             
             if (isDragging) {
                 if (this.props.onDrag && dragPosition) {
-                    if (!this._initialPosition) {
-                        var bounds = this._childDOM.getBoundingClientRect();
+                    if (!this._initialBounds) {
+                        var bounds = this._childElement.getBoundingClientRect();
                         
                         this._initialBounds = {
                             top: bounds.top,
@@ -174,6 +244,7 @@ define(function (require, exports, module) {
          * Suppress the single click event that follows the mouseup event at
          * the end of the drag.
          *
+         * @private
          * @param {SyntheticEvent} event
          */
         _handleDragClick: function (event) {
@@ -186,8 +257,14 @@ define(function (require, exports, module) {
          * and adding event listeners to the window
          *
          * @private
+         * @param {SyntheticEvent} event
          */
-        _handleMouseDown: function () {
+        _handleMouseDown: function (event) {
+            this._mousedownPosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+            
             window.addEventListener("mousemove", this._handleMouseMove, true);
             window.addEventListener("mouseup", this._handleMouserUp, true);
         },
@@ -196,14 +273,26 @@ define(function (require, exports, module) {
          * Handles move for a dragging object
          * Registers dragging objects with store
          *
-         * @param {Event} event
+         * @private
+         * @param {SyntheticEvent} event
          */
         _handleMouseMove: function (event) {
             var dndStore = this.getFlux().store("draganddrop"),
-                dragTargets = dndStore.getState().dragTargets;
+                dragTargets = dndStore.getState().dragTargets,
+                position = { x: event.clientX, y: event.clientY },
+                element = event.target;
 
             if (dragTargets.isEmpty()) {
-                var draggedTargets = Immutable.List([this.props.keyObject]);
+                var distance = math.distance(position.x, position.y,
+                    this._mousedownPosition.x, this._mousedownPosition.y);
+                    
+                if (distance < MIN_DRAG_DISTANCE) {
+                    // Do not start the drag until the distance reaches a
+                    // threshold to prevent false drags on Windows.
+                    return;
+                }
+                
+                var draggedTargets = Immutable.List([this.props.target]);
                 
                 if (this.props.beforeDragStart) {
                     var options = this.props.beforeDragStart();
@@ -226,7 +315,9 @@ define(function (require, exports, module) {
                 // Suppress the following click event
                 window.addEventListener("click", this._handleDragClick, true);
 
-                dndStore.startDrag(this.props.type, draggedTargets);
+                dndStore.startDrag(this.props.type, draggedTargets, position);
+            } else {
+                dndStore.updateDrag(position, element);
             }
         },
 
@@ -235,6 +326,7 @@ define(function (require, exports, module) {
          * Removes drag event listeners from window
          * Resets state
          *
+         * @private
          * @param {SyntheticEvent=} event
          */
         _handleMouserUp: function (event) {
@@ -259,7 +351,7 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            return ( this.props.children );
+            return this.props.children;
         }
     });
 

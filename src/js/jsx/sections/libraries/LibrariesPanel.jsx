@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         Droppable = require("jsx!js/jsx/shared/Droppable");
 
     var LibrariesPanel = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("library", "draganddrop")],
+        mixins: [FluxMixin, StoreWatchMixin("library")],
 
         getStateFromFlux: function () {
             var libraryState = this.getFlux().store("library").getState();
@@ -109,13 +109,19 @@ define(function (require, exports, module) {
             });
         },
         
+        /**
+         * Handle drop layers
+         *
+         * @private
+         * @type {Droppable~onDrop}
+         */
         _handleDropLayers: function (draggedLayers) {
             if (!this.state.canDropLayer) {
                 this.setState({ isDropTarget: false });
                 return Promise.resolve();
             }
             
-            this.setState({ 
+            this.setState({
                 isDropTarget: false,
                 canDropLayer: false
             });
@@ -135,18 +141,30 @@ define(function (require, exports, module) {
             });
         },
         
+        /**
+         * Handle drag enter.
+         *
+         * @private
+         * @type {Droppable~onDragTargetEnter}
+         */
         _handleDragTargetEnter: function (draggedLayers) {
             // Single linked layer is not accepted, but multiple linked (or mixed) layers are accepted.
             var isSingleLinkedLayer = draggedLayers.size === 1 && draggedLayers.first().isLinked;
             
-            this.setState({ 
+            this.setState({
                 isDropTarget: true,
                 canDropLayer: this.state.selectedLibrary && !isSingleLinkedLayer
             });
         },
         
+        /**
+         * Handle drag leave.
+         *
+         * @private
+         * @type {Droppable~onDragTargetLeave}
+         */
         _handleDragTargetLeave: function () {
-            this.setState({ 
+            this.setState({
                 isDropTarget: false,
                 canDropLayer: false
             });

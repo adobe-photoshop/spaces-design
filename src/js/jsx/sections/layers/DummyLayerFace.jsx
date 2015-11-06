@@ -40,19 +40,18 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return { isDropTarget: false };
         },
-        
-        /**
-         * Function for checking whether React component should update
-         * Passed to Droppable composed component in order to save on extraneous renders
-         *
-         * @param {object} nextProps - Next set of properties for this component
-         * @return {boolean}
-         */
+
         shouldComponentUpdate: function (nextProps, nextState) {
             // Only drop states are compared
             return this.state.isDropTarget !== nextState.isDropTarget;
         },
         
+        /**
+         * Handle drop layers.
+         * 
+         * @private
+         * @type {Droppable~onDrop}
+         */
         _handleDropLayers: function (draggedLayers) {
             if (!this.state.isDropTarget) {
                 return Promise.resolve();
@@ -60,12 +59,18 @@ define(function (require, exports, module) {
             
             this.setState({ isDropTarget: false });
             
-            var dropIndex = 0,
+            var dropIndex = 0, // put dragged layers to the bottom
                 dragSource = collection.pluck(draggedLayers, "id");
 
             return this.getFlux().actions.layers.reorder(this.props.document, dragSource, dropIndex);
         },
         
+        /**
+         * Handle drag enter.
+         * 
+         * @private
+         * @type {Droppable~onDragTargetEnter}
+         */
         _handleDragTargetEnter: function (draggedLayers) {
             // Dropping on the dummy layer is valid as long as a group is not
             // being dropped below itself. The dummy layer only exists
@@ -78,6 +83,12 @@ define(function (require, exports, module) {
             this.setState({ isDropTarget: isDropTarget });
         },
         
+        /**
+         * Handle drag leave.
+         * 
+         * @private
+         * @type {Droppable~onDragTargetLeave}
+         */
         _handleDragTargetLeave: function () {
             this.setState({ isDropTarget: false });
         },
