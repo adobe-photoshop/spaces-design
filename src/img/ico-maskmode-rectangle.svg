@@ -1,3 +1,3 @@
-<svg id="maskmode-rectangle" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 14 14">
-    <path id="Shape_15_copy" data-name="Shape 15 copy" class="cls-1" d="M987,1726h12v12H987v-12Zm13,1a1.976,1.976,0,0,0-2-2H988a1.937,1.937,0,0,0-2,2v10a2.079,2.079,0,0,0,2,2h10a1.918,1.918,0,0,0,2-2v-10Z" transform="translate(-986 -1725)"/>
+<svg id="ico-maskmode-rectangle" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid" width="100%" height="100%" viewBox="0 0 14 14">
+    <path d="M1.000,1.000 L13.000,1.000 L13.000,13.000 L1.000,13.000 L1.000,1.000 ZM14.000,2.000 C14.000,2.000 13.980,0.000 12.000,0.000 C10.020,0.000 4.026,0.000 2.000,0.000 C-0.026,0.000 0.000,2.000 0.000,2.000 L0.000,12.000 C0.000,12.000 0.132,14.000 2.000,14.000 C3.868,14.000 9.948,14.000 12.000,14.000 C14.052,14.000 14.000,12.000 14.000,12.000 L14.000,2.000 Z" />
 </svg>
