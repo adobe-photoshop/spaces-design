@@ -43,7 +43,6 @@ define(function (require, exports) {
         typeActions = require("./type"),
         shapeActions = require("./shapes"),
         transformActions = require("./transform"),
-        toolActions = require("./tools"),
         layerActionsUtil = require("js/util/layeractions"),
         headlights = require("js/util/headlights"),
         strings = require("i18n!nls/strings");
@@ -626,18 +625,14 @@ define(function (require, exports) {
             })
             .then(function () {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
-            })
-            .then(function () {
-                return this.transfer(toolActions.resetBorderPolicies);
             });
     };
     pasteLayerStyle.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
     pasteLayerStyle.writes = [];
     pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStroke,
         typeActions.setColor, typeActions.applyTextStyle, typeActions.setAlignment,
-        layerFXActions.duplicateLayerEffects, toolActions.resetBorderPolicies,
-        layerActions.resetLayers, layerActions.setBlendMode, layerActions.setOpacity,
-        transformActions.setRadius];
+        layerFXActions.duplicateLayerEffects, layerActions.resetLayers,
+        layerActions.setBlendMode, layerActions.setOpacity, transformActions.setRadius];
         
     /**
      * Applies the saved layer effects to the given layers

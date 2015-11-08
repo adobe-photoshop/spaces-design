@@ -419,15 +419,11 @@ define(function (require, exports) {
                     naiveLayerCount = document.layers.all.size + layerSpec.length;
 
                 return nextLayerCount !== naiveLayerCount;
-            })
-            .tap(function () {
-                return this.transfer(tools.resetBorderPolicies);
             });
     };
     addLayers.modal = true;
     addLayers.reads = [locks.PS_DOC];
     addLayers.writes = [locks.JS_DOC];
-    addLayers.transfers = [tools.resetBorderPolicies];
     addLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -465,7 +461,7 @@ define(function (require, exports) {
         if (layers instanceof Layer) {
             layers = Immutable.List.of(layers);
         } else if (layers.isEmpty()) {
-            return this.transfer(tools.resetBorderPolicies);
+            return Promise.resolve();
         }
 
         var layersPromise;
@@ -543,14 +539,10 @@ define(function (require, exports) {
                 } else {
                     this.dispatch(events.document.RESET_LAYERS, payload);
                 }
-            })
-            .then(function () {
-                return this.transfer(tools.resetBorderPolicies);
             });
     };
     resetLayers.reads = [locks.PS_DOC];
     resetLayers.writes = [locks.JS_DOC];
-    resetLayers.transfers = [tools.resetBorderPolicies];
     resetLayers.modal = true;
 
     /**
@@ -616,14 +608,11 @@ define(function (require, exports) {
             })
             .then(function () {
                 return this.transfer(guides.queryCurrentGuides);
-            })
-            .then(function () {
-                return this.transfer(tools.resetBorderPolicies);
             });
     };
     resetBounds.reads = [locks.PS_DOC];
     resetBounds.writes = [locks.JS_DOC];
-    resetBounds.transfers = [tools.resetBorderPolicies, guides.queryCurrentGuides];
+    resetBounds.transfers = [guides.queryCurrentGuides];
 
     /** 
      * Transfers to reset bounds, but if there is a failure, quietly fails instead of 
@@ -1103,17 +1092,12 @@ define(function (require, exports) {
 
         // FIXME: The descriptor below should be specific to the document ID
         var deselectPromise = descriptor.playObject(layerLib.deselectAll()),
-            dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
-                .bind(this)
-                .then(function () {
-                    return this.transfer(tools.resetBorderPolicies);
-                });
+            dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload);
 
         return Promise.join(dispatchPromise, deselectPromise);
     };
     deselectAll.reads = [locks.JS_APP];
     deselectAll.writes = [locks.PS_DOC, locks.JS_DOC];
-    deselectAll.transfers = [tools.resetBorderPolicies];
     deselectAll.post = [_verifyLayerSelection];
 
     /**
@@ -2170,16 +2154,13 @@ define(function (require, exports) {
                 return this.transfer(resetIndex, document, true, true);
             })
             .then(function () {
-                var exportPromise = this.transfer(exportActions.addDefaultAsset, document.id, artboardLayerId),
-                    borderPromise = this.transfer(tools.resetBorderPolicies);
-
-                return Promise.join(exportPromise, borderPromise);
+                return this.transfer(exportActions.addDefaultAsset, document.id, artboardLayerId);
             });
     };
 
     createArtboard.reads = [locks.JS_APP];
     createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
-    createArtboard.transfers = [resetIndex, addLayers, exportActions.addDefaultAsset, tools.resetBorderPolicies];
+    createArtboard.transfers = [resetIndex, addLayers, exportActions.addDefaultAsset];
     createArtboard.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**

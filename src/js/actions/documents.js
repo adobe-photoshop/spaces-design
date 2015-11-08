@@ -397,16 +397,12 @@ define(function (require, exports) {
                         payload.history = historyPayload;
                         payload.guides = guidesPayload;
                         return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
-                    }.bind(this))
-                    .bind(this)
-                    .then(function () {
-                        return this.transfer(toolActions.resetBorderPolicies);
-                    });
+                    }.bind(this));
             });
     };
     updateDocument.reads = [locks.PS_DOC];
     updateDocument.writes = [locks.JS_DOC];
-    updateDocument.transfers = [historyActions.queryCurrentHistory, toolActions.resetBorderPolicies];
+    updateDocument.transfers = [historyActions.queryCurrentHistory];
     updateDocument.lockUI = true;
 
     /**
@@ -479,23 +475,19 @@ define(function (require, exports) {
                     recentFilesPromise = this.transfer(application.updateRecentFiles),
                     updateTransformPromise = this.transfer(ui.updateTransform),
                     deleteTempFilesPromise = this.transfer(libraryActions.deleteGraphicTempFiles,
-                        documentID, isDocumentSaved),
-                    policyPromise = newDocument ? Promise.resolve() :
-                        this.transfer(toolActions.resetBorderPolicies);
+                        documentID, isDocumentSaved);
 
                 return Promise.join(resetLinkedPromise,
                         resetHistoryPromise,
                         updateTransformPromise,
                         recentFilesPromise,
-                        deleteTempFilesPromise,
-                        policyPromise);
+                        deleteTempFilesPromise);
             });
     };
     disposeDocument.reads = [];
     disposeDocument.writes = [locks.JS_DOC, locks.JS_APP];
     disposeDocument.transfers = [updateDocument, "layers.resetLinkedLayers", "history.queryCurrentHistory",
-        "ui.updateTransform", "application.updateRecentFiles", "libraries.deleteGraphicTempFiles",
-        "tools.resetBorderPolicies"];
+        "ui.updateTransform", "application.updateRecentFiles", "libraries.deleteGraphicTempFiles"];
     disposeDocument.lockUI = true;
 
     /**
@@ -678,10 +670,6 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
         }
 
-        if (!document) {
-            return this.transfer(toolActions.resetBorderPolicies);
-        }
-
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
 
         var closeObj = documentLib.close(document.id),
@@ -704,7 +692,7 @@ define(function (require, exports) {
     };
     close.reads = [locks.JS_APP, locks.JS_DOC];
     close.writes = [locks.JS_UI, locks.PS_APP, locks.PS_DOC];
-    close.transfers = [ui.cloak, disposeDocument, toolActions.resetBorderPolicies];
+    close.transfers = [ui.cloak, disposeDocument];
     close.lockUI = true;
     close.post = [_verifyActiveDocument, _verifyOpenDocuments];
 

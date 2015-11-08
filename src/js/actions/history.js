@@ -32,7 +32,6 @@ define(function (require, exports) {
         documentLib = require("adapter").lib.document,
         historyLib = require("adapter").lib.history,
         layerActions = require("./layers"),
-        toolActions = require("./tools"),
         documentActions = require("./documents");
 
     var events = require("js/events"),
@@ -103,11 +102,9 @@ define(function (require, exports) {
                 });
             })
             .then(function () {
-                var currentDocument = this.flux.store("application").getCurrentDocument(),
-                    borderPromise = this.transfer(toolActions.resetBorderPolicies),
-                    visibilityPromise = this.transfer(layerActions.resetLayerVisibility, currentDocument);
-
-                return Promise.join(borderPromise, visibilityPromise);
+                var currentDocument = this.flux.store("application").getCurrentDocument();
+                
+                return this.transfer(layerActions.resetLayerVisibility, currentDocument);
             });
     };
 
@@ -200,8 +197,7 @@ define(function (require, exports) {
     };
     incrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
     incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
-    incrementHistory.transfers = [toolActions.resetBorderPolicies, "layers.resetLayerVisibility",
-        "documents.updateDocument"];
+    incrementHistory.transfers = ["layers.resetLayerVisibility", "documents.updateDocument"];
     incrementHistory.modal = true;
 
     /**
@@ -227,8 +223,7 @@ define(function (require, exports) {
     };
     decrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
     decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
-    decrementHistory.transfers = [toolActions.resetBorderPolicies, "layers.resetLayerVisibility",
-        "documents.updateDocument"];
+    decrementHistory.transfers = ["layers.resetLayerVisibility", "documents.updateDocument"];
     decrementHistory.modal = true;
 
     /**
@@ -268,14 +263,11 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
-            })
-            .then(function () {
-                return this.transfer(toolActions.resetBorderPolicies);
             });
     };
     revertCurrentDocument.reads = [locks.JS_APP];
     revertCurrentDocument.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC, locks.JS_UI];
-    revertCurrentDocument.transfers = ["documents.updateDocument", toolActions.resetBorderPolicies];
+    revertCurrentDocument.transfers = ["documents.updateDocument"];
     revertCurrentDocument.post = [layerActions._verifyLayerIndex];
     revertCurrentDocument.modal = true;
 

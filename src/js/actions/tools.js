@@ -51,6 +51,7 @@ define(function (require, exports) {
         system = require("js/util/system"),
         headlights = require("js/util/headlights"),
         utilShortcuts = require("js/util/shortcuts"),
+        synchronization = require("js/util/synchronization"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
@@ -441,15 +442,11 @@ define(function (require, exports) {
             .then(function (result) {
                 // After setting everything, dispatch to stores
                 this.dispatch(events.tool.SELECT_TOOL, result);
-
-                if (!toolStore.getVectorMode() || !nextTool.handleVectorMaskMode) {
-                    return this.transfer(resetBorderPolicies);
-                }
             });
     };
     selectTool.reads = [];
     selectTool.writes = [locks.JS_TOOL, locks.PS_TOOL];
-    selectTool.transfers = [resetBorderPolicies, installShapeDefaults, shortcuts.addShortcut,
+    selectTool.transfers = [installShapeDefaults, shortcuts.addShortcut,
         shortcuts.removeShortcut, "layers.deleteSelected", "layers.resetLayers",
         policy.removePointerPolicies, policy.removeKeyboardPolicies, policy.addPointerPolicies,
         policy.addKeyboardPolicies, policy.setMode];
@@ -553,6 +550,7 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _toolModalStateChangedHandler,
+        _documentOrApplicationChangeHandler,
         _vectorMaskHandler,
         _vectorSelectMaskHandler;
 
@@ -797,8 +795,30 @@ define(function (require, exports) {
      */
     var beforeStartup = function () {
         var flux = this.flux,
+            appStore = flux.store("application"),
             toolStore = this.flux.store("tool"),
-            tools = toolStore.getAllTools();
+            tools = toolStore.getAllTools(),
+            documentLayerBounds;
+
+        var throttledResetBorderPolicies =
+            synchronization.throttle(this.flux.actions.tools.resetBorderPolicies, this, 100),
+            _documentOrApplicationChangeHandler = function () {
+                var currentDocument = appStore.getCurrentDocument();
+
+                if (currentDocument) {
+                    var nextDocumentLayerBounds = currentDocument.layers.selectedChildBounds;
+                    
+                    if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds)) {
+                        documentLayerBounds = nextDocumentLayerBounds;
+                        throttledResetBorderPolicies();
+                    }
+                } else {
+                    documentLayerBounds = null;
+                }
+            }.bind(this);
+
+        this.flux.store("document").on("change", _documentOrApplicationChangeHandler);
+        this.flux.store("application").on("change", _documentOrApplicationChangeHandler);
 
         // Listen for modal tool state entry/exit events
         _toolModalStateChangedHandler = this.flux.actions.tools.handleToolModalStateChanged.bind(this);
@@ -888,7 +908,8 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
-
+        this.flux.store("document").removeListener("change", _documentOrApplicationChangeHandler);
+        this.flux.store("application").removeListener("change", _documentOrApplicationChangeHandler);
         _currentTransformPolicyID = null;
 
         return Promise.resolve();
