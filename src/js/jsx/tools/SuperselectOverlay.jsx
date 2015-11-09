@@ -782,12 +782,14 @@ define(function (require, exports, module) {
     
             var fluxActions = this.getFlux().actions,
                 toolStore = this.getFlux().store("tool"),
-                iconSize = Math.round(size),
-                iconOffset = Math.round(size / 2),
+                remToPx = this.getFlux().store("ui").remToPx,
                 numIcons = 3;
 
-            var rectWidth = size * numIcons + (iconOffset * (numIcons + 1)),
-                rectHeight = size + (iconOffset * 2),
+            var sampleSize = remToPx(2.4),
+                iconSize = Math.round(sampleSize * 1),
+                iconOffset = Math.round(sampleSize / 1.5),
+                rectWidth = (sampleSize * numIcons) + (iconOffset * 5),
+                rectHeight = sampleSize + iconOffset * 2,
                 left = (cloakRect.left + cloakRect.right) / 2 - (rectWidth / 2),
                 top = (cloakRect.top + cloakRect.bottom) / 2 - (rectHeight / 2),
                 iconLeft = left + iconOffset,
@@ -813,19 +815,6 @@ define(function (require, exports, module) {
                     d3.event.stopPropagation();
                 });
  
-            // background of ellipse 
-            /*this._hudGroup
-                .append("use")
-                .attr("xlink:href", "img/ico-sampler-fill-swatch-bg.svg#sampler-fill-swatch-bg")
-                .attr("x", iconLeft)
-                .attr("y", iconTop)
-                .attr("width", iconSize)
-                .attr("height", iconSize)
-                .on("click", function () {
-                    // Apply the color to selected layers
-                    fluxActions.mask.applyEllipse();
-                    d3.event.stopPropagation();
-                }.bind(this));*/
             // ellipse
             // 
             this._hudGroup
@@ -841,20 +830,8 @@ define(function (require, exports, module) {
                     d3.event.stopPropagation();
                 }.bind(this));
             
-            iconLeft = iconLeft + size + iconOffset ;
-            // background of rect 
-            /*this._hudGroup
-                .append("use")
-                .attr("xlink:href", "img/ico-sampler-fill-swatch-bg.svg#sampler-fill-swatch-bg")
-                .attr("x", iconLeft)
-                .attr("y", iconTop)
-                .attr("width", iconSize)
-                .attr("height", iconSize)
-                .on("click", function () {
-                    // Apply the color to selected layers
-                    fluxActions.mask.applyRectangle();
-                    d3.event.stopPropagation();
-                }.bind(this));*/
+            iconLeft = iconLeft + iconOffset * 1.5 + sampleSize;
+
             // rect
             this._hudGroup
                 .append("use")
@@ -870,21 +847,8 @@ define(function (require, exports, module) {
                     d3.event.stopPropagation();
                 }.bind(this));
 
-            iconLeft = iconLeft + size + iconOffset;
+            iconLeft = iconLeft + iconOffset * 1.5 + sampleSize;
 
-            // background of pen 
-            /*this._hudGroup
-                .append("use")
-                .attr("xlink:href", "img/ico-sampler-fill-swatch-bg.svg#sampler-fill-swatch-bg")
-                .attr("x", iconLeft)
-                .attr("y", iconTop)
-                .attr("width", iconSize)
-                .attr("height", iconSize)
-                .on("click", function () {
-                    // Apply the color to selected layers
-                    fluxActions.tools.select(toolStore.getToolByID("pen"));
-                    d3.event.stopPropagation();
-                }.bind(this));*/
             // pen
             this._hudGroup
                 .append("use")
