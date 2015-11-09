@@ -51,7 +51,7 @@ define(function (require, exports) {
         log.error("Unrecoverable error:", message);
 
         if (global.debug) {
-            _shutdown();
+            shutdown();
         } else {
             var dialogMessage = strings.ERR.UNRECOVERABLE;
             adapter.abort({ message: dialogMessage }, function (err) {
@@ -64,10 +64,8 @@ define(function (require, exports) {
 
     /**
      * Start up the application.
-     * 
-     * @private
      */
-    var _startup = function () {
+    var startup = function () {
         var startTime = Date.now(),
             version = adapter.version;
 
@@ -100,10 +98,8 @@ define(function (require, exports) {
 
     /**
      * Shut down the application.
-     * 
-     * @private
      */
-    var _shutdown = function () {
+    var shutdown = function () {
         controller.off("error", _handleControllerError);
         controller.stop();
     };
@@ -129,13 +125,7 @@ define(function (require, exports) {
         _spaces._debug.enableDebugContextMenu(true, function () {});
     }
 
-    if (window.document.readyState === "complete") {
-        _startup();
-    } else {
-        window.addEventListener("load", _startup);
-    }
-
-    window.addEventListener("beforeunload", _shutdown);
-
+    exports.startup = startup;
+    exports.shutdown = shutdown;
     exports.getController = getController;
 });

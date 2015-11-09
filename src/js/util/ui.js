@@ -164,9 +164,41 @@ define(function (require, exports) {
         };
     };
 
+    /**
+     * Asynchronously fetch the current PS color stop.
+     *
+     * @return {Promise.<string>} Currently resolves to one of "original", "light", "medium" or "dark".
+     */
+    var getPSColorStop = function () {
+        return descriptor.getProperty("application", "kuiBrightnessLevel")
+            .get("_value")
+            .then(function (psColorStop) {
+                var stop;
+                switch (psColorStop) {
+                case "kPanelBrightnessOriginal":
+                    stop = "original";
+                    break;
+                case "kPanelBrightnessLightGray":
+                    stop = "light";
+                    break;
+                case "kPanelBrightnessMediumGray":
+                    stop = "medium";
+                    break;
+                case "kPanelBrightnessDarkGray":
+                    stop = "dark";
+                    break;
+                default:
+                    stop = "dark";
+                }
+
+                return stop;
+            });
+    };
+
     exports.getNameBadgeBounds = getNameBadgeBounds;
     exports.hitTestLayers = hitTestLayers;
     exports.colorAtPoint = colorAtPoint;
     exports.openURL = openURL;
     exports.getPositionKeysByRefPoint = getPositionKeysByRefPoint;
+    exports.getPSColorStop = getPSColorStop;
 });

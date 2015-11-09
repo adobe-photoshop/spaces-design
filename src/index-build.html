@@ -25,7 +25,6 @@
 <head>
     <meta charset="utf-8">
     <title>Photoshop Design Space (optimized build)</title>
-    <link rel="stylesheet" type="text/css" href="style/style.css" />
     <script src="js/require.js"></script>
     <script>
         var locale = window.navigator.language,
@@ -42,11 +41,11 @@
             language = "en"
         }
 
-        var localeModuleName = "js/main-" + language;
+        var localeModuleName = "js/init-build-" + language;
 
         require.config({
             paths: {
-                "js/main": localeModuleName
+                "js/init-build": localeModuleName
             },
             config: {
                 i18n: {
@@ -55,7 +54,7 @@
             }
         });
 
-        require(["js/main"]);
+        require(["js/init-build"]);
     </script>
 </head>
 <body>

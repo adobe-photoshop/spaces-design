@@ -1,0 +1,120 @@
+/*
+ * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ *  
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
+ *  
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *  
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
+/* Basic Colors */
+@bg-app: #191919;
+@bg-border: #242424;
+@bg-panel: rgb(50, 50, 50);
+@bg-alt: #262626;
+
+//text colors for b4
+@item: #FFFFFF;
+@item-hover: #f0f0f0;
+@item-active: #e1e1e1;
+@item-inactive: #a3a3a3;
+@item-disabled: #707070;
+
+//icon colors 
+@icon-hover: #e1e1e1;
+@icon-active: #cecece;
+@icon-inactive: #cecece;
+@icon-disabled: #848484;
+
+@underlines: #707070;
+@underlines-disabled: #3e3e3e;
+@scrollbar: rgb(71, 71, 71);
+
+@bg-border-for-canvas: transparent;
+@bg-no-border-for-canvas: @bg-border;
+@no-border-for-canvas-height: @toolbar-button-size - 0.2rem;
+
+@list-select-color: mix(@focus-highlight, @bg-panel, 12%);
+@list-select-child-color: mix(@focus-highlight, @bg-panel, 6%);
+@list-hover-color: mix(@item, @bg-panel, 4%);
+
+@label-hidden-opacity: 0.28;
+@label-error-color: #8a3533;
+
+@label-warning-color: #46aa46 ;
+@label-alert-color: #F2EE57;
+
+@focus-highlight: #1b8be9;
+@text-highlight: rgb(27, 139, 233);
+
+@mid-bg-alt: mix(@item-active, @bg-alt, 70%);
+@black: mix(black, @bg-alt, 80%);
+@color-checkerboard: @item-hover;
+@color-preview-background: white;
+@color-clear: fade(@item-active, 0%);
+@transparent-black: rgba(0, 0, 0, 0.0);
+
+@color-mixed: #1ab61e;
+
+/* Dialog */
+@backdrop-color: rgba(14, 14, 14, 0.3);
+@dialog-shadow: rgba(0,0,0,0.44);
+
+/* Align | Distribute */
+@color-subsection-rule: mix(@item-active, @bg-alt, 15%);
+
+/* Layers */
+@unselected-layer-hover: #484848;
+@locked-black: mix(@item-active, @bg-alt, 50%);
+
+/* Libraries */
+@layer-style-preview-background: #B2B2B2;
+
+/* General Utilities */
+
+.shadow() {
+    -webkit-filter: shadow(0 1px 0 @mid-bg-alt)
+}
+
+.color-transparency(@color, @alpha: 1) {
+    color: rgba( red(@color), green(@color), blue(@color), @alpha);
+}
+
+.background-transparency(@color, @alpha: 1) {
+    background: rgba( red(@color), green(@color), blue(@color), @alpha);
+}
+
+.border-transparency(@size, @lineType, @color, @alpha: 1) {
+    border: @size @lineType rgba( red(@color), green(@color), blue(@color), @alpha);
+}
+
+.background-checkerboard(@size: 10) {
+    @halfsize: @size / 2;
+    background-color: @color-preview-background;
+    // checkerboard
+    background-image:
+    -webkit-linear-gradient(45deg, @color-checkerboard 25%, transparent 25%,transparent 75%, @color-checkerboard 75%, @color-checkerboard 100%),
+    -webkit-linear-gradient(45deg, @color-checkerboard 25%, transparent 25%,transparent 75%, @color-checkerboard 75%, @color-checkerboard 100%);
+    background-size: ~"@{size}px" ~"@{size}px";
+    background-position: 0 0, ~"@{halfsize}px" ~"@{halfsize}px";
+}
+
+.random-color(){
+  @random-color: `Math.floor(Math.random()*16777215).toString(16)`;
+  @color-hex: e(@random-color);
+  @color: ~"#@{color-hex}";
+}
