@@ -88,8 +88,7 @@ define(function (require, exports, module) {
             SET_GROUP_EXPANSION: "setGroupExpansion",
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             REORDER_LAYERS: "reorderLayersNoHistory",
-            LAYER_BOUNDS_CHANGED: "layerBoundsChanged",
-            RESET_BOUNDS: "resetBoundsNoHistory", // slightly different than above LAYER_BOUNDS_CHANGED
+            RESET_BOUNDS: "resetBoundsNoHistory",
             RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",
             REPOSITION_LAYERS: "repositionLayersNoHistory",

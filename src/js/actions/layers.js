@@ -1437,16 +1437,12 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Layer} layer
      * @param {boolean} visible Whether to show or hide the layer
-     * 
      * @returns {Promise}
      */
     var setVisibility = function (document, layer, visible) {
         var payload = {
                 documentID: document.id,
-                layerProps: {
-                    layerID: layer.id,
-                    visible: visible
-                }
+                layerProps: Immutable.Map([[layer.id, visible]])
             },
             command = visible ? layerLib.show : layerLib.hide,
             layerRef = [
@@ -1697,8 +1693,8 @@ define(function (require, exports) {
      * @param {number|string} target If a number, the target index to move layers to
      *                               If a string, the reference enum type ("front", "back", "previous", "next")
      *
-     * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
-     * , or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
+     * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected,
+     *  or rejects if targetIndex is invalid, as example when it is a child of one of the layers in layer spec
      */
     var reorderLayers = function (document, layerSpec, target) {
         if (!Immutable.Iterable.isIterable(layerSpec)) {

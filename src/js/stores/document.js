@@ -76,7 +76,6 @@ define(function (require, exports, module) {
                 events.document.history.optimistic.RESIZE_LAYERS, this._handleLayerResized,
                 events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, this._handleSetLayersProportional,
                 events.document.history.optimistic.RESIZE_DOCUMENT, this._handleDocumentResized,
-                events.document.LAYER_BOUNDS_CHANGED, this._handleLayerBoundsChanged,
                 events.document.history.optimistic.RADII_CHANGED, this._handleRadiiChanged,
                 events.document.history.optimistic.FILL_COLOR_CHANGED, this._handleFillPropertiesChanged,
                 events.document.history.optimistic.FILL_OPACITY_CHANGED, this._handleFillPropertiesChanged,
@@ -375,40 +374,20 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Update basic properties (e.g., name, opacity, etc.) of the given layerMap.
-         * LayerID => properties
+         * When a layer visibility is toggled, updates the layer object. Below,
+         * layerProps is a map from layer ID to visibility status.
          *
          * @private
-         * @param {number} documentID
-         * @param {Immutable.Map.<number, object>} layerMap
-         */
-        _updateLayerPropertiesMap: function (documentID, layerMap) {
-            var document = this._openDocuments[documentID],
-                nextLayers = document.layers.setLayerPropsMap(layerMap),
-                nextDocument = document.set("layers", nextLayers);
-
-            this.setDocument(nextDocument, true);
-        },
-
-        /**
-         * When a layer visibility is toggled, updates the layer object.
-         * layerProps can be either an object {layerID: number, visible: boolean}
-         * or Immutable.Map<number, boolean>  --> LayerID => visible
-         *
-         * @private
-         * @param {{documentID: number, layerProps: object|Immutable.Map}} payload
+         * @param {{documentID: number, layerProps: Immutable.Map.<number, boolean>}} payload
          */
         _handleVisibilityChanged: function (payload) {
             var documentID = payload.documentID,
+                document = this._openDocuments[documentID],
                 layerProps = payload.layerProps,
-                visibilityMap = Immutable.Map.isMap(layerProps) ?
-                    layerProps :
-                    Immutable.Map([[layerProps.layerID, layerProps.visible]]),
-                layerMap = visibilityMap.map(function (visible) {
-                    return Immutable.Map({ visible: visible });
-                });
+                nextLayers = document.layers.setVisibility(layerProps),
+                nextDocument = document.set("layers", nextLayers);
 
-            this._updateLayerPropertiesMap(documentID, layerMap);
+            this.setDocument(nextDocument, true);
         },
 
         /**
@@ -703,24 +682,6 @@ define(function (require, exports, module) {
             var documentID = payload.documentID,
                 document = this._openDocuments[documentID],
                 nextLayers = document.layers.resizeLayers(payload.sizes),
-                nextDocument = document.set("layers", nextLayers);
-
-            this.setDocument(nextDocument, true);
-        },
-
-        /**
-         * Update the bounds of affected layers: left, top, width, height
-         *
-         * @private
-         * @param {{documentID: number, layerIDs: Array.<number>, size: object, position: object}} payload
-         */
-        _handleLayerBoundsChanged: function (payload) {
-            var documentID = payload.documentID,
-                layerIDs = payload.layerIDs,
-                size = payload.size,
-                position = payload.position,
-                document = this._openDocuments[documentID],
-                nextLayers = document.layers.updateBounds(layerIDs, position.left, position.top, size.w, size.h),
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
