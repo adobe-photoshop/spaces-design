@@ -83,38 +83,3 @@
 
 /* Libraries */
 @layer-style-preview-background: #B2B2B2;
-
-/* General Utilities */
-
-.shadow() {
-    -webkit-filter: shadow(0 1px 0 @mid-bg-alt)
-}
-
-.color-transparency(@color, @alpha: 1) {
-    color: rgba( red(@color), green(@color), blue(@color), @alpha);
-}
-
-.background-transparency(@color, @alpha: 1) {
-    background: rgba( red(@color), green(@color), blue(@color), @alpha);
-}
-
-.border-transparency(@size, @lineType, @color, @alpha: 1) {
-    border: @size @lineType rgba( red(@color), green(@color), blue(@color), @alpha);
-}
-
-.background-checkerboard(@size: 10) {
-    @halfsize: @size / 2;
-    background-color: @color-preview-background;
-    // checkerboard
-    background-image:
-    -webkit-linear-gradient(45deg, @color-checkerboard 25%, transparent 25%,transparent 75%, @color-checkerboard 75%, @color-checkerboard 100%),
-    -webkit-linear-gradient(45deg, @color-checkerboard 25%, transparent 25%,transparent 75%, @color-checkerboard 75%, @color-checkerboard 100%);
-    background-size: ~"@{size}px" ~"@{size}px";
-    background-position: 0 0, ~"@{halfsize}px" ~"@{halfsize}px";
-}
-
-.random-color(){
-  @random-color: `Math.floor(Math.random()*16777215).toString(16)`;
-  @color-hex: e(@random-color);
-  @color: ~"#@{color-hex}";
-}
