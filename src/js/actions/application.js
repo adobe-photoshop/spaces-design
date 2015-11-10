@@ -81,7 +81,7 @@ define(function (require, exports) {
     };
     afterStartup.reads = [];
     afterStartup.writes = [locks.PS_APP];
-    afterStartup.transfers = [updateRecentFiles];
+    afterStartup.transfers = ["updateRecentFiles"];
 
     exports.hostVersion = hostVersion;
     exports.updateRecentFiles = updateRecentFiles;

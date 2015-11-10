@@ -251,12 +251,22 @@ define(function (require, exports, module) {
             var dependencies = actionDependencies.get(action);
             
             if (!dependencies) {
+                var actionName = this._actionNames.get(action),
+                    actionModuleName = actionName.split(".")[0];
+
                 dependencies = new Set([action]);
                 if (action.transfers) {
-                    action.transfers.forEach(function (dependency, index) {
+                    action.transfers.forEach(function (dependencyName, index) {
                         // Translate action pathnames to unsynchronized action functions
-                        if (typeof dependency === "string") {
+                        var dependency;
+                        if (typeof dependencyName === "string") {
                             dependency = this._actionsByName.get(dependency);
+                            if (!dependency) {
+                                dependencyName = actionModuleName + "." + dependencyName;
+                                dependency = this._actionsByName.get(dependency);
+                            }
+                        } else {
+                            dependency = dependencyName;
                         }
 
                         // Validate transfer declarations

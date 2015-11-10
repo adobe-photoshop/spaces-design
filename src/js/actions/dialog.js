@@ -77,7 +77,7 @@ define(function (require, exports) {
     };
     openDialog.reads = [];
     openDialog.writes = [locks.JS_DIALOG];
-    openDialog.transfers = [policy.addPointerPolicies];
+    openDialog.transfers = ["policy.addPointerPolicies"];
     openDialog.modal = true;
 
     /**
@@ -100,7 +100,7 @@ define(function (require, exports) {
     };
     closeDialog.reads = [];
     closeDialog.writes = [locks.JS_DIALOG];
-    closeDialog.transfers = [policy.removePointerPolicies];
+    closeDialog.transfers = ["policy.removePointerPolicies"];
     closeDialog.modal = true;
 
     /**

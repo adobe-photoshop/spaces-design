@@ -367,7 +367,7 @@ define(function (require, exports) {
     };
     initActiveDocument.reads = [locks.PS_DOC];
     initActiveDocument.writes = [locks.JS_DOC, locks.JS_APP];
-    initActiveDocument.transfers = [historyActions.queryCurrentHistory, "layers.deselectAll"];
+    initActiveDocument.transfers = ["history.queryCurrentHistory", "layers.deselectAll"];
 
     /**
      * Update the document and layer state for the given document ID. Emits a
@@ -409,7 +409,7 @@ define(function (require, exports) {
     };
     updateDocument.reads = [locks.PS_DOC];
     updateDocument.writes = [locks.JS_DOC];
-    updateDocument.transfers = [historyActions.queryCurrentHistory];
+    updateDocument.transfers = ["history.queryCurrentHistory"];
     updateDocument.lockUI = true;
 
     /**
@@ -430,7 +430,7 @@ define(function (require, exports) {
     };
     initializeDocuments.reads = [locks.JS_APP, locks.JS_DOC];
     initializeDocuments.writes = [];
-    initializeDocuments.transfers = [updateDocument];
+    initializeDocuments.transfers = ["updateDocument"];
 
     /**
      * Fetch the ID of the currently selected document, or null if there is none.
@@ -496,7 +496,7 @@ define(function (require, exports) {
     };
     disposeDocument.reads = [];
     disposeDocument.writes = [locks.JS_DOC, locks.JS_APP];
-    disposeDocument.transfers = [updateDocument, "layers.resetLinkedLayers", "history.queryCurrentHistory",
+    disposeDocument.transfers = ["updateDocument", "layers.resetLinkedLayers", "history.queryCurrentHistory",
         "ui.updateTransform", "application.updateRecentFiles", "libraries.deleteGraphicTempFiles"];
     disposeDocument.lockUI = true;
 
@@ -531,7 +531,7 @@ define(function (require, exports) {
     };
     allocateDocument.reads = [locks.PS_APP];
     allocateDocument.writes = [locks.JS_APP];
-    allocateDocument.transfers = [updateDocument, historyActions.queryCurrentHistory, ui.updateTransform];
+    allocateDocument.transfers = ["updateDocument", "history.queryCurrentHistory", "ui.updateTransform"];
     allocateDocument.lockUI = true;
 
     /**
@@ -551,7 +551,7 @@ define(function (require, exports) {
     };
     createNewExtended.reads = [];
     createNewExtended.writes = [locks.PS_DOC, locks.PS_APP];
-    createNewExtended.transfers = [menu.native, ui.setOverlayOffsetsForFirstDocument];
+    createNewExtended.transfers = ["menu.native", "ui.setOverlayOffsetsForFirstDocument"];
     createNewExtended.lockUI = true;
 
     /**
@@ -608,8 +608,8 @@ define(function (require, exports) {
     };
     createNew.reads = [locks.JS_PREF];
     createNew.writes = [locks.PS_DOC, locks.PS_APP];
-    createNew.transfers = [preferencesActions.setPreference, allocateDocument,
-        ui.setOverlayOffsetsForFirstDocument, exportActions.addDefaultAsset, toolActions.changeVectorMaskMode];
+    createNew.transfers = ["preferences.setPreference", "allocateDocument",
+        "ui.setOverlayOffsetsForFirstDocument", "export.addDefaultAsset", "tools.changeVectorMaskMode"];
     createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
     createNew.locksUI = true;
 
@@ -662,8 +662,8 @@ define(function (require, exports) {
     };
     open.reads = [];
     open.writes = [locks.PS_APP, locks.JS_UI];
-    open.transfers = [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
-        ui.setOverlayOffsetsForFirstDocument, menu.native, toolActions.changeVectorMaskMode];
+    open.transfers = ["initActiveDocument", "ui.updateTransform", "application.updateRecentFiles",
+        "ui.setOverlayOffsetsForFirstDocument", "menu.native", "tools.changeVectorMaskMode"];
     open.lockUI = true;
     open.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
@@ -702,7 +702,7 @@ define(function (require, exports) {
     };
     close.reads = [locks.JS_APP, locks.JS_DOC];
     close.writes = [locks.JS_UI, locks.PS_APP, locks.PS_DOC];
-    close.transfers = [ui.cloak, disposeDocument];
+    close.transfers = ["ui.cloak", "disposeDocument"];
     close.lockUI = true;
     close.post = [_verifyActiveDocument, _verifyOpenDocuments];
 
@@ -761,9 +761,9 @@ define(function (require, exports) {
     };
     selectDocument.reads = [locks.JS_TOOL];
     selectDocument.writes = [locks.JS_APP];
-    selectDocument.transfers = ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
-        ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides,
-        toolActions.changeVectorMaskMode, updateDocument];
+    selectDocument.transfers = ["layers.resetLinkedLayers", "history.queryCurrentHistory",
+        "ui.updateTransform", "tools.select", "ui.cloak", "guides.queryCurrentGuides",
+        "tools.changeVectorMaskMode", "updateDocument"];
     selectDocument.lockUI = true;
     selectDocument.post = [_verifyActiveDocument];
 
