@@ -165,12 +165,20 @@ define(function (require, exports) {
         }
 
         var currentLayer = currentLayers.first(),
-            bounds = boundsLib.bounds(currentLayer.bounds);
+            bounds = boundsLib.bounds(currentLayer.bounds),
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.ADD_VECTOR_MASK,
+                    target: documentLib.referenceBy.id(document.id),
+                    coalesce: true,
+                    suppressHistoryStateNotification: true
+                }
+            }
 
         return descriptor.batchPlayObjects([vectorMaskLib.deleteVectorMask(),
             vectorMaskLib.makeBoundsWorkPath(bounds),
             vectorMaskLib.makeVectorMaskFromWorkPath(),
-            vectorMaskLib.deleteWorkPath()])
+            vectorMaskLib.deleteWorkPath()], options)
             .bind(this)
             .then(function () {
                 return this.transfer(toolActions.select, toolStore.getToolByID("newSelect"));
@@ -201,12 +209,20 @@ define(function (require, exports) {
         }
 
         var currentLayer = currentLayers.first(),
-            bounds = currentLayer.bounds;
+            bounds = currentLayer.bounds,
+            options = {
+                historyStateInfo: {
+                    name: strings.ACTIONS.ADD_VECTOR_MASK,
+                    target: documentLib.referenceBy.id(document.id),
+                    coalesce: true,
+                    suppressHistoryStateNotification: true
+                }
+            };
             
         return descriptor.batchPlayObjects([vectorMaskLib.deleteVectorMask(),
             vectorMaskLib.makeCircularBoundsWorkPath(bounds),
             vectorMaskLib.makeVectorMaskFromWorkPath(),
-            vectorMaskLib.deleteWorkPath()])
+            vectorMaskLib.deleteWorkPath()], options)
             .bind(this)
             .then(function () {
                 return this.transfer(toolActions.select, toolStore.getToolByID("newSelect"));
