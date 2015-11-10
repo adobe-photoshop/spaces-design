@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2015 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,18 +21,12 @@
  * 
  */
 
-define(function (require, exports, module) {
+define(function (require, exports) {
     "use strict";
 
-    var util = require("adapter").util,
-        descriptor = require("adapter").ps.descriptor,
-        OS = require("adapter").os,
-        UI = require("adapter").ps.ui;
-        
-    var Tool = require("js/models/tool"),
-        EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        TypeTool = require("../type");
+    var Promise = require("bluebird");
+
+    var descriptor = require("adapter").ps.descriptor;
 
     /**
      * Handler for updateTextProperties events, which are emitted turing modal
@@ -57,7 +51,7 @@ define(function (require, exports, module) {
      *
      * @private
      */
-    var _selectHandler = function () {
+    var select = function () {
         if (_toolModalStateChangedHandler) {
             descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
         }
@@ -75,54 +69,35 @@ define(function (require, exports, module) {
         if (_typeChangedHandler) {
             descriptor.removeListener("updateTextProperties", _typeChangedHandler);
         }
-        _typeChangedHandler = TypeTool.updateTextPropertiesHandler.bind(this);
+        _typeChangedHandler = this.flux.actions.toolType.updateTextPropertiesHandlerThrottled.bind(this);
         descriptor.addListener("updateTextProperties", _typeChangedHandler);
+
+        return Promise.resolve();
     };
+    select.reads = [];
+    select.writes = [];
+    select.transfers = [];
+    select.modal = true;
 
     /**
      * Removes event listeners installed on activation.
      *
      * @private
      */
-    var _deselectHandler = function () {
+    var deselect = function () {
         descriptor.removeListener("updateTextProperties", _typeChangedHandler);
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         _typeChangedHandler = null;
         _toolModalStateChangedHandler = null;
+
+        return Promise.resolve();
     };
+    deselect.reads = [];
+    deselect.writes = [];
+    deselect.transfers = [];
+    deselect.modal = true;
 
-    /**
-     * @implements {Tool}
-     * @constructor
-     */
-    var SuperSelectTypeTool = function () {
-        Tool.call(this, "superselectType", "Superselect-Type", "typeCreateOrEditTool");
-        this.icon = "typeCreateOrEdit";
-
-        var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
-                OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
-        this.keyboardPolicyList = [escapeKeyPolicy];
-        this.selectHandler = _selectHandler;
-        this.deselectHandler = _deselectHandler;
-        this.isMainTool = false;
-    };
-    util.inherits(SuperSelectTypeTool, Tool);
-
-    /**
-     * Handler for key down events
-     * Escape switches back to super select tool
-     * 
-     * @param  {KeyboardEvent} event
-     */
-    SuperSelectTypeTool.prototype.onKeyDown = function (event) {
-        var flux = this.getFlux(),
-            toolStore = flux.store("tool");
-
-        if (event.detail.keyCode === 27) { // Escape
-            flux.actions.tools.select(toolStore.getToolByID("newSelect"));
-        }
-    };
-
-    module.exports = SuperSelectTypeTool;
+    exports.select = select;
+    exports.deselect = deselect;
 });

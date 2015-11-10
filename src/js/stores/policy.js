@@ -82,12 +82,20 @@ define(function (require, exports, module) {
         _suspendedModes: null,
 
         /**
+         * Dirty bits for the policy sets, indexed by event kind.
+         *
+         * @private
+         * @type {Object.<string, EventPolicySet>}
+         */
+        _dirtyPolicies: null,
+
+        /**
          * Initialize the policy sets
          */
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
-                events.policies.POLICIES_INSTALLED, this._emitChange,
+                events.policies.POLICIES_INSTALLED, this._handlePoliciesInstalled,
                 events.policies.MODE_CHANGED, this._handleModeChanged
             );
 
@@ -96,8 +104,13 @@ define(function (require, exports, module) {
 
         /**
          * Emits a change event - used by debug policy overlay
+         *
+         * @private
+         * @param {{kind: string}} payload
          */
-        _emitChange: function () {
+        _handlePoliciesInstalled: function (payload) {
+            delete this._dirtyPolicies[payload.kind];
+
             this.emit("change");
         },
 
@@ -116,6 +129,7 @@ define(function (require, exports, module) {
             this._modes = {};
             this._suspendedPolicySets = {};
             this._suspendedModes = {};
+            this._dirtyPolicies = {};
         },
 
         /**
@@ -131,6 +145,16 @@ define(function (require, exports, module) {
             this._modes[kind] = mode;
 
             this.emit("change");
+        },
+
+        /**
+         * Whether or not the policy needs to be synced to PS.
+         *
+         * @param {string} kind
+         * @return {boolean}
+         */
+        isDirty: function (kind) {
+            return !!this._dirtyPolicies[kind];
         },
 
         /**
@@ -175,6 +199,7 @@ define(function (require, exports, module) {
             this._policySets[kind] = new EventPolicySet(counter);
             this._suspendedPolicySets[kind] = previousPolicySet;
             this._suspendedModes[kind] = this._modes[kind];
+            this._dirtyPolicies[kind] = true;
 
             this.emit("change");
         },
@@ -187,6 +212,7 @@ define(function (require, exports, module) {
         restore: function (kind) {
             var suspendedPolicies = this._suspendedPolicySets[kind],
                 suspendedMode = this._suspendedModes[kind];
+
             if (!suspendedPolicies) {
                 throw new Error("Policies are not currently suspended");
             }
@@ -194,6 +220,7 @@ define(function (require, exports, module) {
             this._modes[kind] = suspendedMode;
             this._policySets[kind] = suspendedPolicies.append(this._policySets[kind]);
             delete this._suspendedPolicySets[kind];
+            this._dirtyPolicies[kind] = true;
 
             this.emit("change");
         },
@@ -207,6 +234,8 @@ define(function (require, exports, module) {
          */
         removePolicyList: function (kind, id) {
             var suspendedPolicySet = this._suspendedPolicySets[kind];
+
+            this._dirtyPolicies[kind] = true;
 
             if (suspendedPolicySet && suspendedPolicySet.has(id)) {
                 return suspendedPolicySet.removePolicyList(id);
@@ -243,6 +272,8 @@ define(function (require, exports, module) {
          * @return {number} ID of the newly installed policy list
          */
         addPolicyList: function (kind, policyList) {
+            this._dirtyPolicies[kind] = true;
+
             return this._policySets[kind].addPolicyList(policyList);
         },
 

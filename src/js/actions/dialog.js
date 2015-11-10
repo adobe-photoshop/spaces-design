@@ -94,7 +94,7 @@ define(function (require, exports) {
             dispatchPromise = this.dispatchAsync(events.dialog.CLOSE_DIALOG, payload),
             activePolicy = _policyMap[id],
             policyPromise = activePolicy ?
-                this.transfer(policy.removePointerPolicies, activePolicy, true) : Promise.resolve();
+                this.transfer(policy.removePointerPolicies, activePolicy) : Promise.resolve();
 
         return Promise.join(dispatchPromise, policyPromise);
     };

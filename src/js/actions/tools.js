@@ -250,7 +250,7 @@ define(function (require, exports) {
 
         // if we are in vector mask mode we should not change pointer policies 
         if (toolStore.getVectorMode()) {
-            return Promise.resolve();
+            return this.transfer(policy.syncAllPolicies);
         }
 
         // Make sure to always remove the remaining policies
@@ -258,7 +258,11 @@ define(function (require, exports) {
             _currentTransformPolicyID = null;
             guidePromise = this.transfer(guides.resetGuidePolicies);
 
-            return Promise.join(removePromise, guidePromise);
+            return Promise.join(removePromise, guidePromise)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(policy.syncAllPolicies);
+                });
         }
 
         var targetLayers = currentDocument.layers.selected,
@@ -269,7 +273,11 @@ define(function (require, exports) {
             _currentTransformPolicyID = null;
             guidePromise = this.transfer(guides.resetGuidePolicies);
 
-            return Promise.join(removePromise, guidePromise);
+            return Promise.join(removePromise, guidePromise)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(policy.syncAllPolicies);
+                });
         }
 
         var anyArtboards = targetLayers.some(function (layer) {
@@ -313,6 +321,7 @@ define(function (require, exports) {
     resetBorderPolicies.transfers = [
         policy.removePointerPolicies,
         policy.addPointerPolicies,
+        policy.syncAllPolicies,
         guides.resetGuidePolicies
     ];
     resetBorderPolicies.modal = true;
@@ -329,7 +338,7 @@ define(function (require, exports) {
      *         }>}
      *         Resolves to the new tool and it's policy IDs
      */
-    var _swapPolicies = function (nextTool) {
+    var swapPolicies = function (nextTool) {
         var toolStore = this.flux.store("tool"),
             nextToolKeyboardPolicyList = nextTool ? nextTool.keyboardPolicyList : [],
             nextToolPointerPolicyList = nextTool ? nextTool.pointerPolicyList : [];
@@ -345,7 +354,7 @@ define(function (require, exports) {
         var removeKeyboardPolicyPromise;
         if (previousToolKeyboardPolicyListID !== null) {
             removeKeyboardPolicyPromise = this.transfer(policy.removeKeyboardPolicies,
-                previousToolKeyboardPolicyListID, false); // delay commit
+                previousToolKeyboardPolicyListID, true); // delay commit
         } else {
             removeKeyboardPolicyPromise = Promise.resolve();
         }
@@ -353,14 +362,14 @@ define(function (require, exports) {
         var swapKeyboardPolicyPromise = removeKeyboardPolicyPromise
             .bind(this)
             .then(function () {
-                return this.transfer(policy.addKeyboardPolicies, nextToolKeyboardPolicyList);
+                return this.transfer(policy.addKeyboardPolicies, nextToolKeyboardPolicyList, true);
             });
         
         // Swap pointer policy
         var removePointerPolicyPromise;
         if (previousToolPointerPolicyListID !== null) {
             removePointerPolicyPromise = this.transfer(policy.removePointerPolicies,
-                previousToolPointerPolicyListID, false); // delay commit
+                previousToolPointerPolicyListID, true); // delay commit
         } else {
             removePointerPolicyPromise = Promise.resolve();
         }
@@ -368,18 +377,27 @@ define(function (require, exports) {
         var swapPointerPolicyPromise = removePointerPolicyPromise
             .bind(this)
             .then(function () {
-                return this.transfer(policy.addPointerPolicies, nextToolPointerPolicyList);
+                return this.transfer(policy.addPointerPolicies, nextToolPointerPolicyList, true);
             });
 
         return Promise.join(swapKeyboardPolicyPromise, swapPointerPolicyPromise,
             function (nextToolKeyboardPolicyListID, nextToolPointerPolicyListID) {
-                return {
-                    tool: nextTool,
-                    keyboardPolicyListID: nextToolKeyboardPolicyListID,
-                    pointerPolicyListID: nextToolPointerPolicyListID
-                };
+                return this.transfer(policy.syncAllPolicies)
+                    .return({
+                        tool: nextTool,
+                        keyboardPolicyListID: nextToolKeyboardPolicyListID,
+                        pointerPolicyListID: nextToolPointerPolicyListID
+                    });
             }.bind(this));
     };
+    swapPolicies.reads = [locks.JS_TOOL];
+    swapPolicies.writes = [];
+    swapPolicies.transfers = [
+        policy.removeKeyboardPolicies, policy.addKeyboardPolicies,
+        policy.removePointerPolicies, policy.addPointerPolicies,
+        policy.syncAllPolicies
+    ];
+    swapPolicies.modal = true;
 
     /**
      * Activates a logical tool
@@ -398,7 +416,7 @@ define(function (require, exports) {
                 if (_currentTransformPolicyID) {
                     var policyID = _currentTransformPolicyID;
                     _currentTransformPolicyID = null;
-                    return this.transfer(policy.removePointerPolicies, policyID, false);
+                    return this.transfer(policy.removePointerPolicies, policyID, true);
                 }
             })
             .then(function () {
@@ -408,7 +426,7 @@ define(function (require, exports) {
                     return;
                 }
                 // Calls the deselect handler of last tool
-                return currentTool.deselectHandler.call(this, currentTool);
+                return this.transfer(currentTool.deselectHandler, currentTool);
             })
             .then(function () {
                 var psToolName = nextTool.nativeToolName.call(this),
@@ -431,13 +449,13 @@ define(function (require, exports) {
                 }
 
                 // Calls the select handler of new tool
-                return selectHandler.call(this, nextTool);
+                return this.transfer(selectHandler, nextTool);
             })
             .then(function () {
                 return adapterOS.resetCursor();
             })
             .then(function () {
-                return _swapPolicies.call(this, nextTool);
+                return this.transfer(swapPolicies, nextTool);
             })
             .then(function (result) {
                 // After setting everything, dispatch to stores
@@ -446,10 +464,16 @@ define(function (require, exports) {
     };
     selectTool.reads = [];
     selectTool.writes = [locks.JS_TOOL, locks.PS_TOOL];
-    selectTool.transfers = [installShapeDefaults, shortcuts.addShortcut,
-        shortcuts.removeShortcut, "layers.deleteSelected", "layers.resetLayers",
-        policy.removePointerPolicies, policy.removeKeyboardPolicies, policy.addPointerPolicies,
-        policy.addKeyboardPolicies, policy.setMode];
+    selectTool.transfers = [swapPolicies, policy.removePointerPolicies,
+        "toolSuperselect.select", "toolSuperselect.deselect",
+        "toolSuperselectVector.select", "toolSuperselectVector.deselect",
+        "toolSuperselectType.select", "toolSuperselectType.deselect",
+        "toolEllipse.select",
+        "toolPen.select", "toolPen.deselect",
+        "toolRectangle.select",
+        "toolSampler.select", "toolSampler.deselect",
+        "toolType.select", "toolType.deselect"
+    ];
     selectTool.modal = true;
 
     /**
@@ -542,17 +566,6 @@ define(function (require, exports) {
     handleToolModalStateChanged.transfers = [policy.suspendAllPolicies, policy.restoreAllPolicies,
         changeModalState, "ui.cloak"];
     handleToolModalStateChanged.modal = true;
-
-    /**
-     * Event handler initialized in beforeStartup.
-     *
-     * @private
-     * @type {function()}
-     */
-    var _toolModalStateChangedHandler,
-        _documentOrApplicationChangeHandler,
-        _vectorMaskHandler,
-        _vectorSelectMaskHandler;
 
     /**
      * Change the tool's vector mask mode
@@ -788,6 +801,17 @@ define(function (require, exports) {
     enterPathModalState.modal = true;
 
     /**
+     * Event handler initialized in beforeStartup.
+     *
+     * @private
+     * @type {function()}
+     */
+    var _toolModalStateChangedHandler,
+        _documentOrApplicationChangeHandler,
+        _vectorMaskHandler,
+        _vectorSelectMaskHandler;
+
+    /**
      * Register event listeners for native tool selection change events, register
      * tool keyboard shortcuts, and initialize the currently selected tool.
      * 
@@ -886,19 +910,14 @@ define(function (require, exports) {
         });
 
         var shortcutsPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),
-            endModalPromise = adapterPS.endModalToolState(true),
             initToolPromise = this.transfer(initTool); // Initialize the current tool
 
-        return Promise.join(endModalPromise, initToolPromise, shortcutsPromise)
-            .bind(this)
-            .then(function () {
-                return this.transfer(changeModalState, false);
-            });
+        return Promise.join(initToolPromise, shortcutsPromise);
     };
     beforeStartup.modal = true;
     beforeStartup.reads = [locks.JS_APP, locks.JS_TOOL];
     beforeStartup.writes = [locks.PS_TOOL];
-    beforeStartup.transfers = [shortcuts.addShortcuts, initTool, changeModalState, changeVectorMaskMode];
+    beforeStartup.transfers = [shortcuts.addShortcuts, initTool, changeVectorMaskMode];
 
     /**
      * Remove event handlers.
@@ -922,6 +941,7 @@ define(function (require, exports) {
     exports.installShapeDefaults = installShapeDefaults;
     exports.resetBorderPolicies = resetBorderPolicies;
     exports.select = selectTool;
+    exports.swapPolicies = swapPolicies;
     exports.initTool = initTool;
     exports.handleToolModalStateChanged = handleToolModalStateChanged;
     exports.changeModalState = changeModalState;

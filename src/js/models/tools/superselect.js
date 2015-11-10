@@ -27,23 +27,17 @@ define(function (require, exports, module) {
     var _ = require("lodash");
 
     var util = require("adapter").util,
-        descriptor = require("adapter").ps.descriptor,
         adapterPS = require("adapter").ps,
         OS = require("adapter").os,
-        UI = require("adapter").ps.ui,
-        toolLib = require("adapter").lib.tool,
-        vectorMaskLib = require("adapter").lib.vectorMask;
+        UI = require("adapter").ps.ui;
 
     var Tool = require("js/models/tool"),
         VectorTool = require("./superselect/vector"),
         TypeTool = require("./superselect/type"),
         system = require("js/util/system"),
-        layerActions = require("js/actions/layers"),
-        policy = require("js/actions/policy"),
         shortcuts = require("js/util/shortcuts"),
         SuperselectOverlay = require("jsx!js/jsx/tools/SuperselectOverlay"),
         EventPolicy = require("js/models/eventpolicy"),
-        PolicyStore = require("js/stores/policy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
@@ -51,64 +45,6 @@ define(function (require, exports, module) {
      * Flag to keep track of space key, so we can start panning on empty pixels
      */
     var _spaceKeyDown;
-
-    /**
-     * @private
-     */
-    var _selectHandler = function () {
-        var toolOptions = {
-                "$AtSl": false, // Don't auto select on drag
-                "$ASGr": false, // Don't auto select Groups,
-                "$Abbx": true // Show transform controls
-            };
-
-        var toolStore = this.flux.store("tool"),
-            applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument(),
-            vectorMode = toolStore.getVectorMode();
-
-        if (!vectorMode || !currentDocument) {
-            return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
-                .bind(this)
-                .then(function () {
-                    return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
-                        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_AND_NOTIFY);
-                });
-        } else {
-            var currentLayers = currentDocument.layers.selected;
-
-            if (currentLayers.isEmpty()) {
-                return Promise.resolve();
-            }
-
-            var currentLayer = currentLayers.first();
-
-            if (currentLayer.vectorMaskEnabled) {
-                return this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
-                    .bind(this)
-                    .then(function () {
-                        currentLayer = applicationStore.getCurrentDocument().layers.selected.first();
-                        if (!currentLayer.vectorMaskEmpty) {
-                            return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
-                                .bind(this)
-                                .then(function () {
-                                    // We are not transfering here
-                                    // because we activly want to end the use of our locks
-                                    this.flux.actions.tools.enterPathModalState();
-                                });
-                        }
-                    });
-            }
-        }
-    };
-
-    /**
-     * @private
-     */
-    var _deselectHandler = function () {
-        return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
-            UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
-    };
 
     /**
      * @private
@@ -171,8 +107,8 @@ define(function (require, exports, module) {
         this.activationKey = shortcuts.GLOBAL.TOOLS.SELECT;
         this.handleVectorMaskMode = true;
 
-        this.selectHandler = _selectHandler;
-        this.deselectHandler = _deselectHandler;
+        this.selectHandler = "toolSuperselect.select";
+        this.deselectHandler = "toolSuperselect.deselect";
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),
