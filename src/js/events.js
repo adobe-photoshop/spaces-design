@@ -39,6 +39,19 @@ define(function (require, exports, module) {
         },
         document: {
             history: {
+                unifiedHistory: {
+                    RESET_LAYERS: "resetLayers",
+                    STROKE_ENABLED_CHANGED: "strokeEnabledChanged",
+                    STROKE_ALIGNMENT_CHANGED: "strokeAlignmentChanged",
+                    STROKE_WIDTH_CHANGED: "strokeWidthChanged",
+                    TYPE_FACE_CHANGED: "typeFaceChanged",
+                    TYPE_SIZE_CHANGED: "typeSizeChanged",
+                    TYPE_TRACKING_CHANGED: "typeTrackingChanged",
+                    TYPE_LEADING_CHANGED: "typeLeadingChanged",
+                    TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged",
+                    TYPE_PROPERTIES_CHANGED: "typePropertiesChanged",
+                    TYPE_COLOR_CHANGED: "typeColorChanged"
+                },
                 optimistic: {
                     DELETE_LAYERS: "deleteLayers",
                     RESIZE_DOCUMENT: "resizeDocument",
@@ -60,16 +73,13 @@ define(function (require, exports, module) {
                     LAYER_EFFECT_DELETED: "layerEffectDeleted",
                     LAYER_EFFECTS_BATCH_CHANGED: "layerEffectsBatchChanged",
                     RADII_CHANGED: "radiiChanged",
-                    TYPE_COLOR_CHANGED: "typeColorChanged",
                     ADD_VECTOR_MASK_TO_LAYER: "AddVectorMaskToLayer",
                     REMOVE_VECTOR_MASK_FROM_LAYER: "RemoveVectorMaskFromLayer"
                 },
                 nonOptimistic: {
                     STROKE_ADDED: "strokeAdded",
-                    RESET_BOUNDS: "resetBoundsWithHistory",
                     UNGROUP_SELECTED: "ungroupSelectedLayers",
                     ADD_LAYERS: "addLayers",
-                    COMBINE_SHAPES: "combineShapes",
                     DELETE_LAYERS: "deleteLayersNonOptimistic", // eg: ps deletes the entire layer after last path del,
                     GUIDE_SET: "guideSet",
                     GUIDES_CLEARED: "guidesCleared",
@@ -77,39 +87,23 @@ define(function (require, exports, module) {
                 },
                 amendment: {
                     REORDER_LAYERS: "reorderLayersAmendment",
-                    RESET_LAYERS: "resetLayersAmendment",
                     RESET_BOUNDS: "resetBoundsAmendment",
                     LAYER_EXPORT_ENABLED_CHANGED: "layerExportEnabledChanged"
                 }
             },
-            DELETE_LAYERS_NO_HISTORY: "deleteLayersNoHistory",
             SELECT_LAYERS_BY_ID: "selectLayersByID",
             SELECT_LAYERS_BY_INDEX: "selectLayersByIndex",
             SET_GROUP_EXPANSION: "setGroupExpansion",
             VISIBILITY_CHANGED: "layerVisibilityChanged",
             REORDER_LAYERS: "reorderLayersNoHistory",
-            RESET_BOUNDS: "resetBoundsNoHistory",
-            RESET_LAYERS: "resetLayers",
             RESET_LAYERS_BY_INDEX: "resetLayersByIndex",
-            REPOSITION_LAYERS: "repositionLayersNoHistory",
             GUIDES_VISIBILITY_CHANGED: "guidesVisibilityChanged",
             SELECT_DOCUMENT: "selectDocument",
             SAVE_DOCUMENT: "saveDocument",
             CLOSE_DOCUMENT: "closeDocument",
             DOCUMENT_RENAMED: "renameDocument",
             DOCUMENT_UPDATED: "updateDocument",
-            GUIDES_UPDATED: "guidesUpdated",
-            // The following stroke/type events rely on subsequent bounds fetch
-            STROKE_ENABLED_CHANGED: "strokeEnabledChanged",
-            STROKE_WIDTH_CHANGED: "strokeWidthChanged",
-            STROKE_ALIGNMENT_CHANGED: "strokeAlignmentChanged",
-            TYPE_FACE_CHANGED: "typeFaceChanged",
-            TYPE_SIZE_CHANGED: "typeSizeChanged",
-            TYPE_TRACKING_CHANGED: "typeTrackingChanged",
-            TYPE_LEADING_CHANGED: "typeLeadingChanged",
-            TYPE_ALIGNMENT_CHANGED: "typeAlignmentChanged",
-            TYPE_PROPERTIES_CHANGED: "typePropertiesChanged",
-            TYPE_COLOR_CHANGED: "typeColorChangedNoHistory"
+            GUIDES_UPDATED: "guidesUpdated"
         },
         export: {
             ASSET_CHANGED: "exportAssetChangedQuietly",
@@ -174,6 +168,7 @@ define(function (require, exports, module) {
         },
         history: {
             PS_HISTORY_EVENT: "psHistoryStateEvent",
+            NEW_HISTORY_STATE: "newHistoryState",
             LOAD_HISTORY_STATE: "loadHistoryState",
             LOAD_HISTORY_STATE_REVERT: "loadHistoryStateRevert",
             ADJUST_HISTORY_STATE: "adjustHistoryState",

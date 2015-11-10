@@ -42,6 +42,7 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         typeActions = require("./type"),
         shapeActions = require("./shapes"),
+        historyActions = require("./history"),
         transformActions = require("./transform"),
         layerActionsUtil = require("js/util/layeractions"),
         headlights = require("js/util/headlights"),
@@ -812,6 +813,10 @@ define(function (require, exports) {
 
         return _getSourcePath(document, source)
             .bind(this)
+            .tap(function () {
+                return this.transfer(historyActions.newHistoryState, document.id,
+                    strings.ACTIONS.SAMPLE_GRAPHICS);
+            })
             .then(function (path) {
                 var documentRef = documentLib.referenceBy.id(document.id),
                     options = {
@@ -845,7 +850,7 @@ define(function (require, exports) {
     };
     replaceGraphic.reads = [locks.JS_DOC];
     replaceGraphic.writes = [locks.PS_DOC, locks.JS_DOC];
-    replaceGraphic.transfers = [layerActions.resetLayers];
+    replaceGraphic.transfers = [historyActions.newHistoryState, layerActions.resetLayers];
 
     exports.click = click;
     exports.showHUD = showHUD;

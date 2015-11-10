@@ -34,6 +34,7 @@ define(function (require, exports) {
         appLib = require("adapter").lib.application;
 
     var layerActions = require("./layers"),
+        historyActions = require("./history"),
         events = require("../events"),
         locks = require("js/locks"),
         collection = require("js/util/collection"),
@@ -87,6 +88,23 @@ define(function (require, exports) {
     };
 
     /**
+     * Based on the modal tool state, return the appropriate history options
+     * to be supplied to the dispatch.
+     * If we're in a modal state, then we do not create history states for these
+     * type property updates
+     *
+     * @return {object}
+     */
+    var _getTypeHistoryOptions = function () {
+        var modal = this.flux.stores.tool.getModalToolState();
+
+        return {
+            newState: !modal,
+            ignore: !!modal
+        };
+    };
+
+    /**
      * Update the post script (in terms of a type family and type style) of the given
      * layers in the given document.
      *
@@ -99,15 +117,17 @@ define(function (require, exports) {
      */
     var updatePostScript = function (document, layers, postscript, family, style) {
         var layerIDs = collection.pluck(layers, "id"),
+            historyOptions = _getTypeHistoryOptions.call(this),
             payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
                 postscript: postscript,
                 family: family,
-                style: style
+                style: style,
+                history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_FACE_CHANGED, payload);
     };
     updatePostScript.reads = [];
     updatePostScript.writes = [locks.JS_DOC];
@@ -166,14 +186,16 @@ define(function (require, exports) {
      */
     var updateFace = function (document, layers, family, style) {
         var layerIDs = collection.pluck(layers, "id"),
+            historyOptions = _getTypeHistoryOptions.call(this),
             payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
                 family: family,
-                style: style
+                style: style,
+                history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.TYPE_FACE_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_FACE_CHANGED, payload);
     };
     updateFace.reads = [];
     updateFace.writes = [locks.JS_DOC];
@@ -226,33 +248,25 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Immutable.Iterable.<Layers>} layers
      * @param {Color} color
-     * @param {boolean} modal is the app in a modal state, which effects history
      * @param {object} options
      * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
      * @param {boolean=} options.ignoreAlpha
      * @return {Promise}
      */
-    var updateColor = function (document, layers, color, modal, options) {
+    var updateColor = function (document, layers, color, options) {
         var layerIDs = collection.pluck(layers, "id"),
-            normalizedColor = null;
+            normalizedColor = (color !== null) ? color.normalizeAlpha() : null,
+            historyOptions = _getTypeHistoryOptions.call(this),
+            payload = {
+                documentID: document.id,
+                layerIDs: layerIDs,
+                color: normalizedColor,
+                coalesce: options.coalesce,
+                ignoreAlpha: options.ignoreAlpha,
+                history: historyOptions
+            };
 
-        if (color !== null) {
-            normalizedColor = color.normalizeAlpha();
-        }
-
-        var payload = {
-            documentID: document.id,
-            layerIDs: layerIDs,
-            color: normalizedColor,
-            coalesce: options.coalesce,
-            ignoreAlpha: options.ignoreAlpha
-        };
-
-        if (!modal) {
-            return this.dispatchAsync(events.document.history.optimistic.TYPE_COLOR_CHANGED, payload);
-        } else {
-            return this.dispatchAsync(events.document.TYPE_COLOR_CHANGED, payload);
-        }
+        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_COLOR_CHANGED, payload);
     };
     updateColor.reads = [];
     updateColor.writes = [locks.JS_DOC];
@@ -295,7 +309,7 @@ define(function (require, exports) {
             playObject = [playObject].concat(setOpacityPlayObjects);
         }
         
-        var updatePromise = this.transfer(updateColor, document, layers, color, modal, options),
+        var updatePromise = this.transfer(updateColor, document, layers, color, options),
             setColorPromise = layerActionsUtil.playSimpleLayerActions(document, layers, playObject, true, typeOptions);
 
         return Promise.join(updatePromise, setColorPromise)
@@ -326,18 +340,20 @@ define(function (require, exports) {
      */
     var updateSize = function (document, layers, size) {
         var layerIDs = collection.pluck(layers, "id"),
+            historyOptions = _getTypeHistoryOptions.call(this),
             payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
-                size: size
+                size: size,
+                history: historyOptions
             };
     
-        return this.dispatchAsync(events.document.TYPE_SIZE_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_SIZE_CHANGED, payload);
     };
-
     updateSize.reads = [];
     updateSize.writes = [locks.JS_DOC];
     updateSize.modal = true;
+
     /**
      * Set the type size of the given layers in the given document. This triggers
      * a layer bounds update.
@@ -390,13 +406,15 @@ define(function (require, exports) {
      */
     var updateTracking = function (document, layers, tracking) {
         var layerIDs = collection.pluck(layers, "id"),
+            historyOptions = _getTypeHistoryOptions.call(this),
             payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
-                tracking: tracking
+                tracking: tracking,
+                history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.TYPE_TRACKING_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_TRACKING_CHANGED, payload);
     };
 
     updateTracking.reads = [];
@@ -452,13 +470,15 @@ define(function (require, exports) {
      */
     var updateLeading = function (document, layers, leading) {
         var layerIDs = collection.pluck(layers, "id"),
+            historyOptions = _getTypeHistoryOptions.call(this),
             payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
-                leading: leading
+                leading: leading,
+                history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.TYPE_LEADING_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_LEADING_CHANGED, payload);
     };
     updateLeading.reads = [];
     updateLeading.writes = [locks.JS_DOC];
@@ -516,13 +536,15 @@ define(function (require, exports) {
      */
     var updateAlignment = function (document, layers, alignment) {
         var layerIDs = collection.pluck(layers, "id"),
+            historyOptions = _getTypeHistoryOptions.call(this),
             payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
-                alignment: alignment
+                alignment: alignment,
+                history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.TYPE_ALIGNMENT_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_ALIGNMENT_CHANGED, payload);
     };
     updateAlignment.reads = [];
     updateAlignment.writes = [locks.JS_DOC];
@@ -578,11 +600,13 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updateProperties = function (document, layers, properties) {
-        var payload = {
-            documentID: document.id,
-            layerIDs: collection.pluck(layers, "id"),
-            properties: properties
-        };
+        var historyOptions = _getTypeHistoryOptions.call(this),
+            payload = {
+                documentID: document.id,
+                layerIDs: collection.pluck(layers, "id"),
+                properties: properties,
+                history: historyOptions
+            };
 
         // The selection change may not yet have completed before the first
         // updateTextProperties event arrives. Hence, we ensure that the text
@@ -590,7 +614,7 @@ define(function (require, exports) {
         return this.transfer(layerActions.initializeLayers, document, layers)
             .bind(this)
             .then(function () {
-                this.dispatch(events.document.TYPE_PROPERTIES_CHANGED, payload);
+                this.dispatch(events.document.history.unifiedHistory.TYPE_PROPERTIES_CHANGED, payload);
             });
     };
     updateProperties.reads = [];
@@ -598,31 +622,6 @@ define(function (require, exports) {
     updateProperties.transfers = [layerActions.initializeLayers];
     updateProperties.modal = true;
 
-    /**
-     * Duplicates the layer effects of the source layer on all the target layers
-     *
-     * @param {Document} document
-     * @param {Immutable.Iterable.<Layer>} targetLayers
-     * @param {Layer} source
-     * @return {Promise}
-     */
-    var duplicateTextStyle = function (document, targetLayers, source) {
-        var layerIDs = collection.pluck(targetLayers, "id"),
-            layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
-            fontStore = this.flux.store("font"),
-            typeObject = fontStore.getTypeObjectFromLayer(source),
-            applyObj = textLayerLib.applyTextStyle(layerRefs, typeObject);
-
-        return descriptor.playObject(applyObj)
-            .bind(this)
-            .then(function () {
-                return this.transfer(layerActions.resetLayers, document, targetLayers);
-            });
-    };
-    duplicateTextStyle.reads = [locks.JS_TYPE, locks.JS_DOC];
-    duplicateTextStyle.writes = [locks.PS_DOC];
-    duplicateTextStyle.transfers = [layerActions.resetLayers];
-  
     /**
      * Applies the given text style to target layers
      *
@@ -665,7 +664,12 @@ define(function (require, exports) {
         
         this.dispatchAsync(events.style.HIDE_HUD);
         
-        return layerActionsUtil.playSimpleLayerActions(document, targetLayers, applyObjects, true, typeOptions)
+        var playPromise = layerActionsUtil.playSimpleLayerActions(document, targetLayers,
+                applyObjects, true, typeOptions),
+            historyPromise = this.transfer(historyActions.newHistoryState, document.id,
+                strings.ACTIONS.APPLY_TEXT_STYLE);
+
+        return Promise.join(playPromise, historyPromise)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
@@ -673,7 +677,7 @@ define(function (require, exports) {
     };
     applyTextStyle.reads = [locks.JS_DOC];
     applyTextStyle.writes = [locks.PS_DOC];
-    applyTextStyle.transfers = [layerActions.resetLayers];
+    applyTextStyle.transfers = [historyActions.newHistoryState, layerActions.resetLayers];
 
     /**
      * Initialize the list of installed fonts from Photoshop.
@@ -806,7 +810,6 @@ define(function (require, exports) {
     exports.updateAlignment = updateAlignment;
     exports.updateProperties = updateProperties;
 
-    exports.duplicateTextStyle = duplicateTextStyle;
     exports.applyTextStyle = applyTextStyle;
 
     exports.beforeStartup = beforeStartup;

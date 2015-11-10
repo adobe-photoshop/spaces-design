@@ -160,7 +160,7 @@ define(function (require, exports) {
         } else {
             // If cached state is not available, we must wait for photoshop undo/redo to be complete
             // before calling history.incr/decr, and finally updateDocument
-            log.debug("HISTORY CACHE MISS");
+            log.debug("[History] HISTORY CACHE MISS");
             return descriptor.playObject(historyPlayObject)
                 .bind(this)
                 .then(function () {
@@ -227,6 +227,32 @@ define(function (require, exports) {
     decrementHistory.modal = true;
 
     /**
+     * Create a new history state for the given document, with the given name.
+     * This is useful for complex workflows that may require several subsequent actions, and this action
+     * will generically create a new history state at the beginning of that process.
+     *
+     * @param {number} documentID
+     * @param {string} name
+     * @param {boolean=} coalesce TODO possibly deprecated
+     * @return {Promise}
+     */
+    var newHistoryState = function (documentID, name, coalesce) {
+        var payload = {
+            documentID: documentID,
+            coalesce: !!coalesce,
+            history: {
+                newState: true,
+                name: name
+            }
+        };
+
+        return this.dispatchAsync(events.history.NEW_HISTORY_STATE, payload);
+    };
+    newHistoryState.reads = [];
+    newHistoryState.writes = [locks.JS_HISTORY];
+    newHistoryState.modal = true;
+
+    /**
      * Revert to the document's last saved state.
      *
      * @return {Promise}
@@ -246,7 +272,7 @@ define(function (require, exports) {
         } else {
             // If cached state is not available, we must wait for photoshop revert to complete
             // before adjusting history state, and finally updateDocument
-            log.debug("HISTORY CACHE MISS - REVERT");
+            log.debug("[History] HISTORY CACHE MISS - REVERT");
             superPromise = descriptor.playObject(historyLib.revert)
                 .bind(this)
                 .then(function () {
@@ -285,7 +311,7 @@ define(function (require, exports) {
         // Ignore if either there is no current document,
         // or if this history state is related to another document
         if (documentID === null || documentID !== event.documentID) {
-            log.debug("Ignoring this historyState event, probably because it was for a non-current document");
+            log.debug("[History] Ignoring this historyState event, probably because it was for a non-current document");
             return Promise.resolve();
         }
 
@@ -354,14 +380,14 @@ define(function (require, exports) {
 
         // We get these every time there is a new history state being created
         _historyStateHandler = function (event) {
-            log.debug("History state event from photoshop (raw): currentState (index) %d, total states: %d",
+            log.debug("[History] History state event from photoshop (raw): currentState (index) %d, total states: %d",
                  event.currentHistoryState, event.historyStates);
 
             if (_recentSelectTimer) {
                 // If a "select" event (undo/redo) was recently received, handle this event specially.
                 // This will validate the event and attempt to incr/decr history
                 window.clearTimeout(_recentSelectTimer);
-                log.debug("History state event received, and there was a recent history select event: %s",
+                log.debug("[History] History state event received, and there was a recent history select event: %s",
                     _recentSelectEvent);
 
                 debouncedHandleHistoryStateAfterSelect();
@@ -379,7 +405,7 @@ define(function (require, exports) {
         _historySelectHandler = function (event) {
             var eventData = event["null"];
             if (eventData && eventData._ref === "historyState" && eventData._value) {
-                log.debug("History SELECT event from photoshop _value: %s", eventData._value);
+                log.debug("[History] History SELECT event from photoshop _value: %s", eventData._value);
 
                 _recentSelectEvent = eventData._value;
                 _recentSelectTimer = window.setTimeout(function () {
@@ -412,6 +438,7 @@ define(function (require, exports) {
     exports.queryCurrentHistory = queryCurrentHistory;
     exports.incrementHistory = incrementHistory;
     exports.decrementHistory = decrementHistory;
+    exports.newHistoryState = newHistoryState;
     exports.revertCurrentDocument = revertCurrentDocument;
     exports.handleHistoryState = handleHistoryState;
     exports.handleHistoryStateAfterSelect = handleHistoryStateAfterSelect;

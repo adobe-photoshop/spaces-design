@@ -74,8 +74,8 @@ define(function (require, exports) {
                             return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
                                 .bind(this)
                                 .then(function () {
-                                    // We are not transfering here
-                                    // because we activly want to end the use of our locks
+                                    // We are not transferring here
+                                    // because we actively want to end the use of our locks
                                     this.flux.actions.tools.enterPathModalState();
                                 });
                         }

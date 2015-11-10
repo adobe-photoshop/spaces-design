@@ -53,6 +53,7 @@ define(function (require, exports) {
         searchActions = require("./search/libraries"),
         shapeActions = require("./shapes"),
         typeActions = require("./type"),
+        historyActions = require("./history"),
         preferencesActions = require("./preferences"),
         LibrarySyncStatus = require("js/models/library_sync_status");
 
@@ -912,6 +913,10 @@ define(function (require, exports) {
                 representation.getContentPath(done);
             })
             .bind(this)
+            .then(function () {
+                return this.transfer(historyActions.newHistoryState, currentDocument.id,
+                    strings.ACTIONS.APPLY_LAYER_STYLE);
+            })
             .then(function (path) {
                 var layerIDs = collection.pluck(selectedUnlockedLayers, "id"),
                     layerRef = layerIDs.map(layerEffectAdapter.referenceBy.id).toArray(),
@@ -933,7 +938,7 @@ define(function (require, exports) {
     };
     applyLayerStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyLayerStyle.writes = [locks.JS_DOC, locks.PS_DOC];
-    applyLayerStyle.transfers = [layerActions.resetLayers];
+    applyLayerStyle.transfers = [historyActions.newHistoryState, layerActions.resetLayers];
 
     /**
      * Applies the given character style element to the selected text layers
@@ -945,6 +950,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var applyCharacterStyle = function (element) {
+        // TODO is this fundamentally action different than actions/type.applyTextStyle?
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument(),
             selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
@@ -970,7 +976,12 @@ define(function (require, exports) {
                 }
             };
 
-        return layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj, false, options)
+        var playPromise = layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj,
+                false, options),
+            historyPromise = this.transfer(historyActions.newHistoryState, currentDocument.id,
+                strings.ACTIONS.APPLY_TEXT_STYLE);
+
+        return Promise.join(playPromise, historyPromise)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetLayers, currentDocument, textLayers);
@@ -978,7 +989,7 @@ define(function (require, exports) {
     };
     applyCharacterStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyCharacterStyle.writes = [locks.JS_DOC, locks.PS_DOC];
-    applyCharacterStyle.transfers = [layerActions.resetLayers];
+    applyCharacterStyle.transfers = [historyActions.newHistoryState, layerActions.resetLayers];
 
     /**
      * Applies the color the selected layers. It currently supports two types of layers:
@@ -1025,7 +1036,7 @@ define(function (require, exports) {
     };
     applyColor.reads = [locks.JS_APP, locks.CC_LIBRARIES];
     applyColor.writes = [locks.JS_DOC, locks.PS_DOC];
-    applyColor.transfers = [typeActions.setColor, shapeActions.setFillColor, layerActions.resetLayers];
+    applyColor.transfers = [typeActions.setColor, shapeActions.setFillColor];
 
     /**
      * Marks the given library ID as the active one

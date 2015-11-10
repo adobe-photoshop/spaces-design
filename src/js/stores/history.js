@@ -76,6 +76,7 @@ define(function (require, exports, module) {
             storeUtil.bindEvents(events.export.history.optimistic, this._handlePreHistoryEvent, binder);
             storeUtil.bindEvents(events.document.history.optimistic, this._handlePreHistoryEvent, binder);
             storeUtil.bindEvents(events.document.history.nonOptimistic, this._handlePostHistoryEvent, binder);
+            storeUtil.bindEvents(events.document.history.unifiedHistory, this._handleUnifiedHistory, binder);
             storeUtil.bindEvents(events.document.history.amendment, this._handleHistoryAmendment, binder);
 
             this.bindActions(
@@ -83,6 +84,7 @@ define(function (require, exports, module) {
                 events.history.PS_HISTORY_EVENT, this._handleHistoryFromPhotoshop,
                 events.history.LOAD_HISTORY_STATE, this._loadHistoryState,
                 events.history.LOAD_HISTORY_STATE_REVERT, this._loadLastSavedHistoryState,
+                events.history.NEW_HISTORY_STATE, this._handleUnifiedHistory,
                 events.history.ADJUST_HISTORY_STATE, this._adjustHistoryState,
                 events.history.FINISH_ADJUSTING_HISTORY_STATE, this._finishAdjustingHistoryState,
                 events.history.FINALIZE_HISTORY_STATE, this._handlePostHistoryEvent,
@@ -194,7 +196,7 @@ define(function (require, exports, module) {
 
             // build out the full list of history states with null placeholder, except current
             var blankHistory = new HistoryState();
-            log.debug("Initializing history with %d states", payload.totalStates);
+            log.debug("[History] Initializing history with %d states", payload.totalStates);
 
             for (var i = 0; i < payload.totalStates; i++) {
                 if (i === payload.currentState) {
@@ -258,7 +260,7 @@ define(function (require, exports, module) {
                 if (history && current) {
                     // history has been initialized
                     if (payload.currentState === 0) {
-                        log.debug("Ignoring history status because currentState is zero, maybe part of a revert?");
+                        log.debug("[History] Ignoring history status because currentState is zero");
                     } else if (current === payload.currentState) {
                         // validate the current state
                         currentState = history.get(current);
@@ -272,7 +274,7 @@ define(function (require, exports, module) {
                         if (currentState.isInconsistent(document, documentExports)) {
                             if (current === this.MAX_HISTORY_SIZE - 1) {
                                 // handle this like a rogue
-                                log.debug("Handling this '50th' as though it were a rogue");
+                                log.debug("[History] Handling this '50th' as though it were a rogue");
                                 return this._pushHistoryState.call(this, new HistoryState({
                                     id: payload.id,
                                     name: payload.name,
@@ -281,9 +283,10 @@ define(function (require, exports, module) {
                                     rogue: true
                                 }));
                             }
-                            log.debug("Photoshop history status matches ours, but the documents differ. %O", payload);
+                            log.debug("[History] Photoshop history status matches ours, " +
+                                "but the documents differ. %O", payload);
                         } else if (document.equals(currentState.document) && current === this.MAX_HISTORY_SIZE - 1) {
-                            log.debug("50th history state, but ignoring because it is equal");
+                            log.debug("[History] 50th history state, but ignoring because it is equal");
                             return;
                         }
 
@@ -303,7 +306,7 @@ define(function (require, exports, module) {
 
                         if (history.size > payload.totalStates) {
                             // safety
-                            log.debug("Trimming future states, possibly just diverging from stale future. " +
+                            log.debug("[History] Trimming future states, possibly just diverging from stale future. " +
                                 "Photoshop says the totalStates is " + payload.totalStates + ", " +
                                 "but our model says " + history.size);
                             this._history = this._history.slice(0, payload.totalStates);
@@ -317,11 +320,11 @@ define(function (require, exports, module) {
                     } else if (payload.source !== "query" && payload.currentState - current === 1) {
                         // Handle the case where the payload is one step ahead.  A "rogue" update
                         // Push a fresh history on the stack and set the rogue flag
-                        log.debug("This is a ROGUE history-changing event %O", payload);
+                        log.debug("[History] This is a ROGUE history-changing event %O", payload);
                         if (history.size > payload.totalStates) {
                             // This could simply be that we are diverging from a previous redo future list
                             // But it is a safety feature too
-                            log.debug("Trimming future states, possibly just diverging from stale future. " +
+                            log.debug("[History] Trimming future states, possibly just diverging from stale future. " +
                                 "Photoshop thinks the totalStates is " + payload.totalStates + ", " +
                                 "but our model says " + history.size);
                             this._history = this._history.slice(0, payload.totalStates);
@@ -334,13 +337,13 @@ define(function (require, exports, module) {
                             rogue: true
                         }));
                     } else {
-                        log.warn("Re-initializing history because photoshop thinks the current state is " +
+                        log.warn("[History] Re-initializing history because photoshop thinks the current state is " +
                             payload.currentState + " of " + payload.totalStates + ", " +
                             "while our model says " + current + " of " + history.size);
                         this._initializeHistory.call(this, payload, document, documentExports);
                     }
                 } else {
-                    log.debug("Initializing history based on historyState event from ps. %O", payload);
+                    log.debug("[History] Initializing history based on historyState event from ps. %O", payload);
                     this._initializeHistory.call(this, payload, document, documentExports);
                 }
             });
@@ -500,7 +503,7 @@ define(function (require, exports, module) {
             if (nextState.document) {
                 // If this next state already has a document, we probably should have loaded it
                 // This function is intended for pointing to blank states
-                log.warn("Adjusting history state, but was not expecting the next state to have a document already.");
+                log.warn("[History] Adjusting history state, but the next state already has a document.");
             }
 
             this._current = this._current.set(documentID, next);
@@ -573,7 +576,7 @@ define(function (require, exports, module) {
          * @param {object} payload
          */
         _handlePostHistoryEvent: function (payload) {
-            log.debug("Pushing history for an action for which we expect to have gotten a rogue history event");
+            log.debug("[History] Pushing state after we expect to have gotten a rogue history event");
             this.waitFor(["document", "export", "application"], function (documentStore, exportStore) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
@@ -619,7 +622,7 @@ define(function (require, exports, module) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
                     documentExports = exportStore.getDocumentExports(documentID),
-                    nextState = { document: document, documentExports: documentExports };
+                    stateProps = { document: document, documentExports: documentExports };
 
                 if (!document) {
                     throw new Error("Could not amend history state, document not found: " + documentID);
@@ -627,14 +630,35 @@ define(function (require, exports, module) {
 
                 var history = this._history.get(documentID) || Immutable.List(),
                     current = this._current.get(documentID) || -1,
-                    currentState = history.get(current);
+                    currentState = history.get(current),
+                    nextState;
 
-                if (history && currentState && current > -1) {
-                    history = history.splice(current, 1, currentState.merge(nextState));
+                if (!history || !currentState || current < 0) {
+                    throw new Error("Could not amend history, document not properly initialized: " + documentID);
+                }
+
+                nextState = currentState.merge(stateProps);
+
+                if (!nextState.equals(currentState)) {
+                    history = history.splice(current, 1, nextState);
                     this._history = this._history.set(documentID, history);
                     this.emit("change");
                 }
             });
+        },
+
+        /**
+         * New and improved "unified" history event handler.  payload.history determines
+         * whether or not history state is created or amended.
+         *
+         * @param {object} payload
+         */
+        _handleUnifiedHistory: function (payload) {
+            if (payload.history && payload.history.newState) {
+                this._handlePreHistoryEvent.call(this, payload);
+            } else {
+                this._handleHistoryAmendment.call(this, payload);
+            }
         },
 
         /**
@@ -663,7 +687,7 @@ define(function (require, exports, module) {
                 if (!history.size) {
                     throw new Error("Initial must not be coalesced");
                 }
-                log.debug("Updating the previous history state instead of pushing (coalesce or rogue-catchup)");
+                log.debug("[History] Updating the previous history state (coalesce or rogue-catchup)");
                 history = history.splice(-1, 1, lastHistory.merge(state.set("rogue", false)));
             } else {
                 if (history.size === this.MAX_HISTORY_SIZE) {
@@ -683,7 +707,7 @@ define(function (require, exports, module) {
 
             current = history.size - 1;
 
-            log.debug("History state added or merged: %d", current);
+            log.debug("[History] History state added or merged: %d", current);
             this._history = this._history.set(documentID, history);
             this._current = this._current.set(documentID, current);
             this.emit("change");
