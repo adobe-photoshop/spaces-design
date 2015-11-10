@@ -30,7 +30,8 @@ define(function (require, exports) {
     var photoshopEvent = require("adapter").lib.photoshopEvent,
         descriptor = require("adapter").ps.descriptor,
         documentLib = require("adapter").lib.document,
-        selectionLib = require("adapter").lib.selection;
+        selectionLib = require("adapter").lib.selection,
+        appLib = require("adapter").lib.application;
 
     var guideActions = require("./guides"),
         exportActions = require("./export"),
@@ -273,20 +274,20 @@ define(function (require, exports) {
      * Initialize document and layer state, emitting DOCUMENT_UPDATED events, for
      * all the inactive documents.
      *
-     * @param {number} currentIndex
-     * @param {number} docCount
+     * @param {number} activeDocumentID
+     * @param {Array.<number>} openDocumentIDs
      * @return {Promise}
      */
-    var initInactiveDocuments = function (currentIndex, docCount) {
-        var otherDocPromises = _.range(1, docCount + 1)
-            .filter(function (index) {
-                return index !== currentIndex;
+    var initInactiveDocuments = function (activeDocumentID, openDocumentIDs) {
+        var otherDocPromises = openDocumentIDs
+            .filter(function (documentID) {
+                return documentID !== activeDocumentID;
             })
-            .map(function (index) {
-                var indexRef = documentLib.referenceBy.index(index);
+            .map(function (documentID) {
+                var docRef = documentLib.referenceBy.id(documentID);
 
                 // Only load essential properties for inactive documents
-                return _getInactiveDocumentByRef(indexRef)
+                return _getInactiveDocumentByRef(docRef)
                     .bind(this)
                     .then(function (document) {
                         this.dispatch(events.document.DOCUMENT_UPDATED, {
@@ -307,16 +308,22 @@ define(function (require, exports) {
     /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED.
      *
-     * @return {Promise.<{currentIndex: number, docCount: number}>}
+     * @return {Promise.<{activeDocumentID: number, openDocumentIDs: Array.<number>}=>}
      */
     var initActiveDocument = function () {
-        return descriptor.getProperty("application", "numberOfDocuments")
+        var appRef = appLib.referenceBy.current,
+            rangeOpts = {
+                range: "document",
+                index: 1
+            };
+
+        return descriptor.getPropertyRange(appRef, rangeOpts, "documentID")
             .bind(this)
-            .then(function (docCount) {
-                if (docCount === 0) {
+            .then(function (documentIDs) {
+                if (documentIDs.length === 0) {
+                    this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                     // Updates menu items in cases of no document
                     this.dispatch(events.menus.UPDATE_MENUS);
-                    this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                     return;
                 }
 
@@ -351,8 +358,8 @@ define(function (require, exports) {
                             })
                             .then(function () {
                                 return {
-                                    currentIndex: currentDoc.itemIndex,
-                                    docCount: docCount
+                                    activeDocumentID: currentDoc.documentID,
+                                    openDocumentIDs: documentIDs
                                 };
                             });
                     });
@@ -937,7 +944,7 @@ define(function (require, exports) {
      * Register event listeners for active and open document change events, and
      * initialize the active document list.
      *
-     * @return {Promise.<{currentIndex: number, docCount: number}>}
+     * @return {Promise.<{activeDocumentID: number=, openDocumentIDs: Array.<number>}>}
      */
     var beforeStartup = function () {
         var applicationStore = this.flux.store("application"),
@@ -1099,17 +1106,17 @@ define(function (require, exports) {
      * Send info to search store about searching for documents and
      * initialize the inactive documents. (The active document is initialized beforeStartup.)
      *
-     * @param {{currentIndex: number, docCount: number}=} payload
+     * @param {{activeDocumentID: number, openDocumentIDs: Array.<number>}=} payload
      * @return {Promise}
      */
     var afterStartup = function (payload) {
         searchActions.registerCurrentDocumentSearch.call(this);
         searchActions.registerRecentDocumentSearch.call(this);
 
-        var currentIndex = payload && payload.currentIndex,
-            docCount = payload ? payload.docCount : 0;
+        var activeDocumentID = payload && payload.activeDocumentID,
+            openDocumentIDs = payload ? payload.openDocumentIDs : [];
 
-        return this.transfer(initInactiveDocuments, currentIndex, docCount);
+        return this.transfer(initInactiveDocuments, activeDocumentID, openDocumentIDs);
     };
     afterStartup.reads = [locks.PS_DOC];
     afterStartup.writes = [locks.JS_DOC, locks.JS_SEARCH];
