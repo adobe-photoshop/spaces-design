@@ -354,7 +354,81 @@ define(function (require, exports, module) {
 
             this.updateMouseOverHighlights();
         },
+        
+        /**
+         * Draws either superselectable or leaf layer bounding boxes
+         * 
+         * @param {SVGElement} svg SVG HTML element to draw in
+         * @param {LayerTree} layerTree layerTree of the current document
+         */
+        drawMaskPreview: function (svg, layerTree, type) {
+            console.log("drawMaskPreview", type);
+            var indexOf = layerTree.indexOf.bind(layerTree),
+                scale = this._scale,
+                boundsAB = layerTree.topAncestor(layerTree.selected.first()).isArtboard ? layerTree.topAncestor(layerTree.selected.first()).bounds : {"left" : 0, "top" : 0},
+                bounds = layerTree.relativeChildBounds(layerTree.selected.first());
+            
+            svg.selectAll("g#maskPreview").remove();
+            
+            if(type){
+                svg.insert("g", ":first-child")
+                    .attr("id", "maskPreview")
+                    .classed("superselect-bounds", true)
+                    .attr("transform", this.props.transformString);
 
+                // Skip empty bounds
+                if (!bounds || bounds.empty) {
+                    return;
+                }
+
+                // HACK: For some reason Photoshop's bounds seem to be shifted by ~1px to the
+                // bottom-right. See https://github.com/adobe-photoshop/spaces-design/issues/866
+                var offset = system.isMac ? 0 : scale,
+                    boundRect;
+
+                if(type === "ellipse") {
+                    svg.select("g#maskPreview").append("defs")
+                        .append("mask")
+                        .attr("id", "Mask");
+
+
+                    var oval = bounds.height > bounds.width ? bounds.width : bounds.height,
+                        mask = svg.select("mask");
+
+                        mask.append("rect")
+                        .attr("x", bounds.left + boundsAB.left + offset)
+                        .attr("y", bounds.top + boundsAB.top + offset)
+                        .attr("width", bounds.width)
+                        .attr("height", bounds.height)
+                        .attr("fill", "rgb(127, 127, 127)")
+
+                        mask.append("circle")
+                        .attr("cx", bounds.left + boundsAB.left + bounds.width / 2 + offset)
+                        .attr("cy", bounds.top + boundsAB.top + bounds.height / 2 + offset)
+                        .attr("r", oval/2)
+                        .attr("fill", "black")
+
+                    svg.select("g#maskPreview").append("rect")
+                        .attr("x", bounds.left + boundsAB.left + offset)
+                        .attr("y", bounds.top + boundsAB.top + offset)
+                        .attr("width", bounds.width)
+                        .attr("height", bounds.height)
+                        .attr("fill", "#3691ff")
+                        .attr("mask", "url(#Mask)");
+                    
+                 } else if(type === "rect") {
+                     
+                    svg.select("g#maskPreview").append("rect")
+                        .attr("x", bounds.left + boundsAB.left + offset)
+                        .attr("y", bounds.top + boundsAB.top + offset)
+                        .attr("width", bounds.width)
+                        .attr("height", bounds.height)
+                        .attr("fill", "#3691ff")
+                        .attr("opacity", 0.5);
+                }
+            }
+        },
+        
         /**
          * Starts drawing the superselect marquee at the given location
          *
@@ -779,6 +853,10 @@ define(function (require, exports, module) {
         _drawVectorMaskHUDObjects: function (size) {
             var uiStore = this.getFlux().store("ui"),
                 cloakRect = uiStore.getCloakRect();
+            
+            var svg = d3.select(React.findDOMNode(this)),
+                layerTree = this.state.document.layers,
+                layers = layerTree.selected;
     
             var fluxActions = this.getFlux().actions,
                 toolStore = this.getFlux().store("tool"),
@@ -798,7 +876,9 @@ define(function (require, exports, module) {
 
             var rectTLX = Math.round(left),
                 rectTLY = Math.round(top);
-
+            
+            //this.drawMaskPreview(this._hudGroup, layerTree, "ellipse");
+            
             // Draw the frame
             // A rounded rectangle
             this._hudGroup
@@ -824,6 +904,16 @@ define(function (require, exports, module) {
                 .attr("y", iconTop)
                 .attr("width", iconSize)
                 .attr("height", iconSize)
+                .on("mouseover", function() {
+                    // Apply a temp mask on hover
+                    this.drawMaskPreview(this._hudGroup, layerTree, "ellipse");
+                    d3.event.stopPropagation();
+                }.bind(this))
+                .on("mouseout", function() {
+                    // Apply a temp mask on hover
+                    this.drawMaskPreview(this._hudGroup, layerTree, false);
+                    d3.event.stopPropagation();
+                }.bind(this))
                 .on("click", function () {
                     // Apply the color to selected layers
                     fluxActions.mask.applyEllipse();
@@ -841,6 +931,16 @@ define(function (require, exports, module) {
                 .attr("width", iconSize)
                 .attr("height", iconSize)
                 .classed("sampler-hud", true)
+                .on("mouseover", function() {
+                    // Apply a temp mask on hover
+                    this.drawMaskPreview(this._hudGroup, layerTree, "rect");
+                    d3.event.stopPropagation();
+                }.bind(this))
+                .on("mouseout", function() {
+                    // Apply a temp mask on hover
+                    this.drawMaskPreview(this._hudGroup, layerTree, false);
+                    d3.event.stopPropagation();
+                }.bind(this))
                 .on("click", function () {
                     // Apply the color to selected layers
                     fluxActions.mask.applyRectangle();
