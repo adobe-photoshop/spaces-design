@@ -638,7 +638,7 @@ define(function (require, exports) {
     };
     openGraphicForEdit.reads = [];
     openGraphicForEdit.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
-    openGraphicForEdit.transfers = [exportActions.copyFile, documentActions.open,
+    openGraphicForEdit.transfers = [exportActions.copyFile, "documents.open",
         preferencesActions.setPreference];
     
     /**
