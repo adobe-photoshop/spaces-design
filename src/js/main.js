@@ -63,6 +63,17 @@ define(function (require, exports) {
     };
 
     /**
+     * Format a version object a string.
+     *
+     * @private
+     * @param {{major: number=, minor: number=, patch: number=}} version
+     * @return {string}
+     */
+    var _formatVersion = function (version) {
+        return [version.major, version.minor, version.patch].join(".");
+    };
+
+    /**
      * Start up the application.
      */
     var startup = function () {
@@ -71,6 +82,19 @@ define(function (require, exports) {
 
         log.info("Spaces plugin version: %d.%d.%d",
             version.major, version.minor, version.patch);
+
+        // Assert plugin compatibility
+        if (!adapter.isPluginCompatible()) {
+            var message = "Plugin version " + _formatVersion(adapter.version) +
+                " is incompatible with the required version, " +
+                 _formatVersion(adapter.compatiblePluginVersion);
+
+            if (global.debug) {
+                log.error(message);
+            } else {
+                throw new Error(message);
+            }
+        }
 
         controller.on("error", _handleControllerError);
 
