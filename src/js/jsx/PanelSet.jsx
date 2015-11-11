@@ -443,8 +443,8 @@ define(function (require, exports, module) {
                         <IconBar />
                     </div>
                 );
-            } else if (this.state.propertiesVisible || 
-                       this.state.layersLibrariesVisible && 
+            } else if (this.state.propertiesVisible ||
+                       this.state.layersLibrariesVisible &&
                        !this.props.singleColumnModeEnabled) {
                 return (
                     // Just show one column and toolbar
