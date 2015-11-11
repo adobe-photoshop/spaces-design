@@ -433,7 +433,7 @@ define(function (require, exports) {
         var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options)
             .bind(this)
             .then(function () {
-                return this.transfer(layerActions.resetIndex, undefined, true, true);
+                return this.transfer(layerActions.resetIndex, undefined);
             });
 
         return Promise.join(dispatchPromise, positionPromise);
@@ -521,7 +521,7 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
-                return this.transfer(layerActions.resetIndex, document, true, true);
+                return this.transfer(layerActions.resetIndex, document);
             });
 
         return Promise.join(dispatchPromise, swapPromise);
@@ -1136,6 +1136,40 @@ define(function (require, exports) {
     rotateLayersInCurrentDocument.transfers = [rotate];
 
     /**
+     * Handle the "editArtboardEvent" from photoshop
+     * TODO: This is a bit heavy-handed
+     *
+     * @return {Promise}
+     */
+    var handleTransformArtboard = function () {
+        // After each action we call, document model changes
+        // so we re-get it
+        var appStore = this.flux.store("application"),
+            nextDoc = appStore.getCurrentDocument();
+
+        if (!nextDoc) {
+            throw new Error("No current document");
+        }
+
+        return this.transfer("history.newHistoryStateRogueSafe", nextDoc.id)
+            .bind(this)
+            .then(function () {
+                return this.transfer("layers.resetBounds", nextDoc, nextDoc.layers.allSelected);
+            })
+            .then(function () {
+                nextDoc = appStore.getCurrentDocument();
+                return this.transfer("layers.resetSelection", nextDoc);
+            }).then(function () {
+                nextDoc = appStore.getCurrentDocument();
+                return this.transfer("layers.resetIndex", nextDoc);
+            });
+    };
+    handleTransformArtboard.reads = [locks.JS_APP, locks.JS_DOC];
+    handleTransformArtboard.writes = [];
+    handleTransformArtboard.transfers = ["history.newHistoryStateRogueSafe", "layers.resetBounds",
+        "layers.resetSelection", "layers.resetIndex"];
+
+    /**
      * Transform event handler initialized in beforeStartup
      *
      * @private
@@ -1146,21 +1180,11 @@ define(function (require, exports) {
         _layerTransformHandler;
 
     var beforeStartup = function () {
+        // TODO does this still need to debounce?  Are there cases where we get several events that correspond to
+        // one history state?
         _artboardTransformHandler = synchronization.debounce(function () {
-            // After each action we call, document model changes
-            // so we re-get it
-            var appStore = this.flux.store("application"),
-                nextDoc = appStore.getCurrentDocument();
-
-            return this.flux.actions.layers.resetBounds(nextDoc, nextDoc.layers.allSelected)
-                .bind(this)
-                .then(function () {
-                    nextDoc = appStore.getCurrentDocument();
-                    this.flux.actions.layers.resetSelection(nextDoc);
-                }).then(function () {
-                    nextDoc = appStore.getCurrentDocument();
-                    this.flux.actions.layers.resetIndex(nextDoc, true);
-                });
+            this.flux.actions.transform.handleTransformArtboard();
+            return Promise.resolve();
         }, this);
 
         _layerTransformHandler = function (event) {
@@ -1222,7 +1246,7 @@ define(function (require, exports) {
 
         _moveToArtboardHandler = synchronization.debounce(function () {
             // Undefined makes it use the most recent document model
-            return this.flux.actions.layers.resetIndex(undefined, true, true);
+            return this.flux.actions.layers.resetIndex(undefined);
         }, this);
 
         descriptor.addListener("transform", _layerTransformHandler);
@@ -1273,4 +1297,5 @@ define(function (require, exports) {
     exports.setRadius = setRadius;
     exports.rotate = rotate;
     exports.rotateLayersInCurrentDocument = rotateLayersInCurrentDocument;
+    exports.handleTransformArtboard = handleTransformArtboard;
 });

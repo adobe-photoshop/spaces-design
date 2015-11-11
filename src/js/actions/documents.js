@@ -912,8 +912,11 @@ define(function (require, exports) {
         // If the new layer is already existed (by expanding a libraries graphic that is an embedded SO),
         // we reset the layer to update its smart object type and position.
         if (layer) {
-            return this.transfer(layerActions.resetLayers, document, layer)
+            return this.transfer(historyActions.newHistoryStateRogueSafe, document.id)
                 .bind(this)
+                .then(function () {
+                    return this.transfer(layerActions.resetLayers, document, layer);
+                })
                 .then(function () {
                     return this.transfer(layerActions.resetIndex, document);
                 });
@@ -923,7 +926,8 @@ define(function (require, exports) {
     };
     handlePlaceEvent.reads = [locks.JS_APP];
     handlePlaceEvent.writes = [];
-    handlePlaceEvent.transfers = [updateDocument, "layers.addLayers", "layers.resetLayers", "layers.resetIndex"];
+    handlePlaceEvent.transfers = [updateDocument, "layers.addLayers", "layers.resetLayers", "layers.resetIndex",
+        "history.newHistoryStateRogueSafe"];
     handlePlaceEvent.modal = true;
 
     /**

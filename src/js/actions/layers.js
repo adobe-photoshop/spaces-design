@@ -1620,11 +1620,9 @@ define(function (require, exports) {
      * though possibly out of order w.r.t. Photoshop's model.
      *
      * @param {Document=} document Document for which layers should be reordered, if undefined, use current document
-     * @param {boolean=} suppressHistory Optional. If true, emit an event that does NOT add a new history state
-     * @param {boolean=} amendHistory Optional. If true, update the current state (requires suppressHistory)
      * @return {Promise} Resolves to the new ordered IDs of layers as well as what layers should be selected
      */
-    var resetIndex = function (document, suppressHistory, amendHistory) {
+    var resetIndex = function (document) {
         if (typeof document === "undefined") {
             document = this.flux.store("application").getCurrentDocument();
 
@@ -1641,15 +1639,7 @@ define(function (require, exports) {
                     });
             })
             .then(function (payload) {
-                if (suppressHistory) {
-                    if (amendHistory) {
-                        return this.dispatchAsync(events.document.history.amendment.REORDER_LAYERS, payload);
-                    } else {
-                        return this.dispatchAsync(events.document.REORDER_LAYERS, payload);
-                    }
-                } else {
-                    return this.dispatchAsync(events.document.history.optimistic.REORDER_LAYERS, payload);
-                }
+                this.dispatch(events.document.history.amendment.REORDER_LAYERS, payload);
             })
             .then(function () {
                 // get the document with latest selected layers, after layer reordering.
@@ -1694,10 +1684,13 @@ define(function (require, exports) {
 
         var numberRef = (typeof target === "number"),
             targetRef = numberRef ? layerLib.referenceBy.index(target) : layerLib.referenceBy[target],
-            reorderObj = layerLib.reorder(layerRef, targetRef),
-            reorderPromise = descriptor.playObject(reorderObj);
+            reorderObj = layerLib.reorder(layerRef, targetRef);
       
-        return reorderPromise.bind(this)
+        return this.transfer(historyActions.newHistoryState, document.id, strings.ACTIONS.REORDER_LAYERS)
+            .bind(this)
+            .then(function () {
+                return descriptor.playObject(reorderObj);
+            })
             .catch(function (err) {
                 // Ignore reorder errors if target was a string (called by one of the bring/send methods below)
                 // since PS fails if we try to move a layer past the doc bounds
@@ -1707,9 +1700,7 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
-                // TODO this resetIndex causes a history state, eventually want to move this to a more explicit
-                // history state creation action
-                return this.transfer(resetIndex, document, false, false);
+                return this.transfer(resetIndex, document);
             })
             .then(function () {
                 // The selected layers may have changed after the reorder.
@@ -1720,7 +1711,7 @@ define(function (require, exports) {
     };
     reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
     reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    reorderLayers.transfers = [resetIndex, resetBounds];
+    reorderLayers.transfers = [resetIndex, resetBounds, "history.newHistoryState"];
     reorderLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
 
     /**
@@ -2132,7 +2123,7 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.document.history.optimistic.GROUP_SELECTED, payload);
             })
             .then(function () {
-                return this.transfer(resetIndex, document, true, true);
+                return this.transfer(resetIndex, document);
             })
             .then(function () {
                 return this.transfer(exportActions.addDefaultAsset, document.id, artboardLayerId);

@@ -233,15 +233,15 @@ define(function (require, exports) {
      *
      * @param {number} documentID
      * @param {string} name
-     * @param {boolean=} coalesce TODO possibly deprecated
+     * @param {boolean=} amendRogue If true, then amend previous history IF it was rogue (PS initiated)
      * @return {Promise}
      */
-    var newHistoryState = function (documentID, name, coalesce) {
+    var newHistoryState = function (documentID, name, amendRogue) {
         var payload = {
             documentID: documentID,
-            coalesce: !!coalesce,
             history: {
                 newState: true,
+                amendRogue: amendRogue,
                 name: name
             }
         };
@@ -251,6 +251,26 @@ define(function (require, exports) {
     newHistoryState.reads = [];
     newHistoryState.writes = [locks.JS_HISTORY];
     newHistoryState.modal = true;
+
+    /**
+     * Create a new history state, unless the current state is "rogue" (created via PS initiated event)
+     * in which case that state will be amended.
+     *
+     * This is useful when PS emits both a historyState event and another event describing some change.
+     * In the handling of the latter, since you may not be guaranteed the
+     * order of the two events, this action will either create or amended the state depending on whether
+     * historyState event was handled first or not.
+     *
+     * @param {number} documentID
+     * @return {Promise}
+     */
+    var newHistoryStateRogueSafe = function (documentID) {
+        return this.transfer(newHistoryState, documentID, null, true);
+    };
+    newHistoryStateRogueSafe.reads = [];
+    newHistoryStateRogueSafe.writes = [];
+    newHistoryStateRogueSafe.transfers = [newHistoryState];
+    newHistoryStateRogueSafe.modal = true;
 
     /**
      * Revert to the document's last saved state.
@@ -439,6 +459,7 @@ define(function (require, exports) {
     exports.incrementHistory = incrementHistory;
     exports.decrementHistory = decrementHistory;
     exports.newHistoryState = newHistoryState;
+    exports.newHistoryStateRogueSafe = newHistoryStateRogueSafe;
     exports.revertCurrentDocument = revertCurrentDocument;
     exports.handleHistoryState = handleHistoryState;
     exports.handleHistoryStateAfterSelect = handleHistoryStateAfterSelect;
