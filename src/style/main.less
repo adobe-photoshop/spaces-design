@@ -136,23 +136,20 @@ input {
 
 /* -- MASTER CONTAINER -- */
 
-.fade-in-mixin {
-    // For panels in no-doc state
-    &.main__ready .section-container,
-    // For document panels when there are active documents.
-    .panel-set__ready .section-container,
-    .panel-set__ready .section-container__no-collapse {
-        opacity: 1;
-        transition: all 200ms ease;
-        
-        &.libraries__container {
-            opacity: 0;
-        }
-        
-        &.libraries__container.libraries__ready {
-            opacity: 1;
-        }
-    }
+.panel-set {
+    height: 100%;
+    max-height: 100%;
+    display: flex;
+    position:relative;
+    width: 64rem;
+}
+
+.panel-set__container__one-panel .panel-set {
+    width: 32rem;
+}
+
+.panel-set__container__no-panel .panel-set {
+    width: 0;
 }
 
 .main {
@@ -171,7 +168,6 @@ input {
         @import (multiple) "./component-styles.less";
 
         color: @item-active;
-        .fade-in-mixin();
     }
 
     &.color-stop__dark {
@@ -179,7 +175,6 @@ input {
         @import (multiple) "./component-styles.less";
 
         color: @item-active;
-        .fade-in-mixin();
     }
 
     &.color-stop__medium {
@@ -187,7 +182,6 @@ input {
         @import (multiple) "./component-styles.less";
 
         color: @item-active;
-        .fade-in-mixin();
     }
 
     &.color-stop__original {
@@ -195,7 +189,39 @@ input {
         @import (multiple) "./component-styles.less";
 
         color: @item-active;
+    }
 
-        .fade-in-mixin();
+    &.main__ready {
+        .section-container,
+        .section-container__no-collapse {
+                opacity: 1;
+                transition: opacity 100ms ease;
+    
+                &.libraries__container {
+                    opacity: 0;
+                }
+    
+                &.libraries__container.libraries__ready {
+                    opacity: 1;
+                }
+            }
+
+        &.main__animation {
+            .panel-section {
+                transition: all 100ms linear;
+            }
+
+            .section-container {
+                transition: all 100ms ease-in;
+            }
+
+            .panel {
+                transition: right 100ms linear;
+            }
+            
+            .panel-set__container__animated .panel-set {
+                transition: width 100ms linear;
+            }            
+        }        
     }
 }

@@ -40,12 +40,15 @@ define(function (require, exports, module) {
         Guard = require("js/jsx/Guard"),
         system = require("js/util/system");
 
-    var LAYERS_LIBRARY_COL = "layersLibrariesVisible",
-        PROPERTIES_COL = "propertiesVisible";
+    // To enable animations, add a feature flags object to manifest.json and then
+    // set the property use_animations:true in that object. You will need to restart Photoshop
+    // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+    var USE_ANIMATIONS = !!(_spaces.feature_flags && _spaces.feature_flags.use_animations);
+    // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
 
     var Main = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("preferences", "panel")],
-
+        
         propTypes: {
             initialColorStop: React.PropTypes.string.isRequired
         },
@@ -59,15 +62,9 @@ define(function (require, exports, module) {
 
         getStateFromFlux: function () {
             var flux = this.getFlux(),
-                preferences = flux.store("preferences").getState(),
-                propertiesCol = preferences.get(PROPERTIES_COL, true) ? 1 : 0,
-                layersCol = preferences.get(LAYERS_LIBRARY_COL, true) ? 1 : 0,
-                numPanels = propertiesCol + layersCol,
                 colorStop = flux.store("panel").getColorStop() || this.props.initialColorStop;
 
             return {
-                numberOfPanels: numPanels,
-                singleColumnModeEnabled: preferences.get("singleColumnModeEnabled", false),
                 colorStop: colorStop
             };
         },
@@ -75,8 +72,6 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             return this.state.ready !== nextState.ready ||
                 this.state.active !== nextState.active ||
-                this.state.numberOfPanels !== nextState.numberOfPanels ||
-                this.state.singleColumnModeEnabled !== nextState.singleColumnModeEnabled ||
                 this.state.colorStop !== nextState.colorStop;
         },
 
@@ -148,18 +143,14 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var hasDocument = this.getFlux().store("application").getCurrentDocument(),
-                colorStop = this.state.colorStop || this.props.initialColorStop,
+            /* global _spaces */
+            var colorStop = this.state.colorStop || this.props.initialColorStop,
                 stopClass = "color-stop__" + colorStop.toLowerCase();
 
             var className = classnames({
                 main: true,
                 "main__ready": this.state.ready,
-                "main__no-panel": hasDocument && this.state.numberOfPanels === 0,
-                "main__one-panel":
-                    !hasDocument || this.state.numberOfPanels === 1 || this.state.singleColumnModeEnabled,
-                "main__both-panel":
-                    hasDocument && this.state.numberOfPanels === 2 && !this.state.singleColumnModeEnabled
+                "main__animation": USE_ANIMATIONS
             }, stopClass);
 
             return (
@@ -177,7 +168,7 @@ define(function (require, exports, module) {
                     <PanelSet
                         ref="panelSet"
                         active={this.state.active}
-                        singleColumnModeEnabled={this.state.singleColumnModeEnabled} />
+                        useAnimations={USE_ANIMATIONS} />
                     <Help />
                     <Search />
                     <ExportModal />

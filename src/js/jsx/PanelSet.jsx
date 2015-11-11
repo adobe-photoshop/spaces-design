@@ -86,6 +86,8 @@ define(function (require, exports, module) {
                 fluxState[panelComponent] = preferences.get(panelComponent, true);
             });
       
+            fluxState.singleColumnModeEnabled = preferences.get("singleColumnModeEnabled", false);
+
             return fluxState;
         },
 
@@ -114,10 +116,10 @@ define(function (require, exports, module) {
             } else {
                 panelWidth = 0;
             }
-
+           
             var columnCount = 0;
             if (this.state.activeDocument && this.state.activeDocumentInitialized &&
-                this.state.documentIDs.size > 0 && !this.props.singleColumnModeEnabled) {
+                this.state.documentIDs.size > 0 && !this.state.singleColumnModeEnabled) {
                 var panelStore = this.getFlux().store("panel");
                 if (this.state[panelStore.components.LAYERS_LIBRARY_COL]) {
                     columnCount++;
@@ -147,6 +149,12 @@ define(function (require, exports, module) {
         componentDidMount: function () {
             this._updatePanelSizesDebounced = _.debounce(this._updatePanelSizes, 500);
             os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
+
+            // If there is animation, we need to delay calculating panel size until after the animation is finished
+            if (this.props.useAnimations) {
+                var el = ReactDOM.findDOMNode(this.refs.panelSetTransition);
+                el.addEventListener("transitionend", this._updatePanelSizes);
+            }
         },
 
         componentWillUnmount: function () {
@@ -167,7 +175,7 @@ define(function (require, exports, module) {
                 hasDoc(prevState) !== hasDoc(this.state) ||
                 prevState[components.PROPERTIES_COL] !== this.state[components.PROPERTIES_COL] ||
                 prevState[components.LAYERS_LIBRARY_COL] !== this.state[components.LAYERS_LIBRARY_COL] ||
-                prevProps.singleColumnModeEnabled !== this.props.singleColumnModeEnabled) {
+                prevState.singleColumnModeEnabled !== this.state.singleColumnModeEnabled) {
                 this._updatePanelSizes();
             }
 
@@ -190,7 +198,7 @@ define(function (require, exports, module) {
                 return false;
             }
             
-            if (this.props.singleColumnModeEnabled !== nextProps.singleColumnModeEnabled) {
+            if (this.state.singleColumnModeEnabled !== nextState.singleColumnModeEnabled) {
                 return true;
             }
 
@@ -446,12 +454,19 @@ define(function (require, exports, module) {
             var documentPanelSet,
                 documentPanelSetClassName = classnames({
                     "panel-set": true,
-                    "panel-set__small-screen": this.props.singleColumnModeEnabled,
-                    "panel-set__not-visible": !activeDocumentInitialized,
-                    "panel-set__ready": this.state.ready
+                    "panel-set__small-screen": this.state.singleColumnModeEnabled
+                }),
+                docPanelSetContainerClasses = classnames({
+                    "panel-set__container": true,
+                    "panel-set__container__animated": true,
+                    "panel-set__not-visible": !activeDocumentInitialized
+                }),
+                noDocPanelSetContainerClasses = classnames({
+                    "panel-set__container": true,
+                    "panel-set__not-visible": activeDocumentInitialized
                 });
 
-            if (this.props.singleColumnModeEnabled) {
+            if (this.state.singleColumnModeEnabled) {
                 documentPanelSet = (
                     <div className={documentPanelSetClassName}>
                         <PanelColumn visible={activeDocumentInitialized}>
@@ -466,19 +481,22 @@ define(function (require, exports, module) {
                 );
             } else {
                 documentPanelSet = (
-                    <div className={documentPanelSetClassName}>
-                        <PanelColumn visible={activeDocumentInitialized && this.state[components.PROPERTIES_COL]}
-                                     onVisibilityToggle={handlePropertiesColumnVisibilityToggle}>
-                            {documentPanels.transformPanels}
-                            {documentPanels.appearancePanels}
-                            {documentPanels.effectPanels}
-                            {documentPanels.exportPanels}
-                        </PanelColumn>
-                        <PanelColumn visible={activeDocumentInitialized && this.state[components.LAYERS_LIBRARY_COL]}
-                                     onVisibilityToggle= {handleLayersLibraryColumnVisibilityToggle}>
-                            {documentPanels.layerPanels}
-                            {documentPanels.librariesPanel}
-                        </PanelColumn>
+                    <div className={docPanelSetContainerClasses}>
+                        <div className={documentPanelSetClassName} ref="panelSetTransition">
+                            <PanelColumn visible={activeDocumentInitialized
+                                && this.state[components.LAYERS_LIBRARY_COL]}
+                                         onVisibilityToggle= {handleLayersLibraryColumnVisibilityToggle}>
+                                {documentPanels.layerPanels}
+                                {documentPanels.librariesPanel}
+                            </PanelColumn>
+                            <PanelColumn visible={activeDocumentInitialized && this.state[components.PROPERTIES_COL]}
+                                         onVisibilityToggle={handlePropertiesColumnVisibilityToggle}>
+                                {documentPanels.transformPanels}
+                                {documentPanels.appearancePanels}
+                                {documentPanels.effectPanels}
+                                {documentPanels.exportPanels}
+                            </PanelColumn>
+                        </div>
                         <IconBar ref="iconBar">
                             <Button className={propertiesButtonClassNames}
                                 title={propertiesColumnTitle}
@@ -502,32 +520,43 @@ define(function (require, exports, module) {
             }
 
             var noDocPanelSet,
-                noDocPanelSetClassName = classnames({
-                    "panel-set": true,
-                    "panel-set__not-visible": activeDocumentInitialized
+                propertiesCol = this.state[components.PROPERTIES_COL] ? 1 : 0,
+                layersCol = this.state[components.LAYERS_LIBRARY_COL] ? 1 : 0,
+                numberOfPanels = propertiesCol + layersCol,
+                panelContainerClasses = classnames({
+                    "panel-set__container": true,
+                    "panel-set__container__no-panel": activeDocumentInitialized && numberOfPanels === 0,
+                    "panel-set__container__one-panel":
+                        !activeDocumentInitialized || numberOfPanels === 1 || this.state.singleColumnModeEnabled,
+                    "panel-set__container__both-panel":
+                        activeDocumentInitialized && numberOfPanels === 2 && !this.state.singleColumnModeEnabled
                 });
             
             if (this.state.recentFilesInitialized) {
                 noDocPanelSet = (
-                    <div className={noDocPanelSetClassName}>
-                        <PanelColumn visible="true">
-                            <RecentFiles recentFiles={this.state.recentFiles} />
-                            <ArtboardPresets />
-                        </PanelColumn>
-                        <IconBar ref="iconBar" />
+                    <div className={noDocPanelSetContainerClasses}>
+                        <div className="panel-set">
+                            <PanelColumn visible="true">
+                                <RecentFiles recentFiles={this.state.recentFiles} />
+                                <ArtboardPresets />
+                            </PanelColumn>
+                        </div>
+                        <IconBar />
                     </div>
                 );
             } else {
                 noDocPanelSet = (
-                    <div className={noDocPanelSetClassName}>
-                        <PanelColumn visible="true" />
-                        <IconBar ref="iconBar" />
+                    <div className={noDocPanelSetContainerClasses}>
+                        <div className="panel-set">
+                            <PanelColumn visible="true" />
+                        </div>
+                        <IconBar />
                     </div>
                 );
             }
             
             return (
-                <div className="panel-set__container" ref="panelSet">
+                <div className={panelContainerClasses} ref="panelSet">
                     {documentPanelSet}
                     {noDocPanelSet}
                 </div>
