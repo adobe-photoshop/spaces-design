@@ -63,7 +63,7 @@ define(function (require, exports) {
         var searchStore = this.flux.store("search");
 
         searchStore.registerSearch(ID,
-            ["CURRENT_DOC", "RECENT_DOC", "ALL_LAYER", "MENU_COMMAND", "LIBRARY"]);
+            ["CURRENT_DOC", "RECENT_DOC", "ALL_LAYER", "MENU_COMMAND", "LIBRARY", "GLOBAL_SHORTCUT"]);
 
         return Promise.resolve();
     };

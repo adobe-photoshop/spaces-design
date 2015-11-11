@@ -901,7 +901,8 @@ define(function (require, exports) {
             specs.push({
                 key: activationKey,
                 modifiers: {},
-                fn: activateTool
+                fn: activateTool,
+                name: tool.name
             });
 
             // Add U as another shortcut for rectangle tool, hidden in here for now
@@ -926,7 +927,8 @@ define(function (require, exports) {
         shortcutSpecs.push({
             key: utilShortcuts.GLOBAL.TOOLS.MASK_SELECT,
             modifiers: {},
-            fn: _vectorMaskHandler
+            fn: _vectorMaskHandler,
+            name: "Vector mask"
         });
 
         _vectorSelectMaskHandler = function () {
@@ -938,7 +940,8 @@ define(function (require, exports) {
         shortcutSpecs.push({
             key: utilShortcuts.GLOBAL.TOOLS.VECTOR_SELECT,
             modifiers: {},
-            fn: _vectorSelectMaskHandler
+            fn: _vectorSelectMaskHandler,
+            name: "Super select vector"
         });
 
         var shortcutsPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),

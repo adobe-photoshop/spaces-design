@@ -40,7 +40,7 @@ define(function (require, exports) {
         headlights = require("js/util/headlights"),
         policyActions = require("./policy"),
         preferencesActions = require("./preferences"),
-        searchActions = require("./search/menucommands");
+        searchActions = require("./search/commands");
 
     var macMenuJSON = require("text!static/menu-mac.json"),
         winMenuJSON = require("text!static/menu-win.json"),
@@ -285,10 +285,9 @@ define(function (require, exports) {
     /**
      * Call action for menu command
      *
-     * @private
      * @param {string} commandID 
      */
-    var _playMenuCommand = function (commandID) {
+    var playMenuCommand = function (commandID) {
         var menuStore = this.flux.store("menu"),
             descriptor = menuStore.getApplicationMenu().getMenuAction(commandID);
 
@@ -464,7 +463,7 @@ define(function (require, exports) {
                 return;
             }
             
-            _playMenuCommand.call(this, payload.command);
+            playMenuCommand.call(this, payload.command);
         }.bind(this);
         ui.on("menu", _adapterMenuHandler);
         
@@ -488,7 +487,6 @@ define(function (require, exports) {
     /**
      * Send info about menu commands to search store
      *
-     * @private
      * @return {Promise}
      */
     var afterStartup = function () {
@@ -533,7 +531,7 @@ define(function (require, exports) {
     exports.corruptModel = corruptModel;
     exports.resetRecess = resetRecess;
     exports.handleExecutedPlaceCommand = handleExecutedPlaceCommand;
-    exports._playMenuCommand = _playMenuCommand;
+    exports.playMenuCommand = playMenuCommand;
 
     exports.togglePolicyFrames = togglePolicyFrames;
     exports.togglePostconditions = togglePostconditions;

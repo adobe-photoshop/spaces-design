@@ -292,7 +292,7 @@ define(function (require, exports, module) {
                     }
 
                     return {
-                        id: type + "-" + item.id,
+                        id: type + "-" + item.id.toString(),
                         title: name,
                         pathInfo: newPathInfo,
                         svgType: item.iconID,
