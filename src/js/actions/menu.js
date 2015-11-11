@@ -40,7 +40,7 @@ define(function (require, exports) {
         headlights = require("js/util/headlights"),
         policyActions = require("./policy"),
         preferencesActions = require("./preferences"),
-        searchActions = require("./search/menucommands");
+        searchActions = require("./search/commands");
 
     var macMenuJSON = require("text!static/menu-mac.json"),
         winMenuJSON = require("text!static/menu-win.json"),
@@ -285,7 +285,6 @@ define(function (require, exports) {
     /**
      * Call action for menu command
      *
-     * @private
      * @param {string} commandID 
      */
     var _playMenuCommand = function (commandID) {
@@ -488,7 +487,6 @@ define(function (require, exports) {
     /**
      * Send info about menu commands to search store
      *
-     * @private
      * @return {Promise}
      */
     var afterStartup = function () {

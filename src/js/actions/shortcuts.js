@@ -33,6 +33,7 @@ define(function (require, exports) {
     var events = require("js/events"),
         locks = require("js/locks"),
         policy = require("js/actions/policy"),
+        globalShortcutActions = require("./search/commands"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         dom = require("js/util/dom");
@@ -47,9 +48,10 @@ define(function (require, exports) {
      * @param {string=} id Named identifier of this shortcut, used for later removal
      * @param {boolean=} capture Whether the shortcut should be handled during
      *  bubble (default) or capture phase
+     * @param {string=} name of the shortcut
      * @return {Promise}
      */
-    var addShortcut = function (key, modifiers, fn, id, capture) {
+    var addShortcut = function (key, modifiers, fn, id, capture, name) {
         var shortcutStore = this.flux.store("shortcut");
         if (shortcutStore.getByID(id)) {
             return Promise.reject("Shortcut already exists: " + id);
@@ -68,7 +70,8 @@ define(function (require, exports) {
                     key: key,
                     modifiers: modifiers,
                     fn: fn,
-                    policy: policyID
+                    policy: policyID,
+                    name: name ? name : null
                 };
 
                 this.dispatch(events.shortcut.ADD_SHORTCUT, payload);
@@ -164,6 +167,27 @@ define(function (require, exports) {
     };
 
     /**
+     * Executes a given shortcut given an id of some sort
+     * 
+     * @param {string} id of shortcut clicked
+     * @return {Promise}
+     */
+    var _executeShortcut = function (id) {
+        var shortcutStore = this.flux.store("shortcut"),
+            shortcuts = shortcutStore.getState().shortcuts;
+
+        var shortcutFilter = shortcuts.filter(function (shortcut) {
+            return (shortcut.name && shortcut.name.toLowerCase() === id.toLowerCase());
+        });
+
+        if (shortcutFilter.length === 1) {
+            shortcutFilter[0].fn();
+        } else {
+            return Promise.reject(new Error("Shortcut was not unique in store " + id));
+        }
+    };
+
+    /**
      * Blur the active element on KEYBOARDFOCUS_CHANGED adapter events.
      *
      * @private
@@ -242,6 +266,20 @@ define(function (require, exports) {
     };
 
     /**
+     * Send info about menu commands to search store
+     *
+     * @return {Promise}
+     */
+    var afterStartup = function () {
+        globalShortcutActions._registerGlobalShortcutSearch.call(this);
+        return Promise.resolve();
+    };
+    afterStartup.action = {
+        reads: [],
+        writes: []
+    };
+
+    /**
      * Remove event handlers.
      *
      * @private
@@ -264,7 +302,9 @@ define(function (require, exports) {
     exports.addShortcut = addShortcut;
     exports.addShortcuts = addShortcuts;
     exports.removeShortcut = removeShortcut;
+    exports._executeShortcut = _executeShortcut;
 
     exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 });
