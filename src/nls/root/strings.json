@@ -470,7 +470,8 @@
             "RECENT_DOC": "Recent Documents",
             "MENU_COMMAND": "Menu Commands",
             "LIBRARY": "All Libraries",
-            "FILTER": "Limit search to…"
+            "FILTER": "Limit search to…",
+            "GLOBAL_SHORTCUT": "Global Shortcuts"
         },
         "CATEGORIES": {
             "CURRENT_DOC": "Open Documents",
@@ -488,7 +489,8 @@
             "LIBRARY": "All Libraries",
             "GRAPHIC": "Graphics",
             "LAYERSTYLE": "Layer Styles",
-            "CHARACTERSTYLE": "Character Styles"
+            "CHARACTERSTYLE": "Character Styles",
+            "GLOBAL_SHORTCUT": "Global Shortcuts"
         },
         "MODIFIERS": {
             "COMMAND": "Cmd",
