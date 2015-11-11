@@ -38,8 +38,7 @@ define(function (require, exports) {
      * Layers can be moved using type tool by holding down cmd
      * We need to reset the bounds correctly during this
      */
-    var _moveHandler,
-        _typeChangedHandler,
+    var _typeChangedHandler,
         _layerCreatedHandler,
         _layerDeletedHandler,
         _toolModalStateChangedHandler;
@@ -102,9 +101,6 @@ define(function (require, exports) {
      */
     var select = function () {
         // If this is set, means we didn't get to deselect the tool last time
-        if (_moveHandler) {
-            descriptor.removeListener("move", _moveHandler);
-        }
         if (_typeChangedHandler) {
             descriptor.removeListener("updateTextProperties", _typeChangedHandler);
         }
@@ -117,14 +113,6 @@ define(function (require, exports) {
         if (_toolModalStateChangedHandler) {
             descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
         }
-
-        _moveHandler = function () {
-            var documentStore = this.flux.store("application"),
-                currentDocument = documentStore.getCurrentDocument();
-
-            this.flux.actions.layers.resetBounds(currentDocument, currentDocument.layers.allSelected);
-        }.bind(this);
-        descriptor.addListener("move", _moveHandler);
 
         _typeChangedHandler = this.flux.actions.toolType.updateTextPropertiesHandlerThrottled.bind(this);
         descriptor.addListener("updateTextProperties", _typeChangedHandler);
@@ -209,13 +197,11 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var deselect = function () {
-        descriptor.removeListener("move", _moveHandler);
         descriptor.removeListener("updateTextProperties", _typeChangedHandler);
         descriptor.removeListener("createTextLayer", _layerCreatedHandler);
         descriptor.removeListener("deleteTextLayer", _layerDeletedHandler);
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
         
-        _moveHandler = null;
         _typeChangedHandler = null;
         _layerCreatedHandler = null;
         _layerDeletedHandler = null;
