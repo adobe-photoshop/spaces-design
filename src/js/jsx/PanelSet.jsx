@@ -421,6 +421,16 @@ define(function (require, exports, module) {
                         <IconBar />
                     </div>
                 );
+            } else if (this.props.singleColumnModeEnabled) {
+                // Just show single column
+                return (
+                    <div className="panel-set__container panel-set__container__small-screen">
+                        <div ref="panelSet"
+                             className="panel-set">
+                            <PanelColumn visible={true} />
+                        </div>
+                    </div>
+                );
             } else if (this.state.propertiesVisible && this.state.layersLibrariesVisible) {
                 return (
                     //  Show 2 columns and toolbar
@@ -433,8 +443,8 @@ define(function (require, exports, module) {
                         <IconBar />
                     </div>
                 );
-            } else if (this.state.propertiesVisible ||
-                       this.state.layersLibrariesVisible &&
+            } else if (this.state.propertiesVisible || 
+                       this.state.layersLibrariesVisible && 
                        !this.props.singleColumnModeEnabled) {
                 return (
                     // Just show one column and toolbar
@@ -457,17 +467,6 @@ define(function (require, exports, module) {
                             <PanelColumn visible={false} />
                         </div>
                         <IconBar />
-                    </div>
-                );
-            } else if (this.props.singleColumnModeEnabled) {
-                // Just show single column
-                return (
-                    <div className="panel-set__container panel-set__container__small-screen">
-                        <div ref="panelSet"
-                             className="panel-set">
-                            <PanelColumn visible={true}>
-                            </PanelColumn>
-                        </div>
                     </div>
                 );
             }
