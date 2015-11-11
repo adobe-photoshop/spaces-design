@@ -40,9 +40,11 @@ define(function (require, exports) {
             value: value
         });
     };
-    setPreference.reads = [];
-    setPreference.writes = [locks.JS_PREF];
-    setPreference.modal = true;
+    setPreference.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        modal: true
+    };
 
     /**
      * Bulk set preferences.
@@ -55,9 +57,11 @@ define(function (require, exports) {
             prefs: prefs
         });
     };
-    setPreferences.reads = [];
-    setPreferences.writes = [locks.JS_PREF];
-    setPreferences.modal = true;
+    setPreferences.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        modal: true
+    };
 
     /**
      * Delete a single preference.
@@ -70,9 +74,11 @@ define(function (require, exports) {
             key: key
         });
     };
-    deletePreference.reads = [];
-    deletePreference.writes = [locks.JS_PREF];
-    deletePreference.modal = true;
+    deletePreference.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        modal: true
+    };
 
     /**
      * Clear all preferences.
@@ -82,9 +88,11 @@ define(function (require, exports) {
     var clearPreferences = function () {
         return this.dispatchAsync(events.preferences.CLEAR_PREFERENCES);
     };
-    clearPreferences.reads = [];
-    clearPreferences.writes = [locks.JS_PREF];
-    clearPreferences.modal = true;
+    clearPreferences.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        modal: true
+    };
 
     exports.setPreference = setPreference;
     exports.setPreferences = setPreferences;

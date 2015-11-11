@@ -117,9 +117,11 @@ define(function (require, exports) {
 
         return descriptor.batchPlayObjects([layerLib.deselectAll(), defaultObj, selectObj]);
     };
-    installShapeDefaults.reads = [locks.JS_APP, locks.JS_DOC];
-    installShapeDefaults.writes = [locks.PS_TOOL, locks.PS_DOC];
-    installShapeDefaults.modal = true;
+    installShapeDefaults.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.PS_TOOL, locks.PS_DOC],
+        modal: true
+    };
 
     /**
      * Calculates the policy rectangles for the given bounds object
@@ -316,15 +318,17 @@ define(function (require, exports) {
                 return this.transfer(guides.resetGuidePolicies);
             });
     };
-    resetBorderPolicies.reads = [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI];
-    resetBorderPolicies.writes = [];
-    resetBorderPolicies.transfers = [
-        policy.removePointerPolicies,
-        policy.addPointerPolicies,
-        policy.syncAllPolicies,
-        guides.resetGuidePolicies
-    ];
-    resetBorderPolicies.modal = true;
+    resetBorderPolicies.action = {
+        reads: [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI],
+        writes: [],
+        transfers: [
+            policy.removePointerPolicies,
+            policy.addPointerPolicies,
+            policy.syncAllPolicies,
+            guides.resetGuidePolicies
+        ],
+        modal: true
+    };
 
     /**
      * Swaps the policies of the current tool with the next tool
@@ -390,14 +394,16 @@ define(function (require, exports) {
                     });
             }.bind(this));
     };
-    swapPolicies.reads = [locks.JS_TOOL];
-    swapPolicies.writes = [];
-    swapPolicies.transfers = [
-        policy.removeKeyboardPolicies, policy.addKeyboardPolicies,
-        policy.removePointerPolicies, policy.addPointerPolicies,
-        policy.syncAllPolicies
-    ];
-    swapPolicies.modal = true;
+    swapPolicies.action = {
+        reads: [locks.JS_TOOL],
+        writes: [],
+        transfers: [
+            policy.removeKeyboardPolicies, policy.addKeyboardPolicies,
+            policy.removePointerPolicies, policy.addPointerPolicies,
+            policy.syncAllPolicies
+        ],
+        modal: true
+    };
 
     /**
      * Activates a logical tool
@@ -462,19 +468,21 @@ define(function (require, exports) {
                 this.dispatch(events.tool.SELECT_TOOL, result);
             });
     };
-    selectTool.reads = [];
-    selectTool.writes = [locks.JS_TOOL, locks.PS_TOOL];
-    selectTool.transfers = [swapPolicies, policy.removePointerPolicies,
-        "toolSuperselect.select", "toolSuperselect.deselect",
-        "toolSuperselectVector.select", "toolSuperselectVector.deselect",
-        "toolSuperselectType.select", "toolSuperselectType.deselect",
-        "toolEllipse.select",
-        "toolPen.select", "toolPen.deselect",
-        "toolRectangle.select",
-        "toolSampler.select", "toolSampler.deselect",
-        "toolType.select", "toolType.deselect"
-    ];
-    selectTool.modal = true;
+    selectTool.action = {
+        reads: [],
+        writes: [locks.JS_TOOL, locks.PS_TOOL],
+        transfers: [swapPolicies, policy.removePointerPolicies,
+            "toolSuperselect.select", "toolSuperselect.deselect",
+            "toolSuperselectVector.select", "toolSuperselectVector.deselect",
+            "toolSuperselectType.select", "toolSuperselectType.deselect",
+            "toolEllipse.select",
+            "toolPen.select", "toolPen.deselect",
+            "toolRectangle.select",
+            "toolSampler.select", "toolSampler.deselect",
+            "toolType.select", "toolType.deselect"
+        ],
+        modal: true
+    };
 
     /**
      * Initialize the current tool based on the current native tool
@@ -508,9 +516,11 @@ define(function (require, exports) {
                 return this.transfer(selectTool, defaultTool);
             });
     };
-    initTool.reads = [locks.JS_TOOL];
-    initTool.writes = [];
-    initTool.transfers = [selectTool];
+    initTool.action = {
+        reads: [locks.JS_TOOL],
+        writes: [],
+        transfers: [selectTool]
+    };
 
     /**
      * Notify the stores of the modal state change
@@ -523,9 +533,11 @@ define(function (require, exports) {
             modalState: modalState
         });
     };
-    changeModalState.reads = [];
-    changeModalState.writes = [locks.JS_TOOL];
-    changeModalState.modal = true;
+    changeModalState.action = {
+        reads: [],
+        writes: [locks.JS_TOOL],
+        modal: true
+    };
 
     /**
      * Async handler for the toolModalStateChanged event.
@@ -561,11 +573,13 @@ define(function (require, exports) {
 
         return Promise.join(changeStatePromise, policyPromise, cloakPromise);
     };
-    handleToolModalStateChanged.reads = [];
-    handleToolModalStateChanged.writes = [];
-    handleToolModalStateChanged.transfers = [policy.suspendAllPolicies, policy.restoreAllPolicies,
-        changeModalState, "ui.cloak"];
-    handleToolModalStateChanged.modal = true;
+    handleToolModalStateChanged.action = {
+        reads: [],
+        writes: [],
+        transfers: [policy.suspendAllPolicies, policy.restoreAllPolicies,
+        changeModalState, "ui.cloak"],
+        modal: true
+    };
 
     /**
      * Change the tool's vector mask mode
@@ -783,11 +797,13 @@ define(function (require, exports) {
 
         headlights.logEvent("tools", "mask-mode", String(currentLayer.kind));
     };
-    changeVectorMaskMode.reads = [locks.JS_APP, locks.JS_TOOL, locks.PS_DOC, locks.PS_TOOL];
-    changeVectorMaskMode.writes = [locks.JS_TOOL, locks.PS_DOC];
-    changeVectorMaskMode.modal = true;
-    changeVectorMaskMode.transfers = [selectTool, policy.addPointerPolicies, policy.removePointerPolicies,
-        installShapeDefaults, "layers.resetLayers"];
+    changeVectorMaskMode.action = {
+        reads: [locks.JS_APP, locks.JS_TOOL, locks.PS_DOC, locks.PS_TOOL],
+        writes: [locks.JS_TOOL, locks.PS_DOC],
+        modal: true,
+        transfers: [selectTool, policy.addPointerPolicies, policy.removePointerPolicies,
+            installShapeDefaults, "layers.resetLayers"]
+    };
 
     /**
      * Enter the free transform path mode modal tool state. 
@@ -804,9 +820,11 @@ define(function (require, exports) {
             });
         return Promise.resolve();
     };
-    enterPathModalState.reads = [];
-    enterPathModalState.writes = [];
-    enterPathModalState.modal = true;
+    enterPathModalState.action = {
+        reads: [],
+        writes: [],
+        modal: true
+    };
 
     /**
      * Event handler initialized in beforeStartup.
@@ -922,10 +940,12 @@ define(function (require, exports) {
 
         return Promise.join(initToolPromise, shortcutsPromise);
     };
-    beforeStartup.modal = true;
-    beforeStartup.reads = [locks.JS_APP, locks.JS_TOOL];
-    beforeStartup.writes = [locks.PS_TOOL];
-    beforeStartup.transfers = [shortcuts.addShortcuts, initTool, changeVectorMaskMode];
+    beforeStartup.action = {
+        modal: true,
+        reads: [locks.JS_APP, locks.JS_TOOL],
+        writes: [locks.PS_TOOL],
+        transfers: [shortcuts.addShortcuts, initTool, changeVectorMaskMode]
+    };
 
     /**
      * Remove event handlers.
@@ -941,9 +961,11 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.modal = true;
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        modal: true,
+        reads: [],
+        writes: []
+    };
 
     exports.changeVectorMaskMode = changeVectorMaskMode;
     exports.installShapeDefaults = installShapeDefaults;

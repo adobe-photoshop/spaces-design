@@ -337,9 +337,11 @@ define(function (require, exports) {
     var openExportPanel = function () {
         return this.transfer(dialog.openDialog, exportStore.EXPORT_DIALOG_ID);
     };
-    openExportPanel.reads = [];
-    openExportPanel.writes = [];
-    openExportPanel.transfers = [dialog.openDialog];
+    openExportPanel.action = {
+        reads: [],
+        writes: [],
+        transfers: [dialog.openDialog]
+    };
 
     /**
      * Close the export modal dialog
@@ -349,9 +351,11 @@ define(function (require, exports) {
     var closeExportPanel = function () {
         return this.transfer(dialog.closeDialog, exportStore.EXPORT_DIALOG_ID);
     };
-    closeExportPanel.reads = [];
-    closeExportPanel.writes = [];
-    closeExportPanel.transfers = [dialog.closeDialog];
+    closeExportPanel.action = {
+        reads: [],
+        writes: [],
+        transfers: [dialog.closeDialog]
+    };
 
     /**
      * Merge the given set of asset properties into the Export Asset model and persist in the the Ps metadata
@@ -405,8 +409,10 @@ define(function (require, exports) {
                 }
             });
     };
-    updateExportAsset.reads = [locks.JS_DOC];
-    updateExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
+    updateExportAsset.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.JS_EXPORT, locks.PS_DOC]
+    };
 
     /**
      * Set the numerical scale of the asset specified by the given index
@@ -420,9 +426,11 @@ define(function (require, exports) {
     var updateLayerAssetScale = function (document, layers, assetIndex, scale) {
         return this.transfer(updateExportAsset, document, layers, assetIndex, { scale: scale || 1 });
     };
-    updateLayerAssetScale.reads = [];
-    updateLayerAssetScale.writes = [];
-    updateLayerAssetScale.transfers = [updateExportAsset];
+    updateLayerAssetScale.action = {
+        reads: [],
+        writes: [],
+        transfers: [updateExportAsset]
+    };
 
     /**
      * Set the filename suffix of the asset specified by the given index
@@ -436,9 +444,11 @@ define(function (require, exports) {
     var updateLayerAssetSuffix = function (document, layers, assetIndex, suffix) {
         return this.transfer(updateExportAsset, document, layers, assetIndex, { suffix: suffix });
     };
-    updateLayerAssetSuffix.reads = [];
-    updateLayerAssetSuffix.writes = [];
-    updateLayerAssetSuffix.transfers = [updateExportAsset];
+    updateLayerAssetSuffix.action = {
+        reads: [],
+        writes: [],
+        transfers: [updateExportAsset]
+    };
 
     /**
      * Set the format of the asset specified by the given index
@@ -452,9 +462,11 @@ define(function (require, exports) {
     var updateLayerAssetFormat = function (document, layers, assetIndex, format) {
         return this.transfer(updateExportAsset, document, layers, assetIndex, { format: format });
     };
-    updateLayerAssetFormat.reads = [];
-    updateLayerAssetFormat.writes = [];
-    updateLayerAssetFormat.transfers = [updateExportAsset];
+    updateLayerAssetFormat.action = {
+        reads: [],
+        writes: [],
+        transfers: [updateExportAsset]
+    };
 
     /**
      * Adds an asset, or assets, to the end of the document's root asset list, or to that of a set of layers.
@@ -520,9 +532,11 @@ define(function (require, exports) {
                 return _insertAssetsAtIndex.call(this, document, _layers, assetIndex, _props);
             });
     };
-    addAsset.reads = [locks.JS_DOC];
-    addAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
-    addAsset.transfers = [];
+    addAsset.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.JS_EXPORT, locks.PS_DOC],
+        transfers: []
+    };
 
     /**
      * Add a default export asset to the layer specified by layerID, if it doesn't already have any assets.
@@ -558,9 +572,11 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
-    addDefaultAsset.reads = [locks.JS_DOC, locks.JS_EXPORT];
-    addDefaultAsset.writes = [];
-    addDefaultAsset.transfers = [updateExportAsset];
+    addDefaultAsset.action = {
+        reads: [locks.JS_DOC, locks.JS_EXPORT],
+        writes: [],
+        transfers: [updateExportAsset]
+    };
 
     /**
      * Delete the Export Asset configuration specified by the given index
@@ -591,8 +607,10 @@ define(function (require, exports) {
                 return _syncExportMetadata.call(this, documentID, layerIDs);
             });
     };
-    deleteExportAsset.reads = [locks.JS_DOC];
-    deleteExportAsset.writes = [locks.JS_EXPORT, locks.PS_DOC];
+    deleteExportAsset.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.JS_EXPORT, locks.PS_DOC]
+    };
 
     /**
      * Sets the exportEnabled flag for a given layer or layers
@@ -648,9 +666,11 @@ define(function (require, exports) {
             return quickAddPromise;
         }
     };
-    setLayerExportEnabled.reads = [];
-    setLayerExportEnabled.writes = [locks.JS_DOC, locks.PS_DOC];
-    setLayerExportEnabled.transfers = [addAsset];
+    setLayerExportEnabled.action = {
+        reads: [],
+        writes: [locks.JS_DOC, locks.PS_DOC],
+        transfers: [addAsset]
+    };
 
     /**
      * Update the export store with the new service availability flag;
@@ -661,8 +681,10 @@ define(function (require, exports) {
     var setServiceAvailable = function (available) {
         return this.dispatchAsync(events.export.SERVICE_STATUS_CHANGED, { serviceAvailable: !!available });
     };
-    setServiceAvailable.reads = [];
-    setServiceAvailable.writes = [locks.JS_EXPORT];
+    setServiceAvailable.action = {
+        reads: [],
+        writes: [locks.JS_EXPORT]
+    };
 
     /**
      * Prompt the user to choose a folder by opening an OS dialog.
@@ -686,9 +708,11 @@ define(function (require, exports) {
                 return this.transfer(policyActions.restoreAllPolicies);
             });
     };
-    promptForFolder.reads = [];
-    promptForFolder.writes = locks.ALL_LOCKS;
-    promptForFolder.transfers = [policyActions.suspendAllPolicies, policyActions.restoreAllPolicies];
+    promptForFolder.action = {
+        reads: [],
+        writes: locks.ALL_LOCKS,
+        transfers: [policyActions.suspendAllPolicies, policyActions.restoreAllPolicies]
+    };
 
     /**
      * Export all layer assets for the given document for which export has been enabled (layer.exportEnabled)
@@ -774,9 +798,11 @@ define(function (require, exports) {
                     });
             });
     };
-    exportLayerAssets.reads = [locks.JS_DOC];
-    exportLayerAssets.writes = [locks.JS_EXPORT];
-    exportLayerAssets.transfers = [promptForFolder, addAsset, setServiceAvailable];
+    exportLayerAssets.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.JS_EXPORT],
+        transfers: [promptForFolder, addAsset, setServiceAvailable]
+    };
 
     /**
      * Export all document-level assets for the given document
@@ -831,9 +857,11 @@ define(function (require, exports) {
                     });
             });
     };
-    exportDocumentAssets.reads = [locks.JS_DOC, locks.JS_EXPORT];
-    exportDocumentAssets.writes = [];
-    exportDocumentAssets.transfers = [promptForFolder, addAsset, setServiceAvailable];
+    exportDocumentAssets.action = {
+        reads: [locks.JS_DOC, locks.JS_EXPORT],
+        writes: [],
+        transfers: [promptForFolder, addAsset, setServiceAvailable]
+    };
     
     /**
      * Copy file from one location to another.
@@ -849,9 +877,11 @@ define(function (require, exports) {
 
         return _exportService.copyFile(sourcePath, targetPath);
     };
-    copyFile.reads = [];
-    copyFile.writes = [];
-    copyFile.transfers = [setServiceAvailable];
+    copyFile.action = {
+        reads: [],
+        writes: [],
+        transfers: [setServiceAvailable]
+    };
     
     /**
      * Delete files at specific locations.
@@ -866,9 +896,11 @@ define(function (require, exports) {
 
         return _exportService.deleteFiles(filePaths);
     };
-    deleteFiles.reads = [];
-    deleteFiles.writes = [];
-    deleteFiles.transfers = [setServiceAvailable];
+    deleteFiles.action = {
+        reads: [],
+        writes: [],
+        transfers: [setServiceAvailable]
+    };
 
     /**
      * Update the both the store state, and the preferences, with useArtboardPrefix
@@ -882,9 +914,11 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, prefPromise);
     };
-    setUseArtboardPrefix.reads = [];
-    setUseArtboardPrefix.writes = [locks.JS_EXPORT, locks.JS_PREF];
-    setUseArtboardPrefix.transfers = [preferences.setPreference];
+    setUseArtboardPrefix.action = {
+        reads: [],
+        writes: [locks.JS_EXPORT, locks.JS_PREF],
+        transfers: [preferences.setPreference]
+    };
 
     /**
      * After start up, ensure that generator is enabled, and then initialize the export service
@@ -975,8 +1009,10 @@ define(function (require, exports) {
                 return false;
             });
     };
-    afterStartup.reads = [];
-    afterStartup.writes = [];
+    afterStartup.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * Handle the standard onReset action
@@ -996,8 +1032,10 @@ define(function (require, exports) {
                 _exportService = null;
             });
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
 
     exports.openExportPanel = openExportPanel;
     exports.closeExportPanel = closeExportPanel;

@@ -83,10 +83,12 @@ define(function (require, exports) {
             }
         }
     };
-    select.reads = [locks.JS_APP, locks.JS_DOC];
-    select.writes = [];
-    select.transfers = ["policy.setMode", "layers.resetLayers"];
-    select.modal = true;
+    select.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        transfers: ["policy.setMode", "layers.resetLayers"],
+        modal: true
+    };
 
     /**
      * @private
@@ -95,10 +97,12 @@ define(function (require, exports) {
         return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
             UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
     };
-    deselect.reads = [];
-    deselect.writes = [];
-    deselect.transfers = ["policy.setMode"];
-    deselect.modal = true;
+    deselect.action = {
+        reads: [],
+        writes: [],
+        transfers: ["policy.setMode"],
+        modal: true
+    };
 
     exports.select = select;
     exports.deselect = deselect;

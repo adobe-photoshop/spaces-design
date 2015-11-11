@@ -76,10 +76,12 @@ define(function (require, exports) {
                 return policyID;
             });
     };
-    addShortcut.reads = [];
-    addShortcut.writes = [locks.JS_SHORTCUT];
-    addShortcut.transfers = [policy.addKeydownPolicy];
-    addShortcut.modal = true;
+    addShortcut.action = {
+        reads: [],
+        writes: [locks.JS_SHORTCUT],
+        transfers: [policy.addKeydownPolicy],
+        modal: true
+    };
 
     /**
      * Add keyboard shortcuts in bulk.
@@ -124,10 +126,12 @@ define(function (require, exports) {
                 return policyID;
             });
     };
-    addShortcuts.reads = [];
-    addShortcuts.writes = [locks.JS_SHORTCUT];
-    addShortcuts.transfers = [policy.addKeyboardPolicies];
-    addShortcuts.modal = true;
+    addShortcuts.action = {
+        reads: [],
+        writes: [locks.JS_SHORTCUT],
+        transfers: [policy.addKeyboardPolicies],
+        modal: true
+    };
 
     /**
      * Remove a keyboard shortcut command. Unregisters the handler function and unsets
@@ -152,10 +156,12 @@ define(function (require, exports) {
                 });
             });
     };
-    removeShortcut.reads = [];
-    removeShortcut.writes = [locks.JS_SHORTCUT];
-    removeShortcut.transfers = [policy.removeKeyboardPolicies];
-    removeShortcut.modal = true;
+    removeShortcut.action = {
+        reads: [],
+        writes: [locks.JS_SHORTCUT],
+        transfers: [policy.removeKeyboardPolicies],
+        modal: true
+    };
 
     /**
      * Blur the active element on KEYBOARDFOCUS_CHANGED adapter events.
@@ -229,9 +235,11 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [locks.JS_SHORTCUT];
-    beforeStartup.writes = [];
-    beforeStartup.modal = true;
+    beforeStartup.action = {
+        reads: [locks.JS_SHORTCUT],
+        writes: [],
+        modal: true
+    };
 
     /**
      * Remove event handlers.
@@ -247,9 +255,11 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
-    onReset.modal = true;
+    onReset.action = {
+        reads: [],
+        writes: [],
+        modal: true
+    };
 
     exports.addShortcut = addShortcut;
     exports.addShortcuts = addShortcuts;

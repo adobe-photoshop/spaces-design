@@ -175,8 +175,10 @@ define(function (require, exports) {
     var addEffect = function (document, layers, type) {
         return _upsertEffectProperties.call(this, document, layers, null, { enabled: true }, undefined, type);
     };
-    addEffect.reads = [locks.PS_DOC, locks.JS_DOC];
-    addEffect.writes = [locks.PS_DOC, locks.JS_DOC];
+    addEffect.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the effect enabled flag for all selected layers
@@ -192,8 +194,10 @@ define(function (require, exports) {
         return _upsertEffectProperties.call(
             this, document, layers, effectIndex, { enabled: enabled }, 0, effectType);
     };
-    setEffectEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
-    setEffectEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
+    setEffectEnabled.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Delete the selected Shadow for all selected layers
@@ -221,8 +225,10 @@ define(function (require, exports) {
         // Then update photoshop
         return _syncStoreToPs.call(this, document, layers, null, effectType, null);
     };
-    deleteEffect.reads = [locks.PS_DOC, locks.JS_DOC];
-    deleteEffect.writes = [locks.PS_DOC, locks.JS_DOC];
+    deleteEffect.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the effect alpha value for all selected layers. Preserves the opaque color.
@@ -246,8 +252,10 @@ define(function (require, exports) {
         return _upsertEffectProperties.call(
             this, document, layers, effectIndex, alphaUpdater, coalesce, effectType);
     };
-    setAlpha.reads = [locks.PS_DOC, locks.JS_DOC];
-    setAlpha.writes = [locks.PS_DOC, locks.JS_DOC];
+    setAlpha.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the effect Color for all selected layers
@@ -280,8 +288,10 @@ define(function (require, exports) {
                 this, document, layers, effectIndex, { color: normalizedColor }, coalesce, effectType);
         }
     };
-    setColor.reads = [locks.PS_DOC, locks.JS_DOC];
-    setColor.writes = [locks.PS_DOC, locks.JS_DOC];
+    setColor.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the Drop Shadow X coordinate for all selected layers
@@ -296,8 +306,10 @@ define(function (require, exports) {
         return _upsertEffectProperties.call(
            this, document, layers, shadowIndex, { x: x }, null, type);
     };
-    setShadowX.reads = [locks.PS_DOC, locks.JS_DOC];
-    setShadowX.writes = [locks.PS_DOC, locks.JS_DOC];
+    setShadowX.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the Drop Shadow Y coordinate for all selected layers
@@ -312,8 +324,10 @@ define(function (require, exports) {
         return _upsertEffectProperties.call(
            this, document, layers, shadowIndex, { y: y }, null, type);
     };
-    setShadowY.reads = [locks.PS_DOC, locks.JS_DOC];
-    setShadowY.writes = [locks.PS_DOC, locks.JS_DOC];
+    setShadowY.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the Drop Shadow Blur value for all selected layers
@@ -328,8 +342,10 @@ define(function (require, exports) {
         return _upsertEffectProperties.call(
             this, document, layers, shadowIndex, { blur: blur }, null, type);
     };
-    setShadowBlur.reads = [locks.PS_DOC, locks.JS_DOC];
-    setShadowBlur.writes = [locks.PS_DOC, locks.JS_DOC];
+    setShadowBlur.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the Drop Shadow Spread value for all selected layers
@@ -344,8 +360,10 @@ define(function (require, exports) {
         return _upsertEffectProperties.call(
             this, document, layers, shadowIndex, { spread: spread }, null, type);
     };
-    setShadowSpread.reads = [locks.PS_DOC, locks.JS_DOC];
-    setShadowSpread.writes = [locks.PS_DOC, locks.JS_DOC];
+    setShadowSpread.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
     
     /**
      * Set the effect Blend Mode value for all selected layers
@@ -361,8 +379,10 @@ define(function (require, exports) {
         return _upsertEffectProperties.call(
            this, document, layers, effectIndex, { blendMode: blendMode }, null, effectType);
     };
-    setBlendMode.reads = [locks.PS_DOC, locks.JS_DOC];
-    setBlendMode.writes = [locks.PS_DOC, locks.JS_DOC];
+    setBlendMode.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
     
     /**
      * Set the size of Stroke Effect for all selected layers
@@ -377,8 +397,10 @@ define(function (require, exports) {
         return _upsertEffectProperties.call(
            this, document, layers, effectIndex, { strokeSize: size }, null, LayerEffect.STROKE);
     };
-    setStrokeSize.reads = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeSize.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeSize.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
     
     /**
      * Set the style of Stroke Effect for all selected layers
@@ -393,8 +415,10 @@ define(function (require, exports) {
         return _upsertEffectProperties.call(
            this, document, layers, effectIndex, { style: style }, null, LayerEffect.STROKE);
     };
-    setStrokeStyle.reads = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeStyle.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeStyle.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Duplicates the layer effects of the source layer on all the target layers
@@ -532,8 +556,10 @@ define(function (require, exports) {
         // Then update photoshop
         return _syncStoreToPs.call(this, document, targetLayers, false, masterEffectTypes, options);
     };
-    duplicateLayerEffects.reads = [locks.PS_DOC, locks.JS_DOC];
-    duplicateLayerEffects.writes = [locks.PS_DOC, locks.JS_DOC];
+    duplicateLayerEffects.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     exports.addEffect = addEffect;
     exports.deleteEffect = deleteEffect;

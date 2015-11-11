@@ -44,8 +44,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    syncAction.writes = locks.ALL_LOCKS;
-
+    syncAction.action = {
+        writes: locks.ALL_LOCKS
+    };
+    
     /**
      * Example asynchronous command. Returned promise does not resolve until all
      * events have been dispatched.
@@ -79,7 +81,9 @@ define(function (require, exports) {
      * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
      */
     var asyncActionReadWrite = function () { return async.apply(this, arguments); };
-    asyncActionReadWrite.writes = locks.ALL_LOCKS;
+    asyncActionReadWrite.action = {
+        writes: locks.ALL_LOCKS
+    };
 
     /**
      * Example asynchonous action. This action acquires all read locks but no
@@ -90,8 +94,10 @@ define(function (require, exports) {
      * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
      */
     var asyncActionReadOnly = function () { return async.apply(this, arguments); };
-    asyncActionReadOnly.reads = locks.ALL_LOCKS;
-    asyncActionReadOnly.writes = [];
+    asyncActionReadOnly.action = {
+        reads: locks.ALL_LOCKS,
+        writes: []
+    };
 
     exports.syncAction = syncAction;
     exports.asyncActionReadOnly = asyncActionReadOnly;

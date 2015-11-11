@@ -442,9 +442,11 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, positionPromise);
     };
-    setPosition.reads = [];
-    setPosition.writes = [locks.PS_DOC, locks.JS_DOC];
-    setPosition.transfers = [layerActions.resetIndex];
+    setPosition.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetIndex]
+    };
 
     /**
      * Swaps the two given layers top-left positions
@@ -534,9 +536,11 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, swapPromise);
     };
-    swapLayers.reads = [];
-    swapLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    swapLayers.transfers = [layerActions.resetIndex];
+    swapLayers.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetIndex]
+    };
 
     /**
      * Sets the given layers' sizes
@@ -640,9 +644,11 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetLayers, document, typeLayers, true);
             });
     };
-    setSize.reads = [];
-    setSize.writes = [locks.PS_DOC, locks.JS_DOC];
-    setSize.transfers = [layerActions.resetLayers];
+    setSize.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetLayers]
+    };
     
     /**
      * Asks photoshop to flip, either horizontally or vertically.
@@ -704,9 +710,11 @@ define(function (require, exports) {
     var flipX = function (document, layers) {
         return _flip.call(this, document, layers, "horizontal");
     };
-    flipX.reads = [];
-    flipX.writes = [locks.JS_DOC, locks.PS_DOC];
-    flipX.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
+    flipX.action = {
+        reads: [],
+        writes: [locks.JS_DOC, locks.PS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+    };
     
     /**
      * Helper command to flip vertically
@@ -719,9 +727,11 @@ define(function (require, exports) {
     var flipY = function (document, layers) {
         return _flip.call(this, document, layers, "vertical");
     };
-    flipY.reads = [];
-    flipY.writes = [locks.JS_DOC, locks.JS_DOC];
-    flipY.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
+    flipY.action = {
+        reads: [],
+        writes: [locks.JS_DOC, locks.JS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+    };
     
     /**
      * Helper command to flip selected layers in the current document horizontally
@@ -740,9 +750,11 @@ define(function (require, exports) {
         
         return this.transfer(flipX, currentDocument, selectedLayers);
     };
-    flipXCurrentDocument.reads = [locks.PS_APP];
-    flipXCurrentDocument.writes = [];
-    flipXCurrentDocument.transfers = [flipX];
+    flipXCurrentDocument.action = {
+        reads: [locks.PS_APP],
+        writes: [],
+        transfers: [flipX]
+    };
     
     /**
      * Helper command to flip selected layers in the current document vertically
@@ -761,9 +773,11 @@ define(function (require, exports) {
 
         return this.transfer(flipY, currentDocument, selectedLayers);
     };
-    flipYCurrentDocument.reads = [locks.JS_APP];
-    flipYCurrentDocument.writes = [];
-    flipYCurrentDocument.transfers = [flipY];
+    flipYCurrentDocument.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [flipY]
+    };
     
     /**
      * Asks photoshop to align layers either Left, right or center. (horizontally or vertically).
@@ -807,9 +821,11 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
-    align.reads = [locks.JS_APP];
-    align.writes = [locks.PS_DOC, locks.JS_DOC];
-    align.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
+    align.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+    };
     
     /**
      * Helper command to align Left
@@ -826,9 +842,11 @@ define(function (require, exports) {
         }
         return this.transfer(align, document, layers, "left");
     };
-    alignLeft.reads = [locks.JS_APP];
-    alignLeft.writes = [];
-    alignLeft.transfers = [align];
+    alignLeft.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [align]
+    };
 
     /**
      * Helper command to align right
@@ -845,9 +863,11 @@ define(function (require, exports) {
         }
         return this.transfer(align, document, layers, "right");
     };
-    alignRight.reads = [locks.JS_APP];
-    alignRight.writes = [];
-    alignRight.transfers = [align];
+    alignRight.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [align]
+    };
     
     /**
      * Helper command to align top
@@ -864,9 +884,11 @@ define(function (require, exports) {
         }
         return this.transfer(align, document, layers, "top");
     };
-    alignTop.reads = [locks.JS_APP];
-    alignTop.writes = [];
-    alignTop.transfers = [align];
+    alignTop.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [align]
+    };
 
     /**
      * Helper command to align bottom
@@ -883,9 +905,11 @@ define(function (require, exports) {
         }
         return this.transfer(align, document, layers, "bottom");
     };
-    alignBottom.reads = [locks.JS_APP];
-    alignBottom.writes = [];
-    alignBottom.transfers = [align];
+    alignBottom.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [align]
+    };
 
     /**
      * Helper command to align vCenter
@@ -902,9 +926,11 @@ define(function (require, exports) {
         }
         return this.transfer(align, document, layers, "vCenter");
     };
-    alignVCenter.reads = [locks.JS_APP];
-    alignVCenter.writes = [];
-    alignVCenter.transfers = [align];
+    alignVCenter.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [align]
+    };
 
     /**
      * Helper command to align hCenter
@@ -921,9 +947,11 @@ define(function (require, exports) {
         }
         return this.transfer(align, document, layers, "hCenter");
     };
-    alignHCenter.reads = [locks.JS_APP];
-    alignHCenter.writes = [];
-    alignHCenter.transfers = [align];
+    alignHCenter.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [align]
+    };
 
     /**
      * Asks photoshop to align layers either Left, right or center. (horizontally or vertically).
@@ -983,9 +1011,11 @@ define(function (require, exports) {
         }
         return _distribute.call(this, document, layers, "horizontally");
     };
-    distributeX.reads = [locks.JS_APP];
-    distributeX.writes = [locks.PS_DOC, locks.JS_DOC];
-    distributeX.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
+    distributeX.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+    };
 
     /**
      * Helper command to dstribute along the horizontal axis
@@ -1002,9 +1032,11 @@ define(function (require, exports) {
         }
         return _distribute.call(this, document, layers, "vertically");
     };
-    distributeY.reads = [locks.JS_APP];
-    distributeY.writes = [locks.PS_DOC, locks.JS_DOC];
-    distributeY.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
+    distributeY.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+    };
 
     /**
      * Set the radius of the rectangle shapes in the given layers of the given
@@ -1058,8 +1090,10 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, radiusPromise);
     };
-    setRadius.reads = [locks.PS_DOC, locks.JS_DOC];
-    setRadius.writes = [locks.PS_DOC, locks.JS_DOC];
+    setRadius.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Helper command to swap the two given layers top-left positions
@@ -1079,9 +1113,11 @@ define(function (require, exports) {
         }
         return this.transfer(swapLayers, currentDocument, selectedLayers);
     };
-    swapLayersCurrentDocument.reads = [locks.JS_APP, locks.JS_DOC];
-    swapLayersCurrentDocument.writes = [];
-    swapLayersCurrentDocument.transfers = [swapLayers];
+    swapLayersCurrentDocument.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        transfers: [swapLayers]
+    };
 
     /**
      * Rotates the currently selected layers by given angle
@@ -1121,9 +1157,11 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetBounds, document, descendants);
             });
     };
-    rotate.reads = [locks.JS_DOC];
-    rotate.writes = [locks.PS_DOC];
-    rotate.transfers = [historyActions.newHistoryState, layerActions.resetBounds];
+    rotate.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+    };
 
     /**
      * Helper command to rotate layers in currently selected document through the menu
@@ -1148,9 +1186,11 @@ define(function (require, exports) {
 
         return this.transfer(rotate, currentDocument, angle);
     };
-    rotateLayersInCurrentDocument.reads = [locks.JS_APP];
-    rotateLayersInCurrentDocument.writes = [];
-    rotateLayersInCurrentDocument.transfers = [rotate];
+    rotateLayersInCurrentDocument.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [rotate]
+    };
 
     /**
      * Handle the "editArtboardEvent" from photoshop
@@ -1273,8 +1313,10 @@ define(function (require, exports) {
         descriptor.addListener("moveToArtboard", _moveToArtboardHandler);
         return Promise.resolve();
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [];
+    beforeStartup.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * Clean up event handlers
@@ -1288,8 +1330,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
     
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;

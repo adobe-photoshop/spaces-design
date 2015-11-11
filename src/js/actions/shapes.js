@@ -217,9 +217,11 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetBounds, document, layers);
             }.bind(this));
     };
-    setStroke.reads = [];
-    setStroke.writes = [locks.PS_DOC, locks.JS_DOC];
-    setStroke.transfers = [layerActions.resetBounds];
+    setStroke.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetBounds]
+    };
 
     /**
      * Set the color of the stroke for the given layers of the given document
@@ -327,9 +329,11 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeColor.reads = [];
-    setStrokeColor.writes = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeColor.transfers = [layerActions.resetBounds];
+    setStrokeColor.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetBounds]
+    };
 
     /**
      * Sets the enabled flag for all selected Layers on a given doc.
@@ -343,9 +347,11 @@ define(function (require, exports) {
     var setStrokeEnabled = function (document, layers, options) {
         return this.transfer(setStrokeColor, document, layers, null, options);
     };
-    setStrokeEnabled.reads = [];
-    setStrokeEnabled.writes = [];
-    setStrokeEnabled.transfers = [setStrokeColor];
+    setStrokeEnabled.action = {
+        reads: [],
+        writes: [],
+        transfers: [setStrokeColor]
+    };
 
     /**
      * Set the alignment of the stroke for all selected layers of the given document.
@@ -385,9 +391,11 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeAlignment.reads = [];
-    setStrokeAlignment.writes = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeAlignment.transfers = [layerActions.resetBounds];
+    setStrokeAlignment.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetBounds]
+    };
 
     /**
      * Set the opacity of the stroke for all selected layers of the given document.
@@ -427,8 +435,10 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeOpacity.reads = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeOpacity.writes = [locks.PS_DOC, locks.JS_DOC];
+    setStrokeOpacity.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the size of the stroke for all selected layers of the given document
@@ -469,9 +479,11 @@ define(function (require, exports) {
                 });
         }
     };
-    setStrokeWidth.reads = [];
-    setStrokeWidth.writes = [locks.PS_DOC, locks.JS_DOC];
-    setStrokeWidth.transfers = [layerActions.resetBounds];
+    setStrokeWidth.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetBounds]
+    };
 
     /**
      * Set the enabled flag for the given fill of all selected Layers on a given doc
@@ -490,8 +502,10 @@ define(function (require, exports) {
 
         return setFillColor.call(this, document, layers, null, options);
     };
-    setFillEnabled.reads = [locks.PS_DOC, locks.JS_DOC];
-    setFillEnabled.writes = [locks.PS_DOC, locks.JS_DOC];
+    setFillEnabled.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the color of the fill for all selected layers of the given document
@@ -556,8 +570,10 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, colorPromise);
     };
-    setFillColor.reads = [locks.PS_DOC, locks.JS_DOC];
-    setFillColor.writes = [locks.PS_DOC, locks.JS_DOC];
+    setFillColor.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the opacity of the fill for all selected layers of the given document
@@ -585,8 +601,10 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, opacityPromise);
     };
-    setFillOpacity.reads = [locks.PS_DOC, locks.JS_DOC];
-    setFillOpacity.writes = [locks.PS_DOC, locks.JS_DOC];
+    setFillOpacity.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Call the adapter and then transfer to another action to reset layers as necessary
@@ -669,9 +687,11 @@ define(function (require, exports) {
             return _playCombine.call(this, document, layers, pathLib.combineLayersUnion());
         }
     };
-    combineUnion.reads = [];
-    combineUnion.writes = [locks.PS_DOC, locks.JS_DOC];
-    combineUnion.transfers = [layerActions.resetLayers, layerActions.resetLayersByIndex];
+    combineUnion.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex]
+    };
 
     /**
      * Combine paths using SUBTRACT operation
@@ -694,9 +714,11 @@ define(function (require, exports) {
             return _playCombine.call(this, document, layers, pathLib.combineLayersSubtract());
         }
     };
-    combineSubtract.reads = [];
-    combineSubtract.writes = [locks.PS_DOC, locks.JS_DOC];
-    combineSubtract.transfers = [layerActions.resetLayers, layerActions.resetLayersByIndex];
+    combineSubtract.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex]
+    };
 
     /**
      * Combine paths using INTERSECT operation
@@ -719,9 +741,11 @@ define(function (require, exports) {
             return _playCombine.call(this, document, layers, pathLib.combineLayersIntersect());
         }
     };
-    combineIntersect.reads = [];
-    combineIntersect.writes = [locks.PS_DOC, locks.JS_DOC];
-    combineIntersect.transfers = [layerActions.resetLayers, layerActions.resetLayersByIndex];
+    combineIntersect.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex]
+    };
 
     /**
      * Combine paths using DIFFERENCE operation
@@ -744,9 +768,11 @@ define(function (require, exports) {
             return _playCombine.call(this, document, layers, pathLib.combineLayersDifference());
         }
     };
-    combineDifference.reads = [];
-    combineDifference.writes = [locks.PS_DOC, locks.JS_DOC];
-    combineDifference.transfers = [layerActions.resetLayers, layerActions.resetLayersByIndex];
+    combineDifference.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex]
+    };
 
     exports.setStrokeEnabled = setStrokeEnabled;
     exports.setStrokeWidth = setStrokeWidth;

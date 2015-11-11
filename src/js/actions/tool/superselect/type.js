@@ -74,10 +74,12 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    select.reads = [];
-    select.writes = [];
-    select.transfers = [];
-    select.modal = true;
+    select.action = {
+        reads: [],
+        writes: [],
+        transfers: [],
+        modal: true
+    };
 
     /**
      * Removes event listeners installed on activation.
@@ -93,10 +95,12 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    deselect.reads = [];
-    deselect.writes = [];
-    deselect.transfers = [];
-    deselect.modal = true;
+    deselect.action = {
+        reads: [],
+        writes: [],
+        transfers: [],
+        modal: true
+    };
 
     exports.select = select;
     exports.deselect = deselect;

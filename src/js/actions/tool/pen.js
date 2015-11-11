@@ -95,10 +95,12 @@ define(function (require, exports) {
         return Promise.join(setPromise, selectVectorMask, disableSuppressionPromise,
             backspacePromise, deletePromise);
     };
-    select.reads = [locks.JS_TOOL];
-    select.writes = [];
-    select.transfers = ["shortcuts.addShortcut", "layers.deleteSelected"];
-    select.modal = true;
+    select.action = {
+        reads: [locks.JS_TOOL],
+        writes: [],
+        transfers: ["shortcuts.addShortcut", "layers.deleteSelected"],
+        modal: true
+    };
 
     /**
      * Remove pen tool shortcuts.
@@ -111,10 +113,12 @@ define(function (require, exports) {
 
         return Promise.join(backspacePromise, deletePromise);
     };
-    deselect.reads = [];
-    deselect.writes = [locks.PS_TOOL, locks.PS_APP];
-    deselect.transfers = ["shortcuts.removeShortcut"];
-    deselect.modal = true;
+    deselect.action = {
+        reads: [],
+        writes: [locks.PS_TOOL, locks.PS_APP],
+        transfers: ["shortcuts.removeShortcut"],
+        modal: true
+    };
 
     exports.select = select;
     exports.deselect = deselect;

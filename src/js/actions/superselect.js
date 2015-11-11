@@ -345,9 +345,11 @@ define(function (require, exports) {
 
         return resultPromise;
     };
-    editLayer.reads = [locks.JS_UI, locks.JS_TOOL, locks.JS_DOC];
-    editLayer.writes = [locks.PS_DOC];
-    editLayer.transfers = [toolActions.select, documentActions.updateDocument, libraryActions.openGraphicForEdit];
+    editLayer.action = {
+        reads: [locks.JS_UI, locks.JS_TOOL, locks.JS_DOC],
+        writes: [locks.PS_DOC],
+        transfers: [toolActions.select, documentActions.updateDocument, libraryActions.openGraphicForEdit]
+    };
     
     /**
      * Process a single click from the SuperSelect tool. First determines a set of
@@ -436,9 +438,11 @@ define(function (require, exports) {
                 }
             });
     };
-    click.reads = [locks.PS_DOC, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI];
-    click.writes = [];
-    click.transfers = [layerActions.deselectAll, layerActions.select];
+    click.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI],
+        writes: [],
+        transfers: [layerActions.deselectAll, layerActions.select]
+    };
 
     /**
      * Process a double click
@@ -514,9 +518,11 @@ define(function (require, exports) {
                 }
             });
     };
-    doubleClick.reads = [locks.JS_UI, locks.JS_DOC, locks.PS_DOC];
-    doubleClick.writes = [];
-    doubleClick.transfers = [layerActions.select, editLayer];
+    doubleClick.action = {
+        reads: [locks.JS_UI, locks.JS_DOC, locks.PS_DOC],
+        writes: [],
+        transfers: [layerActions.select, editLayer]
+    };
 
     /**
      * Backs out of the selected layers to their parents
@@ -539,9 +545,11 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
-    backOut.reads = [locks.JS_DOC];
-    backOut.writes = [];
-    backOut.transfers = [layerActions.select, layerActions.deselectAll];
+    backOut.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [layerActions.select, layerActions.deselectAll]
+    };
 
     /**
      * Skips to the next unlocked sibling layer of the first selected layer
@@ -556,9 +564,11 @@ define(function (require, exports) {
         _logSuperselect("key_next_sibling");
         return this.transfer(layerActions.select, doc, nextSiblings);
     };
-    nextSibling.reads = [locks.JS_DOC];
-    nextSibling.writes = [];
-    nextSibling.transfers = [layerActions.select];
+    nextSibling.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [layerActions.select]
+    };
 
     /**
      * Dives in one level to the selected layer, no op if it's not a group layer
@@ -593,9 +603,11 @@ define(function (require, exports) {
             return this.transfer(layerActions.select, doc, diveableLayers.first());
         }
     };
-    diveIn.reads = [locks.JS_DOC];
-    diveIn.writes = [];
-    diveIn.transfers = [layerActions.select, editLayer];
+    diveIn.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [layerActions.select, editLayer]
+    };
 
     /**
      * Selects and starts dragging the layer around
@@ -662,9 +674,11 @@ define(function (require, exports) {
             }
         }
     };
-    drag.reads = [locks.JS_DOC];
-    drag.writes = [locks.PS_DOC, locks.JS_UI];
-    drag.transfers = [click];
+    drag.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_UI],
+        transfers: [click]
+    };
 
     /**
      * Selects the given layers by the marquee
@@ -697,9 +711,11 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
-    marqueeSelect.reads = [locks.JS_DOC];
-    marqueeSelect.writes = [locks.JS_UI];
-    marqueeSelect.transfers = [layerActions.deselectAll, layerActions.select];
+    marqueeSelect.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.JS_UI],
+        transfers: [layerActions.deselectAll, layerActions.select]
+    };
 
     exports.click = click;
     exports.doubleClick = doubleClick;

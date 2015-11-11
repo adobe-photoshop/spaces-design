@@ -316,9 +316,11 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
             });
     };
-    createGraphicFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
-    createGraphicFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    createGraphicFromSelectedLayer.transfers = ["layers.resetLayers"];
+    createGraphicFromSelectedLayer.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES],
+        transfers: ["layers.resetLayers"]
+    };
 
     /**
      * Uploads the selected single layer's character style to the current library
@@ -405,8 +407,10 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
             });
     };
-    createCharacterStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP, locks.JS_TYPE];
-    createCharacterStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    createCharacterStyleFromSelectedLayer.action = {
+        reads: [locks.JS_DOC, locks.JS_APP, locks.JS_TYPE],
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES]
+    };
 
     /**
      * Uploads the selected single layer's effects as a single asset to the current library
@@ -474,8 +478,10 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
             });
     };
-    createLayerStyleFromSelectedLayer.reads = [locks.JS_DOC, locks.JS_APP];
-    createLayerStyleFromSelectedLayer.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    createLayerStyleFromSelectedLayer.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES]
+    };
 
     /**
      * Uploads the given color as a color asset
@@ -515,8 +521,10 @@ define(function (require, exports) {
         // This is actually synchronous, but actions *must* return promises
         return this.dispatchAsync(events.libraries.ASSET_CREATED, { element: newElement });
     };
-    createColorAsset.reads = [];
-    createColorAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    createColorAsset.action = {
+        reads: [],
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES]
+    };
 
     /**
      * Updates asset's display name
@@ -535,8 +543,10 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.libraries.ASSET_RENAMED);
     };
-    renameAsset.reads = [];
-    renameAsset.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    renameAsset.action = {
+        reads: [],
+        writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES]
+    };
     
     /**
      * Open the specified graphic asset for edit by creating a temp copy of the asset's document and open
@@ -636,10 +646,11 @@ define(function (require, exports) {
                 log.warn("[CC Lib] openGraphicForEdit:" + e);
             });
     };
-    openGraphicForEdit.reads = [];
-    openGraphicForEdit.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
-    openGraphicForEdit.transfers = [exportActions.copyFile, "documents.open",
-        preferencesActions.setPreference];
+    openGraphicForEdit.action = {
+        reads: [],
+        writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES],
+        transfers: [exportActions.copyFile, "documents.open", preferencesActions.setPreference]
+    };
     
     /**
      * Update the graphic asset's content by creating a new primary representation with the 
@@ -724,9 +735,11 @@ define(function (require, exports) {
                 }
             });
     };
-    updateGraphicContent.reads = [];
-    updateGraphicContent.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    updateGraphicContent.transfers = ["libraries.deleteGraphicTempFiles"];
+    updateGraphicContent.action = {
+        reads: [],
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES],
+        transfers: ["libraries.deleteGraphicTempFiles"]
+    };
     
     /**
      * Delete graphic asset's temp document and preview files.
@@ -758,10 +771,11 @@ define(function (require, exports) {
                     _EDIT_STATUS_PREF, this.flux.stores.library.getState().editStatus);
             });
     };
-    deleteGraphicTempFiles.reads = [];
-    deleteGraphicTempFiles.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
-    deleteGraphicTempFiles.transfers = [exportActions.deleteFiles, preferencesActions.setPreference,
-        updateGraphicContent];
+    deleteGraphicTempFiles.action = {
+        reads: [],
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES],
+        transfers: [exportActions.deleteFiles, preferencesActions.setPreference, updateGraphicContent]
+    };
 
     /**
      * Removes asset from the library it belongs to.
@@ -774,8 +788,10 @@ define(function (require, exports) {
         element.library.removeElement(element);
         return this.dispatchAsync(events.libraries.ASSET_REMOVED);
     };
-    removeAsset.reads = [];
-    removeAsset.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    removeAsset.action = {
+        reads: [],
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES]
+    };
 
     /**
      * Places the selected asset in the document as a cloud linked smart object
@@ -872,10 +888,12 @@ define(function (require, exports) {
                     });
             });
     };
-    createLayerFromElement.reads = [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP];
-    createLayerFromElement.writes = [locks.JS_LIBRARIES, locks.PS_DOC];
-    createLayerFromElement.transfers = [layerActions._getLayerIDsForDocumentID, layerActions.addLayers,
-        "libraries.handleCompletePlacingGraphic"];
+    createLayerFromElement.action = {
+        reads: [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP],
+        writes: [locks.JS_LIBRARIES, locks.PS_DOC],
+        transfers: [layerActions._getLayerIDsForDocumentID, layerActions.addLayers,
+            "libraries.handleCompletePlacingGraphic"]
+    };
         
     /**
      * This event will be triggered when the user confirm or cancel the new layer 
@@ -886,8 +904,10 @@ define(function (require, exports) {
     var handleCompletePlacingGraphic = function () {
         return this.dispatchAsync(events.libraries.PLACE_GRAPHIC_UPDATED, { isPlacing: false });
     };
-    handleCompletePlacingGraphic.reads = [locks.JS_APP];
-    handleCompletePlacingGraphic.writes = [locks.JS_LIBRARIES];
+    handleCompletePlacingGraphic.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.JS_LIBRARIES]
+    };
 
     /**
      * Applies the given layer style element to the active layers
@@ -936,9 +956,11 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetLayers, currentDocument, currentDocument.layers.selected);
             });
     };
-    applyLayerStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
-    applyLayerStyle.writes = [locks.JS_DOC, locks.PS_DOC];
-    applyLayerStyle.transfers = [historyActions.newHistoryState, layerActions.resetLayers];
+    applyLayerStyle.action = {
+        reads: [locks.JS_APP, locks.CC_LIBRARIES],
+        writes: [locks.JS_DOC, locks.PS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetLayers]
+    };
 
     /**
      * Applies the given character style element to the selected text layers
@@ -987,9 +1009,11 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetLayers, currentDocument, textLayers);
             });
     };
-    applyCharacterStyle.reads = [locks.JS_APP, locks.CC_LIBRARIES];
-    applyCharacterStyle.writes = [locks.JS_DOC, locks.PS_DOC];
-    applyCharacterStyle.transfers = [historyActions.newHistoryState, layerActions.resetLayers];
+    applyCharacterStyle.action = {
+        reads: [locks.JS_APP, locks.CC_LIBRARIES],
+        writes: [locks.JS_DOC, locks.PS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetLayers]
+    };
 
     /**
      * Applies the color the selected layers. It currently supports two types of layers:
@@ -1034,9 +1058,11 @@ define(function (require, exports) {
                 return descriptor.endTransaction(transaction);
             });
     };
-    applyColor.reads = [locks.JS_APP, locks.CC_LIBRARIES];
-    applyColor.writes = [locks.JS_DOC, locks.PS_DOC];
-    applyColor.transfers = [typeActions.setColor, shapeActions.setFillColor];
+    applyColor.action = {
+        reads: [locks.JS_APP, locks.CC_LIBRARIES],
+        writes: [locks.JS_DOC, locks.PS_DOC],
+        transfers: [typeActions.setColor, shapeActions.setFillColor]
+    };
 
     /**
      * Marks the given library ID as the active one
@@ -1053,9 +1079,11 @@ define(function (require, exports) {
         return this.transfer(preferencesActions.setPreference,
             _LAST_SELECTED_LIBRARY_ID_PREF, libraryState.currentLibraryID);
     };
-    selectLibrary.reads = [];
-    selectLibrary.writes = [locks.JS_LIBRARIES];
-    selectLibrary.transfers = [preferencesActions.setPreference];
+    selectLibrary.action = {
+        reads: [],
+        writes: [locks.JS_LIBRARIES],
+        transfers: [preferencesActions.setPreference]
+    };
 
     /**
      * Creates a new library with the given name
@@ -1073,9 +1101,11 @@ define(function (require, exports) {
         return this.transfer(preferencesActions.setPreference,
             _LAST_SELECTED_LIBRARY_ID_PREF, libraryState.currentLibraryID);
     };
-    createLibrary.reads = [];
-    createLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
-    createLibrary.transfers = [preferencesActions.setPreference];
+    createLibrary.action = {
+        reads: [],
+        writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES],
+        transfers: [preferencesActions.setPreference]
+    };
 
     /**
      * Removes a library from the collection
@@ -1108,9 +1138,11 @@ define(function (require, exports) {
                     _LAST_SELECTED_LIBRARY_ID_PREF, libraryState.currentLibraryID);
             });
     };
-    removeLibrary.reads = [];
-    removeLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
-    removeLibrary.transfers = [preferencesActions.setPreference];
+    removeLibrary.action = {
+        reads: [],
+        writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES],
+        transfers: [preferencesActions.setPreference]
+    };
     
     /**
      * Sync all libraries.
@@ -1120,8 +1152,10 @@ define(function (require, exports) {
     var syncLibraries = function () {
         return this.dispatchAsync(events.libraries.SYNC_LIBRARIES);
     };
-    syncLibraries.reads = [];
-    syncLibraries.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    syncLibraries.action = {
+        reads: [],
+        writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES]
+    };
 
     /**
      * Updates library's display name
@@ -1142,8 +1176,10 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.libraries.LIBRARY_RENAMED, { id: id });
     };
-    renameLibrary.reads = [];
-    renameLibrary.writes = [locks.CC_LIBRARIES, locks.JS_LIBRARIES];
+    renameLibrary.action = {
+        reads: [],
+        writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES]
+    };
     
     /**
      * Handle libraries load event. 
@@ -1269,8 +1305,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [locks.JS_PREF];
-    beforeStartup.writes = [locks.JS_LIBRARIES, locks.CC_LIBRARIES];
+    beforeStartup.action = {
+        reads: [locks.JS_PREF],
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES]
+    };
 
     /**
      * After startup, load the libraries
@@ -1286,8 +1324,10 @@ define(function (require, exports) {
         // Triger the load event callback manually for initial start up.
         return (handleLibrariesLoaded.bind(this))();
     };
-    afterStartup.reads = [locks.JS_PREF, locks.CC_LIBRARIES];
-    afterStartup.writes = [locks.JS_LIBRARIES];
+    afterStartup.action = {
+        reads: [locks.JS_PREF, locks.CC_LIBRARIES],
+        writes: [locks.JS_LIBRARIES]
+    };
     
     /**
      * Remove event handlers.
@@ -1300,8 +1340,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
 
     exports.RENDITION_DEFAULT_SIZE = RENDITION_DEFAULT_SIZE;
     exports.RENDITION_GRAPHIC_SIZE = RENDITION_GRAPHIC_SIZE;

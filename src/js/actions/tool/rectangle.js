@@ -71,10 +71,12 @@ define(function (require, exports) {
                 });
         }
     };
-    select.reads = [locks.JS_TOOL];
-    select.writes = [locks.PS_TOOL, locks.PS_APP];
-    select.transfers = ["tools.installShapeDefaults"];
-    select.modal = true;
+    select.action = {
+        reads: [locks.JS_TOOL],
+        writes: [locks.PS_TOOL, locks.PS_APP],
+        transfers: ["tools.installShapeDefaults"],
+        modal: true
+    };
 
     exports.select = select;
 });
