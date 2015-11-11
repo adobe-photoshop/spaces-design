@@ -163,8 +163,8 @@ define(function (require, exports, module) {
 
     /**
      * Overlay document with the visibility values from the provided document
-     * This is useful during undo/redo as an best-guess because visibility
-     * is usually not changed
+     * This is useful during undo/redo because guide and smart-guide visibility is outside the scope of history.
+     * For layer visibility, this is a best-guess because visibility is usually not changed
      *
      * @param {Document} document
      * @return {Document}
@@ -172,7 +172,9 @@ define(function (require, exports, module) {
     Document.prototype.overlayVisibility = function (document) {
         var nextLayers = this.layers.overlayVisibility(document.layers);
 
-        return this.set("layers", nextLayers);
+        return this.set("layers", nextLayers)
+            .set("guidesVisible", this.guidesVisible)
+            .set("smartGuidesVisible", this.smartGuidesVisible);
     };
 
     /**

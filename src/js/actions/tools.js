@@ -636,9 +636,13 @@ define(function (require, exports) {
             var payload = {
                     documentID: currentDocument.id,
                     layerIDs: Immutable.List.of(currentLayer.id),
-                    vectorMaskEnabled: true
+                    vectorMaskEnabled: true,
+                    history: {
+                        newState: true,
+                        name: strings.ACTIONS.ADD_VECTOR_MASK
+                    }
                 },
-                dispatchAdd = this.dispatchAsync(events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, payload),
+                dispatchAdd = this.dispatchAsync(events.document.history.ADD_VECTOR_MASK_TO_LAYER, payload),
                 dispatchToolMode = this.dispatchAsync(events.tool.VECTOR_MASK_MODE_CHANGE, vectorMaskMode);
 
             dispatchPromise = Promise.join(dispatchAdd, dispatchToolMode);
@@ -699,9 +703,13 @@ define(function (require, exports) {
                                 var payload = {
                                         documentID: currentDocument.id,
                                         layerIDs: Immutable.List.of(currentLayer.id),
-                                        vectorMaskEnabled: false
+                                        vectorMaskEnabled: false,
+                                        history: {
+                                            newState: true,
+                                            name: strings.ACTIONS.DELETE_VECTOR_MASK
+                                        }
                                     },
-                                    event = events.document.history.optimistic.REMOVE_VECTOR_MASK_FROM_LAYER;
+                                    event = events.document.history.REMOVE_VECTOR_MASK_FROM_LAYER;
 
                                 return this.dispatchAsync(event, payload);
                             });

@@ -73,11 +73,8 @@ define(function (require, exports, module) {
 
             // dynamically bind subsets of events.document
             var binder = this.bindActions.bind(this);
-            storeUtil.bindEvents(events.export.history.optimistic, this._handlePreHistoryEvent, binder);
-            storeUtil.bindEvents(events.document.history.optimistic, this._handlePreHistoryEvent, binder);
-            storeUtil.bindEvents(events.document.history.nonOptimistic, this._handlePostHistoryEvent, binder);
-            storeUtil.bindEvents(events.document.history.unifiedHistory, this._handleUnifiedHistory, binder);
-            storeUtil.bindEvents(events.document.history.amendment, this._handleHistoryAmendment, binder);
+            storeUtil.bindEvents(events.export.history, this._handleUnifiedHistory, binder);
+            storeUtil.bindEvents(events.document.history, this._handleUnifiedHistory, binder);
 
             this.bindActions(
                 events.RESET, this._deleteAllHistory,

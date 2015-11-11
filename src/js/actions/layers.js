@@ -409,10 +409,14 @@ define(function (require, exports) {
                     layerIDs: layerSpec,
                     descriptors: descriptors,
                     selected: selected,
-                    replace: replace
+                    replace: replace,
+                    history: {
+                        newState: true,
+                        amendRogue: true
+                    }
                 };
 
-                this.dispatch(events.document.history.nonOptimistic.ADD_LAYERS, payload);
+                this.dispatch(events.document.history.ADD_LAYERS, payload);
 
                 var nextDocument = this.flux.store("document").getDocument(document.id),
                     nextLayerCount = nextDocument.layers.all.size,
@@ -533,7 +537,7 @@ define(function (require, exports) {
                         descriptor: descriptors[index++]
                     };
                 });
-                this.dispatch(events.document.history.unifiedHistory.RESET_LAYERS, payload);
+                this.dispatch(events.document.history.RESET_LAYERS, payload);
             });
     };
     resetLayers.reads = [locks.PS_DOC];
@@ -588,7 +592,7 @@ define(function (require, exports) {
                     };
                 });
 
-                this.dispatch(events.document.history.amendment.RESET_BOUNDS, payload);
+                this.dispatch(events.document.history.RESET_BOUNDS, payload);
             })
             .then(function () {
                 return this.transfer(guides.queryCurrentGuides);
@@ -668,7 +672,7 @@ define(function (require, exports) {
                         documentID: document.id,
                         descriptors: descriptors
                     };
-                this.dispatch(events.document.RESET_LAYERS_BY_INDEX, payload);
+                this.dispatch(events.document.history.RESET_LAYERS_BY_INDEX, payload);
             });
     };
     resetLayersByIndex.reads = [locks.PS_DOC];
@@ -1035,10 +1039,14 @@ define(function (require, exports) {
         var payload = {
             documentID: document.id,
             layerID: layer.id,
-            name: newName
+            name: newName,
+            history: {
+                newState: true
+            }
         };
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RENAME_LAYER, payload),
+        // TODO missing historyInfo?
+        var dispatchPromise = this.dispatchAsync(events.document.history.RENAME_LAYER, payload),
             layerRef = [
                 documentLib.referenceBy.id(document.id),
                 layerLib.referenceBy.id(layer.id)
@@ -1128,10 +1136,14 @@ define(function (require, exports) {
                 var payload = {
                     documentID: document.id,
                     layerIDs: collection.pluck(layers, "id"),
-                    selectedIndices: selectedLayerIndices
+                    selectedIndices: selectedLayerIndices,
+                    history: {
+                        newState: true,
+                        amendRogue: true
+                    }
                 };
 
-                this.dispatch(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
+                this.dispatch(events.document.history.DELETE_LAYERS, payload);
 
                 if (resetHistory) {
                     this.transfer(historyActions.queryCurrentHistory, document.id);
@@ -1229,10 +1241,14 @@ define(function (require, exports) {
                     documentID: document.id,
                     groupID: groupResult.layerSectionStart,
                     groupEndID: groupResult.layerSectionEnd,
-                    groupname: groupResult.name
+                    groupname: groupResult.name,
+                    history: {
+                        newState: true,
+                        name: strings.ACTIONS.GROUP_LAYERS
+                    }
                 };
 
-                this.dispatch(events.document.history.optimistic.GROUP_SELECTED, payload);
+                this.dispatch(events.document.history.GROUP_SELECTED, payload);
             });
     };
     groupSelected.reads = [locks.PS_DOC, locks.JS_DOC];
@@ -1395,8 +1411,12 @@ define(function (require, exports) {
             .then(_getLayerIDsForDocumentID.bind(this, document.id))
             .then(function (payload) {
                 payload.selectedIDs = collection.pluck(nextSelected, "id");
+                payload.history = {
+                    newState: true,
+                    amendRogue: true
+                };
 
-                this.dispatch(events.document.history.nonOptimistic.UNGROUP_SELECTED, payload);
+                this.dispatch(events.document.history.UNGROUP_SELECTED, payload);
             })
             .then(function () {
                 if (selectionNeedsReset) {
@@ -1495,7 +1515,10 @@ define(function (require, exports) {
         var payload = {
                 documentID: document.id,
                 layerID: layer.id,
-                locked: locked
+                locked: locked,
+                history: {
+                    newState: true
+                }
             },
             layerRef = [
                 documentLib.referenceBy.id(document.id),
@@ -1505,7 +1528,8 @@ define(function (require, exports) {
         if (layer.isBackground) {
             return _unlockBackgroundLayer.call(this, document, layer);
         } else {
-            var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.LOCK_CHANGED, payload),
+            // TODO does this set historyInfo?
+            var dispatchPromise = this.dispatchAsync(events.document.history.LOCK_CHANGED, payload),
                 lockPromise = descriptor.playObject(layerLib.setLocking(layerRef, locked));
 
             return Promise.join(dispatchPromise, lockPromise);
@@ -1537,7 +1561,11 @@ define(function (require, exports) {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
                 opacity: opacity,
-                coalesce: !!options.coalesce
+                coalesce: !!options.coalesce,
+                history: {
+                    newState: true,
+                    name: strings.ACTIONS.CHANGE_LAYER_OPACITY
+                }
             },
             playObjects = layers.map(function (layer) {
                 var layerRef = [
@@ -1561,7 +1589,7 @@ define(function (require, exports) {
             }
         });
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.OPACITY_CHANGED, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.OPACITY_CHANGED, payload),
             opacityPromise = locking.playWithLockOverride(document, layers, playObjects.toArray(), playOptions);
 
         return Promise.join(dispatchPromise, opacityPromise);
@@ -1639,7 +1667,7 @@ define(function (require, exports) {
                     });
             })
             .then(function (payload) {
-                this.dispatch(events.document.history.amendment.REORDER_LAYERS, payload);
+                this.dispatch(events.document.history.REORDER_LAYERS, payload);
             })
             .then(function () {
                 // get the document with latest selected layers, after layer reordering.
@@ -1863,10 +1891,14 @@ define(function (require, exports) {
         var payload = {
             documentID: document.id,
             layerIDs: layerIDs,
-            mode: mode
+            mode: mode,
+            history: {
+                newState: true,
+                name: strings.ACTIONS.SET_BLEND_MODE
+            }
         };
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.BLEND_MODE_CHANGED, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.BLEND_MODE_CHANGED, payload),
             blendPromise = locking.playWithLockOverride(document, layers,
                 layerLib.setBlendMode(layerRef, mode), options);
 
@@ -1893,7 +1925,11 @@ define(function (require, exports) {
             payload = {
                 documentID: document.id,
                 layerIDs: layerIDs,
-                proportional: proportional
+                proportional: proportional,
+                history: {
+                    newState: true,
+                    name: strings.ACTIONS.SET_PROPORTIONAL_SCALE
+                }
             },
             options = {
                 paintOptions: {
@@ -1906,7 +1942,8 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.SET_LAYERS_PROPORTIONAL, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.SET_LAYERS_PROPORTIONAL,
+                payload),
             layerPlayObjects = layerSpec.map(function (layer) {
                 var layerRef = layerLib.referenceBy.id(layer.id),
                 proportionalObj = layerLib.setProportionalScaling(layerRef, proportional);
@@ -2097,6 +2134,7 @@ define(function (require, exports) {
         return unlockBackgroundPromise
             .bind(this)
             .then(function () {
+                // TODO why doesn't this have historyOptions?
                 var createObj = artboardLib.make(layerRef, finalBounds);
 
                 return descriptor.playObject(createObj);
@@ -2117,10 +2155,13 @@ define(function (require, exports) {
                     isArtboard: true,
                     bounds: finalBounds,
                     // don't redraw UI until after resetting the index
-                    suppressChange: true
+                    suppressChange: true,
+                    history: {
+                        newState: true
+                    }
                 };
 
-                return this.dispatchAsync(events.document.history.optimistic.GROUP_SELECTED, payload);
+                return this.dispatchAsync(events.document.history.GROUP_SELECTED, payload);
             })
             .then(function () {
                 return this.transfer(resetIndex, document);
@@ -2309,11 +2350,15 @@ define(function (require, exports) {
             payload = {
                 documentID: currentDocument.id,
                 layerIDs: Immutable.List.of(layer.id),
-                vectorMaskEnabled: true
+                vectorMaskEnabled: true,
+                history: {
+                    newState: true
+                }
             };
 
-        this.dispatch(events.document.history.optimistic.ADD_VECTOR_MASK_TO_LAYER, payload);
+        this.dispatch(events.document.history.ADD_VECTOR_MASK_TO_LAYER, payload);
 
+        // TODO needs historyInfo?
         return descriptor.batchPlayObjects([vectorMaskLib.makeBoundsWorkPath(bounds),
             vectorMaskLib.makeVectorMaskFromWorkPath(),
             vectorMaskLib.deleteWorkPath()]);
@@ -2356,9 +2401,13 @@ define(function (require, exports) {
                     var payload = {
                             documentID: currentDocument.id,
                             layerIDs: Immutable.List.of(currentLayer.id),
-                            vectorMaskEnabled: false
+                            vectorMaskEnabled: false,
+                            history: {
+                                newState: true,
+                                name: strings.ACTIONS.DELETE_VECTOR_MASK
+                            }
                         },
-                        event = events.document.history.optimistic.REMOVE_VECTOR_MASK_FROM_LAYER;
+                        event = events.document.history.REMOVE_VECTOR_MASK_FROM_LAYER;
 
                     return this.dispatchAsync(event, payload);
                 });
@@ -2533,10 +2582,14 @@ define(function (require, exports) {
                 var payload = {
                     documentID: currentDocument.id,
                     // layerID is an array of IDs, despite the parameter name
-                    layerIDs: Immutable.List(event.layerID) || Immutable.List()
+                    layerIDs: Immutable.List(event.layerID) || Immutable.List(),
+                    history: {
+                        newState: true,
+                        amendRogue: true
+                    }
                 };
                 
-                this.dispatch(events.document.history.nonOptimistic.DELETE_LAYERS, payload);
+                this.dispatch(events.document.history.DELETE_LAYERS, payload);
 
                 return this.flux.actions.layers.resetSelection(currentDocument).then(function () {
                     var currentTool = toolStore.getCurrentTool();

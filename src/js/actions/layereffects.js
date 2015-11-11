@@ -152,11 +152,15 @@ define(function (require, exports) {
             layerEffectType: type,
             layerEffectIndex: Immutable.List(layerEffectIndexList),
             layerEffectProperties: Immutable.List(layerEffectPropsList),
-            coalesce: !!coalesce
+            coalesce: !!coalesce,
+            history: {
+                newState: true,
+                name: strings.ACTIONS.SET_LAYER_EFFECTS
+            }
         };
 
         // Synchronously update the stores
-        this.dispatch(events.document.history.optimistic.LAYER_EFFECT_CHANGED, payload);
+        this.dispatch(events.document.history.LAYER_EFFECT_CHANGED, payload);
         // Then update photoshop
         return _syncStoreToPs.call(this, document, layers, coalesce, type);
     };
@@ -205,10 +209,14 @@ define(function (require, exports) {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
             layerEffectType: effectType,
-            layerEffectIndex: effectIndex
+            layerEffectIndex: effectIndex,
+            history: {
+                newState: true,
+                name: strings.ACTIONS.SET_LAYER_EFFECTS
+            }
         };
         // Synchronously update the stores
-        this.dispatch(events.document.history.optimistic.LAYER_EFFECT_DELETED, payload);
+        this.dispatch(events.document.history.LAYER_EFFECT_DELETED, payload);
 
         // Then update photoshop
         return _syncStoreToPs.call(this, document, layers, null, effectType, null);
@@ -510,13 +518,17 @@ define(function (require, exports) {
             layerEffectTypes: Immutable.List(masterEffectTypes),
             layerEffectIndex: Immutable.Map(masterEffectIndexMap),
             layerEffectProps: Immutable.Map(masterEffectPropsMap),
-            coalesce: false
+            coalesce: false,
+            history: {
+                newState: true,
+                name: strings.ACTIONS.SET_LAYER_EFFECTS
+            }
         };
 
         this.dispatchAsync(events.style.HIDE_HUD);
         
         // Synchronously update the stores
-        this.dispatch(events.document.history.optimistic.LAYER_EFFECTS_BATCH_CHANGED, payload);
+        this.dispatch(events.document.history.LAYER_EFFECTS_BATCH_CHANGED, payload);
         // Then update photoshop
         return _syncStoreToPs.call(this, document, targetLayers, false, masterEffectTypes, options);
     };

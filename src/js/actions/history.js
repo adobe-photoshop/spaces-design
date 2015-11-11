@@ -104,7 +104,8 @@ define(function (require, exports) {
             .then(function () {
                 var currentDocument = this.flux.store("application").getCurrentDocument();
                 
-                return this.transfer(layerActions.resetLayerVisibility, currentDocument);
+                return Promise.join(this.transfer(layerActions.resetLayerVisibility, currentDocument),
+                    this.transfer("guides.resetGuidePolicies"));
             });
     };
 
@@ -173,6 +174,9 @@ define(function (require, exports) {
                     return this.transfer(documentActions.updateDocument);
                 })
                 .then(function () {
+                    return this.transfer("guides.resetGuidePolicies");
+                })
+                .then(function () {
                     this.dispatch(events.history.FINISH_ADJUSTING_HISTORY_STATE);
                 });
         }
@@ -197,7 +201,8 @@ define(function (require, exports) {
     };
     incrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
     incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
-    incrementHistory.transfers = ["layers.resetLayerVisibility", "documents.updateDocument"];
+    incrementHistory.transfers = ["layers.resetLayerVisibility", "documents.updateDocument",
+        "guides.resetGuidePolicies"];
     incrementHistory.modal = true;
 
     /**
@@ -223,7 +228,8 @@ define(function (require, exports) {
     };
     decrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
     decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
-    decrementHistory.transfers = ["layers.resetLayerVisibility", "documents.updateDocument"];
+    decrementHistory.transfers = ["layers.resetLayerVisibility", "documents.updateDocument",
+        "guides.resetGuidePolicies"];
     decrementHistory.modal = true;
 
     /**

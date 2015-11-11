@@ -89,9 +89,9 @@ define(function (require, exports, module) {
             this.bindActions(
                 events.RESET, this._deleteExports,
                 events.export.ASSET_CHANGED, this._assetUpdated,
-                events.export.history.optimistic.ASSET_CHANGED, this._assetUpdated,
-                events.export.history.optimistic.ASSET_ADDED, this._assetAdded,
-                events.export.history.optimistic.DELETE_ASSET, this._deleteAsset,
+                events.export.history.ASSET_CHANGED, this._assetUpdated,
+                events.export.history.ASSET_ADDED, this._assetAdded,
+                events.export.history.DELETE_ASSET, this._deleteAsset,
                 events.export.SET_AS_REQUESTED, this._setAssetsRequested,
                 events.export.SERVICE_STATUS_CHANGED, this._setState,
                 events.export.SET_STATE_PROPERTY, this._setState,

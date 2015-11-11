@@ -255,10 +255,14 @@ define(function (require, exports) {
             documentID: documentID,
             layerIDs: layerIDs,
             assetPropsArray: assetPropsArray,
-            assetIndex: assetIndex
+            assetIndex: assetIndex,
+            history: {
+                newState: true,
+                name: strings.ACTIONS.MODIFY_EXPORT_ASSETS
+            }
         };
 
-        return this.dispatchAsync(events.export.history.optimistic.ASSET_ADDED, payload)
+        return this.dispatchAsync(events.export.history.ASSET_ADDED, payload)
             .bind(this)
             .then(function () {
                 return _syncExportMetadata.call(this, documentID, layerIDs);
@@ -376,12 +380,16 @@ define(function (require, exports) {
         payload = {
             documentID: documentID,
             layerIDs: layerIDs,
-            assetPropsArray: shiftedPropsArray
+            assetPropsArray: shiftedPropsArray,
+            history: {
+                newState: true,
+                name: strings.ACTIONS.MODIFY_EXPORT_ASSETS
+            }
         };
 
         var event = suppressHistory ?
             events.export.ASSET_CHANGED :
-            events.export.history.optimistic.ASSET_CHANGED;
+            events.export.history.ASSET_CHANGED;
 
         return this.dispatchAsync(event, payload)
             .bind(this)
@@ -500,7 +508,7 @@ define(function (require, exports) {
                 layerIDs: collection.pluck(_layers, "id"),
                 exportEnabled: true
             };
-            updatePromise = this.dispatchAsync(events.document.history.amendment.LAYER_EXPORT_ENABLED_CHANGED, payload);
+            updatePromise = this.dispatchAsync(events.document.history.LAYER_EXPORT_ENABLED_CHANGED, payload);
         } else {
             updatePromise = Promise.resolve();
         }
@@ -541,7 +549,7 @@ define(function (require, exports) {
                     layerIDs: Immutable.List.of(layer.id),
                     exportEnabled: true
                 };
-            return this.dispatchAsync(events.document.history.amendment.LAYER_EXPORT_ENABLED_CHANGED, payload)
+            return this.dispatchAsync(events.document.history.LAYER_EXPORT_ENABLED_CHANGED, payload)
                 .bind(this)
                 .then(function () {
                     return this.transfer(updateExportAsset, document, Immutable.List.of(layer), 0, {}, true);
@@ -570,10 +578,14 @@ define(function (require, exports) {
             payload = {
                 documentID: documentID,
                 layerIDs: layerIDs,
-                assetIndex: assetIndex
+                assetIndex: assetIndex,
+                history: {
+                    newState: true,
+                    name: strings.ACTIONS.MODIFY_EXPORT_ASSETS
+                }
             };
 
-        return this.dispatchAsync(events.export.history.optimistic.DELETE_ASSET, payload)
+        return this.dispatchAsync(events.export.history.DELETE_ASSET, payload)
             .bind(this)
             .then(function () {
                 return _syncExportMetadata.call(this, documentID, layerIDs);
@@ -626,7 +638,7 @@ define(function (require, exports) {
             return quickAddPromise
                 .bind(this)
                 .then(function () {
-                    return this.dispatchAsync(events.document.history.amendment.LAYER_EXPORT_ENABLED_CHANGED, payload);
+                    return this.dispatchAsync(events.document.history.LAYER_EXPORT_ENABLED_CHANGED, payload);
                 })
                 .then(function () {
                     return _syncExportMetadata.call(this, document.id, layerIDs, true);
