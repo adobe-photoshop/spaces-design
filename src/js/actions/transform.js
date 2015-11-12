@@ -1222,10 +1222,12 @@ define(function (require, exports) {
                 return this.transfer("layers.resetIndex", nextDoc);
             });
     };
-    handleTransformArtboard.reads = [locks.JS_APP, locks.JS_DOC];
-    handleTransformArtboard.writes = [];
-    handleTransformArtboard.transfers = ["history.newHistoryStateRogueSafe", "layers.resetBounds",
-        "layers.resetSelection", "layers.resetIndex"];
+    handleTransformArtboard.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        transfers: ["history.newHistoryStateRogueSafe", "layers.resetBounds", "layers.resetSelection",
+            "layers.resetIndex"]
+    };
 
     /**
      * Transform event handler initialized in beforeStartup
