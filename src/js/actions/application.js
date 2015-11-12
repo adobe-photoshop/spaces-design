@@ -41,8 +41,10 @@ define(function (require, exports) {
             .bind(this)
             .then(this.dispatch.bind(this, events.application.HOST_VERSION));
     };
-    hostVersion.reads = [locks.PS_APP];
-    hostVersion.writes = [locks.JS_APP];
+    hostVersion.action = {
+        reads: [locks.PS_APP],
+        writes: [locks.JS_APP]
+    };
 
     /** 
      * Gets list of recently opened files from Photoshop
@@ -65,8 +67,10 @@ define(function (require, exports) {
                 this.dispatch(events.application.INITIALIZED, { item: "recentFiles" });
             });
     };
-    updateRecentFiles.reads = [locks.PS_APP];
-    updateRecentFiles.writes = [locks.JS_APP];
+    updateRecentFiles.action = {
+        reads: [locks.PS_APP],
+        writes: [locks.JS_APP]
+    };
 
     /**
      * During init, grabs the recent file list for the menu
@@ -79,9 +83,11 @@ define(function (require, exports) {
 
         return Promise.join(setRulerUnitsPromise, updateRecentFilesPromise);
     };
-    afterStartup.reads = [];
-    afterStartup.writes = [locks.PS_APP];
-    afterStartup.transfers = [updateRecentFiles];
+    afterStartup.action = {
+        reads: [],
+        writes: [locks.PS_APP],
+        transfers: [updateRecentFiles]
+    };
 
     exports.hostVersion = hostVersion;
     exports.updateRecentFiles = updateRecentFiles;

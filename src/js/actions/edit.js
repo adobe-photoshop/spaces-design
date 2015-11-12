@@ -67,10 +67,12 @@ define(function (require, exports) {
             // Ignore errors from menu.nativeModal
         });
     };
-    nativeCut.modal = true;
-    nativeCut.reads = [];
-    nativeCut.writes = [];
-    nativeCut.transfers = [menu.nativeModal];
+    nativeCut.action = {
+        modal: true,
+        reads: [],
+        writes: [],
+        transfers: [menu.nativeModal]
+    };
 
     /**
      * Execute a native copy command.
@@ -86,10 +88,12 @@ define(function (require, exports) {
             // Ignore errors from menu.nativeModal
         });
     };
-    nativeCopy.modal = true;
-    nativeCopy.reads = [];
-    nativeCopy.writes = [];
-    nativeCopy.transfers = [menu.nativeModal];
+    nativeCopy.action = {
+        modal: true,
+        reads: [],
+        writes: [],
+        transfers: [menu.nativeModal]
+    };
 
     /**
      * Execute a native paste command.
@@ -129,10 +133,12 @@ define(function (require, exports) {
                 }
             });
     };
-    nativePaste.modal = true;
-    nativePaste.reads = [];
-    nativePaste.writes = [];
-    nativePaste.transfers = [menu.nativeModal, policyActions.suspendAllPolicies, policyActions.restoreAllPolicies];
+    nativePaste.action = {
+        modal: true,
+        reads: [],
+        writes: [],
+        transfers: [menu.nativeModal, policyActions.suspendAllPolicies, policyActions.restoreAllPolicies]
+    };
 
     /**
      * Execute a native selectAll command.
@@ -152,10 +158,12 @@ define(function (require, exports) {
             // Ignore errors from menu.nativeModal
         });
     };
-    nativeSelectAll.modal = true;
-    nativeSelectAll.reads = [];
-    nativeSelectAll.writes = [];
-    nativeSelectAll.transfers = [menu.nativeModal];
+    nativeSelectAll.action = {
+        modal: true,
+        reads: [],
+        writes: [],
+        transfers: [menu.nativeModal]
+    };
 
     /**
      * Execute either a cut or copy operation, depending on the value of the parameter.
@@ -232,10 +240,12 @@ define(function (require, exports) {
     var cut = function () {
         return _cutOrCopy.call(this, true);
     };
-    cut.modal = true;
-    cut.reads = [locks.JS_TOOL, locks.PS_APP];
-    cut.writes = [locks.JS_DOC, locks.PS_DOC, locks.OS_CLIPBOARD];
-    cut.transfers = [nativeCut];
+    cut.action = {
+        modal: true,
+        reads: [locks.JS_TOOL, locks.PS_APP],
+        writes: [locks.JS_DOC, locks.PS_DOC, locks.OS_CLIPBOARD],
+        transfers: [nativeCut]
+    };
 
     /**
      * Execute a copy operation on the currently active HTML element.
@@ -246,10 +256,12 @@ define(function (require, exports) {
     var copy = function () {
         return _cutOrCopy.call(this, false);
     };
-    copy.modal = true;
-    copy.reads = [locks.JS_DOC, locks.JS_TOOL, locks.PS_APP];
-    copy.writes = [locks.OS_CLIPBOARD];
-    copy.transfers = [nativeCopy];
+    copy.action = {
+        modal: true,
+        reads: [locks.JS_DOC, locks.JS_TOOL, locks.PS_APP],
+        writes: [locks.OS_CLIPBOARD],
+        transfers: [nativeCopy]
+    };
 
     /**
      * Execute a paste operation on the currently active HTML element.
@@ -324,11 +336,12 @@ define(function (require, exports) {
                 }
             });
     };
-    paste.modal = true;
-    paste.reads = [locks.JS_DOC, locks.JS_APP, locks.OS_CLIPBOARD, locks.PS_APP];
-    paste.writes = [];
-    paste.transfers = [layers.duplicate, nativePaste];
-
+    paste.action = {
+        modal: true,
+        reads: [locks.JS_DOC, locks.JS_APP, locks.OS_CLIPBOARD, locks.PS_APP],
+        writes: [],
+        transfers: [layers.duplicate, nativePaste]
+    };
     /**
      * Execute a select operation on the currently active HTML element.
      *
@@ -354,10 +367,12 @@ define(function (require, exports) {
                 }
             });
     };
-    selectAll.modal = true;
-    selectAll.reads = [locks.JS_TOOL, locks.PS_APP];
-    selectAll.writes = [];
-    selectAll.transfers = [layers.selectAll, nativeSelectAll];
+    selectAll.action = {
+        modal: true,
+        reads: [locks.JS_TOOL, locks.PS_APP],
+        writes: [],
+        transfers: [layers.selectAll, nativeSelectAll]
+    };
 
     /**
      * Step Backwards by transferring to the appropriate history action
@@ -378,10 +393,12 @@ define(function (require, exports) {
                 }.bind(this));
         }
     };
-    undo.reads = [locks.JS_APP, locks.JS_DOC];
-    undo.writes = [locks.JS_UI];
-    undo.transfers = [history.decrementHistory];
-    undo.modal = true;
+    undo.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.JS_UI],
+        transfers: [history.decrementHistory],
+        modal: true
+    };
 
     /**
      * Step Forward by transferring to the appropriate history action
@@ -402,10 +419,12 @@ define(function (require, exports) {
                 }.bind(this));
         }
     };
-    redo.reads = [locks.JS_APP, locks.JS_DOC];
-    redo.writes = [locks.JS_UI];
-    redo.transfers = [history.incrementHistory];
-    undo.modal = true;
+    redo.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.JS_UI],
+        transfers: [history.incrementHistory],
+        modal: true
+    };
 
     exports.nativeCut = nativeCut;
     exports.nativeCopy = nativeCopy;

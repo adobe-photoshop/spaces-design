@@ -62,10 +62,12 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, policyPromise);
     };
-    syncPolicies.reads = [locks.JS_POLICY];
-    syncPolicies.writes = [locks.PS_APP];
-    syncPolicies.transfers = [];
-    syncPolicies.modal = true;
+    syncPolicies.action = {
+        reads: [locks.JS_POLICY],
+        writes: [locks.PS_APP],
+        transfers: [],
+        modal: true
+    };
 
     /**
      * Sync all policies to Photoshop.
@@ -78,10 +80,12 @@ define(function (require, exports) {
 
         return Promise.join(keyboardPromise, pointerPromise);
     };
-    syncAllPolicies.reads = [];
-    syncAllPolicies.writes = [];
-    syncAllPolicies.transfers = [syncPolicies];
-    syncAllPolicies.modal = true;
+    syncAllPolicies.action = {
+        reads: [],
+        writes: [],
+        transfers: [syncPolicies],
+        modal: true
+    };
 
     /**
      * Install a new policy list.
@@ -98,10 +102,12 @@ define(function (require, exports) {
 
         return syncPromise.return(policyListID);
     };
-    addPolicies.reads = [];
-    addPolicies.writes = [locks.JS_POLICY];
-    addPolicies.transfers = [syncPolicies];
-    addPolicies.modal = true;
+    addPolicies.action = {
+        reads: [],
+        writes: [locks.JS_POLICY],
+        transfers: [syncPolicies],
+        modal: true
+    };
 
     /**
      * Remove an already-installed policy list.
@@ -124,10 +130,12 @@ define(function (require, exports) {
             return Promise.reject(new Error("No policies found for id: " + id));
         }
     };
-    removePolicies.reads = [];
-    removePolicies.writes = [locks.JS_POLICY];
-    removePolicies.transfers = [syncPolicies];
-    removePolicies.modal = true;
+    removePolicies.action = {
+        reads: [],
+        writes: [locks.JS_POLICY],
+        transfers: [syncPolicies],
+        modal: true
+    };
 
     /**
      * Install a new keyboard policy list.
@@ -139,10 +147,12 @@ define(function (require, exports) {
     var addKeyboardPolicies = function (policies, noCommit) {
         return this.transfer(addPolicies, PolicyStore.eventKind.KEYBOARD, policies, noCommit);
     };
-    addKeyboardPolicies.reads = [];
-    addKeyboardPolicies.writes = [];
-    addKeyboardPolicies.transfers = [addPolicies];
-    addKeyboardPolicies.modal = true;
+    addKeyboardPolicies.action = {
+        reads: [],
+        writes: [],
+        transfers: [addPolicies],
+        modal: true
+    };
 
     /**
      * Helper command to construct and install a single keydown policy.
@@ -163,10 +173,12 @@ define(function (require, exports) {
 
         return this.transfer(addKeyboardPolicies, [policy], noCommit);
     };
-    addKeydownPolicy.reads = [];
-    addKeydownPolicy.writes = [locks.PS_APP, locks.JS_POLICY];
-    addKeydownPolicy.transfers = [addKeyboardPolicies];
-    addKeydownPolicy.modal = true;
+    addKeydownPolicy.action = {
+        reads: [],
+        writes: [locks.PS_APP, locks.JS_POLICY],
+        transfers: [addKeyboardPolicies],
+        modal: true
+    };
 
     /**
      * Remove an already-installed keyboard policy list.
@@ -178,10 +190,12 @@ define(function (require, exports) {
     var removeKeyboardPolicies = function (id, noCommit) {
         return this.transfer(removePolicies, PolicyStore.eventKind.KEYBOARD, id, noCommit);
     };
-    removeKeyboardPolicies.reads = [];
-    removeKeyboardPolicies.writes = [];
-    removeKeyboardPolicies.transfers = [removePolicies];
-    removeKeyboardPolicies.modal = true;
+    removeKeyboardPolicies.action = {
+        reads: [],
+        writes: [],
+        transfers: [removePolicies],
+        modal: true
+    };
 
     /**
      * Install a new pointer policy list.
@@ -193,10 +207,12 @@ define(function (require, exports) {
     var addPointerPolicies = function (policies, noCommit) {
         return this.transfer(addPolicies, PolicyStore.eventKind.POINTER, policies, noCommit);
     };
-    addPointerPolicies.reads = [];
-    addPointerPolicies.writes = [];
-    addPointerPolicies.transfers = [addPolicies];
-    addPointerPolicies.modal = true;
+    addPointerPolicies.action = {
+        reads: [],
+        writes: [],
+        transfers: [addPolicies],
+        modal: true
+    };
 
     /**
      * Remove an already-installed pointer policy list.
@@ -208,10 +224,12 @@ define(function (require, exports) {
     var removePointerPolicies = function (id, noCommit) {
         return this.transfer(removePolicies, PolicyStore.eventKind.POINTER, id, noCommit);
     };
-    removePointerPolicies.reads = [];
-    removePointerPolicies.writes = [];
-    removePointerPolicies.transfers = [removePolicies];
-    removePointerPolicies.modal = true;
+    removePointerPolicies.action = {
+        reads: [],
+        writes: [],
+        transfers: [removePolicies],
+        modal: true
+    };
 
     /**
      * Set the propagation mode for the given policy kind. If no mode is supplied,
@@ -248,10 +266,12 @@ define(function (require, exports) {
 
         return Promise.join(setModePromise, dispatchPromise);
     };
-    setMode.reads = [];
-    setMode.writes = [locks.PS_APP, locks.JS_POLICY];
-    setMode.transfers = [];
-    setMode.modal = true;
+    setMode.action = {
+        reads: [],
+        writes: [locks.PS_APP, locks.JS_POLICY],
+        transfers: [],
+        modal: true
+    };
 
     /**
      * Temporarily suspend policies of the given kind
@@ -272,10 +292,12 @@ define(function (require, exports) {
 
         return Promise.join(setModePromise, syncPoliciesPromise);
     };
-    suspendPolicies.reads = [];
-    suspendPolicies.writes = [locks.JS_POLICY];
-    suspendPolicies.transfers = [setMode, syncPolicies];
-    suspendPolicies.modal = true;
+    suspendPolicies.action = {
+        reads: [],
+        writes: [locks.JS_POLICY],
+        transfers: [setMode, syncPolicies],
+        modal: true
+    };
 
     /**
      * Restore suspended keyboard policies
@@ -297,10 +319,12 @@ define(function (require, exports) {
 
         return Promise.join(setModePromise, syncPoliciesPromise);
     };
-    restorePolicies.reads = [];
-    restorePolicies.writes = [locks.JS_POLICY];
-    restorePolicies.transfers = [setMode, syncPolicies];
-    restorePolicies.modal = true;
+    restorePolicies.action = {
+        reads: [],
+        writes: [locks.JS_POLICY],
+        transfers: [setMode, syncPolicies],
+        modal: true
+    };
 
     /**
      * Suspend both keyboard and pointer policies.
@@ -313,10 +337,12 @@ define(function (require, exports) {
 
         return Promise.join(keyboardPromise, pointerPromise);
     };
-    suspendAllPolicies.reads = [];
-    suspendAllPolicies.writes = [];
-    suspendAllPolicies.transfers = [suspendPolicies];
-    suspendAllPolicies.modal = true;
+    suspendAllPolicies.action = {
+        reads: [],
+        writes: [],
+        transfers: [suspendPolicies],
+        modal: true
+    };
 
     /**
      * Restore both keyboard and pointer policies.
@@ -329,10 +355,12 @@ define(function (require, exports) {
 
         return Promise.join(keyboardPromise, pointerPromise);
     };
-    restoreAllPolicies.reads = [];
-    restoreAllPolicies.writes = [];
-    restoreAllPolicies.transfers = [restorePolicies];
-    restoreAllPolicies.modal = true;
+    restoreAllPolicies.action = {
+        reads: [],
+        writes: [],
+        transfers: [restorePolicies],
+        modal: true
+    };
 
     /**
      * Set the default keyboard propagation policy.
@@ -351,9 +379,11 @@ define(function (require, exports) {
 
         return Promise.join(keyboardModePromise, pointerModePromise);
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [locks.PS_APP, locks.JS_POLICY];
-    beforeStartup.transfers = ["policy.setMode"];
+    beforeStartup.action = {
+        reads: [],
+        writes: [locks.PS_APP, locks.JS_POLICY],
+        transfers: ["policy.setMode"]
+    };
 
     exports.syncPolicies = syncPolicies;
     exports.syncAllPolicies = syncAllPolicies;

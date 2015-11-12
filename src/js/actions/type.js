@@ -129,9 +129,11 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.document.history.TYPE_FACE_CHANGED, payload);
     };
-    updatePostScript.reads = [];
-    updatePostScript.writes = [locks.JS_DOC];
-    updatePostScript.modal = true;
+    updatePostScript.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        modal: true
+    };
 
     /**
      * Set the post script (in terms of a type family and type style) of the given
@@ -169,10 +171,12 @@ define(function (require, exports) {
                 }
             });
     };
-    setPostScript.reads = [locks.JS_DOC];
-    setPostScript.writes = [locks.PS_DOC, locks.JS_UI];
-    setPostScript.transfers = [updatePostScript, layerActions.resetBounds, layerActions.resetLayers];
-    setPostScript.modal = true;
+    setPostScript.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_UI],
+        transfers: [updatePostScript, layerActions.resetBounds, layerActions.resetLayers],
+        modal: true
+    };
 
     /**
      * Update the type face (in terms of a type family and type style) of the given
@@ -197,9 +201,11 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.document.history.TYPE_FACE_CHANGED, payload);
     };
-    updateFace.reads = [];
-    updateFace.writes = [locks.JS_DOC];
-    updateFace.modal = true;
+    updateFace.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        modal: true
+    };
 
     /**
      * Set the type face (in terms of a type family and type style) of the given
@@ -236,10 +242,12 @@ define(function (require, exports) {
                 }
             });
     };
-    setFace.reads = [locks.JS_DOC];
-    setFace.writes = [locks.JS_UI, locks.PS_DOC];
-    setFace.transfers = [updateFace, layerActions.resetBounds, layerActions.resetLayers];
-    setFace.modal = true;
+    setFace.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.JS_UI, locks.PS_DOC],
+        transfers: [updateFace, layerActions.resetBounds, layerActions.resetLayers],
+        modal: true
+    };
 
     /**
      * Update the type of the given layers in the given document. The alpha value of
@@ -268,9 +276,11 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.document.history.TYPE_COLOR_CHANGED, payload);
     };
-    updateColor.reads = [];
-    updateColor.writes = [locks.JS_DOC];
-    updateColor.modal = true;
+    updateColor.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        modal: true
+    };
 
     /**
      * Set the type of the given layers in the given document. The alpha value of
@@ -325,10 +335,12 @@ define(function (require, exports) {
                 }
             });
     };
-    setColor.reads = [locks.JS_DOC];
-    setColor.writes = [locks.PS_DOC];
-    setColor.transfers = [updateColor, layerActions.resetLayers];
-    setColor.modal = true;
+    setColor.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC],
+        transfers: [updateColor, layerActions.resetLayers],
+        modal: true
+    };
 
     /**
      * Update our type size to reflect the type size of the given layers in the given document.
@@ -350,9 +362,11 @@ define(function (require, exports) {
     
         return this.dispatchAsync(events.document.history.TYPE_SIZE_CHANGED, payload);
     };
-    updateSize.reads = [];
-    updateSize.writes = [locks.JS_DOC];
-    updateSize.modal = true;
+    updateSize.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        modal: true
+    };
 
     /**
      * Set the type size of the given layers in the given document. This triggers
@@ -391,10 +405,12 @@ define(function (require, exports) {
                 }
             });
     };
-    setSize.reads = [locks.JS_DOC];
-    setSize.writes = [locks.JS_UI, locks.PS_DOC];
-    setSize.transfers = [updateSize, layerActions.resetBounds, layerActions.resetLayers];
-    setSize.modal = true;
+    setSize.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.JS_UI, locks.PS_DOC],
+        transfers: [updateSize, layerActions.resetBounds, layerActions.resetLayers],
+        modal: true
+    };
     
     /**
      * Update the tracking value (aka letter-spacing) of the given layers in the given document.
@@ -417,9 +433,11 @@ define(function (require, exports) {
         return this.dispatchAsync(events.document.history.TYPE_TRACKING_CHANGED, payload);
     };
 
-    updateTracking.reads = [];
-    updateTracking.writes = [locks.JS_DOC];
-    updateTracking.modal = true;
+    updateTracking.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        modal: true
+    };
     /**
      * Set the tracking value (aka letter-spacing) of the given layers in the given document.
      * This triggers a layer bounds update.
@@ -455,10 +473,12 @@ define(function (require, exports) {
                 }
             });
     };
-    setTracking.reads = [locks.JS_DOC];
-    setTracking.writes = [locks.PS_DOC, locks.JS_UI];
-    setTracking.transfers = [updateTracking, layerActions.resetBounds, layerActions.resetLayers];
-    setTracking.modal = true;
+    setTracking.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_UI],
+        transfers: [updateTracking, layerActions.resetBounds, layerActions.resetLayers],
+        modal: true
+    };
 
     /**
      * Update the leading value (aka line-spacing) of the given layers in the given document.
@@ -480,9 +500,11 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.document.history.TYPE_LEADING_CHANGED, payload);
     };
-    updateLeading.reads = [];
-    updateLeading.writes = [locks.JS_DOC];
-    updateLeading.modal = true;
+    updateLeading.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        modal: true
+    };
 
     /**
      * Set the leading value (aka line-spacing) of the given layers in the given document.
@@ -521,10 +543,12 @@ define(function (require, exports) {
             }
         });
     };
-    setLeading.reads = [locks.JS_DOC];
-    setLeading.writes = [locks.PS_DOC, locks.JS_UI];
-    setLeading.transfers = [updateLeading, layerActions.resetBounds, layerActions.resetLayers];
-    setLeading.modal = true;
+    setLeading.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_UI],
+        transfers: [updateLeading, layerActions.resetBounds, layerActions.resetLayers],
+        modal: true
+    };
 
     /**
      * Update the paragraph alignment of the given layers in the given document.
@@ -546,9 +570,11 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.document.history.TYPE_ALIGNMENT_CHANGED, payload);
     };
-    updateAlignment.reads = [];
-    updateAlignment.writes = [locks.JS_DOC];
-    updateAlignment.modal = true;
+    updateAlignment.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        modal: true
+    };
 
     /**
      * Set the paragraph alignment of the given layers in the given document.
@@ -584,10 +610,12 @@ define(function (require, exports) {
             }
         });
     };
-    setAlignment.reads = [locks.JS_DOC];
-    setAlignment.writes = [locks.PS_DOC, locks.JS_UI];
-    setAlignment.transfers = [updateAlignment, layerActions.resetBounds, layerActions.resetLayers];
-    setAlignment.modal = true;
+    setAlignment.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_UI],
+        transfers: [updateAlignment, layerActions.resetBounds, layerActions.resetLayers],
+        modal: true
+    };
 
     /**
      * Update the given layer models with all the provided text properties.
@@ -617,10 +645,12 @@ define(function (require, exports) {
                 this.dispatch(events.document.history.TYPE_PROPERTIES_CHANGED, payload);
             });
     };
-    updateProperties.reads = [];
-    updateProperties.writes = [locks.JS_DOC];
-    updateProperties.transfers = [layerActions.initializeLayers];
-    updateProperties.modal = true;
+    updateProperties.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        transfers: [layerActions.initializeLayers],
+        modal: true
+    };
 
     /**
      * Applies the given text style to target layers
@@ -675,9 +705,11 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
             });
     };
-    applyTextStyle.reads = [locks.JS_DOC];
-    applyTextStyle.writes = [locks.PS_DOC];
-    applyTextStyle.transfers = [historyActions.newHistoryState, layerActions.resetLayers];
+    applyTextStyle.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetLayers]
+    };
 
     /**
      * Initialize the list of installed fonts from Photoshop.
@@ -739,10 +771,12 @@ define(function (require, exports) {
                 return Promise.all(resetPromises);
             });
     };
-    initFontList.reads = [locks.PS_APP];
-    initFontList.writes = [locks.JS_TYPE];
-    initFontList.transfers = [layerActions.resetLayers];
-    initFontList.modal = true;
+    initFontList.action = {
+        reads: [locks.PS_APP],
+        writes: [locks.JS_TYPE],
+        transfers: [layerActions.resetLayers],
+        modal: true
+    };
 
     /**
      * If the font list has already been initialized, re-initialize it in
@@ -774,9 +808,11 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [];
-    beforeStartup.modal = [];
+    beforeStartup.action = {
+        reads: [],
+        writes: [],
+        modal: []
+    };
 
     /**
      * Remove font-list change listener.
@@ -789,9 +825,11 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
-    onReset.modal = [];
+    onReset.action = {
+        reads: [],
+        writes: [],
+        modal: []
+    };
 
     exports.setPostScript = setPostScript;
     exports.updatePostScript = updatePostScript;

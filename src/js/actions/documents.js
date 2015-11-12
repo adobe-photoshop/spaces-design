@@ -302,8 +302,10 @@ define(function (require, exports) {
                 this.dispatch(events.application.INITIALIZED, { item: "inactiveDocuments" });
             });
     };
-    initInactiveDocuments.reads = [locks.PS_DOC];
-    initInactiveDocuments.writes = [locks.JS_DOC];
+    initInactiveDocuments.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
 
     /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED.
@@ -365,9 +367,11 @@ define(function (require, exports) {
                     });
             });
     };
-    initActiveDocument.reads = [locks.PS_DOC];
-    initActiveDocument.writes = [locks.JS_DOC, locks.JS_APP];
-    initActiveDocument.transfers = [historyActions.queryCurrentHistory, "layers.deselectAll"];
+    initActiveDocument.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC, locks.JS_APP],
+        transfers: [historyActions.queryCurrentHistory, "layers.deselectAll"]
+    };
 
     /**
      * Update the document and layer state for the given document ID. Emits a
@@ -407,10 +411,12 @@ define(function (require, exports) {
                     }.bind(this));
             });
     };
-    updateDocument.reads = [locks.PS_DOC];
-    updateDocument.writes = [locks.JS_DOC];
-    updateDocument.transfers = [historyActions.queryCurrentHistory];
-    updateDocument.lockUI = true;
+    updateDocument.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC],
+        transfers: [historyActions.queryCurrentHistory],
+        lockUI: true
+    };
 
     /**
      * Initialize any inactive and uninitialized documents with updateDocument.
@@ -428,10 +434,11 @@ define(function (require, exports) {
 
         return Promise.all(documentPromises);
     };
-    initializeDocuments.reads = [locks.JS_APP, locks.JS_DOC];
-    initializeDocuments.writes = [];
-    initializeDocuments.transfers = [updateDocument];
-
+    initializeDocuments.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        transfers: [updateDocument]
+    };
     /**
      * Fetch the ID of the currently selected document, or null if there is none.
      *
@@ -494,11 +501,13 @@ define(function (require, exports) {
                     deleteTempFilesPromise);
             });
     };
-    disposeDocument.reads = [];
-    disposeDocument.writes = [locks.JS_DOC, locks.JS_APP];
-    disposeDocument.transfers = [updateDocument, "layers.resetLinkedLayers", "history.queryCurrentHistory",
-        "ui.updateTransform", "application.updateRecentFiles", "libraries.deleteGraphicTempFiles"];
-    disposeDocument.lockUI = true;
+    disposeDocument.action = {
+        reads: [],
+        writes: [locks.JS_DOC, locks.JS_APP],
+        transfers: [updateDocument, "layers.resetLinkedLayers", "history.queryCurrentHistory",
+            "ui.updateTransform", "application.updateRecentFiles", "libraries.deleteGraphicTempFiles"],
+        lockUI: true
+    };
 
     /**
      * Allocate a newly opened document.
@@ -529,10 +538,12 @@ define(function (require, exports) {
                 }
             }.bind(this));
     };
-    allocateDocument.reads = [locks.PS_APP];
-    allocateDocument.writes = [locks.JS_APP];
-    allocateDocument.transfers = [updateDocument, historyActions.queryCurrentHistory, ui.updateTransform];
-    allocateDocument.lockUI = true;
+    allocateDocument.action = {
+        reads: [locks.PS_APP],
+        writes: [locks.JS_APP],
+        transfers: [updateDocument, historyActions.queryCurrentHistory, ui.updateTransform],
+        lockUI: true
+    };
 
     /**
      * Show the native PS new document dialog to create a new document.
@@ -549,10 +560,12 @@ define(function (require, exports) {
                 });
             });
     };
-    createNewExtended.reads = [];
-    createNewExtended.writes = [locks.PS_DOC, locks.PS_APP];
-    createNewExtended.transfers = [menu.native, ui.setOverlayOffsetsForFirstDocument];
-    createNewExtended.lockUI = true;
+    createNewExtended.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.PS_APP],
+        transfers: [menu.native, ui.setOverlayOffsetsForFirstDocument],
+        lockUI: true
+    };
 
     /**
      * Creates a document in default settings, or using an optionally supplied preset
@@ -606,12 +619,14 @@ define(function (require, exports) {
                 return this.transfer(toolActions.changeVectorMaskMode, false);
             });
     };
-    createNew.reads = [locks.JS_PREF];
-    createNew.writes = [locks.PS_DOC, locks.PS_APP];
-    createNew.transfers = [preferencesActions.setPreference, allocateDocument,
-        ui.setOverlayOffsetsForFirstDocument, exportActions.addDefaultAsset, toolActions.changeVectorMaskMode];
-    createNew.post = [_verifyActiveDocument, _verifyOpenDocuments];
-    createNew.locksUI = true;
+    createNew.action = {
+        reads: [locks.JS_PREF],
+        writes: [locks.PS_DOC, locks.PS_APP],
+        transfers: [preferencesActions.setPreference, allocateDocument,
+            ui.setOverlayOffsetsForFirstDocument, exportActions.addDefaultAsset, toolActions.changeVectorMaskMode],
+        post: [_verifyActiveDocument, _verifyOpenDocuments],
+        locksUI: true
+    };
 
     /**
      * Opens the document in the given path or, if none is given, prompts the
@@ -660,12 +675,14 @@ define(function (require, exports) {
                     });
             });
     };
-    open.reads = [];
-    open.writes = [locks.PS_APP, locks.JS_UI];
-    open.transfers = [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
-        ui.setOverlayOffsetsForFirstDocument, menu.native, toolActions.changeVectorMaskMode];
-    open.lockUI = true;
-    open.post = [_verifyActiveDocument, _verifyOpenDocuments];
+    open.action = {
+        reads: [],
+        writes: [locks.PS_APP, locks.JS_UI],
+        transfers: [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
+            ui.setOverlayOffsetsForFirstDocument, menu.native, toolActions.changeVectorMaskMode],
+        lockUI: true,
+        post: [_verifyActiveDocument, _verifyOpenDocuments]
+    };
 
     /**
      * Close the given document or, if no document is provided, the active document.
@@ -700,11 +717,13 @@ define(function (require, exports) {
                 // the play command fails if the user cancels the close dialog
             });
     };
-    close.reads = [locks.JS_APP, locks.JS_DOC];
-    close.writes = [locks.JS_UI, locks.PS_APP, locks.PS_DOC];
-    close.transfers = [ui.cloak, disposeDocument];
-    close.lockUI = true;
-    close.post = [_verifyActiveDocument, _verifyOpenDocuments];
+    close.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.JS_UI, locks.PS_APP, locks.PS_DOC],
+        transfers: [ui.cloak, disposeDocument],
+        lockUI: true,
+        post: [_verifyActiveDocument, _verifyOpenDocuments]
+    };
 
     /**
      * Activate the given already-open document
@@ -759,13 +778,15 @@ define(function (require, exports) {
                     deselectPromise);
             });
     };
-    selectDocument.reads = [locks.JS_TOOL];
-    selectDocument.writes = [locks.JS_APP];
-    selectDocument.transfers = ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
-        ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides,
-        toolActions.changeVectorMaskMode, updateDocument];
-    selectDocument.lockUI = true;
-    selectDocument.post = [_verifyActiveDocument];
+    selectDocument.action = {
+        reads: [locks.JS_TOOL],
+        writes: [locks.JS_APP],
+        transfers: ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
+            ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides,
+            toolActions.changeVectorMaskMode, updateDocument],
+        lockUI: true,
+        post: [_verifyActiveDocument]
+    };
 
     /**
      * Activate the next open document in the document index
@@ -782,10 +803,12 @@ define(function (require, exports) {
 
         return this.transfer(selectDocument, nextDocument);
     };
-    selectNextDocument.reads = [locks.JS_APP, locks.JS_DOC];
-    selectNextDocument.writes = [locks.JS_UI];
-    selectNextDocument.transfers = [selectDocument];
-    selectNextDocument.lockUI = true;
+    selectNextDocument.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.JS_UI],
+        transfers: [selectDocument],
+        lockUI: true
+    };
 
     /**
      * Activate the previous open document in the document index
@@ -802,10 +825,12 @@ define(function (require, exports) {
 
         return this.transfer(selectDocument, previousDocument);
     };
-    selectPreviousDocument.reads = [locks.JS_APP, locks.JS_DOC];
-    selectPreviousDocument.writes = [locks.JS_UI];
-    selectPreviousDocument.transfers = [selectDocument];
-    selectPreviousDocument.lockUI = true;
+    selectPreviousDocument.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.JS_UI],
+        transfers: [selectDocument],
+        lockUI: true
+    };
 
     /**
      * Queries the user for a destination and packages the open file in that location
@@ -821,8 +846,10 @@ define(function (require, exports) {
                 // Empty catcher for cancellation
             });
     };
-    packageDocument.reads = [];
-    packageDocument.writes = [locks.PS_DOC];
+    packageDocument.action = {
+        reads: [],
+        writes: [locks.PS_DOC]
+    };
 
     /**
      * Toggle the visibility of guides on the current document
@@ -849,9 +876,11 @@ define(function (require, exports) {
                 return this.transfer(guideActions.resetGuidePolicies);
             });
     };
-    toggleGuidesVisibility.reads = [locks.JS_DOC, locks.JS_APP];
-    toggleGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
-    toggleGuidesVisibility.transfers = [guideActions.resetGuidePolicies];
+    toggleGuidesVisibility.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [locks.JS_DOC, locks.PS_DOC],
+        transfers: [guideActions.resetGuidePolicies]
+    };
 
     /**
      * Toggle the visibility of smart guides on the current document
@@ -874,8 +903,10 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, playPromise);
     };
-    toggleSmartGuidesVisibility.reads = [locks.JS_DOC, locks.JS_APP];
-    toggleSmartGuidesVisibility.writes = [locks.JS_DOC, locks.PS_DOC];
+    toggleSmartGuidesVisibility.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [locks.JS_DOC, locks.PS_DOC]
+    };
 
     /**
      * Handler for the placeEvent notification. If the event contains
@@ -924,11 +955,13 @@ define(function (require, exports) {
 
         return this.transfer(layerActions.addLayers, document, newLayerID, true, replacedLayerID || false);
     };
-    handlePlaceEvent.reads = [locks.JS_APP];
-    handlePlaceEvent.writes = [];
-    handlePlaceEvent.transfers = [updateDocument, "layers.addLayers", "layers.resetLayers", "layers.resetIndex",
-        "history.newHistoryStateRogueSafe"];
-    handlePlaceEvent.modal = true;
+    handlePlaceEvent.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [updateDocument, "layers.addLayers", "layers.resetLayers", "layers.resetIndex",
+        "history.newHistoryStateRogueSafe"],
+        modal: true
+    };
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -1102,9 +1135,11 @@ define(function (require, exports) {
 
         return this.transfer(initActiveDocument);
     };
-    beforeStartup.reads = [locks.PS_DOC];
-    beforeStartup.writes = [locks.JS_DOC];
-    beforeStartup.transfers = [initActiveDocument];
+    beforeStartup.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC],
+        transfers: [initActiveDocument]
+    };
 
     /**
      * Send info to search store about searching for documents and
@@ -1122,9 +1157,11 @@ define(function (require, exports) {
 
         return this.transfer(initInactiveDocuments, activeDocumentID, openDocumentIDs);
     };
-    afterStartup.reads = [locks.PS_DOC];
-    afterStartup.writes = [locks.JS_DOC, locks.JS_SEARCH];
-    afterStartup.transfers = [initInactiveDocuments];
+    afterStartup.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC, locks.JS_SEARCH],
+        transfers: [initInactiveDocuments]
+    };
 
     /**
      * Remove event handlers.
@@ -1143,8 +1180,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
 
     exports.createNew = createNew;
     exports.createNewExtended = createNewExtended;

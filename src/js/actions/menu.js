@@ -115,9 +115,11 @@ define(function (require, exports) {
                 throw error;
             });
     };
-    native.reads = locks.ALL_NATIVE_LOCKS;
-    native.writes = locks.ALL_NATIVE_LOCKS;
-    native.transfers = [policyActions.suspendAllPolicies, "menu.handleExecutedPlaceCommand"];
+    native.action = {
+        reads: locks.ALL_NATIVE_LOCKS,
+        writes: locks.ALL_NATIVE_LOCKS,
+        transfers: [policyActions.suspendAllPolicies, "menu.handleExecutedPlaceCommand"]
+    };
 
     /**
      * Execute a native Photoshop menu command modally.
@@ -128,9 +130,11 @@ define(function (require, exports) {
     var nativeModal = function (payload) {
         return native.call(this, payload);
     };
-    nativeModal.reads = locks.ALL_NATIVE_LOCKS;
-    nativeModal.writes = locks.ALL_NATIVE_LOCKS;
-    nativeModal.modal = true;
+    nativeModal.action = {
+        reads: locks.ALL_NATIVE_LOCKS,
+        writes: locks.ALL_NATIVE_LOCKS,
+        modal: true
+    };
 
     /**
      * Open a URL in the user's default browser.
@@ -149,8 +153,10 @@ define(function (require, exports) {
 
         return adapter.openURLInDefaultBrowser(payload.url);
     };
-    openURL.reads = [];
-    openURL.writes = [];
+    openURL.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * Temporary helper function to easily open the testrunner. This should
@@ -170,8 +176,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    runTests.reads = [];
-    runTests.writes = [];
+    runTests.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * An action that always fails, for testing purposes.
@@ -182,8 +190,10 @@ define(function (require, exports) {
     var actionFailure = function () {
         return Promise.reject(new Error("Test: action failure"));
     };
-    actionFailure.reads = [];
-    actionFailure.writes = [];
+    actionFailure.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * An action with a transfer that always fails, for testing purposes.
@@ -198,9 +208,11 @@ define(function (require, exports) {
                 // catching these failures doesn't really help.
             });
     };
-    transferFailure.reads = [];
-    transferFailure.writes = [];
-    transferFailure.transfers = [actionFailure];
+    transferFailure.action = {
+        reads: [],
+        writes: [],
+        transfers: [actionFailure]
+    };
 
     /**
      * A flag for testing purposes which, if set, will cause onReset to fail.
@@ -221,8 +233,10 @@ define(function (require, exports) {
         _failOnReset = true;
         return Promise.reject(new Error("Test: reset failure"));
     };
-    resetFailure.reads = [];
-    resetFailure.writes = [];
+    resetFailure.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * An action that always fails, for testing purposes, and which causes onReset
@@ -246,8 +260,10 @@ define(function (require, exports) {
 
         return Promise.reject(new Error("Test: corrupt model"));
     };
-    corruptModel.reads = [];
-    corruptModel.writes = [];
+    corruptModel.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * Resolve an action path into a callable action function
@@ -309,8 +325,10 @@ define(function (require, exports) {
         window.location.reload();
         return Promise.resolve();
     };
-    resetRecess.reads = [];
-    resetRecess.writes = [];
+    resetRecess.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * Debug only method to toggle pointer policy area visualization
@@ -328,9 +346,11 @@ define(function (require, exports) {
 
         return this.transfer(preferencesActions.setPreference, "policyFramesEnabled", !enabled);
     };
-    togglePolicyFrames.reads = [];
-    togglePolicyFrames.writes = [locks.JS_PREF];
-    togglePolicyFrames.transfers = [preferencesActions.setPreference];
+    togglePolicyFrames.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        transfers: [preferencesActions.setPreference]
+    };
 
     /**
      * Debug only method to toggle post condition verification
@@ -348,9 +368,11 @@ define(function (require, exports) {
 
         return this.transfer(preferencesActions.setPreference, "postConditionsEnabled", !enabled);
     };
-    togglePostconditions.reads = [];
-    togglePostconditions.writes = [locks.JS_PREF];
-    togglePostconditions.transfers = [preferencesActions.setPreference];
+    togglePostconditions.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        transfers: [preferencesActions.setPreference]
+    };
     
     /**
      * This handler will be triggered when the user confirm or cancel the new layer 
@@ -367,9 +389,11 @@ define(function (require, exports) {
                 }
             });
     };
-    handleExecutedPlaceCommand.reads = [];
-    handleExecutedPlaceCommand.writes = [locks.JS_MENU, locks.PS_MENU];
-    handleExecutedPlaceCommand.transfers = [policyActions.restoreAllPolicies];
+    handleExecutedPlaceCommand.action = {
+        reads: [],
+        writes: [locks.JS_MENU, locks.PS_MENU],
+        transfers: [policyActions.restoreAllPolicies]
+    };
 
     /**
      * Debug-only method to toggle action transfer logging
@@ -387,9 +411,11 @@ define(function (require, exports) {
 
         return this.transfer(preferencesActions.setPreference, "logActionTransfers", !enabled);
     };
-    toggleActionTransferLogging.reads = [];
-    toggleActionTransferLogging.writes = [locks.JS_PREF];
-    toggleActionTransferLogging.transfers = [preferencesActions.setPreference];
+    toggleActionTransferLogging.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        transfers: [preferencesActions.setPreference]
+    };
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -454,8 +480,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [locks.JS_MENU, locks.PS_MENU];
+    beforeStartup.action = {
+        reads: [],
+        writes: [locks.JS_MENU, locks.PS_MENU]
+    };
     
     /**
      * Send info about menu commands to search store
@@ -467,8 +495,10 @@ define(function (require, exports) {
         searchActions.registerMenuCommandSearch.call(this);
         return Promise.resolve();
     };
-    afterStartup.reads = [];
-    afterStartup.writes = [];
+    afterStartup.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * Remove event handlers.
@@ -488,8 +518,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
 
     exports.native = native;
     exports.nativeModal = nativeModal;

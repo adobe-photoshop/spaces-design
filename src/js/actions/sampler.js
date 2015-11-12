@@ -247,9 +247,11 @@ define(function (require, exports) {
                 return descriptor.endTransaction(transaction);
             });
     };
-    applyColor.reads = [locks.JS_DOC];
-    applyColor.writes = [];
-    applyColor.transfers = [shapeActions.setFillColor, typeActions.setColor];
+    applyColor.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [shapeActions.setFillColor, typeActions.setColor]
+    };
 
     /**
      * Applies the stroke to shape layers, and color of stroke to text layers in
@@ -301,9 +303,11 @@ define(function (require, exports) {
                 return descriptor.endTransaction(transaction);
             });
     };
-    applyStroke.reads = [locks.JS_DOC];
-    applyStroke.writes = [];
-    applyStroke.transfers = [shapeActions.setStroke, typeActions.setColor];
+    applyStroke.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [shapeActions.setStroke, typeActions.setColor]
+    };
 
     /**
      * Applies the secondary property of the layer to
@@ -383,14 +387,14 @@ define(function (require, exports) {
                     });
             });
     };
-    click.reads = [locks.PS_DOC, locks.JS_UI];
-    click.writes = [];
-    click.transfers = [
-        layerFXActions.duplicateLayerEffects,
-        shapeActions.setFillColor,
-        typeActions.setColor, applyColor,
-        layerActions.initializeLayers
-    ];
+    click.action = {
+        reads: [locks.PS_DOC, locks.JS_UI],
+        writes: [],
+        transfers: [
+            layerFXActions.duplicateLayerEffects, shapeActions.setFillColor,
+            typeActions.setColor, applyColor, layerActions.initializeLayers
+        ]
+    };
 
     /**
      * Emits an event to pop up a HUD for the clicked on layer
@@ -445,9 +449,11 @@ define(function (require, exports) {
                 }
             });
     };
-    showHUD.reads = [locks.PS_DOC, locks.JS_UI];
-    showHUD.writes = [locks.JS_UI];
-    showHUD.transfers = [layerActions.initializeLayers];
+    showHUD.action = {
+        reads: [locks.PS_DOC, locks.JS_UI],
+        writes: [locks.JS_UI],
+        transfers: [layerActions.initializeLayers]
+    };
 
     /**
      * Emits an event to hide sampler HUD
@@ -457,8 +463,10 @@ define(function (require, exports) {
     var hideHUD = function () {
         return this.dispatchAsync(events.style.HIDE_HUD);
     };
-    hideHUD.reads = [];
-    hideHUD.writes = [locks.JS_UI];
+    hideHUD.action = {
+        reads: [],
+        writes: [locks.JS_UI]
+    };
     
     /**
      * Saves the currently selected layer's style in the style store clipboard
@@ -509,8 +517,10 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.style.COPY_STYLE, { style: style });
     };
-    copyLayerStyle.reads = [locks.JS_DOC, locks.JS_APP];
-    copyLayerStyle.writes = [locks.JS_STYLE];
+    copyLayerStyle.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [locks.JS_STYLE]
+    };
     
     /**
      * Saves the currently selected layer's effects in the style store clipboard
@@ -534,8 +544,10 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.style.COPY_EFFECTS, { effects: source.effects });
     };
-    copyLayerEffects.reads = [locks.JS_DOC, locks.JS_APP];
-    copyLayerEffects.writes = [locks.JS_STYLE];
+    copyLayerEffects.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [locks.JS_STYLE]
+    };
 
     /**
      * Applies the saved layer style to the given layers
@@ -628,12 +640,14 @@ define(function (require, exports) {
                 return this.transfer(layerActions.resetLayers, document, targetLayers);
             });
     };
-    pasteLayerStyle.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
-    pasteLayerStyle.writes = [];
-    pasteLayerStyle.transfers = [shapeActions.setFillColor, shapeActions.setStroke,
-        typeActions.setColor, typeActions.applyTextStyle, typeActions.setAlignment,
-        layerFXActions.duplicateLayerEffects, layerActions.resetLayers,
-        layerActions.setBlendMode, layerActions.setOpacity, transformActions.setRadius];
+    pasteLayerStyle.action = {
+        reads: [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP],
+        writes: [],
+        transfers: [shapeActions.setFillColor, shapeActions.setStroke,
+            typeActions.setColor, typeActions.applyTextStyle, typeActions.setAlignment,
+            layerFXActions.duplicateLayerEffects, layerActions.resetLayers,
+            layerActions.setBlendMode, layerActions.setOpacity, transformActions.setRadius]
+    };
         
     /**
      * Applies the saved layer effects to the given layers
@@ -662,9 +676,11 @@ define(function (require, exports) {
 
         return effectsPromise;
     };
-    pasteLayerEffects.reads = [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP];
-    pasteLayerEffects.writes = [];
-    pasteLayerEffects.transfers = [layerFXActions.duplicateLayerEffects];
+    pasteLayerEffects.action = {
+        reads: [locks.JS_DOC, locks.JS_STYLE, locks.JS_APP],
+        writes: [],
+        transfers: [layerFXActions.duplicateLayerEffects]
+    };
 
     /**
      * Builds the layerActions object for sampling:
@@ -848,9 +864,11 @@ define(function (require, exports) {
                 this.flux.actions.layers.resetLayers(document, targets, true);
             });
     };
-    replaceGraphic.reads = [locks.JS_DOC];
-    replaceGraphic.writes = [locks.PS_DOC, locks.JS_DOC];
-    replaceGraphic.transfers = [historyActions.newHistoryState, layerActions.resetLayers];
+    replaceGraphic.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [historyActions.newHistoryState, layerActions.resetLayers]
+    };
 
     exports.click = click;
     exports.showHUD = showHUD;

@@ -53,9 +53,11 @@ define(function (require, exports) {
 
         return this.transfer(dialog.openDialog, ID);
     };
-    toggleSearchBar.reads = [locks.JS_DIALOG];
-    toggleSearchBar.writes = [];
-    toggleSearchBar.transfers = [dialog.openDialog, dialog.closeDialog];
+    toggleSearchBar.action = {
+        reads: [locks.JS_DIALOG],
+        writes: [],
+        transfers: [dialog.openDialog, dialog.closeDialog]
+    };
 
     var beforeStartup = function () {
         var searchStore = this.flux.store("search");
@@ -65,9 +67,11 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [locks.JS_SEARCH];
-    beforeStartup.transfers = [];
+    beforeStartup.action = {
+        reads: [],
+        writes: [locks.JS_SEARCH],
+        transfers: []
+    };
 
     exports.toggleSearchBar = toggleSearchBar;
     exports.beforeStartup = beforeStartup;

@@ -179,10 +179,12 @@ define(function (require, exports) {
                 _currentGuidePolicyID = policyID;
             });
     };
-    resetGuidePolicies.reads = [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI];
-    resetGuidePolicies.writes = [];
-    resetGuidePolicies.transfers = [policy.removePointerPolicies, policy.addPointerPolicies];
-    resetGuidePolicies.modal = true;
+    resetGuidePolicies.action = {
+        reads: [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI],
+        writes: [],
+        transfers: [policy.removePointerPolicies, policy.addPointerPolicies],
+        modal: true
+    };
 
     /**
      * Creates a guide and starts tracking it for user to place in desired location
@@ -219,8 +221,10 @@ define(function (require, exports) {
                 return adapterOS.postEvent({ eventKind: eventKind, location: coordinates });
             });
     };
-    createGuideAndTrack.reads = [locks.JS_UI];
-    createGuideAndTrack.writes = [locks.JS_DOC];
+    createGuideAndTrack.action = {
+        reads: [locks.JS_UI],
+        writes: [locks.JS_DOC]
+    };
 
     /**
      * Helper function to figure out whether the guide with the
@@ -288,9 +292,11 @@ define(function (require, exports) {
                 return this.transfer(resetGuidePolicies);
             });
     };
-    deleteGuide.reads = [];
-    deleteGuide.writes = [locks.JS_DOC];
-    deleteGuide.transfers = [resetGuidePolicies];
+    deleteGuide.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        transfers: [resetGuidePolicies]
+    };
 
     /**
      * Updates the given guide's position or creates a new guide if necessary
@@ -324,9 +330,11 @@ define(function (require, exports) {
                 return this.transfer(resetGuidePolicies);
             });
     };
-    setGuide.reads = [];
-    setGuide.writes = [locks.JS_DOC];
-    setGuide.transfers = [resetGuidePolicies, deleteGuide];
+    setGuide.action = {
+        reads: [],
+        writes: [locks.JS_DOC],
+        transfers: [resetGuidePolicies, deleteGuide]
+    };
 
     /**
      * Clears all the guides in the given document
@@ -358,9 +366,11 @@ define(function (require, exports) {
                 return this.transfer(resetGuidePolicies);
             });
     };
-    clearGuides.reads = [];
-    clearGuides.writes = [locks.JS_DOC, locks.PS_DOC];
-    clearGuides.transfers = [resetGuidePolicies];
+    clearGuides.action = {
+        reads: [],
+        writes: [locks.JS_DOC, locks.PS_DOC],
+        transfers: [resetGuidePolicies]
+    };
 
     /**
      * Re-gets the guides of the given document and rebuilds the models
@@ -389,8 +399,10 @@ define(function (require, exports) {
                 return this.dispatch(events.document.history.GUIDES_UPDATED, payload);
             });
     };
-    queryCurrentGuides.reads = [locks.PS_DOC];
-    queryCurrentGuides.writes = [locks.JS_DOC];
+    queryCurrentGuides.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
 
     // Event handlers for guides
     var _guideSetHandler = null,
@@ -441,10 +453,12 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    beforeStartup.modal = true;
-    beforeStartup.reads = [];
-    beforeStartup.writes = [];
-    beforeStartup.transfers = [];
+    beforeStartup.action = {
+        modal: true,
+        reads: [],
+        writes: [],
+        transfers: []
+    };
     
     /**
      * Remove event handlers.
@@ -459,8 +473,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
 
     exports._getGuidesForDocumentRef = _getGuidesForDocumentRef;
 

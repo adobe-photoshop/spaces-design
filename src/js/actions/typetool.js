@@ -60,10 +60,12 @@ define(function (require, exports) {
             return this.transfer(layerActions.removeLayers, document, layer, true);
         }
     };
-    handleDeletedLayer.modal = true;
-    handleDeletedLayer.reads = [locks.JS_APP, locks.JS_DOC];
-    handleDeletedLayer.writes = [];
-    handleDeletedLayer.transfers = [layerActions.removeLayers, documentActions.updateDocument];
+    handleDeletedLayer.action = {
+        modal: true,
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        transfers: [layerActions.removeLayers, documentActions.updateDocument]
+    };
 
     /**
      * Handle the toolModalStateChanged event, when it indicates a type tool
@@ -81,10 +83,12 @@ define(function (require, exports) {
 
         return this.transfer(layerActions.resetLayers, document, document.layers.selected);
     };
-    handleTypeModalStateCanceled.modal = true;
-    handleTypeModalStateCanceled.reads = [locks.JS_APP, locks.JS_DOC];
-    handleTypeModalStateCanceled.writes = [];
-    handleTypeModalStateCanceled.transfers = [layerActions.resetLayers];
+    handleTypeModalStateCanceled.action = {
+        modal: true,
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        transfers: [layerActions.resetLayers]
+    };
 
     exports.handleDeletedLayer = handleDeletedLayer;
     exports.handleTypeModalStateCanceled = handleTypeModalStateCanceled;

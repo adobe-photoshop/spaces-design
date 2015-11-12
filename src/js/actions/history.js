@@ -72,9 +72,11 @@ define(function (require, exports) {
                 return Promise.resolve(payload);
             });
     };
-    queryCurrentHistory.reads = [locks.PS_DOC];
-    queryCurrentHistory.writes = [locks.JS_HISTORY];
-    queryCurrentHistory.modal = true;
+    queryCurrentHistory.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_HISTORY],
+        modal: true
+    };
 
     /**
      * Helper function to load a state from history store based on a count offset
@@ -199,11 +201,12 @@ define(function (require, exports) {
             return _navigateHistory.call(this, documentID, 1);
         }
     };
-    incrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
-    incrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
-    incrementHistory.transfers = ["layers.resetLayerVisibility", "documents.updateDocument",
-        "guides.resetGuidePolicies"];
-    incrementHistory.modal = true;
+    incrementHistory.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC],
+        transfers: ["layers.resetLayerVisibility", "documents.updateDocument", "guides.resetGuidePolicies"],
+        modal: true
+    };
 
     /**
      * Navigate to the previous history state
@@ -226,11 +229,12 @@ define(function (require, exports) {
             return _navigateHistory.call(this, documentID, -1);
         }
     };
-    decrementHistory.reads = [locks.JS_DOC, locks.JS_APP];
-    decrementHistory.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC];
-    decrementHistory.transfers = ["layers.resetLayerVisibility", "documents.updateDocument",
-        "guides.resetGuidePolicies"];
-    decrementHistory.modal = true;
+    decrementHistory.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC],
+        transfers: ["layers.resetLayerVisibility", "documents.updateDocument", "guides.resetGuidePolicies"],
+        modal: true
+    };
 
     /**
      * Create a new history state for the given document, with the given name.
@@ -254,9 +258,11 @@ define(function (require, exports) {
 
         return this.dispatchAsync(events.history.NEW_HISTORY_STATE, payload);
     };
-    newHistoryState.reads = [];
-    newHistoryState.writes = [locks.JS_HISTORY];
-    newHistoryState.modal = true;
+    newHistoryState.action = {
+        reads: [],
+        writes: [locks.JS_HISTORY],
+        modal: true
+    };
 
     /**
      * Create a new history state, unless the current state is "rogue" (created via PS initiated event)
@@ -317,11 +323,13 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
             });
     };
-    revertCurrentDocument.reads = [locks.JS_APP];
-    revertCurrentDocument.writes = [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC, locks.JS_UI];
-    revertCurrentDocument.transfers = ["documents.updateDocument"];
-    revertCurrentDocument.post = [layerActions._verifyLayerIndex];
-    revertCurrentDocument.modal = true;
+    revertCurrentDocument.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC, locks.JS_UI],
+        transfers: ["documents.updateDocument"],
+        post: [layerActions._verifyLayerIndex],
+        modal: true
+    };
 
     /**
      * Given a history state event from photoshop, dispatch a flux event for the history store
@@ -350,9 +358,11 @@ define(function (require, exports) {
         };
         return this.dispatchAsync(events.history.PS_HISTORY_EVENT, payload);
     };
-    handleHistoryState.reads = [locks.JS_DOC, locks.JS_APP];
-    handleHistoryState.writes = [locks.JS_HISTORY];
-    handleHistoryState.modal = true;
+    handleHistoryState.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [locks.JS_HISTORY],
+        modal: true
+    };
 
     /**
      * Given a history state event from photoshop that comes directly after a "select" event,
@@ -376,9 +386,11 @@ define(function (require, exports) {
                 return this.transfer(documentActions.updateDocument);
             });
     };
-    handleHistoryStateAfterSelect.reads = [locks.JS_DOC];
-    handleHistoryStateAfterSelect.writes = [];
-    handleHistoryStateAfterSelect.transfers = ["documents.updateDocument"];
+    handleHistoryStateAfterSelect.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: ["documents.updateDocument"]
+    };
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -446,8 +458,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [];
+    beforeStartup.action = {
+        reads: [],
+        writes: []
+    };
     
     /** @ignore */
     var onReset = function () {
@@ -458,8 +472,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
 
     exports.queryCurrentHistory = queryCurrentHistory;
     exports.incrementHistory = incrementHistory;

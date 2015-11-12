@@ -56,10 +56,12 @@ define(function (require, exports) {
         return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
             UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_AND_NOTIFY);
     };
-    select.reads = [];
-    select.writes = [];
-    select.transfers = ["policy.setMode"];
-    select.modal = true;
+    select.action = {
+        reads: [],
+        writes: [],
+        transfers: ["policy.setMode"],
+        modal: true
+    };
 
     /**
      * Stop tracking mouse movements and hide the HUD.
@@ -79,10 +81,12 @@ define(function (require, exports) {
 
         return Promise.join(mousePositionPromise, hideHUDPromise);
     };
-    deselect.reads = [];
-    deselect.writes = [locks.JS_UI];
-    deselect.transfers = ["policy.setMode"];
-    deselect.modal = true;
+    deselect.action = {
+        reads: [],
+        writes: [locks.JS_UI],
+        transfers: ["policy.setMode"],
+        modal: true
+    };
 
     exports.select = select;
     exports.deselect = deselect;

@@ -248,41 +248,48 @@ define(function (require, exports, module) {
             
             // Map from an action to the set of all unsynchonrized actions to
             // which it may transfer, including via sub-action transfers.
-            var dependencies = actionDependencies.get(action);
+            var dependencies = actionDependencies.get(action),
+                actionObject = action.action;
             
             if (!dependencies) {
                 dependencies = new Set([action]);
-                if (action.transfers) {
-                    action.transfers.forEach(function (dependency, index) {
-                        // Translate action pathnames to unsynchronized action functions
-                        if (typeof dependency === "string") {
-                            dependency = this._actionsByName.get(dependency);
-                        }
+                if (actionObject) {
+                    if (actionObject.transfers) {
+                        actionObject.transfers.forEach(function (dependency, index) {
+                            // Translate action pathnames to unsynchronized action functions
+                            if (typeof dependency === "string") {
+                                dependency = this._actionsByName.get(dependency);
+                            }
 
-                        // Validate transfer declarations
-                        if (!dependency) {
-                            var actionName = this._actionNames.get(action);
-                            throw new Error("Transfer declaration " + index + " of " + actionName + " is invalid.");
+                            // Validate transfer declarations
+                            if (!dependency) {
+                                var actionName = this._actionNames.get(action);
+                                throw new Error("Transfer declaration " + index + " of " + actionName + " is invalid.");
+                            }
+                            
+                            // Resolve child dependencies before proceeding
+                            _resolveDependencies(dependency, stack).forEach(dependencies.add, dependencies);
+                        }, this);
+                    }
+
+                    actionDependencies.set(action, dependencies);
+
+                    var reads = actionObject.reads || locks.ALL_LOCKS,
+                        writes = actionObject.writes || locks.ALL_LOCKS;
+
+                    // Calculate transitive lock sets based on the action's dependencies
+                    dependencies.forEach(function (dependency) {
+                        if (dependency.action) {
+                            reads = reads.concat(dependency.action.reads || locks.ALL_LOCKS);
+                            writes = writes.concat(dependency.action.writes || locks.ALL_LOCKS);
+                        } else {
+                            reads = reads.concat(locks.ALL_LOCKS);
+                            writes = writes.concat(locks.ALL_LOCKS);
                         }
-                        
-                        // Resolve child dependencies before proceeding
-                        _resolveDependencies(dependency, stack).forEach(dependencies.add, dependencies);
-                    }, this);
+                    });
+                    this._transitiveReads.set(action, _.uniq(reads));
+                    this._transitiveWrites.set(action, _.uniq(writes));
                 }
-
-                actionDependencies.set(action, dependencies);
-
-                var reads = action.reads || locks.ALL_LOCKS,
-                    writes = action.writes || locks.ALL_LOCKS;
-
-                // Calculate transitive lock sets based on the action's dependencies
-                dependencies.forEach(function (dependency) {
-                    reads = reads.concat(dependency.reads || locks.ALL_LOCKS);
-                    writes = writes.concat(dependency.writes || locks.ALL_LOCKS);
-                });
-
-                this._transitiveReads.set(action, _.uniq(reads));
-                this._transitiveWrites.set(action, _.uniq(writes));
             }
             
             stack.delete(action);
@@ -293,22 +300,25 @@ define(function (require, exports, module) {
         this._transitiveReads = new Map();
         this._transitiveWrites = new Map();
         this._actionsByName.forEach(function (action, actionName) {
+            var actionObject = action.action;
             // Validate action read locks
-            if (action.reads) {
-                action.reads.forEach(function (lock, index) {
-                    if (typeof lock !== "string") {
-                        throw new Error("Read lock declaration " + index + " of " + actionName + " is invalid.");
-                    }
-                });
-            }
+            if (actionObject) {
+                if (actionObject.reads) {
+                    actionObject.reads.forEach(function (lock, index) {
+                        if (typeof lock !== "string") {
+                            throw new Error("Read lock declaration " + index + " of " + actionName + " is invalid.");
+                        }
+                    });
+                }
 
-            // Validate action write locks
-            if (action.writes) {
-                action.writes.forEach(function (lock, index) {
-                    if (typeof lock !== "string") {
-                        throw new Error("Write lock declaration " + index + " of " + actionName + " is invalid.");
-                    }
-                });
+                // Validate action write locks
+                if (actionObject.writes) {
+                    actionObject.writes.forEach(function (lock, index) {
+                        if (typeof lock !== "string") {
+                            throw new Error("Write lock declaration " + index + " of " + actionName + " is invalid.");
+                        }
+                    });
+                }
             }
 
             _resolveDependencies(action);
@@ -374,13 +384,14 @@ define(function (require, exports, module) {
      * @return {ActionReceiver}
      */
     FluxController.prototype._makeActionReceiver = function (proto, action, actionName) {
-        if (!action.writes) {
+        var actionObject = action.action;
+        if (actionObject && !actionObject.writes) {
             log.warn("Action " + actionName + " does not specify any write locks. " +
                 "All locks will be required for execution.");
         }
 
         var transferQueue = new AsyncDependencyQueue(CORES),
-            currentTransfers = new Set(action.transfers || []),
+            currentTransfers = new Set(actionObject.transfers || []),
             self = this,
             resolvedPromise;
 
@@ -561,10 +572,16 @@ define(function (require, exports, module) {
      */
     FluxController.prototype._applyAction = function (action, actionReceiver, params, parentActionName) {
         var flux = this.flux,
-            lockUI = action.lockUI,
-            post = action.post,
-            modal = action.modal || false,
-            actionName = this._actionNames.get(action),
+            actionObject = action.action,
+            actionName = this._actionNames.get(action);
+
+        if (!actionObject) {
+            throw new Error("Action " + actionName + " is not a valid action");
+        }
+
+        var lockUI = actionObject.lockUI,
+            post = actionObject.post,
+            modal = actionObject.modal || false,
             actionTitle;
 
         if (parentActionName) {

@@ -37,9 +37,11 @@ define(function (require, exports) {
     var openFirstLaunch = function () {
         return this.transfer(dialog.openDialog, "first-launch-dialog");
     };
-    openFirstLaunch.reads = [];
-    openFirstLaunch.writes = [];
-    openFirstLaunch.transfers = [dialog.openDialog];
+    openFirstLaunch.action = {
+        reads: [],
+        writes: [],
+        transfers: [dialog.openDialog]
+    };
 
     /**
      * Open the keyboard shortcuts dialog.
@@ -49,9 +51,11 @@ define(function (require, exports) {
     var openKeyboardShortcuts = function () {
         return this.transfer(dialog.openDialog, "keyboard-shortcut-dialog");
     };
-    openKeyboardShortcuts.reads = [];
-    openKeyboardShortcuts.writes = [];
-    openKeyboardShortcuts.transfers = [dialog.openDialog];
+    openKeyboardShortcuts.action = {
+        reads: [],
+        writes: [],
+        transfers: [dialog.openDialog]
+    };
 
     /**
      * After startup, display the "first launch" dialog, 
@@ -68,9 +72,11 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
-    afterStartup.reads = [locks.JS_PREF];
-    afterStartup.writes = [];
-    afterStartup.transfers = [openFirstLaunch];
+    afterStartup.action = {
+        reads: [locks.JS_PREF],
+        writes: [],
+        transfers: [openFirstLaunch]
+    };
 
     exports.openFirstLaunch = openFirstLaunch;
     exports.openKeyboardShortcuts = openKeyboardShortcuts;

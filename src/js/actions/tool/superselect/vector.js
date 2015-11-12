@@ -92,10 +92,12 @@ define(function (require, exports) {
                 }
             });
     };
-    select.reads = [];
-    select.writes = [locks.PS_APP, locks.PS_TOOL];
-    select.transfers = ["shortcuts.addShortcut"];
-    select.modal = true;
+    select.action = {
+        reads: [],
+        writes: [locks.PS_APP, locks.PS_TOOL],
+        transfers: ["shortcuts.addShortcut"],
+        modal: true
+    };
 
     /**
      * Updates current document because we may have changed bounds in Photoshop
@@ -119,10 +121,12 @@ define(function (require, exports) {
                 }
             });
     };
-    deselect.reads = [locks.JS_APP];
-    deselect.writes = [];
-    deselect.transfers = ["shortcuts.removeShortcut"];
-    deselect.modal = true;
+    deselect.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: ["shortcuts.removeShortcut"],
+        modal: true
+    };
 
     exports.select = select;
     exports.deselect = deselect;

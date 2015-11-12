@@ -255,38 +255,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Get the ordered list of layer IDs for the given Document ID.
-     *
-     * @private
-     * @param {number} documentID
-     * @return {Promise.<{documentID: number, layerIDs: Array.<number>}>}
-     */
-    var _getLayerIDsForDocumentID = function (documentID) {
-        var _getLayerIDs = function (doc) {
-            var docRef = documentLib.referenceBy.id(documentID),
-                startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-                rangeOpts = {
-                    range: "layer",
-                    index: startIndex,
-                    count: -1
-                };
-            
-            return descriptor.getPropertyRange(docRef, rangeOpts, "layerID");
-        };
-
-        var documentRef = documentLib.referenceBy.id(documentID);
-        return documentActions._getDocumentByRef(documentRef, ["hasBackgroundLayer"], [])
-            .bind(this)
-            .then(_getLayerIDs)
-            .then(function (layerIDs) {
-                return {
-                    documentID: documentID,
-                    layerIDs: layerIDs.reverse()
-                };
-            });
-    };
-
-    /**
      * Verify the correctness of the list of layer IDs.
      *
      * @private
@@ -301,7 +269,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return _getLayerIDsForDocumentID(currentDocument.id)
+        return getLayerIDsForDocumentID(currentDocument.id)
             .bind(this)
             .then(function (payload) {
                 var layerIDs = payload.layerIDs;
@@ -361,6 +329,44 @@ define(function (require, exports) {
                         " instead of " + 0);
                 }
             });
+    };
+
+    /**
+     * Get the ordered list of layer IDs for the given Document ID.
+     *
+     * @private
+     * @param {number} documentID
+     * @return {Promise.<{documentID: number, layerIDs: Array.<number>}>}
+     */
+    var getLayerIDsForDocumentID = function (documentID) {
+        var _getLayerIDs = function (doc) {
+            var docRef = documentLib.referenceBy.id(documentID),
+                startIndex = (doc.hasBackgroundLayer ? 0 : 1),
+                rangeOpts = {
+                    range: "layer",
+                    index: startIndex,
+                    count: -1
+                };
+            
+            return descriptor.getPropertyRange(docRef, rangeOpts, "layerID");
+        };
+
+        var documentRef = documentLib.referenceBy.id(documentID);
+        return documentActions._getDocumentByRef(documentRef, ["hasBackgroundLayer"], [])
+            .bind(this)
+            .then(_getLayerIDs)
+            .then(function (layerIDs) {
+                return {
+                    documentID: documentID,
+                    layerIDs: layerIDs.reverse()
+                };
+            });
+    };
+    getLayerIDsForDocumentID.action = {
+        modal: true,
+        reads: [locks.PS_DOC],
+        writes: [],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
     /**
@@ -425,10 +431,12 @@ define(function (require, exports) {
                 return nextLayerCount !== naiveLayerCount;
             });
     };
-    addLayers.modal = true;
-    addLayers.reads = [locks.PS_DOC];
-    addLayers.writes = [locks.JS_DOC];
-    addLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
+    addLayers.action = {
+        modal: true,
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Get a list of selected layer indexes from photoshop, based on the provided document
@@ -540,9 +548,11 @@ define(function (require, exports) {
                 this.dispatch(events.document.history.RESET_LAYERS, payload);
             });
     };
-    resetLayers.reads = [locks.PS_DOC];
-    resetLayers.writes = [locks.JS_DOC];
-    resetLayers.modal = true;
+    resetLayers.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC],
+        modal: true
+    };
 
     /**
      * Emit a RESET_BOUNDS with bounds descriptors for the given layers.
@@ -598,9 +608,11 @@ define(function (require, exports) {
                 return this.transfer(guides.queryCurrentGuides);
             });
     };
-    resetBounds.reads = [locks.PS_DOC];
-    resetBounds.writes = [locks.JS_DOC];
-    resetBounds.transfers = [guides.queryCurrentGuides];
+    resetBounds.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC],
+        transfers: [guides.queryCurrentGuides]
+    };
 
     /** 
      * Transfers to reset bounds, but if there is a failure, quietly fails instead of 
@@ -614,9 +626,11 @@ define(function (require, exports) {
         return this.transfer(resetBounds, document, layers)
             .catch(function () {});
     };
-    resetBoundsQuietly.reads = [];
-    resetBoundsQuietly.writes = [];
-    resetBoundsQuietly.transfers = [resetBounds];
+    resetBoundsQuietly.action = {
+        reads: [],
+        writes: [],
+        transfers: [resetBounds]
+    };
 
     /**
      * Calls reset on all smart object layers of the document
@@ -640,9 +654,11 @@ define(function (require, exports) {
         }
         return this.transfer(resetBounds, document, linkedLayers);
     };
-    resetLinkedLayers.reads = [locks.JS_DOC];
-    resetLinkedLayers.writes = [];
-    resetLinkedLayers.transfers = [resetBounds];
+    resetLinkedLayers.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [resetBounds]
+    };
 
     /**
      * Emit RESET_LAYERS_BY_INDEX with layer descriptors for all given layer indexes.
@@ -675,8 +691,10 @@ define(function (require, exports) {
                 this.dispatch(events.document.history.RESET_LAYERS_BY_INDEX, payload);
             });
     };
-    resetLayersByIndex.reads = [locks.PS_DOC];
-    resetLayersByIndex.writes = [locks.JS_DOC];
+    resetLayersByIndex.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC]
+    };
 
     /**
      * Fetch the visibility property for all layers, or given layer(s), and emit VISIBILITY_CHANGED
@@ -717,9 +735,11 @@ define(function (require, exports) {
                 return this.dispatchAsync(events.document.VISIBILITY_CHANGED, payload);
             });
     };
-    resetLayerVisibility.reads = [locks.PS_DOC];
-    resetLayerVisibility.writes = [locks.JS_DOC];
-    resetLayerVisibility.modal = true;
+    resetLayerVisibility.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC],
+        modal: true
+    };
 
     /**
      * Initialize the uninitialized subset of the given layers by loading their lazy properties.
@@ -739,10 +759,12 @@ define(function (require, exports) {
 
         return this.transfer(resetLayers, document, uninitializedLayers, true);
     };
-    initializeLayers.reads = [];
-    initializeLayers.writes = [];
-    initializeLayers.transfers = [resetLayers];
-    initializeLayers.modal = true;
+    initializeLayers.action = {
+        reads: [],
+        writes: [],
+        transfers: [resetLayers],
+        modal: true
+    };
 
     /**
      * Expand or collapse the given group layers in the layers panel.
@@ -849,9 +871,11 @@ define(function (require, exports) {
             }
         }.bind(this));
     };
-    setGroupExpansion.reads = [];
-    setGroupExpansion.writes = [locks.PS_DOC, locks.JS_DOC];
-    setGroupExpansion.transfers = [initializeLayers];
+    setGroupExpansion.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [initializeLayers]
+    };
 
     /**
      * Reveal the given layers in the layers panel by ensuring their ancestors
@@ -880,9 +904,11 @@ define(function (require, exports) {
 
         return this.transfer(setGroupExpansion, document, collapsedAncestors, true);
     };
-    revealLayers.reads = [locks.JS_DOC];
-    revealLayers.writes = [];
-    revealLayers.transfers = [setGroupExpansion];
+    revealLayers.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [setGroupExpansion]
+    };
 
     /**
      * Resets the list of selected layers by asking photoshop for targetLayers
@@ -908,9 +934,11 @@ define(function (require, exports) {
                 return this.transfer(initializeLayers, nextDocument, selected);
             });
     };
-    resetSelection.reads = [locks.PS_DOC, locks.JS_DOC];
-    resetSelection.writes = [locks.JS_DOC];
-    resetSelection.transfers = [initializeLayers];
+    resetSelection.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.JS_DOC],
+        transfers: [initializeLayers]
+    };
 
     /**
      * Selects the given layer with given modifiers
@@ -1021,10 +1049,12 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, revealPromise, selectPromise);
     };
-    select.reads = [];
-    select.writes = [locks.PS_DOC, locks.JS_DOC];
-    select.transfers = [revealLayers, resetSelection, initializeLayers, tools.changeVectorMaskMode];
-    select.post = [_verifyLayerSelection];
+    select.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [revealLayers, resetSelection, initializeLayers, tools.changeVectorMaskMode],
+        post: [_verifyLayerSelection]
+    };
 
     /**
      * Renames the given layer
@@ -1056,8 +1086,10 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, renamePromise);
     };
-    rename.reads = [locks.PS_DOC, locks.JS_DOC];
-    rename.writes = [locks.PS_DOC, locks.JS_DOC];
+    rename.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Deselects all layers in the given document, or in the current document if none is provided.
@@ -1087,9 +1119,11 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, deselectPromise);
     };
-    deselectAll.reads = [locks.JS_APP];
-    deselectAll.writes = [locks.PS_DOC, locks.JS_DOC];
-    deselectAll.post = [_verifyLayerSelection];
+    deselectAll.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerSelection]
+    };
 
     /**
      * Selects all layers in the given document, or in the current document if none is provided.
@@ -1109,10 +1143,12 @@ define(function (require, exports) {
 
         return this.transfer(select, document, document.layers.allVisible);
     };
-    selectAll.reads = [locks.JS_DOC, locks.JS_APP];
-    selectAll.writes = [];
-    selectAll.transfers = [select];
-    selectAll.post = [_verifyLayerSelection];
+    selectAll.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [],
+        transfers: [select],
+        post: [_verifyLayerSelection]
+    };
 
     /**
      * Remove the given layers from the JavaScript model. This is useful from
@@ -1156,10 +1192,12 @@ define(function (require, exports) {
                 return this.transfer(initializeLayers, nextDocument, selected);
             });
     };
-    removeLayers.reads = [locks.PS_DOC];
-    removeLayers.writes = [locks.JS_DOC];
-    removeLayers.transfers = ["history.queryCurrentHistory", initializeLayers];
-    removeLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
+    removeLayers.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC],
+        transfers: ["history.queryCurrentHistory", initializeLayers],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Deletes the selected layers in the given document, or in the current document if none is provided
@@ -1194,10 +1232,12 @@ define(function (require, exports) {
                 return this.transfer(removeLayers, document, layers);
             });
     };
-    deleteSelected.reads = [locks.JS_APP, locks.JS_DOC];
-    deleteSelected.writes = [locks.PS_DOC];
-    deleteSelected.transfers = [removeLayers];
-    deleteSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
+    deleteSelected.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.PS_DOC],
+        transfers: [removeLayers],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Groups the currently active layers
@@ -1251,9 +1291,11 @@ define(function (require, exports) {
                 this.dispatch(events.document.history.GROUP_SELECTED, payload);
             });
     };
-    groupSelected.reads = [locks.PS_DOC, locks.JS_DOC];
-    groupSelected.writes = [locks.PS_DOC, locks.JS_DOC];
-    groupSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
+    groupSelected.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Groups the selected layers in the currently active document
@@ -1271,9 +1313,11 @@ define(function (require, exports) {
 
         return this.transfer(groupSelected, currentDocument);
     };
-    groupSelectedInCurrentDocument.reads = [locks.JS_APP];
-    groupSelectedInCurrentDocument.writes = [];
-    groupSelectedInCurrentDocument.transfers = [groupSelected];
+    groupSelectedInCurrentDocument.action = {
+        reads: [locks.JS_APP],
+        writes: [],
+        transfers: [groupSelected]
+    };
 
     /**
      * Ungroups the selected layers in the current document. If only groups are selected,
@@ -1408,7 +1452,7 @@ define(function (require, exports) {
         var lockList = Immutable.List(playObjRec.groups);
         return locking.playWithLockOverride(document, lockList, playObjects, options, true)
             .bind(this)
-            .then(_getLayerIDsForDocumentID.bind(this, document.id))
+            .then(this.transfer(getLayerIDsForDocumentID, document.id))
             .then(function (payload) {
                 payload.selectedIDs = collection.pluck(nextSelected, "id");
                 payload.history = {
@@ -1429,10 +1473,12 @@ define(function (require, exports) {
                 }
             });
     };
-    ungroupSelected.reads = [locks.JS_APP];
-    ungroupSelected.writes = [locks.PS_DOC, locks.JS_DOC];
-    ungroupSelected.transfers = [resetSelection, initializeLayers];
-    ungroupSelected.post = [_verifyLayerIndex, _verifyLayerSelection];
+    ungroupSelected.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [resetSelection, initializeLayers],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Changes the visibility of layer
@@ -1458,8 +1504,10 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, visibilityPromise);
     };
-    setVisibility.reads = [locks.PS_DOC, locks.JS_DOC];
-    setVisibility.writes = [locks.PS_DOC, locks.JS_DOC];
+    setVisibility.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Used by the show/hide menu items, targets the active document active layers
@@ -1481,9 +1529,11 @@ define(function (require, exports) {
 
         return Promise.all(showPromises);
     };
-    setVisibilitySelectedInCurrentDocument.reads = [locks.JS_DOC];
-    setVisibilitySelectedInCurrentDocument.writes = [];
-    setVisibilitySelectedInCurrentDocument.transfers = [setVisibility];
+    setVisibilitySelectedInCurrentDocument.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [setVisibility]
+    };
 
     /**
      * Unlocks the background layer of the document
@@ -1535,10 +1585,12 @@ define(function (require, exports) {
             return Promise.join(dispatchPromise, lockPromise);
         }
     };
-    setLocking.reads = [locks.PS_DOC, locks.JS_DOC];
-    setLocking.writes = [locks.PS_DOC, locks.JS_DOC];
-    setLocking.transfers = [addLayers];
-    setLocking.post = [_verifyLayerIndex, _verifyLayerSelection];
+    setLocking.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [addLayers],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Set the opacity of the given layers.
@@ -1594,8 +1646,10 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, opacityPromise);
     };
-    setOpacity.reads = [];
-    setOpacity.writes = [locks.PS_DOC, locks.JS_DOC];
+    setOpacity.action = {
+        reads: [],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Set the lock status of the selected layers in the current document as
@@ -1627,9 +1681,11 @@ define(function (require, exports) {
     var lockSelectedInCurrentDocument = function () {
         return _setLockingInCurrentDocument.call(this, true);
     };
-    lockSelectedInCurrentDocument.reads = [locks.JS_DOC, locks.JS_APP];
-    lockSelectedInCurrentDocument.writes = [];
-    lockSelectedInCurrentDocument.transfers = [setLocking];
+    lockSelectedInCurrentDocument.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [],
+        transfers: [setLocking]
+    };
 
     /**
      * Unlock the selected layers in the current document.
@@ -1639,9 +1695,11 @@ define(function (require, exports) {
     var unlockSelectedInCurrentDocument = function () {
         return _setLockingInCurrentDocument.call(this, false);
     };
-    unlockSelectedInCurrentDocument.reads = [locks.JS_DOC, locks.JS_APP];
-    unlockSelectedInCurrentDocument.writes = [];
-    unlockSelectedInCurrentDocument.transfers = [setLocking];
+    unlockSelectedInCurrentDocument.action = {
+        reads: [locks.JS_DOC, locks.JS_APP],
+        writes: [],
+        transfers: [setLocking]
+    };
 
     /**
      * Reset the layer z-index. Assumes that all layers are already in the model,
@@ -1659,7 +1717,7 @@ define(function (require, exports) {
             }
         }
 
-        return _getLayerIDsForDocumentID.call(this, document.id)
+        return this.transfer(getLayerIDsForDocumentID, document.id)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
                         payload.selectedIndices = selectedIndices;
@@ -1676,10 +1734,12 @@ define(function (require, exports) {
                 return this.transfer(initializeLayers, document, document.layers.selected);
             });
     };
-    resetIndex.reads = [locks.PS_DOC];
-    resetIndex.writes = [locks.JS_DOC];
-    resetIndex.transfers = [initializeLayers];
-    resetIndex.post = [_verifyLayerIndex, _verifyLayerSelection];
+    resetIndex.action = {
+        reads: [locks.PS_DOC],
+        writes: [locks.JS_DOC],
+        transfers: [initializeLayers],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Moves the given layers to their given position
@@ -1737,10 +1797,12 @@ define(function (require, exports) {
                 return this.transfer(resetBounds, nextDocument, nextDocument.layers.allSelected);
             });
     };
-    reorderLayers.reads = [locks.PS_DOC, locks.JS_DOC];
-    reorderLayers.writes = [locks.PS_DOC, locks.JS_DOC];
-    reorderLayers.transfers = [resetIndex, resetBounds, "history.newHistoryState"];
-    reorderLayers.post = [_verifyLayerIndex, _verifyLayerSelection];
+    reorderLayers.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [resetIndex, resetBounds, "history.newHistoryState"],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Reorders all the given layers in the document to the top of the z-order
@@ -1766,10 +1828,12 @@ define(function (require, exports) {
 
         return this.transfer(reorderLayers, document, layerIDs, "front");
     };
-    bringToFront.reads = [];
-    bringToFront.writes = [];
-    bringToFront.transfers = [reorderLayers];
-    bringToFront.post = [_verifyLayerIndex, _verifyLayerSelection];
+    bringToFront.action = {
+        reads: [],
+        writes: [],
+        transfers: [reorderLayers],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Reorders all the given layers in the document, so they're one above the top-most one
@@ -1795,10 +1859,12 @@ define(function (require, exports) {
 
         return this.transfer(reorderLayers, document, layerIDs, "next");
     };
-    bringForward.reads = [];
-    bringForward.writes = [];
-    bringForward.transfers = [reorderLayers];
-    bringForward.post = [_verifyLayerIndex, _verifyLayerSelection];
+    bringForward.action = {
+        reads: [],
+        writes: [],
+        transfers: [reorderLayers],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Reorders all the given layers in the document, so they're one below the bottom-most one
@@ -1824,10 +1890,12 @@ define(function (require, exports) {
             
         return this.transfer(reorderLayers, document, layerIDs, "previous");
     };
-    sendBackward.reads = [];
-    sendBackward.writes = [];
-    sendBackward.transfers = [reorderLayers];
-    sendBackward.post = [_verifyLayerIndex, _verifyLayerSelection];
+    sendBackward.action = {
+        reads: [],
+        writes: [],
+        transfers: [reorderLayers],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Reorders all the given layers in the document to the bottom in z-order
@@ -1853,10 +1921,12 @@ define(function (require, exports) {
 
         return this.transfer(reorderLayers, document, layerIDs, "back");
     };
-    sendToBack.reads = [];
-    sendToBack.writes = [];
-    sendToBack.transfers = [reorderLayers];
-    sendToBack.post = [_verifyLayerIndex, _verifyLayerSelection];
+    sendToBack.action = {
+        reads: [],
+        writes: [],
+        transfers: [reorderLayers],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Set the blend mode of the given layers.
@@ -1904,8 +1974,10 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, blendPromise);
     };
-    setBlendMode.reads = [locks.PS_DOC, locks.JS_DOC];
-    setBlendMode.writes = [locks.PS_DOC, locks.JS_DOC];
+    setBlendMode.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Sets the given layers' proportional flag
@@ -1958,8 +2030,10 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, sizePromise);
     };
-    setProportional.reads = [locks.PS_DOC, locks.JS_DOC];
-    setProportional.writes = [locks.PS_DOC, locks.JS_DOC];
+    setProportional.action = {
+        reads: [locks.PS_DOC, locks.JS_DOC],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
 
     /**
      * Default Artboard size 
@@ -2171,10 +2245,12 @@ define(function (require, exports) {
             });
     };
 
-    createArtboard.reads = [locks.JS_APP];
-    createArtboard.writes = [locks.PS_DOC, locks.JS_DOC];
-    createArtboard.transfers = [resetIndex, addLayers, exportActions.addDefaultAsset];
-    createArtboard.post = [_verifyLayerIndex, _verifyLayerSelection];
+    createArtboard.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        transfers: [resetIndex, addLayers, exportActions.addDefaultAsset],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
+    };
 
     /**
      * Copy into the given document a set of layers, possibly from another document.
@@ -2266,9 +2342,11 @@ define(function (require, exports) {
                     });
             });
     };
-    duplicate.reads = [locks.JS_DOC];
-    duplicate.writes = [locks.PS_DOC];
-    duplicate.transfers = ["documents.updateDocument", addLayers, select];
+    duplicate.action = {
+        reads: [locks.JS_DOC],
+        writes: [locks.PS_DOC],
+        transfers: ["documents.updateDocument", addLayers, select]
+    };
 
     /**
      * Dispatches a command to  select the VEctor mask for the currently selected layer
@@ -2279,9 +2357,11 @@ define(function (require, exports) {
         return descriptor.playObject(vectorMaskLib.selectVectorMask());
     };
 
-    selectVectorMask.reads = [];
-    selectVectorMask.writes = [locks.PS_DOC];
-    selectVectorMask.modal = true;
+    selectVectorMask.action = {
+        reads: [],
+        writes: [locks.PS_DOC],
+        modal: true
+    };
 
     /**
      * Dispatches a layer reposition for all layers in the given document model
@@ -2300,10 +2380,12 @@ define(function (require, exports) {
         // a canvas shift event which would cause us to shift our already-correct cached history state
         return this.transfer(resetBounds, document, document.layers.all);
     };
-    handleCanvasShift.reads = [locks.JS_DOC];
-    handleCanvasShift.writes = [];
-    handleCanvasShift.transfers = [resetBounds];
-    handleCanvasShift.modal = true;
+    handleCanvasShift.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [resetBounds],
+        modal: true
+    };
 
     /**
      * Reveal and select the vector mask of the selected layer. 
@@ -2321,10 +2403,12 @@ define(function (require, exports) {
                 return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
             });
     };
-    editVectorMask.reads = [locks.JS_TOOL];
-    editVectorMask.writes = [locks.PS_DOC];
-    editVectorMask.transfers = [tools.select];
-    editVectorMask.modal = true;
+    editVectorMask.action = {
+        reads: [locks.JS_TOOL],
+        writes: [locks.PS_DOC],
+        transfers: [tools.select],
+        modal: true
+    };
 
     /**
      * create a vector mask on the selected layer
@@ -2363,9 +2447,11 @@ define(function (require, exports) {
             vectorMaskLib.makeVectorMaskFromWorkPath(),
             vectorMaskLib.deleteWorkPath()]);
     };
-    addVectorMask.reads = [locks.JS_TOOL];
-    addVectorMask.writes = [locks.PS_DOC];
-    addVectorMask.modal = true;
+    addVectorMask.action = {
+        reads: [locks.JS_TOOL],
+        writes: [locks.PS_DOC],
+        modal: true
+    };
 
     /**
      * removes a vector mask on the selected layer
@@ -2415,8 +2501,10 @@ define(function (require, exports) {
             return Promise.resolve();
         }
     };
-    deleteVectorMask.reads = [locks.JS_TOOL];
-    deleteVectorMask.writes = [locks.PS_DOC, locks.JS_DOC];
+    deleteVectorMask.action = {
+        reads: [locks.JS_TOOL],
+        writes: [locks.PS_DOC, locks.JS_DOC]
+    };
     
     /**
      * Event handlers initialized in beforeStartup.
@@ -2626,9 +2714,11 @@ define(function (require, exports) {
 
         return Promise.join(backspacePromise, deletePromise);
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP];
-    beforeStartup.transfers = [shortcuts.addShortcut];
+    beforeStartup.action = {
+        reads: [],
+        writes: [locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP],
+        transfers: [shortcuts.addShortcut]
+    };
 
     /**
      * Send info about layers to search store
@@ -2641,8 +2731,10 @@ define(function (require, exports) {
         searchActions.registerCurrentLayerSearch.call(this);
         return Promise.resolve();
     };
-    afterStartup.reads = [];
-    afterStartup.writes = [];
+    afterStartup.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * Remove event handlers.
@@ -2663,8 +2755,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
 
     exports.select = select;
     exports.rename = rename;
@@ -2707,14 +2801,12 @@ define(function (require, exports) {
     exports.selectVectorMask = selectVectorMask;
     exports.addVectorMask = addVectorMask;
     exports.deleteVectorMask = deleteVectorMask;
+    exports.getLayerIDsForDocumentID = getLayerIDsForDocumentID;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 
     exports._getLayersForDocument = _getLayersForDocument;
-    exports._verifyLayerSelection = _verifyLayerSelection;
-    exports._verifyLayerIndex = _verifyLayerIndex;
-    exports._getLayerIDsForDocumentID = _getLayerIDsForDocumentID;
 
     exports.afterStartup = afterStartup;
 });

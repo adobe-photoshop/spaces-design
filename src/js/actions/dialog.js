@@ -75,10 +75,12 @@ define(function (require, exports) {
                 
         return Promise.join(dispatchPromise, policyPromise);
     };
-    openDialog.reads = [];
-    openDialog.writes = [locks.JS_DIALOG];
-    openDialog.transfers = [policy.addPointerPolicies];
-    openDialog.modal = true;
+    openDialog.action = {
+        reads: [],
+        writes: [locks.JS_DIALOG],
+        transfers: [policy.addPointerPolicies],
+        modal: true
+    };
 
     /**
      * Close an already open dialog with the given ID.
@@ -98,10 +100,12 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, policyPromise);
     };
-    closeDialog.reads = [];
-    closeDialog.writes = [locks.JS_DIALOG];
-    closeDialog.transfers = [policy.removePointerPolicies];
-    closeDialog.modal = true;
+    closeDialog.action = {
+        reads: [],
+        writes: [locks.JS_DIALOG],
+        transfers: [policy.removePointerPolicies],
+        modal: true
+    };
 
     /**
      * Close all open dialogs.
@@ -112,9 +116,11 @@ define(function (require, exports) {
     var closeAllDialogs = function () {
         return this.dispatchAsync(events.dialog.CLOSE_DIALOG);
     };
-    closeAllDialogs.reads = [];
-    closeAllDialogs.writes = [locks.JS_DIALOG];
-    closeAllDialogs.modal = true;
+    closeAllDialogs.action = {
+        reads: [],
+        writes: [locks.JS_DIALOG],
+        modal: true
+    };
 
     /**
      * Clears the policy ID map on reset
@@ -126,8 +132,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
 
     exports.openDialog = openDialog;
     exports.closeDialog = closeDialog;

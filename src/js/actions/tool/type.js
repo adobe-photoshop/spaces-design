@@ -186,10 +186,12 @@ define(function (require, exports) {
                 }
             });
     };
-    select.reads = [];
-    select.writes = [locks.PS_APP, locks.PS_TOOL];
-    select.transfers = [];
-    select.modal = true;
+    select.action = {
+        reads: [],
+        writes: [locks.PS_APP, locks.PS_TOOL],
+        transfers: [],
+        modal: true
+    };
 
     /**
      * Remove modal type event handlers.
@@ -209,10 +211,12 @@ define(function (require, exports) {
 
         return UI.setSuppressTargetPaths(false);
     };
-    deselect.reads = [];
-    deselect.writes = [locks.PS_APP];
-    deselect.transfers = [];
-    deselect.modal = true;
+    deselect.action = {
+        reads: [],
+        writes: [locks.PS_APP],
+        transfers: [],
+        modal: true
+    };
 
     /**
      * Handles updateTextProperties events, which are emitted during the type modal
@@ -238,10 +242,12 @@ define(function (require, exports) {
 
         return this.transfer("type.updateProperties", currentDocument, typeLayers, properties);
     };
-    updateTextPropertiesHandler.reads = [locks.JS_APP, locks.JS_DOC];
-    updateTextPropertiesHandler.writes = [];
-    updateTextPropertiesHandler.transfers = ["type.updateProperties"];
-    updateTextPropertiesHandler.modal = true;
+    updateTextPropertiesHandler.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        transfers: ["type.updateProperties"],
+        modal: true
+    };
 
     exports.select = select;
     exports.deselect = deselect;

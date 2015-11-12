@@ -120,7 +120,9 @@ define(function (require, exports) {
     var enableTooltips = function () {
         return adapter.setPropertyValue(TOOLTIP_TIME_KEY, DEFAULT_TOOLTIP_TIME);
     };
-    enableTooltips.writes = [locks.PS_APP];
+    enableTooltips.action = {
+        writes: [locks.PS_APP]
+    };
 
     /**
      * Globally disable tooltips and clear any current tooltip.
@@ -132,7 +134,9 @@ define(function (require, exports) {
             adapterOS.setTooltip("");
         });
     };
-    disableTooltips.writes = [locks.PS_APP];
+    disableTooltips.action = {
+        writes: [locks.PS_APP]
+    };
 
     /**
      * Toggle pinned toolbar
@@ -147,9 +151,11 @@ define(function (require, exports) {
 
         return this.transfer(preferences.setPreference, "toolbarPinned", newToolbarPinned);
     };
-    togglePinnedToolbar.reads = [];
-    togglePinnedToolbar.writes = [locks.JS_PREF];
-    togglePinnedToolbar.transfers = [preferences.setPreference];
+    togglePinnedToolbar.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        transfers: [preferences.setPreference]
+    };
 
     /**
     * Toggle small screen mode
@@ -166,9 +172,11 @@ define(function (require, exports) {
 
         return this.transfer(preferences.setPreference, "singleColumnModeEnabled", newsingleColumnModeEnabled);
     };
-    toggleSingleColumnMode.reads = [];
-    toggleSingleColumnMode.writes = [locks.JS_PREF];
-    toggleSingleColumnMode.transfers = [preferences.setPreference];
+    toggleSingleColumnMode.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        transfers: [preferences.setPreference]
+    };
 
     /**
      * Query Photoshop for the curent window transform and emit a
@@ -206,8 +214,10 @@ define(function (require, exports) {
                 return this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
             });
     };
-    updateTransform.reads = [locks.PS_APP, locks.JS_APP];
-    updateTransform.writes = [locks.JS_UI];
+    updateTransform.action = {
+        reads: [locks.PS_APP, locks.JS_APP],
+        writes: [locks.JS_UI]
+    };
 
     /**
      * Using the center offsets, creates a cloaking rectangle on the canvas outside panels
@@ -221,9 +231,11 @@ define(function (require, exports) {
 
         return adapterUI.setOverlayCloaking(cloakRect, ["scroll"], "afterPaint");
     };
-    setOverlayCloaking.reads = [locks.JS_UI];
-    setOverlayCloaking.writes = [locks.PS_APP];
-    setOverlayCloaking.modal = true;
+    setOverlayCloaking.action = {
+        reads: [locks.JS_UI],
+        writes: [locks.PS_APP],
+        modal: true
+    };
 
     /**
      * Cloak the non-UI portion of the screen immediately, redrawing on the
@@ -237,8 +249,10 @@ define(function (require, exports) {
 
         return adapterUI.setOverlayCloaking(cloakRect, "immediate", "afterPaint");
     };
-    cloak.reads = [locks.JS_UI];
-    cloak.writes = [locks.PS_APP];
+    cloak.action = {
+        reads: [locks.JS_UI],
+        writes: [locks.PS_APP]
+    };
 
     /**
      * Directly emit a TRANSFORM_UPDATED event with the given value.
@@ -264,9 +278,11 @@ define(function (require, exports) {
                 return this.dispatch(events.ui.TRANSFORM_UPDATED, payload);
             });
     };
-    setTransform.reads = [locks.PS_APP];
-    setTransform.writes = [locks.JS_UI];
-    setTransform.modal = true;
+    setTransform.action = {
+        reads: [locks.PS_APP],
+        writes: [locks.JS_UI],
+        modal: true
+    };
 
     /**
      * Parse the panel size information and dispatch the PANELS_RESIZED ui event
@@ -288,10 +304,12 @@ define(function (require, exports) {
                 return this.transfer(setOverlayCloaking);
             });
     };
-    updatePanelSizes.reads = [];
-    updatePanelSizes.writes = [locks.JS_UI, locks.PS_APP];
-    updatePanelSizes.transfers = [setOverlayCloaking, updateTransform];
-    updatePanelSizes.modal = true;
+    updatePanelSizes.action = {
+        reads: [],
+        writes: [locks.JS_UI, locks.PS_APP],
+        transfers: [setOverlayCloaking, updateTransform],
+        modal: true
+    };
 
     /**
      * Set the overlay offsets in PS in anticipation of opening/creating the
@@ -326,9 +344,11 @@ define(function (require, exports) {
 
         return adapterUI.setOverlayOffsets(centerOffsets);
     };
-    setOverlayOffsetsForFirstDocument.reads = [locks.JS_PREF, locks.JS_APP];
-    setOverlayOffsetsForFirstDocument.writes = [locks.PS_APP];
-    setOverlayOffsetsForFirstDocument.transfers = [];
+    setOverlayOffsetsForFirstDocument.action = {
+        reads: [locks.JS_PREF, locks.JS_APP],
+        writes: [locks.PS_APP],
+        transfers: []
+    };
 
     /**
      * Updates the center offsets being sent to PS
@@ -339,10 +359,12 @@ define(function (require, exports) {
     var updateToolbarWidth = function (toolbarWidth) {
         return this.transfer(updatePanelSizes, { toolbarWidth: toolbarWidth });
     };
-    updateToolbarWidth.reads = [];
-    updateToolbarWidth.writes = [];
-    updateToolbarWidth.transfers = [updatePanelSizes];
-    updateToolbarWidth.modal = true;
+    updateToolbarWidth.action = {
+        reads: [],
+        writes: [],
+        transfers: [updatePanelSizes],
+        modal: true
+    };
 
     /**
      * Calculates the panZoom descriptor given bounds, panel width, zoom and uiFactor
@@ -409,9 +431,11 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, centerPromise);
     };
-    centerBounds.reads = [];
-    centerBounds.writes = [locks.JS_UI, locks.PS_APP];
-    centerBounds.transfers = [updateTransform];
+    centerBounds.action = {
+        reads: [],
+        writes: [locks.JS_UI, locks.PS_APP],
+        transfers: [updateTransform]
+    };
 
     /**
      * Centers on the given item, zooming in if desired to fit it on screen
@@ -452,9 +476,11 @@ define(function (require, exports) {
 
         return this.transfer(centerBounds, targetBounds, payload.zoomInto);
     };
-    centerOn.reads = [locks.JS_APP, locks.JS_DOC];
-    centerOn.writes = [];
-    centerOn.transfers = [centerBounds];
+    centerOn.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        transfers: [centerBounds]
+    };
 
     /**
      * Sets zoom to the value in the payload
@@ -496,9 +522,11 @@ define(function (require, exports) {
                 return this.transfer(updateTransform);
             });
     };
-    zoom.reads = [locks.JS_APP];
-    zoom.writes = [locks.JS_UI, locks.PS_APP];
-    zoom.transfers = [updateTransform];
+    zoom.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.JS_UI, locks.PS_APP],
+        transfers: [updateTransform]
+    };
 
     /**
      * Zooms in or out into the document, fitting into one of the
@@ -523,9 +551,11 @@ define(function (require, exports) {
         
         return this.transfer(zoom, { zoom: ZOOM_INCREMENTS[zoomIndex] });
     };
-    zoomInOut.reads = [locks.JS_UI];
-    zoomInOut.writes = [];
-    zoomInOut.transfers = [zoom];
+    zoomInOut.action = {
+        reads: [locks.JS_UI],
+        writes: [],
+        transfers: [zoom]
+    };
 
     /**
      * Emit a DISPLAY_CHANGED event.
@@ -533,10 +563,12 @@ define(function (require, exports) {
     var handleDisplayConfigurationChanged = function () {
         return this.dispatchAsync(events.ui.DISPLAY_CHANGED);
     };
-    handleDisplayConfigurationChanged.reads = [];
-    handleDisplayConfigurationChanged.writes = [locks.JS_UI];
-    handleDisplayConfigurationChanged.transfers = [];
-    handleDisplayConfigurationChanged.modal = true;
+    handleDisplayConfigurationChanged.action = {
+        reads: [],
+        writes: [locks.JS_UI],
+        transfers: [],
+        modal: true
+    };
 
     /**
      * Set the global resize reference point.
@@ -554,10 +586,12 @@ define(function (require, exports) {
 
         return Promise.join(dispatchPromise, preferencesPromise);
     };
-    setReferencePoint.reads = [];
-    setReferencePoint.writes = [locks.JS_UI];
-    setReferencePoint.transfers = [preferences.setPreference];
-    setReferencePoint.modal = true;
+    setReferencePoint.action = {
+        reads: [],
+        writes: [locks.JS_UI],
+        transfers: [preferences.setPreference],
+        modal: true
+    };
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -635,10 +669,12 @@ define(function (require, exports) {
                 setReferencePointPromise)
             .return(reset);
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [locks.PS_APP];
-    beforeStartup.transfers = [shortcuts.addShortcut, setReferencePoint];
-    beforeStartup.modal = true;
+    beforeStartup.action = {
+        reads: [],
+        writes: [locks.PS_APP],
+        transfers: [shortcuts.addShortcut, setReferencePoint],
+        modal: true
+    };
 
     /**
      * Initialize the window transform, but only after documents have been
@@ -649,9 +685,11 @@ define(function (require, exports) {
     var afterStartup = function () {
         return this.transfer(updateTransform);
     };
-    afterStartup.reads = [];
-    afterStartup.writes = [];
-    afterStartup.transfers = [updateTransform];
+    afterStartup.action = {
+        reads: [],
+        writes: [],
+        transfers: [updateTransform]
+    };
 
     /**
      * Remove event handlers.
@@ -666,9 +704,11 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
-    onReset.modal = true;
+    onReset.action = {
+        reads: [],
+        writes: [],
+        modal: true
+    };
 
     exports.enableTooltips = enableTooltips;
     exports.disableTooltips = disableTooltips;

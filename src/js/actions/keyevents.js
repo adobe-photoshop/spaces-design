@@ -136,8 +136,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    beforeStartup.reads = [];
-    beforeStartup.writes = [];
+    beforeStartup.action = {
+        reads: [],
+        writes: []
+    };
 
     /**
      * Remove event handlers.
@@ -152,8 +154,10 @@ define(function (require, exports) {
 
         return Promise.resolve();
     };
-    onReset.reads = [];
-    onReset.writes = [];
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
