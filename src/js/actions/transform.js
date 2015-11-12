@@ -1159,7 +1159,8 @@ define(function (require, exports) {
             .then(function () {
                 nextDoc = appStore.getCurrentDocument();
                 return this.transfer("layers.resetSelection", nextDoc);
-            }).then(function () {
+            })
+            .then(function () {
                 nextDoc = appStore.getCurrentDocument();
                 return this.transfer("layers.resetIndex", nextDoc);
             });
@@ -1183,8 +1184,7 @@ define(function (require, exports) {
         // TODO does this still need to debounce?  Are there cases where we get several events that correspond to
         // one history state?
         _artboardTransformHandler = synchronization.debounce(function () {
-            this.flux.actions.transform.handleTransformArtboard();
-            return Promise.resolve();
+            return this.flux.actions.transform.handleTransformArtboard();
         }, this);
 
         _layerTransformHandler = function (event) {
