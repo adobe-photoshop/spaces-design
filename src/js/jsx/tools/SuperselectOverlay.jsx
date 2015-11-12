@@ -242,16 +242,11 @@ define(function (require, exports, module) {
          * @param {LayerTree} layerTree layerTree of the current document
          */
         drawBoundRectangles: function (svg, layerTree) {
-            var indexOf = layerTree.indexOf.bind(layerTree),
-                scale = this._scale,
+            var scale = this._scale,
                 renderLayers;
 
             if (this.state.leafBounds) {
-                renderLayers = layerTree.leaves
-                    .filterNot(function (layer) {
-                        return layerTree.hasInvisibleAncestor(layer) || !layer.superSelectable;
-                    })
-                    .sortBy(indexOf);
+                renderLayers = layerTree.selectableLeaves;
 
                 // We add artboards here, so they are shown selectable
                 renderLayers = renderLayers.concat(layerTree.artboards);
@@ -498,7 +493,9 @@ define(function (require, exports, module) {
             uiUtil.hitTestLayers(this.state.document.id, canvasMouse.x, canvasMouse.y)
                 .bind(this)
                 .then(function (hitLayerIDs) {
-                    var selectableLayers = this.state.document.layers.selectable,
+                    var selectableLayers = this.state.leafBounds ?
+                            this.state.document.layers.selectableLeaves :
+                            this.state.document.layers.selectable,
                         selectableLayerIDs = collection.pluck(selectableLayers, "id"),
                         considerIDs = collection.intersection(hitLayerIDs, selectableLayerIDs);
 

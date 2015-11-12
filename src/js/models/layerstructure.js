@@ -420,6 +420,19 @@ define(function (require, exports, module) {
         },
 
         /**
+         * The subset of Layer models that are leaves and are selectable
+         *
+         * @return {Immutable.List.<Layer>}
+         */
+        "selectableLeaves": function () {
+            return this.leaves
+                .filterNot(function (layer) {
+                    return this.hasInvisibleAncestor(layer) || !layer.superSelectable;
+                }, this)
+                .sortBy(this.indexOf.bind(this));
+        },
+
+        /**
          * The subset of Layer models that are all selected or are descendants of selected
          *
          * @return {Immutable.List.<Layer>}
