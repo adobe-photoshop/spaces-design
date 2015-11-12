@@ -84,7 +84,6 @@ define(function (require, exports, module) {
                 events.history.NEW_HISTORY_STATE, this._handleUnifiedHistory,
                 events.history.ADJUST_HISTORY_STATE, this._adjustHistoryState,
                 events.history.FINISH_ADJUSTING_HISTORY_STATE, this._finishAdjustingHistoryState,
-                events.history.FINALIZE_HISTORY_STATE, this._handlePostHistoryEvent,
                 events.history.DELETE_DOCUMENT_HISTORY, this._deleteHistory,
                 events.document.CLOSE_DOCUMENT, this._deleteHistory,
                 events.document.DOCUMENT_RENAMED, this._deleteHistory,
@@ -272,13 +271,13 @@ define(function (require, exports, module) {
                             if (current === this.MAX_HISTORY_SIZE - 1) {
                                 // handle this like a rogue
                                 log.debug("[History] Handling this '50th' as though it were a rogue");
-                                return this._pushHistoryState.call(this, new HistoryState({
+                                return this._pushHistoryState.call(this, {
                                     id: payload.id,
                                     name: payload.name,
                                     document: document,
                                     documentExports: documentExports,
                                     rogue: true
-                                }));
+                                });
                             }
                             log.debug("[History] Photoshop history status matches ours, " +
                                 "but the documents differ. %O", payload);
@@ -326,13 +325,13 @@ define(function (require, exports, module) {
                                 "but our model says " + history.size);
                             this._history = this._history.slice(0, payload.totalStates);
                         }
-                        this._pushHistoryState.call(this, new HistoryState({
+                        this._pushHistoryState.call(this, {
                             id: payload.id,
                             name: payload.name,
                             document: document,
                             documentExports: documentExports,
                             rogue: true
-                        }));
+                        });
                     } else {
                         log.warn("[History] Re-initializing history because photoshop thinks the current state is " +
                             payload.currentState + " of " + payload.totalStates + ", " +
@@ -461,10 +460,10 @@ define(function (require, exports, module) {
                 throw new Error("Could not revert using cached history state, document model not found");
             }
 
-            var newState = new HistoryState({
+            var newState = {
                 document: lastHistoryState.document,
                 documentExports: lastHistoryState.documentExports
-            });
+            };
 
             // push a new history on top of current
             this._pushHistoryState.call(this, newState, false, true);
@@ -578,7 +577,14 @@ define(function (require, exports, module) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
                     documentExports = exportStore.getDocumentExports(documentID),
-                    nextState = new HistoryState({ document: document, documentExports: documentExports });
+                    nextState = {
+                        document: document,
+                        documentExports: documentExports
+                    };
+
+                if (payload.history && payload.history.name) {
+                    nextState.name = payload.history.name;
+                }
 
                 if (!document) {
                     throw new Error("Could not push history state, document not found: " + documentID);
@@ -599,7 +605,14 @@ define(function (require, exports, module) {
                 var documentID = this._getDocumentID(payload),
                     document = documentStore.getDocument(documentID),
                     documentExports = exportStore.getDocumentExports(documentID),
-                    nextState = new HistoryState({ document: document, documentExports: documentExports });
+                    nextState = {
+                        document: document,
+                        documentExports: documentExports
+                    };
+
+                if (payload.history && payload.history.name) {
+                    nextState.name = payload.history.name;
+                }
 
                 if (!document) {
                     throw new Error("Could not push history state, document not found: " + documentID);
@@ -668,7 +681,7 @@ define(function (require, exports, module) {
          *
          * Pre-condition: a state with a valid document
          *
-         * @param {HistoryState} state state to push
+         * @param {object} state props to push on to history
          * @param {boolean=} coalesce if true, merge this on to the previous
          * @param {boolean=} allowRogue if true, merge this on to the previous IFF it has the rogue flag
          */
@@ -689,10 +702,10 @@ define(function (require, exports, module) {
                     throw new Error("Initial must not be coalesced");
                 }
                 log.debug("[History] Updating the previous history state (coalesce or rogue-catchup)");
-                history = history.splice(-1, 1, lastHistory.merge(state.set("rogue", false)));
+                history = history.splice(-1, 1, lastHistory.merge(state).set("rogue", false));
             } else {
                 if (history.size === this.MAX_HISTORY_SIZE) {
-                    history = history.shift().push(state);
+                    history = history.shift().push(new HistoryState(state));
 
                     // adjust saved pointer
                     var saved = this._saved.get(documentID);
@@ -702,7 +715,7 @@ define(function (require, exports, module) {
                         this._saved = this._saved.delete(documentID);
                     }
                 } else {
-                    history = history.push(state);
+                    history = history.push(new HistoryState(state));
                 }
             }
 

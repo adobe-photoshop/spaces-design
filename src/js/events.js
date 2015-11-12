@@ -160,7 +160,6 @@ define(function (require, exports, module) {
             LOAD_HISTORY_STATE_REVERT: "loadHistoryStateRevert",
             ADJUST_HISTORY_STATE: "adjustHistoryState",
             FINISH_ADJUSTING_HISTORY_STATE: "finishedAdjustingHistoryState",
-            FINALIZE_HISTORY_STATE: "finalizeHistoryState",
             DELETE_DOCUMENT_HISTORY: "deleteDocumentHistory"
         },
         libraries: {
