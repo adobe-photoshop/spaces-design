@@ -174,8 +174,8 @@ define(function (require, exports, module) {
                 events.ui.DISPLAY_CHANGED, this._handleDisplayChanged,
                 events.ui.MOUSE_POSITION_CHANGED, this._handleMousePositionChanged,
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
-                events.document.history.unifiedHistory.RESET_LAYERS, this._handleLayersUpdated,
-                events.document.history.amendment.RESET_BOUNDS, this._handleLayersUpdated
+                events.document.history.RESET_LAYERS, this._handleLayersUpdated,
+                events.document.history.RESET_BOUNDS, this._handleLayersUpdated
             );
 
             // HACK: Do not reset panel sizes because they should remain constant.

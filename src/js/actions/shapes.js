@@ -113,7 +113,10 @@ define(function (require, exports) {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
                 fillProperties: fillProperties,
-                coalesce: coalesce
+                coalesce: coalesce,
+                history: {
+                    newState: true
+                }
             };
 
         return this.dispatchAsync(eventName, payload);
@@ -156,9 +159,13 @@ define(function (require, exports) {
                 var payload = {
                     documentID: document.id,
                     layerIDs: layerIDs,
-                    strokeStyleDescriptor: Immutable.List(_.pluck(batchGetResponse, "AGMStrokeStyleInfo"))
+                    strokeStyleDescriptor: Immutable.List(_.pluck(batchGetResponse, "AGMStrokeStyleInfo")),
+                    history: {
+                        newState: true,
+                        amendRogue: true
+                    }
                 };
-                this.dispatch(events.document.history.nonOptimistic.STROKE_ADDED, payload);
+                this.dispatch(events.document.history.STROKE_ADDED, payload);
             });
     };
 
@@ -181,9 +188,9 @@ define(function (require, exports) {
 
         if (options.enabled === undefined || options.enabled === null) {
             options.enabled = true;
-            eventName = events.document.history.optimistic.STROKE_CHANGED;
+            eventName = events.document.history.STROKE_CHANGED;
         } else {
-            eventName = events.document.history.unifiedHistory.STROKE_ENABLED_CHANGED;
+            eventName = events.document.history.STROKE_ENABLED_CHANGED;
         }
 
         var layerRef = contentLayerLib.referenceBy.current,
@@ -242,9 +249,9 @@ define(function (require, exports) {
             enabledChanging;
         if (options.enabled === undefined || options.enabled === null) {
             options.enabled = true;
-            eventName = events.document.history.optimistic.STROKE_COLOR_CHANGED;
+            eventName = events.document.history.STROKE_COLOR_CHANGED;
         } else {
-            eventName = events.document.history.unifiedHistory.STROKE_ENABLED_CHANGED;
+            eventName = events.document.history.STROKE_ENABLED_CHANGED;
             enabledChanging = true;
         }
 
@@ -360,7 +367,7 @@ define(function (require, exports) {
                     document,
                     layers,
                     { alignment: alignmentType, enabled: true },
-                    events.document.history.unifiedHistory.STROKE_ALIGNMENT_CHANGED);
+                    events.document.history.STROKE_ALIGNMENT_CHANGED);
 
             var alignmentPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
@@ -403,7 +410,7 @@ define(function (require, exports) {
                 document,
                 layers,
                 { opacity: opacity, enabled: true },
-                events.document.history.optimistic.STROKE_OPACITY_CHANGED,
+                events.document.history.STROKE_OPACITY_CHANGED,
                 options.coalesce);
 
             var opacityPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
@@ -444,7 +451,7 @@ define(function (require, exports) {
                 document,
                 layers,
                 { width: width, enabled: true },
-                events.document.history.unifiedHistory.STROKE_WIDTH_CHANGED);
+                events.document.history.STROKE_WIDTH_CHANGED);
 
             var widthPromise = layerActionsUtil.playSimpleLayerActions(document, layers, strokeObj, true, options);
 
@@ -511,7 +518,7 @@ define(function (require, exports) {
                 document,
                 layers,
                 { color: color, enabled: options.enabled, ignoreAlpha: options.ignoreAlpha },
-                events.document.history.optimistic.FILL_COLOR_CHANGED,
+                events.document.history.FILL_COLOR_CHANGED,
                 options.coalesce),
             colorPromise;
 
@@ -570,7 +577,7 @@ define(function (require, exports) {
                 document,
                 layers,
                 { opacity: opacity, enabled: true },
-                events.document.history.optimistic.FILL_OPACITY_CHANGED,
+                events.document.history.FILL_OPACITY_CHANGED,
                 !!options.coalesce),
             layerRef = layerLib.referenceBy.current,
             fillObj = layerLib.setFillOpacity(layerRef, opacity),
@@ -611,7 +618,7 @@ define(function (require, exports) {
 
         if (layers.size > 1) {
             payload.layerIDs = collection.pluck(layers.butLast(), "id");
-            dispatchPromise = this.dispatchAsync(events.document.history.optimistic.DELETE_LAYERS, payload);
+            dispatchPromise = this.dispatchAsync(events.document.history.DELETE_LAYERS, payload);
         } else {
             dispatchPromise = this.dispatchAsync(events.history.NEW_HISTORY_STATE, payload);
         }

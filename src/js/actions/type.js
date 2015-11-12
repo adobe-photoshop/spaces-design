@@ -127,7 +127,7 @@ define(function (require, exports) {
                 history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_FACE_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.TYPE_FACE_CHANGED, payload);
     };
     updatePostScript.reads = [];
     updatePostScript.writes = [locks.JS_DOC];
@@ -195,7 +195,7 @@ define(function (require, exports) {
                 history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_FACE_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.TYPE_FACE_CHANGED, payload);
     };
     updateFace.reads = [];
     updateFace.writes = [locks.JS_DOC];
@@ -266,7 +266,7 @@ define(function (require, exports) {
                 history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_COLOR_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.TYPE_COLOR_CHANGED, payload);
     };
     updateColor.reads = [];
     updateColor.writes = [locks.JS_DOC];
@@ -348,7 +348,7 @@ define(function (require, exports) {
                 history: historyOptions
             };
     
-        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_SIZE_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.TYPE_SIZE_CHANGED, payload);
     };
     updateSize.reads = [];
     updateSize.writes = [locks.JS_DOC];
@@ -414,7 +414,7 @@ define(function (require, exports) {
                 history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_TRACKING_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.TYPE_TRACKING_CHANGED, payload);
     };
 
     updateTracking.reads = [];
@@ -478,7 +478,7 @@ define(function (require, exports) {
                 history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_LEADING_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.TYPE_LEADING_CHANGED, payload);
     };
     updateLeading.reads = [];
     updateLeading.writes = [locks.JS_DOC];
@@ -544,7 +544,7 @@ define(function (require, exports) {
                 history: historyOptions
             };
 
-        return this.dispatchAsync(events.document.history.unifiedHistory.TYPE_ALIGNMENT_CHANGED, payload);
+        return this.dispatchAsync(events.document.history.TYPE_ALIGNMENT_CHANGED, payload);
     };
     updateAlignment.reads = [];
     updateAlignment.writes = [locks.JS_DOC];
@@ -614,7 +614,7 @@ define(function (require, exports) {
         return this.transfer(layerActions.initializeLayers, document, layers)
             .bind(this)
             .then(function () {
-                this.dispatch(events.document.history.unifiedHistory.TYPE_PROPERTIES_CHANGED, payload);
+                this.dispatch(events.document.history.TYPE_PROPERTIES_CHANGED, payload);
             });
     };
     updateProperties.reads = [];

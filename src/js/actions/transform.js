@@ -414,7 +414,11 @@ define(function (require, exports) {
 
         var payload = {
                 documentID: document.id,
-                positions: []
+                positions: [],
+                history: {
+                    newState: true,
+                    name: strings.ACTIONS.SET_LAYER_POSITION
+                }
             },
             options = {
                 historyStateInfo: {
@@ -423,7 +427,7 @@ define(function (require, exports) {
                 }
             };
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload),
+        var dispatchPromise = this.dispatchAsync(events.document.history.REPOSITION_LAYERS, payload),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
                 var layerActions = _getMoveLayerActions.call(this,
                         document, layer, position, refPoint, payload.positions);
@@ -463,7 +467,11 @@ define(function (require, exports) {
             documentRef = documentLib.referenceBy.id(document.id),
             payload = {
                 documentID: document.id,
-                positions: []
+                positions: [],
+                history: {
+                    newState: true,
+                    name: strings.ACTIONS.SWAP_LAYERS
+                }
             },
             layerOneActions = _getMoveLayerActions
                 .call(this, document, layers.get(0), newPositions.get(0), "lt", payload.positions),
@@ -471,7 +479,7 @@ define(function (require, exports) {
                 .call(this, document, layers.get(1), newPositions.get(1), "lt", payload.positions),
             translateActions = layerOneActions.concat(layerTwoActions);
                 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.REPOSITION_LAYERS, payload);
+        var dispatchPromise = this.dispatchAsync(events.document.history.REPOSITION_LAYERS, payload);
 
         // Make sure to show this action as one history state
         var options = {
@@ -551,7 +559,11 @@ define(function (require, exports) {
 
         var payload = {
                 documentID: document.id,
-                sizes: []
+                sizes: [],
+                history: {
+                    newState: true,
+                    name: strings.ACTIONS.SET_LAYER_SIZE
+                }
             },
             options = {
                 paintOptions: _paintOptions,
@@ -573,7 +585,8 @@ define(function (require, exports) {
 
             payload.size = newSize;
             
-            dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RESIZE_DOCUMENT, payload);
+            dispatchPromise = this.dispatchAsync(events.document.history.RESIZE_DOCUMENT, payload);
+            // TODO is this missing historyStateInfo?
             sizePromise = descriptor.playObject(resizeObj);
         } else {
             var documentRef = documentLib.referenceBy.id(document.id),
@@ -583,7 +596,7 @@ define(function (require, exports) {
                     return actions.concat(action);
                 }, Immutable.List(), this);
 
-            dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RESIZE_LAYERS, payload);
+            dispatchPromise = this.dispatchAsync(events.document.history.RESIZE_LAYERS, payload);
 
             sizePromise = descriptor.getProperty(documentRef, "artboards")
                 .bind(this)
@@ -1014,7 +1027,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var dispatchPromise = this.dispatchAsync(events.document.history.optimistic.RADII_CHANGED, {
+        var dispatchPromise = this.dispatchAsync(events.document.history.RADII_CHANGED, {
             documentID: document.id,
             layerIDs: collection.pluck(layers, "id"),
             coalesce: !!options.coalesce,
@@ -1023,6 +1036,10 @@ define(function (require, exports) {
                 topRight: radius,
                 bottomRight: radius,
                 bottomLeft: radius
+            },
+            history: {
+                newState: true,
+                name: strings.ACTIONS.SET_RADIUS
             }
         });
         

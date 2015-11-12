@@ -272,13 +272,17 @@ define(function (require, exports) {
 
         var payload = {
             documentID: document.id,
-            index: index
+            index: index,
+            history: {
+                newState: true,
+                amendRogue: true
+            }
         };
 
         return removePromise
             .bind(this)
             .then(function () {
-                return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_DELETED, payload);
+                return this.dispatchAsync(events.document.history.GUIDE_DELETED, payload);
             })
             .then(function () {
                 return this.transfer(resetGuidePolicies);
@@ -307,10 +311,14 @@ define(function (require, exports) {
         var payload = {
             documentID: document.id,
             guide: guide,
-            index: index
+            index: index,
+            history: {
+                newState: true,
+                amendRogue: true
+            }
         };
 
-        return this.dispatchAsync(events.document.history.nonOptimistic.GUIDE_SET, payload)
+        return this.dispatchAsync(events.document.history.GUIDE_SET, payload)
             .bind(this)
             .then(function () {
                 return this.transfer(resetGuidePolicies);
@@ -334,10 +342,14 @@ define(function (require, exports) {
         }
 
         var payload = {
-                documentID: document.id
+                documentID: document.id,
+                history: {
+                    newState: true,
+                    amendRogue: true
+                }
             },
             clearObj = documentLib.clearGuides(documentLib.referenceBy.id(document.id)),
-            dispatchPromise = this.dispatchAsync(events.document.history.nonOptimistic.GUIDES_CLEARED, payload),
+            dispatchPromise = this.dispatchAsync(events.document.history.GUIDES_CLEARED, payload),
             clearPromise = descriptor.playObject(clearObj);
 
         return Promise.join(dispatchPromise, clearPromise)
@@ -370,10 +382,11 @@ define(function (require, exports) {
             .then(function (guides) {
                 var payload = {
                     document: document,
+                    documentID: document.id, // for history store
                     guides: guides
                 };
 
-                return this.dispatch(events.document.GUIDES_UPDATED, payload);
+                return this.dispatch(events.document.history.GUIDES_UPDATED, payload);
             });
     };
     queryCurrentGuides.reads = [locks.PS_DOC];
