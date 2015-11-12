@@ -154,7 +154,7 @@ module.exports = function (grunt) {
             html: { src: "src/index-build.html", dest: "build/index.html" },
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
-        "requirejs": {
+        requirejs: {
             en: getRequireOptions("en"),
             de: getRequireOptions("de"),
             fr: getRequireOptions("fr"),
@@ -165,6 +165,10 @@ module.exports = function (grunt) {
             light: getLessConfigForStop("light"),
             medium: getLessConfigForStop("medium"),
             dark: getLessConfigForStop("dark")
+        },
+        concurrent: {
+            test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
+            requirejs: ["requirejs:en", "requirejs:de", "requirejs:fr", "requirejs:ja"]
         }
     });
 
@@ -179,8 +183,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-requirejs");
     grunt.loadNpmTasks("grunt-contrib-less");
 
-    grunt.registerTask("test", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
-    grunt.registerTask("compile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs"]);
+    grunt.loadNpmTasks("grunt-concurrent");
+
+    grunt.registerTask("seqtest", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
+    grunt.registerTask("test", ["concurrent:test"]);
+    grunt.registerTask("seqcompile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs"]);
+    grunt.registerTask("compile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "concurrent:requirejs"]);
     grunt.registerTask("compile:en", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs:en"]);
     grunt.registerTask("build", ["test", "compile"]);
     grunt.registerTask("default", ["test"]);
