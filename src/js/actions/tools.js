@@ -833,7 +833,7 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _toolModalStateChangedHandler,
-        _documentOrApplicationChangeHandler,
+        _borderPolicyChangeHandler,
         _vectorMaskHandler,
         _vectorSelectMaskHandler;
 
@@ -847,19 +847,24 @@ define(function (require, exports) {
         var flux = this.flux,
             appStore = flux.store("application"),
             toolStore = this.flux.store("tool"),
+            uiStore = this.flux.store("ui"),
             tools = toolStore.getAllTools(),
-            documentLayerBounds;
+            documentLayerBounds,
+            uiTransformMatrix;
 
         var throttledResetBorderPolicies =
             synchronization.throttle(this.flux.actions.tools.resetBorderPolicies, this, 100),
-            _documentOrApplicationChangeHandler = function () {
+            _borderPolicyChangeHandler = function () {
                 var currentDocument = appStore.getCurrentDocument();
 
                 if (currentDocument) {
-                    var nextDocumentLayerBounds = currentDocument.layers.selectedChildBounds;
+                    var nextDocumentLayerBounds = currentDocument.layers.selectedChildBounds,
+                        newxUiTransformMatrix = uiStore.getCurrentTransformMatrix();
                     
-                    if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds)) {
+                    if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds) ||
+                        uiTransformMatrix !== newxUiTransformMatrix) {
                         documentLayerBounds = nextDocumentLayerBounds;
+                        uiTransformMatrix = newxUiTransformMatrix;
                         throttledResetBorderPolicies();
                     }
                 } else {
@@ -867,8 +872,9 @@ define(function (require, exports) {
                 }
             }.bind(this);
 
-        this.flux.store("document").on("change", _documentOrApplicationChangeHandler);
-        this.flux.store("application").on("change", _documentOrApplicationChangeHandler);
+        this.flux.store("document").on("change", _borderPolicyChangeHandler);
+        this.flux.store("application").on("change", _borderPolicyChangeHandler);
+        this.flux.store("ui").on("change", _borderPolicyChangeHandler);
 
         // Listen for modal tool state entry/exit events
         _toolModalStateChangedHandler = this.flux.actions.tools.handleToolModalStateChanged.bind(this);
@@ -955,8 +961,10 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
-        this.flux.store("document").removeListener("change", _documentOrApplicationChangeHandler);
-        this.flux.store("application").removeListener("change", _documentOrApplicationChangeHandler);
+        this.flux.store("document").removeListener("change", _borderPolicyChangeHandler);
+        this.flux.store("application").removeListener("change", _borderPolicyChangeHandler);
+        this.flux.store("ui").removeListener("change", _borderPolicyChangeHandler);
+
         _currentTransformPolicyID = null;
 
         return Promise.resolve();

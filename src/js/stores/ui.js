@@ -581,6 +581,15 @@ define(function (require, exports, module) {
          */
         getCurrentMousePosition: function () {
             return this._currentMousePosition;
+        },
+
+        /**
+         * Get the current transform matrix if it's being tracked; otherwise null.
+         * 
+         * @return {?{transformMatrx: Array.<number>}}
+         */
+        getCurrentTransformMatrix: function () {
+            return this._transformMatrix;
         }
     });
 
