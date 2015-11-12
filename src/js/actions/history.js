@@ -279,10 +279,12 @@ define(function (require, exports) {
     var newHistoryStateRogueSafe = function (documentID) {
         return this.transfer(newHistoryState, documentID, null, true);
     };
-    newHistoryStateRogueSafe.reads = [];
-    newHistoryStateRogueSafe.writes = [];
-    newHistoryStateRogueSafe.transfers = [newHistoryState];
-    newHistoryStateRogueSafe.modal = true;
+    newHistoryStateRogueSafe.action = {
+        reads: [],
+        writes: [],
+        transfers: [newHistoryState],
+        modal: true
+    };
 
     /**
      * Revert to the document's last saved state.
