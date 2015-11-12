@@ -401,4 +401,5 @@ define(function (require, exports) {
     exports.restoreAllPolicies = restoreAllPolicies;
 
     exports.beforeStartup = beforeStartup;
+    exports._priority = 1;
 });
