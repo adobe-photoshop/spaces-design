@@ -365,8 +365,7 @@ define(function (require, exports) {
     getLayerIDsForDocumentID.action = {
         modal: true,
         reads: [locks.PS_DOC],
-        writes: [],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        writes: []
     };
 
     /**
@@ -1452,7 +1451,9 @@ define(function (require, exports) {
         var lockList = Immutable.List(playObjRec.groups);
         return locking.playWithLockOverride(document, lockList, playObjects, options, true)
             .bind(this)
-            .then(this.transfer(getLayerIDsForDocumentID, document.id))
+            .then(function () {
+                return this.transfer(getLayerIDsForDocumentID, document.id);
+            })
             .then(function (payload) {
                 payload.selectedIDs = collection.pluck(nextSelected, "id");
                 payload.history = {
@@ -1476,7 +1477,7 @@ define(function (require, exports) {
     ungroupSelected.action = {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [resetSelection, initializeLayers],
+        transfers: [resetSelection, initializeLayers, getLayerIDsForDocumentID],
         post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
@@ -1718,6 +1719,7 @@ define(function (require, exports) {
         }
 
         return this.transfer(getLayerIDsForDocumentID, document.id)
+            .bind(this)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
                         payload.selectedIndices = selectedIndices;
@@ -1737,7 +1739,7 @@ define(function (require, exports) {
     resetIndex.action = {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
-        transfers: [initializeLayers],
+        transfers: [initializeLayers, getLayerIDsForDocumentID],
         post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
