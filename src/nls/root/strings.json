@@ -39,6 +39,7 @@
         "SET_TYPE_TRACKING": "Set Type Tracking",
         "SET_TYPE_ALIGNMENT": "Set Type Alignment",
         "UNGROUP_LAYERS": "Ungroup layers",
+        "REORDER_LAYERS": "Reorder Layers",
         "MODIFY_EXPORT_ASSETS": "Updated Export Asset Configurations",
         "APPLY_TEXT_STYLE": "Apply Text Style",
         "APPLY_LAYER_STYLE": "Apply Layer Style",

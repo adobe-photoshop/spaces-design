@@ -655,7 +655,11 @@ define(function (require, exports, module) {
          */
         _handleUnifiedHistory: function (payload) {
             if (payload.history && payload.history.newState) {
-                this._handlePreHistoryEvent.call(this, payload);
+                if (payload.history.amendRogue) {
+                    this._handlePostHistoryEvent.call(this, payload);
+                } else {
+                    this._handlePreHistoryEvent.call(this, payload);
+                }
             } else {
                 this._handleHistoryAmendment.call(this, payload);
             }
