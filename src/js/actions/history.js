@@ -202,7 +202,7 @@ define(function (require, exports) {
         }
     };
     incrementHistory.action = {
-        reads: [locks.JS_DOC, locks.JS_APP]],
+        reads: [locks.JS_DOC, locks.JS_APP],
         writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC],
         transfers: ["layers.resetLayerVisibility", "documents.updateDocument", "guides.resetGuidePolicies"],
         modal: true

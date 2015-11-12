@@ -869,7 +869,7 @@ define(function (require, exports) {
                         //        so we don't have to get all the layer IDs.
                         //        https://watsonexp.corp.adobe.com/#bug=4080071
                         if (hasAlt) {
-                            return this.transfer(layerActions._getLayerIDsForDocumentID, currentDocument.id)
+                            return this.transfer(layerActions.getLayerIDsForDocumentID, currentDocument.id)
                                 .bind(this)
                                 .then(function (nextDocumentIDS) {
                                     var nextLayerIDs = nextDocumentIDS.layerIDs,
@@ -891,7 +891,7 @@ define(function (require, exports) {
     createLayerFromElement.action = {
         reads: [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP],
         writes: [locks.JS_LIBRARIES, locks.PS_DOC],
-        transfers: [layerActions._getLayerIDsForDocumentID, layerActions.addLayers,
+        transfers: [layerActions.getLayerIDsForDocumentID, layerActions.addLayers,
             "libraries.handleCompletePlacingGraphic"]
     };
         

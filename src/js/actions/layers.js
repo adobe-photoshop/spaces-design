@@ -255,38 +255,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Get the ordered list of layer IDs for the given Document ID.
-     *
-     * @private
-     * @param {number} documentID
-     * @return {Promise.<{documentID: number, layerIDs: Array.<number>}>}
-     */
-    var _getLayerIDsForDocumentID = function (documentID) {
-        var _getLayerIDs = function (doc) {
-            var docRef = documentLib.referenceBy.id(documentID),
-                startIndex = (doc.hasBackgroundLayer ? 0 : 1),
-                rangeOpts = {
-                    range: "layer",
-                    index: startIndex,
-                    count: -1
-                };
-            
-            return descriptor.getPropertyRange(docRef, rangeOpts, "layerID");
-        };
-
-        var documentRef = documentLib.referenceBy.id(documentID);
-        return documentActions._getDocumentByRef(documentRef, ["hasBackgroundLayer"], [])
-            .bind(this)
-            .then(_getLayerIDs)
-            .then(function (layerIDs) {
-                return {
-                    documentID: documentID,
-                    layerIDs: layerIDs.reverse()
-                };
-            });
-    };
-
-    /**
      * Verify the correctness of the list of layer IDs.
      *
      * @private
@@ -301,7 +269,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return _getLayerIDsForDocumentID(currentDocument.id)
+        return getLayerIDsForDocumentID(currentDocument.id)
             .bind(this)
             .then(function (payload) {
                 var layerIDs = payload.layerIDs;
@@ -361,6 +329,44 @@ define(function (require, exports) {
                         " instead of " + 0);
                 }
             });
+    };
+
+    /**
+     * Get the ordered list of layer IDs for the given Document ID.
+     *
+     * @private
+     * @param {number} documentID
+     * @return {Promise.<{documentID: number, layerIDs: Array.<number>}>}
+     */
+    var getLayerIDsForDocumentID = function (documentID) {
+        var _getLayerIDs = function (doc) {
+            var docRef = documentLib.referenceBy.id(documentID),
+                startIndex = (doc.hasBackgroundLayer ? 0 : 1),
+                rangeOpts = {
+                    range: "layer",
+                    index: startIndex,
+                    count: -1
+                };
+            
+            return descriptor.getPropertyRange(docRef, rangeOpts, "layerID");
+        };
+
+        var documentRef = documentLib.referenceBy.id(documentID);
+        return documentActions._getDocumentByRef(documentRef, ["hasBackgroundLayer"], [])
+            .bind(this)
+            .then(_getLayerIDs)
+            .then(function (layerIDs) {
+                return {
+                    documentID: documentID,
+                    layerIDs: layerIDs.reverse()
+                };
+            });
+    };
+    getLayerIDsForDocumentID.action = {
+        modal: true,
+        reads: [locks.PS_DOC],
+        writes: [],
+        post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
     /**
@@ -1446,7 +1452,7 @@ define(function (require, exports) {
         var lockList = Immutable.List(playObjRec.groups);
         return locking.playWithLockOverride(document, lockList, playObjects, options, true)
             .bind(this)
-            .then(_getLayerIDsForDocumentID.bind(this, document.id))
+            .then(this.transfer(getLayerIDsForDocumentID, document.id))
             .then(function (payload) {
                 payload.selectedIDs = collection.pluck(nextSelected, "id");
                 payload.history = {
@@ -1711,7 +1717,7 @@ define(function (require, exports) {
             }
         }
 
-        return _getLayerIDsForDocumentID.call(this, document.id)
+        return this.transfer(getLayerIDsForDocumentID, document.id)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
                         payload.selectedIndices = selectedIndices;
@@ -2795,14 +2801,12 @@ define(function (require, exports) {
     exports.selectVectorMask = selectVectorMask;
     exports.addVectorMask = addVectorMask;
     exports.deleteVectorMask = deleteVectorMask;
+    exports.getLayerIDsForDocumentID = getLayerIDsForDocumentID;
 
     exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 
     exports._getLayersForDocument = _getLayersForDocument;
-    exports._verifyLayerSelection = _verifyLayerSelection;
-    exports._verifyLayerIndex = _verifyLayerIndex;
-    exports._getLayerIDsForDocumentID = _getLayerIDsForDocumentID;
 
     exports.afterStartup = afterStartup;
 });
