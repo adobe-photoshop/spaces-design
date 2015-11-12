@@ -586,7 +586,7 @@ define(function (require, exports, module) {
         /**
          * Get the current transform matrix if it's being tracked; otherwise null.
          * 
-         * @return {?{transformMatrx: Array.<number>}}
+         * @return {?{transformMatrix: Array.<number>}}
          */
         getCurrentTransformMatrix: function () {
             return this._transformMatrix;
