@@ -2809,6 +2809,7 @@ define(function (require, exports) {
     exports.onReset = onReset;
 
     exports._getLayersForDocument = _getLayersForDocument;
+    exports._verifyLayerIndex = _verifyLayerIndex;
 
     exports.afterStartup = afterStartup;
 });
