@@ -30,7 +30,7 @@ define(function (require, exports, module) {
 
     var os = require("adapter").os,
         synchronization = require("js/util/synchronization"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         ui = require("js/util/ui"),
         librariesAction = require("js/actions/libraries");
 
@@ -189,7 +189,7 @@ define(function (require, exports, module) {
 
             var components;
             if (name === "brush") {
-                var brushDescription = strings.LIBRARIES.BRUSHES_UNSUPPORTED;
+                var brushDescription = nls.localize("strings.LIBRARIES.BRUSHES_UNSUPPORTED");
 
                 components = (<div className="libraries__asset-brush">{brushDescription}</div>);
             } else {
@@ -255,32 +255,39 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var library = this.props.library;
+            var library = this.props.library,
+                introURL = nls.localize("strings.LIBRARIES.INTRO_URL");
 
             if (!library || library.elements.length === 0) {
                 return (
                     <div className={classnames("libraries__content panel__info", this.props.className)}>
                         <div className="panel__info__title">
-                            {strings.LIBRARIES.INTRO_TITLE}
+                            {nls.localize("strings.LIBRARIES.INTRO_TITLE")}
                         </div>
                         <div className="panel__info__body">
-                            {strings.LIBRARIES.INTRO_BODY}
+                            {nls.localize("strings.LIBRARIES.INTRO_BODY")}
                         </div>
                         <div className="panel__info__link">
-                            <a href="#" onClick={ui.openURL.bind(null, strings.LIBRARIES.INTRO_URL)}>
-                                {strings.LIBRARIES.INTRO_LINK_TITLE}
+                            <a href="#" onClick={ui.openURL.bind(null, introURL)}>
+                                {nls.localize("strings.LIBRARIES.INTRO_LINK_TITLE")}
                             </a>
                         </div>
                     </div>
                 );
             }
 
-            var colorAssets = this._renderAssets("color", strings.LIBRARIES.COLORS, Color),
-                colorThemeAssets = this._renderAssets("colortheme", strings.LIBRARIES.COLOR_THEMES, ColorTheme),
-                charStyleAssets = this._renderAssets("characterstyle", strings.LIBRARIES.CHAR_STYLES, CharacterStyle),
-                layerStyleAssets = this._renderAssets("layerstyle", strings.LIBRARIES.LAYER_STYLES, LayerStyle),
-                graphicAssets = this._renderAssets("graphic", strings.LIBRARIES.GRAPHICS, Graphic),
-                brushAssets = this._renderAssets("brush", strings.LIBRARIES.BRUSHES);
+            var colorAssets = this._renderAssets("color",
+                    nls.localize("strings.LIBRARIES.COLORS"), Color),
+                colorThemeAssets = this._renderAssets("colortheme",
+                    nls.localize("strings.LIBRARIES.COLOR_THEMES"), ColorTheme),
+                charStyleAssets = this._renderAssets("characterstyle",
+                    nls.localize("strings.LIBRARIES.CHAR_STYLES"), CharacterStyle),
+                layerStyleAssets = this._renderAssets("layerstyle",
+                    nls.localize("strings.LIBRARIES.LAYER_STYLES"), LayerStyle),
+                graphicAssets = this._renderAssets("graphic",
+                    nls.localize("strings.LIBRARIES.GRAPHICS"), Graphic),
+                brushAssets = this._renderAssets("brush",
+                    nls.localize("strings.LIBRARIES.BRUSHES"));
             
             var classNames = classnames("libraries__content", this.props.className, {
                 "libraries__content-drag": this.state.hasDraggedItem

@@ -25,8 +25,10 @@ define(function (require, exports, module) {
     "use strict";
 
     var system = require("./system"),
-        macShortcuts = require("i18n!nls/shortcuts-mac"),
-        winShortcuts = require("i18n!nls/shortcuts-win");
+        nls = require("js/util/nls");
+
+    var macShortcuts = nls.localize("macShortcuts"),
+        winShortcuts = nls.localize("winShortcuts");
 
     module.exports = system.isMac ? macShortcuts : winShortcuts;
 });

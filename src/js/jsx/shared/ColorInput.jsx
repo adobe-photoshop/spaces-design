@@ -38,7 +38,7 @@ define(function (require, exports, module) {
         Dialog = require("jsx!js/jsx/shared/Dialog"),
         ColorPicker = require("jsx!js/jsx/shared/ColorPicker"),
         Color = require("js/models/color"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection");
 
     /**
@@ -337,7 +337,7 @@ define(function (require, exports, module) {
                     label = colorTiny.toString(this.state.format);
                 }
             } else {
-                label = strings.TRANSFORM.MIXED;
+                label = nls.localize("strings.TRANSFORM.MIXED");
                 mixed = true;
 
                 // The colors aren't completely uniform, but maybe the opaque colors are?

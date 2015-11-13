@@ -40,7 +40,7 @@ define(function (require, exports, module) {
         VectorFill = require("jsx!./VectorFill"),
         Type = require("jsx!./Type"),
         VectorAppearance = require("jsx!./VectorAppearance"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
         collection = require("js/util/collection");
@@ -219,7 +219,7 @@ define(function (require, exports, module) {
                     className={sectionClasses}
                     onScroll={this._handleScroll}>
                     <TitleHeader
-                        title={strings.TITLE_APPEARANCE}
+                        title={nls.localize("strings.TITLE_APPEARANCE")}
                         visible={this.props.visible}
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>
@@ -227,7 +227,7 @@ define(function (require, exports, module) {
                             onDoubleClick={this._blockInput}>
                             <Button
                                 className={copyStyleClasses}
-                                title={strings.STYLE.COPY}
+                                title={nls.localize("strings.STYLE.COPY")}
                                 disabled={copyStyleDisabled}
                                 onClick={this._handleStyleCopy}>
                                 <SVGIcon
@@ -236,7 +236,7 @@ define(function (require, exports, module) {
                             </Button>
                             <Button
                                 className={pasteStyleClasses}
-                                title={strings.STYLE.PASTE}
+                                title={nls.localize("strings.STYLE.PASTE")}
                                 disabled={pasteStyleDisabled}
                                 onClick={this._handleStylePaste}>
                                 <SVGIcon

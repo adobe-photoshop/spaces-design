@@ -43,7 +43,7 @@ define(function (require, exports, module) {
         ColorOverlayList = require("jsx!./ColorOverlayList"),
         StrokeList = require("jsx!./StrokeList"),
         LayerEffect = require("js/models/effects/layereffect"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
         synchronization = require("js/util/synchronization"),
@@ -285,7 +285,7 @@ define(function (require, exports, module) {
                     className={sectionClasses}
                     onScroll={this._handleScroll}>
                     <TitleHeader
-                        title={strings.TITLE_EFFECTS}
+                        title={nls.localize("strings.TITLE_EFFECTS")}
                         visible={this.props.visible}
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>
@@ -293,7 +293,7 @@ define(function (require, exports, module) {
                             onDoubleClick={this._blockInput}>
                             <Button
                                 className={addStyleClasses}
-                                title={strings.TOOLTIPS.ADD_EFFECT}
+                                title={nls.localize("strings.TOOLTIPS.ADD_EFFECT")}
                                 disabled={addStyleDisabled}
                                 onClick={this._toggleEffectPopover}>
                                 <SVGIcon
@@ -301,7 +301,7 @@ define(function (require, exports, module) {
                             </Button>
                             <Button
                                 className={copyStyleClasses}
-                                title={strings.STYLE.COPY}
+                                title={nls.localize("strings.STYLE.COPY")}
                                 disabled={copyStyleDisabled}
                                 onClick={this._handleStyleCopy}>
                                 <SVGIcon
@@ -310,7 +310,7 @@ define(function (require, exports, module) {
                             </Button>
                             <Button
                                 className={pasteStyleClasses}
-                                title={strings.STYLE.PASTE}
+                                title={nls.localize("strings.STYLE.PASTE")}
                                 disabled={pasteStyleDisabled}
                                 onClick={this._handleStylePaste}>
                                 <SVGIcon
@@ -330,22 +330,22 @@ define(function (require, exports, module) {
                             <li className={strokeMenuClasses}
                                 onClick={canAddStroke &&
                                     this._handleEffectListClick.bind(this, LayerEffect.STROKE)}>
-                                {strings.STYLE.STROKE_EFFECT.TITLE_SINGLE}
+                                {nls.localize("strings.STYLE.STROKE_EFFECT.TITLE_SINGLE")}
                             </li>
                             <li className={colorOverlayMenuClasses}
                                 onClick={canAddColorOverlay &&
                                     this._handleEffectListClick.bind(this, LayerEffect.COLOR_OVERLAY)}>
-                                {strings.STYLE.COLOR_OVERLAY.TITLE_SINGLE}
+                                {nls.localize("strings.STYLE.COLOR_OVERLAY.TITLE_SINGLE")}
                             </li>
                             <li className={innerShadowMenuClasses}
                                 onClick={canAddInnerShadow &&
                                     this._handleEffectListClick.bind(this, LayerEffect.INNER_SHADOW)}>
-                                {strings.STYLE.INNER_SHADOW.TITLE_SINGLE}
+                                {nls.localize("strings.STYLE.INNER_SHADOW.TITLE_SINGLE")}
                             </li>
                             <li className={dropShadowMenuClasses}
                                 onClick={canAddDropShadow &&
                                     this._handleEffectListClick.bind(this, LayerEffect.DROP_SHADOW)}>
-                                {strings.STYLE.DROP_SHADOW.TITLE_SINGLE}
+                                {nls.localize("strings.STYLE.DROP_SHADOW.TITLE_SINGLE")}
                             </li>
                         </ul>
                     </Dialog>

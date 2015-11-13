@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var React = require("react");
 
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         Combine = require("jsx!./Combine"),
         Radius = require("jsx!./Radius");
 
@@ -45,7 +45,7 @@ define(function (require, exports, module) {
                 <div>
                     <header className="sub-header">
                         <h3>
-                            {strings.STYLE.VECTOR.TITLE}
+                            {nls.localize("strings.STYLE.VECTOR.TITLE")}
                         </h3>
                         <Gutter />
                         <hr className="sub-header-rule" />

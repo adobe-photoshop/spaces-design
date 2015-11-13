@@ -36,7 +36,7 @@ define(function (require, exports, module) {
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         LayerFace = require("jsx!./LayerFace"),
         DummyLayerFace = require("jsx!./DummyLayerFace"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         synchronization = require("js/util/synchronization");
 
@@ -633,7 +633,7 @@ define(function (require, exports, module) {
                     className={sectionClasses}
                     onScroll={this._handleScroll}>
                     <TitleHeader
-                        title={strings.TITLE_PAGES}
+                        title={nls.localize("strings.TITLE_PAGES")}
                         visible={this.props.visible}
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle}>

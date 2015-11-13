@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     var Range = React.createClass({
         propTypes: {
@@ -80,7 +80,7 @@ define(function (require, exports, module) {
 
             return (
                 <div
-                    title={strings.TOOLTIPS.SET_RADIUS_SLIDER}
+                    title={nls.localize("strings.TOOLTIPS.SET_RADIUS_SLIDER")}
                     className={size}>
                     <input
                         {...this.props}

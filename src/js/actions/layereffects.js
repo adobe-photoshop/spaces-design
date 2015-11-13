@@ -35,7 +35,7 @@ define(function (require, exports) {
         events = require("../events"),
         locks = require("js/locks"),
         layerActionsUtil = require("js/util/layeractions"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection");
 
     /**
@@ -60,7 +60,7 @@ define(function (require, exports) {
                     quality: "draft"
                 },
                 historyStateInfo: {
-                    name: strings.ACTIONS.SET_LAYER_EFFECTS,
+                    name: nls.localize("strings.ACTIONS.SET_LAYER_EFFECTS"),
                     target: documentLib.referenceBy.id(document.id),
                     coalesce: !!coalesce,
                     suppressHistoryStateNotification: !!coalesce
@@ -155,7 +155,7 @@ define(function (require, exports) {
             coalesce: !!coalesce,
             history: {
                 newState: true,
-                name: strings.ACTIONS.SET_LAYER_EFFECTS
+                name: nls.localize("strings.ACTIONS.SET_LAYER_EFFECTS")
             }
         };
 
@@ -216,7 +216,7 @@ define(function (require, exports) {
             layerEffectIndex: effectIndex,
             history: {
                 newState: true,
-                name: strings.ACTIONS.SET_LAYER_EFFECTS
+                name: nls.localize("strings.ACTIONS.SET_LAYER_EFFECTS")
             }
         };
         // Synchronously update the stores
@@ -545,7 +545,7 @@ define(function (require, exports) {
             coalesce: false,
             history: {
                 newState: true,
-                name: strings.ACTIONS.SET_LAYER_EFFECTS
+                name: nls.localize("strings.ACTIONS.SET_LAYER_EFFECTS")
             }
         };
 

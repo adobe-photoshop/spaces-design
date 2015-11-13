@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         
     var LayerEffect = require("js/models/effects/layereffect"),
         collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights");
 
@@ -164,9 +164,9 @@ define(function (require, exports, module) {
                     "effect-list__color-overlay__disabled": this.props.readOnly
                 });
 
-            var colorOverlayColorTooltip = strings.TOOLTIPS.SET_COLOR_OVERLAY_COLOR,
-                colorOverlayToggleTooltip = strings.TOOLTIPS.TOGGLE_COLOR_OVERLAY,
-                colorOverlayDeleteTooltip = strings.TOOLTIPS.DELETE_COLOR_OVERLAY;
+            var colorOverlayColorTooltip = nls.localize("strings.TOOLTIPS.SET_COLOR_OVERLAY_COLOR"),
+                colorOverlayToggleTooltip = nls.localize("strings.TOOLTIPS.TOGGLE_COLOR_OVERLAY"),
+                colorOverlayDeleteTooltip = nls.localize("strings.TOOLTIPS.DELETE_COLOR_OVERLAY");
 
             // Dialog IDs
             var blendModelistID = "color-overlay-blendmodes-" + this.props.index + "-" + this.props.document.id,
@@ -262,7 +262,7 @@ define(function (require, exports, module) {
             } else {
                 colorOverlayContent = (
                     <div className="effect-list__list-container__mixed">
-                        <i>{strings.STYLE.COLOR_OVERLAY.MIXED}</i>
+                        <i>{nls.localize("strings.STYLE.COLOR_OVERLAY.MIXED")}</i>
                     </div>
                 );
             }
@@ -271,7 +271,7 @@ define(function (require, exports, module) {
                 <div className="effect-list__container">
                     <header className="section-header section-header__no-padding">
                         <h3 className="section-title__subtitle">
-                            {strings.STYLE.COLOR_OVERLAY.TITLE}
+                            {nls.localize("strings.STYLE.COLOR_OVERLAY.TITLE")}
                         </h3>
                     </header>
                     <div className="effect-list__list-container">

@@ -34,7 +34,7 @@ define(function (require, exports, module) {
     var NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         Label = require("jsx!js/jsx/shared/Label"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     var Rotate = React.createClass({
         mixins: [FluxMixin],
@@ -149,7 +149,7 @@ define(function (require, exports, module) {
                 <div className="control-group">
                     <Label
                         size="column-3"
-                        title={strings.TOOLTIPS.SET_ROTATION}>
+                        title={nls.localize("strings.TOOLTIPS.SET_ROTATION")}>
                         <SVGIcon CSSID="rotation" />
                     </Label>
                     <NumberInput

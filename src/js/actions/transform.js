@@ -45,7 +45,7 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         layerActionsUtil = require("js/util/layeractions"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization");
 
     /**
@@ -417,12 +417,12 @@ define(function (require, exports) {
                 positions: [],
                 history: {
                     newState: true,
-                    name: strings.ACTIONS.SET_LAYER_POSITION
+                    name: nls.localize("strings.ACTIONS.SET_LAYER_POSITION")
                 }
             },
             options = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.SET_LAYER_POSITION,
+                    name: nls.localize("strings.ACTIONS.SET_LAYER_POSITION"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             };
@@ -472,7 +472,7 @@ define(function (require, exports) {
                 positions: [],
                 history: {
                     newState: true,
-                    name: strings.ACTIONS.SWAP_LAYERS
+                    name: nls.localize("strings.ACTIONS.SWAP_LAYERS")
                 }
             },
             layerOneActions = _getMoveLayerActions
@@ -486,7 +486,7 @@ define(function (require, exports) {
         // Make sure to show this action as one history state
         var options = {
             historyStateInfo: {
-                name: strings.ACTIONS.SWAP_LAYERS,
+                name: nls.localize("strings.ACTIONS.SWAP_LAYERS"),
                 target: documentRef
             }
         };
@@ -566,13 +566,13 @@ define(function (require, exports) {
                 sizes: [],
                 history: {
                     newState: true,
-                    name: strings.ACTIONS.SET_LAYER_SIZE
+                    name: nls.localize("strings.ACTIONS.SET_LAYER_SIZE")
                 }
             },
             options = {
                 paintOptions: _paintOptions,
                 historyStateInfo: {
-                    name: strings.ACTIONS.SET_LAYER_SIZE,
+                    name: nls.localize("strings.ACTIONS.SET_LAYER_SIZE"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             };
@@ -682,12 +682,12 @@ define(function (require, exports) {
             flipAction = layerLib.flip(ref, axis),
             options = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.FLIP_LAYERS,
+                    name: nls.localize("strings.ACTIONS.FLIP_LAYERS"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             },
             historyPromise = this.transfer(historyActions.newHistoryState, document.id,
-                strings.ACTIONS.FLIP_LAYERS),
+                nls.localize("strings.ACTIONS.FLIP_LAYERS")),
             playPromise = locking.playWithLockOverride(document, layers, flipAction, options);
 
         return Promise.join(historyPromise, playPromise)
@@ -805,12 +805,12 @@ define(function (require, exports) {
             alignAction = layerLib.align(ref, align),
             options = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.ALIGN_LAYERS,
+                    name: nls.localize("strings.ACTIONS.ALIGN_LAYERS"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             },
             historyPromise = this.transfer(historyActions.newHistoryState, document.id,
-                strings.ACTIONS.ALIGN_LAYERS),
+                nls.localize("strings.ACTIONS.ALIGN_LAYERS")),
             playPromise = locking.playWithLockOverride(document, layers, alignAction, options);
 
         return Promise.join(historyPromise, playPromise)
@@ -979,12 +979,12 @@ define(function (require, exports) {
             distributeAction = layerLib.distribute(ref, align),
             options = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.DISTRIBUTE_LAYERS,
+                    name: nls.localize("strings.ACTIONS.DISTRIBUTE_LAYERS"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             },
             historyPromise = this.transfer(historyActions.newHistoryState, document.id,
-                strings.ACTIONS.DISTRIBUTE_LAYERS),
+                nls.localize("strings.ACTIONS.DISTRIBUTE_LAYERS")),
             playPromise = locking.playWithLockOverride(document, layers, distributeAction, options);
         
         return Promise.join(historyPromise, playPromise)
@@ -1071,14 +1071,14 @@ define(function (require, exports) {
             },
             history: {
                 newState: true,
-                name: strings.ACTIONS.SET_RADIUS
+                name: nls.localize("strings.ACTIONS.SET_RADIUS")
             }
         });
         
         options = _.merge(options, {
             paintOptions: _paintOptions,
             historyStateInfo: {
-                name: strings.ACTIONS.SET_RADIUS,
+                name: nls.localize("strings.ACTIONS.SET_RADIUS"),
                 target: documentLib.referenceBy.id(document.id),
                 coalesce: !!options.coalesce,
                 suppressHistoryStateNotification: !!options.coalesce
@@ -1141,12 +1141,12 @@ define(function (require, exports) {
             rotateObj = layerLib.rotate(layerRef, angle),
             options = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.ROTATE_LAYERS,
+                    name: nls.localize("strings.ACTIONS.ROTATE_LAYERS"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             },
             historyPromise = this.transfer(historyActions.newHistoryState, document.id,
-                strings.ACTIONS.ROTATE_LAYERS),
+                nls.localize("strings.ACTIONS.ROTATE_LAYERS")),
             playPromise = locking.playWithLockOverride(document, layers, rotateObj, options);
 
         return Promise.join(historyPromise, playPromise)

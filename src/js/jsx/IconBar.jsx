@@ -33,7 +33,7 @@ define(function (require, exports, module) {
 
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        menu = require("i18n!nls/menu"),
+        nls = require("js/util/nls"),
         headlights = require("js/util/headlights"),
         synchronization = require("js/util/synchronization");
 
@@ -96,7 +96,7 @@ define(function (require, exports, module) {
                 <div className={panelTabBarClassNames}>
                     <Button
                         className="toolbar__backToPs"
-                        title={menu.WINDOW.RETURN_TO_STANDARD}
+                        title={nls.localize("menus.WINDOW.RETURN_TO_STANDARD")}
                         onClick={this._handleBackToPSClick}>
                         <SVGIcon
                             viewbox="0 0 18 16"

@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var strings = require("i18n!nls/strings"),
+    var nls = require("js/util/nls"),
         pathUtil = require("js/util/path"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
@@ -76,13 +76,13 @@ define(function (require, exports, module) {
             if (recentFilesLimited.isEmpty()) {
                 return (
                     <section className="recent-files section section__active">
-                        <TitleHeader title={strings.NO_DOC.RECENT_FILES_TITLE} />
+                        <TitleHeader title={nls.localize("strings.NO_DOC.RECENT_FILES_TITLE")} />
                     </section>
                );
             } else {
                 return (
                     <section className="recent-files section section__active">
-                        <TitleHeader title={strings.NO_DOC.RECENT_FILES_TITLE} />
+                        <TitleHeader title={nls.localize("strings.NO_DOC.RECENT_FILES_TITLE")} />
                         <div className="section-container">
                             <ul className="link-list__list">
                                 {recentFilelinks}

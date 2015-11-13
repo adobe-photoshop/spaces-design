@@ -33,7 +33,7 @@ define(function (require, exports, module) {
 
     var ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     var UnsupportedEffectList = React.createClass({
         mixins: [FluxMixin],
@@ -86,7 +86,7 @@ define(function (require, exports, module) {
                 
                 effectsContent = (
                     <div className="effect-list__list-container__mixed">
-                        {strings.STYLE.UNSUPPORTED_EFFECTS.MIXED}
+                        {nls.localize("strings.STYLE.UNSUPPORTED_EFFECTS.MIXED")}
                     </div>
                 );
             } else {
@@ -97,9 +97,11 @@ define(function (require, exports, module) {
                     
                     return effects.map(function (effect, effectIndex) {
                         var effectStringKey = _.snakeCase(effectType).toUpperCase(),
-                            effectName = strings.STYLE.UNSUPPORTED_EFFECTS.NAMES[effectStringKey],
-                            toggleBtnTitle = strings.TOOLTIPS.TOGGLE_LAYER_EFFECT.replace("%s", effectName),
-                            deleteBtnTitle = strings.TOOLTIPS.DELETE_LAYER_EFFECT.replace("%s", effectName);
+                            effectName = nls.localize("strings.STYLE.UNSUPPORTED_EFFECTS.NAMES." + effectStringKey),
+                            toggleBtnTitle = nls.localize("strings.TOOLTIPS.TOGGLE_LAYER_EFFECT")
+                                .replace("%s", effectName),
+                            deleteBtnTitle = nls.localize("strings.TOOLTIPS.DELETE_LAYER_EFFECT")
+                                .replace("%s", effectName);
                             
                         return {
                             type: effectType,
@@ -167,7 +169,7 @@ define(function (require, exports, module) {
                 <div className="unsupported-effect-list effect-list__container">
                     <header className="section-header section-header__no-padding">
                         <h3 className="section-title__subtitle">
-                            {strings.STYLE.UNSUPPORTED_EFFECTS.TITLE}
+                            {nls.localize("strings.STYLE.UNSUPPORTED_EFFECTS.TITLE")}
                         </h3>
                     </header>
                     {effectsContent}

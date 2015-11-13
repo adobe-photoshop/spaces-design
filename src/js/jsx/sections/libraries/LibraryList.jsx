@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
         
-    var strings = require("i18n!nls/strings"),
+    var nls = require("js/util/nls"),
         headlights = require("js/util/headlights");
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
@@ -158,7 +158,7 @@ define(function (require, exports, module) {
                         id: "divider"
                     },
                     {
-                        title: strings.LIBRARIES.CREATE_LIBRARY,
+                        title: nls.localize("strings.LIBRARIES.CREATE_LIBRARY"),
                         searchable: false,
                         id: _CREATE_LIBRARY
                     }
@@ -166,11 +166,13 @@ define(function (require, exports, module) {
 
             if (selectedLibrary) {
                 var deleteLibraryText = selectedLibrary.collaboration === _INCOMING_LIBRARY ?
-                        strings.LIBRARIES.LEAVE_LIBRARY : strings.LIBRARIES.DELETE_LIBRARY;
+                        nls.localize("strings.LIBRARIES.LEAVE_LIBRARY") :
+                        nls.localize("strings.LIBRARIES.DELETE_LIBRARY");
 
                 options = options.concat([
                     {
-                        title: strings.LIBRARIES.RENAME_LIBRARY.replace("%s", selectedLibrary.name),
+                        title: nls.localize("strings.LIBRARIES.RENAME_LIBRARY")
+                            .replace("%s", selectedLibrary.name),
                         searchable: false,
                         id: _RENAME_LIBRARY
                     },
@@ -283,16 +285,20 @@ define(function (require, exports, module) {
             }
 
             var collaborationMapBody = {};
-            collaborationMapBody[_OUTGOING_LIBRARY] = strings.LIBRARIES.DELETE_SHARED_LIBRARY_CONFIRM;
-            collaborationMapBody[_INCOMING_LIBRARY] = strings.LIBRARIES.LEAVE_LIBRARY_CONFIRM;
-            collaborationMapBody[_REGULAR_LIBRARY] = strings.LIBRARIES.DELETE_LIBRARY_CONFIRM;
+            collaborationMapBody[_OUTGOING_LIBRARY] = nls.localize("strings.LIBRARIES.DELETE_SHARED_LIBRARY_CONFIRM");
+            collaborationMapBody[_INCOMING_LIBRARY] = nls.localize("strings.LIBRARIES.LEAVE_LIBRARY_CONFIRM");
+            collaborationMapBody[_REGULAR_LIBRARY] = nls.localize("strings.LIBRARIES.DELETE_LIBRARY_CONFIRM");
 
             var selectedLibrary = this.props.selected,
                 body = collaborationMapBody[selectedLibrary.collaboration].replace("%s", selectedLibrary.name),
-                cancelBtn = strings.LIBRARIES.BTN_CANCEL,
+                cancelBtn = nls.localize("strings.LIBRARIES.BTN_CANCEL"),
                 isIncomingLibrary = selectedLibrary.collaboration === _INCOMING_LIBRARY,
-                confirmBtn = isIncomingLibrary ? strings.LIBRARIES.BTN_LEAVE : strings.LIBRARIES.BTN_DELETE,
-                title = isIncomingLibrary ? strings.LIBRARIES.LEAVE_LIBRARY : strings.LIBRARIES.DELETE_LIBRARY;
+                confirmBtn = isIncomingLibrary ?
+                    nls.localize("strings.LIBRARIES.BTN_LEAVE") :
+                    nls.localize("strings.LIBRARIES.BTN_DELETE"),
+                title = isIncomingLibrary ?
+                    nls.localize("strings.LIBRARIES.LEAVE_LIBRARY") :
+                    nls.localize("strings.LIBRARIES.DELETE_LIBRARY");
 
             return (<LibraryDialog
                 title={title}
@@ -348,18 +354,18 @@ define(function (require, exports, module) {
                     disabled={this.props.disabled} />
                 <SplitButtonList className="libraries__split-button-list">
                     <SplitButtonItem
-                        title={strings.TOOLTIPS.LIBRARY_SHARE}
+                        title={nls.localize("strings.TOOLTIPS.LIBRARY_SHARE")}
                         iconId="libraries-collaborate"
                         className={isSharedLibrary && "libraries__split-button-collaborate"}
                         disabled={!selectedLibrary}
                         onClick={this._handleLibraryButtonClicked.bind(this, "share-library", collaborateLink)} />
                     <SplitButtonItem
-                        title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
+                        title={nls.localize("strings.TOOLTIPS.LIBRARY_SEND_LINK")}
                         iconId="libraries-share"
                         disabled={!selectedLibrary}
                         onClick={this._handleLibraryButtonClicked.bind(this, "share-public-link", shareLink)} />
                     <SplitButtonItem
-                        title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
+                        title={nls.localize("strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE")}
                         iconId="libraries-viewonsite"
                         disabled={!selectedLibrary}
                         onClick={this._handleLibraryButtonClicked.bind(this, "view-online", libraryLink)} />
@@ -382,7 +388,9 @@ define(function (require, exports, module) {
 
             var isInRenameMode = command === _RENAME_LIBRARY,
                 inputDefaultValue = isInRenameMode ? this.props.selected.name : "",
-                confirmBtnText = isInRenameMode ? strings.LIBRARIES.BTN_RENAME : strings.LIBRARIES.BTN_CREATE;
+                confirmBtnText = isInRenameMode ?
+                    nls.localize("strings.LIBRARIES.BTN_RENAME") :
+                    nls.localize("strings.LIBRARIES.BTN_CREATE");
 
             return (<div className="libraries__bar__top__content libraries__bar__top__content-input">
                 <TextInput
@@ -392,11 +400,11 @@ define(function (require, exports, module) {
                     continuous={true}
                     className="libraires__bar__input"
                     value={inputDefaultValue}
-                    placeholderText={strings.LIBRARIES.LIBRARY_NAME}
+                    placeholderText={nls.localize("strings.LIBRARIES.LIBRARY_NAME")}
                     onKeyDown={this._handleLibraryNameInputKeydown}/>
                 <div className="libraries__bar__btn-cancel"
                      onClick={this._handleCancelCommand}>
-                    {strings.LIBRARIES.BTN_CANCEL}
+                    {nls.localize("strings.LIBRARIES.BTN_CANCEL")}
                 </div>
                 <div className="libraries__bar__btn-confirm"
                      onClick={this._handleConfirmCommand}>

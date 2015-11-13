@@ -46,7 +46,7 @@ define(function (require, exports, module) {
         ExportPanel = require("jsx!./sections/export/ExportPanel"),
         LayersPanel = require("jsx!./sections/layers/LayersPanel"),
         LibrariesPanel = require("jsx!./sections/libraries/LibrariesPanel"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
         headlights = require("js/util/headlights");
@@ -333,11 +333,11 @@ define(function (require, exports, module) {
                         "toolbar-button": true,
                         "tool-selected": this.state[components.LAYERS_LIBRARY_COL]
                     }),
-                    panelCollapse = strings.TOOLTIPS.PANEL_COLUMN_COLLAPSE,
-                    panelExpand = strings.TOOLTIPS.PANEL_COLUMN_EXPAND,
-                    layerColumnTitle = strings.TOOLTIPS.LAYERS_LIBRARIES +
+                    panelCollapse = nls.localize("strings.TOOLTIPS.PANEL_COLUMN_COLLAPSE"),
+                    panelExpand = nls.localize("strings.TOOLTIPS.PANEL_COLUMN_EXPAND"),
+                    layerColumnTitle = nls.localize("strings.TOOLTIPS.LAYERS_LIBRARIES") +
                         (this.state[components.LAYERS_LIBRARY_COL] ? panelCollapse : panelExpand),
-                    propertiesColumnTitle = strings.TOOLTIPS.PROPERTIES +
+                    propertiesColumnTitle = nls.localize("strings.TOOLTIPS.PROPERTIES") +
                         (this.state[components.PROPERTIES_COL] ? panelCollapse : panelExpand),
                     handlePropertiesColumnVisibilityToggle =
                         this._handleColumnVisibilityToggle.bind(this, components.PROPERTIES_COL),

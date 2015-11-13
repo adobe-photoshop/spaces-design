@@ -32,7 +32,7 @@ define(function (require, exports, module) {
     var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection");
 
     /**
@@ -44,15 +44,15 @@ define(function (require, exports, module) {
     var _alignmentModes = Immutable.OrderedMap({
         "INSIDE": {
             id: "INSIDE",
-            title: strings.STYLE.STROKE.ALIGNMENT_MODES.INSIDE
+            title: nls.localize("strings.STYLE.STROKE.ALIGNMENT_MODES.INSIDE")
         },
         "CENTER": {
             id: "CENTER",
-            title: strings.STYLE.STROKE.ALIGNMENT_MODES.CENTER
+            title: nls.localize("strings.STYLE.STROKE.ALIGNMENT_MODES.CENTER")
         },
         "OUTSIDE": {
             id: "OUTSIDE",
-            title: strings.STYLE.STROKE.ALIGNMENT_MODES.OUTSIDE
+            title: nls.localize("strings.STYLE.STROKE.ALIGNMENT_MODES.OUTSIDE")
         }
     });
 
@@ -91,7 +91,7 @@ define(function (require, exports, module) {
             var alignments = this.props.alignments,
                 alignment = collection.uniformValue(alignments),
                 alignmentTitle = _alignmentModes.has(alignment) ? _alignmentModes.get(alignment).title :
-                    (alignments.size > 1 ? strings.TRANSFORM.MIXED : alignment),
+                    (alignments.size > 1 ? nls.localize("strings.TRANSFORM.MIXED") : alignment),
                 insideValue = this.props.insideValue || "INSIDE",
                 centerValue = this.props.centerValue || "CENTER",
                 outsideValue = this.props.outsideValue || "OUTSIDE";
@@ -104,21 +104,21 @@ define(function (require, exports, module) {
             return (
                 <SplitButtonList size="column-9" className={this.props.className}>
                     <SplitButtonItem
-                        title={strings.STYLE.STROKE.ALIGNMENT_MODES.INSIDE}
+                        title={nls.localize("strings.STYLE.STROKE.ALIGNMENT_MODES.INSIDE")}
                         iconId="stroke-inner"
                         selected={alignment === insideValue}
                         onClick={this._handleChange.bind(this, insideValue)}
                         className={"split-button__item__fixed"}
                         disabled={this.props.disabled} />
                     <SplitButtonItem
-                        title={strings.STYLE.STROKE.ALIGNMENT_MODES.CENTER}
+                        title={nls.localize("strings.STYLE.STROKE.ALIGNMENT_MODES.CENTER")}
                         iconId="stroke-middle"
                         selected={alignment === centerValue}
                         className={"split-button__item__fixed"}
                         onClick={this._handleChange.bind(this, centerValue)}
                         disabled={this.props.disabled} />
                     <SplitButtonItem
-                        title={strings.STYLE.STROKE.ALIGNMENT_MODES.OUTSIDE}
+                        title={nls.localize("strings.STYLE.STROKE.ALIGNMENT_MODES.OUTSIDE")}
                         iconId="stroke-outer"
                         selected={alignment === outsideValue}
                         className={"split-button__item__fixed"}

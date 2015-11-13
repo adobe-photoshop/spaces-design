@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var Datalist = require("jsx!js/jsx/shared/Datalist"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection");
 
     /**
@@ -42,133 +42,133 @@ define(function (require, exports, module) {
     var _blendModes = Immutable.OrderedMap({
         "normal": {
             id: "normal",
-            title: strings.STYLE.BLEND.NORMAL
+            title: nls.localize("strings.STYLE.BLEND.NORMAL")
         },
         "dissolve": {
             id: "dissolve",
-            title: strings.STYLE.BLEND.DISSOLVE
+            title: nls.localize("strings.STYLE.BLEND.DISSOLVE")
         },
         "darken": {
             id: "darken",
-            title: strings.STYLE.BLEND.DARKEN
+            title: nls.localize("strings.STYLE.BLEND.DARKEN")
         },
         "lighten": {
             id: "lighten",
-            title: strings.STYLE.BLEND.LIGHTEN
+            title: nls.localize("strings.STYLE.BLEND.LIGHTEN")
         },
         "screen": {
             id: "screen",
-            title: strings.STYLE.BLEND.SCREEN
+            title: nls.localize("strings.STYLE.BLEND.SCREEN")
         },
         "overlay": {
             id: "overlay",
-            title: strings.STYLE.BLEND.OVERLAY
+            title: nls.localize("strings.STYLE.BLEND.OVERLAY")
         },
         "multiply": {
             id: "multiply",
-            title: strings.STYLE.BLEND.MULTIPLY
+            title: nls.localize("strings.STYLE.BLEND.MULTIPLY")
         },
         "colorBurn": {
             id: "colorBurn",
-            title: strings.STYLE.BLEND.COLORBURN
+            title: nls.localize("strings.STYLE.BLEND.COLORBURN")
         },
         "linearBurn": {
             id: "linearBurn",
-            title: strings.STYLE.BLEND.LINEARBURN
+            title: nls.localize("strings.STYLE.BLEND.LINEARBURN")
         },
         "darkerColor": {
             id: "darkerColor",
-            title: strings.STYLE.BLEND.DARKERCOLOR
+            title: nls.localize("strings.STYLE.BLEND.DARKERCOLOR")
         },
         // WE ONLY SHOW PASSTHROUGH IF SELECTION IS ALL GROUPS
         "passThrough": {
             id: "passThrough",
-            title: strings.STYLE.BLEND.PASSTHROUGH
+            title: nls.localize("strings.STYLE.BLEND.PASSTHROUGH")
         },
         // WE DON'T SHOW ANYTHING BELOW THIS LINE AS AN OPTION
         "colorDodge": {
             id: "colorDodge",
-            title: strings.STYLE.BLEND.COLORDODGE,
+            title: nls.localize("strings.STYLE.BLEND.COLORDODGE"),
             hidden: true
         },
         "linearDodge": {
             id: "linearDodge",
-            title: strings.STYLE.BLEND.LINEARDODGE,
+            title: nls.localize("strings.STYLE.BLEND.LINEARDODGE"),
             hidden: true
         },
         "lighterColor": {
             id: "lighterColor",
-            title: strings.STYLE.BLEND.LIGHTERCOLOR,
+            title: nls.localize("strings.STYLE.BLEND.LIGHTERCOLOR"),
             hidden: true
         },
         "softLight": {
             id: "softLight",
-            title: strings.STYLE.BLEND.SOFTLIGHT,
+            title: nls.localize("strings.STYLE.BLEND.SOFTLIGHT"),
             hidden: true
         },
         "hardLight": {
             id: "hardLight",
-            title: strings.STYLE.BLEND.HARDLIGHT,
+            title: nls.localize("strings.STYLE.BLEND.HARDLIGHT"),
             hidden: true
         },
         "vividLight": {
             id: "vividLight",
-            title: strings.STYLE.BLEND.VIVIDLIGHT,
+            title: nls.localize("strings.STYLE.BLEND.VIVIDLIGHT"),
             hidden: true
         },
         "linearLight": {
             id: "linearLight",
-            title: strings.STYLE.BLEND.LINEARLIGHT,
+            title: nls.localize("strings.STYLE.BLEND.LINEARLIGHT"),
             hidden: true
         },
         "pinLight": {
             id: "pinLight",
-            title: strings.STYLE.BLEND.PINLIGHT,
+            title: nls.localize("strings.STYLE.BLEND.PINLIGHT"),
             hidden: true
         },
         "hardMix": {
             id: "hardMix",
-            title: strings.STYLE.BLEND.HARDMIX,
+            title: nls.localize("strings.STYLE.BLEND.HARDMIX"),
             hidden: true
         },
         "difference": {
             id: "difference",
-            title: strings.STYLE.BLEND.DIFFERENCE,
+            title: nls.localize("strings.STYLE.BLEND.DIFFERENCE"),
             hidden: true
         },
         "exclusion": {
             id: "exclusion",
-            title: strings.STYLE.BLEND.EXCLUSION,
+            title: nls.localize("strings.STYLE.BLEND.EXCLUSION"),
             hidden: true
         },
         "blendSubtraction": {
             id: "blendSubtraction",
-            title: strings.STYLE.BLEND.SUBTRACT,
+            title: nls.localize("strings.STYLE.BLEND.SUBTRACT"),
             hidden: true
         },
         "blendDivide": {
             id: "blendDivide",
-            title: strings.STYLE.BLEND.DIVIDE,
+            title: nls.localize("strings.STYLE.BLEND.DIVIDE"),
             hidden: true
         },
         "hue": {
             id: "hue",
-            title: strings.STYLE.BLEND.HUE,
+            title: nls.localize("strings.STYLE.BLEND.HUE"),
             hidden: true
         },
         "saturation": {
             id: "saturation",
-            title: strings.STYLE.BLEND.SATURATION,
+            title: nls.localize("strings.STYLE.BLEND.SATURATION"),
             hidden: true
         },
         "color": {
             id: "color",
-            title: strings.STYLE.BLEND.COLOR,
+            title: nls.localize("strings.STYLE.BLEND.COLOR"),
             hidden: true
         },
         "luminosity": {
             id: "luminosity",
-            title: strings.STYLE.BLEND.LUMINOSITY,
+            title: nls.localize("strings.STYLE.BLEND.LUMINOSITY"),
             hidden: true
         }
     });
@@ -187,7 +187,7 @@ define(function (require, exports, module) {
             var modes = this.props.modes,
                 mode = collection.uniformValue(modes),
                 title = _blendModes.has(mode) ? _blendModes.get(mode).title :
-                    (modes.size > 1 ? strings.TRANSFORM.MIXED : mode),
+                    (modes.size > 1 ? nls.localize("strings.TRANSFORM.MIXED") : mode),
                 allGroups = this.props.allGroups,
                 // Remove Pass Through option if any of the layers are not a group
                 modesToShow = _blendModes.update("passThrough", function (item) {

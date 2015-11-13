@@ -38,7 +38,7 @@ define(function (require, exports, module) {
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights");
 
@@ -279,7 +279,7 @@ define(function (require, exports, module) {
             
             var toggleVisibilityButton = this.props.disabled ? null : (
                 <ToggleButton
-                    title={strings.TOOLTIPS.TOGGLE_STROKE}
+                    title={nls.localize("strings.TOOLTIPS.TOGGLE_STROKE")}
                     name="toggleStrokeEnabled"
                     buttonType="layer-not-visible"
                     disabled={this.props.disabled}
@@ -295,7 +295,7 @@ define(function (require, exports, module) {
                             id={colorInputID}
                             className="stroke"
                             context={collection.pluck(this.state.layers, "id")}
-                            title={strings.TOOLTIPS.SET_STROKE_COLOR}
+                            title={nls.localize("strings.TOOLTIPS.SET_STROKE_COLOR")}
                             editable={!this.props.disabled}
                             defaultValue={stroke.colors}
                             onChange={this._colorChanged}

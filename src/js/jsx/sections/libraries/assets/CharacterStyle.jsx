@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var strings = require("i18n!nls/strings"),
+    var nls = require("js/util/nls"),
         librariesUtil = require("js/util/libraries"),
         headlights = require("js/util/headlights");
 
@@ -91,7 +91,7 @@ define(function (require, exports, module) {
                     subTitle={subtitle}
                     key={element.id}>
                     <div className="libraries__asset__preview libraries__asset__preview-character-style"
-                         title={strings.LIBRARIES.CLICK_TO_APPLY}
+                         title={nls.localize("strings.LIBRARIES.CLICK_TO_APPLY")}
                          onClick={this._handleApply}>
                         <AssetPreviewImage
                             element={this.props.element}

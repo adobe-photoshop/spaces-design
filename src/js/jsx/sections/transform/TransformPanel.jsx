@@ -36,7 +36,7 @@ define(function (require, exports, module) {
         Rotate = require("jsx!./Rotate"),
         Combine = require("jsx!./Combine"),
         Flip = require("jsx!./Flip"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     var TransformPanel = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("ui")],
@@ -88,7 +88,7 @@ define(function (require, exports, module) {
                     });
                 };
 
-            var referencePointTooltip = strings.TOOLTIPS.REFERENCE_POINT_TOOL;
+            var referencePointTooltip = nls.localize("strings.TOOLTIPS.REFERENCE_POINT_TOOL");
 
             return (
                 <section className={sectionClasses}>

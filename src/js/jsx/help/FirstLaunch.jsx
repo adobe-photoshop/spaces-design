@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var Carousel = require("jsx!js/jsx/shared/Carousel"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
  
     var FirstLaunch = React.createClass({
@@ -83,47 +83,47 @@ define(function (require, exports, module) {
                 githubURL = "https://www.adobe.com/go/designspace-github",
                 firstLaunchCarouselItems = [
                 (<div className="carousel__slide__full slide-0">
-                    <h1>{strings.FIRST_LAUNCH.SLIDES[0].HEADLINE}</h1>
+                    <h1>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.HEADLINE")}</h1>
                     <img src="img/first_launch/img_slide_ds.png"/>
-                    <h3>{strings.FIRST_LAUNCH.SLIDES[0].BODY_FIRST}</h3>
-                    <h3>{strings.FIRST_LAUNCH.SLIDES[0].BODY_SECOND}</h3>
+                    <h3>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.BODY_FIRST")}</h3>
+                    <h3>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.BODY_SECOND")}</h3>
                 </div>),
                 (<div className="carousel__slide__full">
                     <img src="img/first_launch/img_slide_toolset.gif"/>
-                    <h2>{strings.FIRST_LAUNCH.SLIDES[1].HEADLINE}</h2>
+                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.1.HEADLINE")}</h2>
                 </div>),
                 (<div className="carousel__slide__full">
                     <img src="img/first_launch/img_slide_search.png"/>
-                    <h2>{strings.FIRST_LAUNCH.SLIDES[2].HEADLINE_FIRST}</h2>
-                    <h2>{strings.FIRST_LAUNCH.SLIDES[2].HEADLINE_SECOND}</h2>
+                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.2.HEADLINE_FIRST")}</h2>
+                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.2.HEADLINE_SECOND")}</h2>
                 </div>),
                 (<div className="carousel__slide__full slide-3">
                     <img src="img/first_launch/img_slide_sampler.png"/>
-                    <h2>{strings.FIRST_LAUNCH.SLIDES[3].HEADLINE_FIRST}</h2>
-                    <h2>{strings.FIRST_LAUNCH.SLIDES[3].HEADLINE_SECOND}</h2>
+                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.3.HEADLINE_FIRST")}</h2>
+                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.3.HEADLINE_SECOND")}</h2>
                 </div>),
                 (<div className="carousel__slide__full slide-4">
                     <img src="img/first_launch/img_slide_artboards.gif"/>
-                    <h2>{strings.FIRST_LAUNCH.SLIDES[4].HEADLINE}</h2>
+                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.4.HEADLINE")}</h2>
                 </div>),
                 (<div className="carousel__slide__full slide-5">
                     <img src="img/first_launch/img_slide_swap.gif"/>
-                    <h2>{strings.FIRST_LAUNCH.SLIDES[5].HEADLINE}</h2>
+                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.5.HEADLINE")}</h2>
                 </div>),
                 (<div className="carousel__slide__full slide-6">
                     <img src="img/first_launch/img_slide_switching.gif"/>
-                    <h2>{strings.FIRST_LAUNCH.SLIDES[6].HEADLINE}</h2>
+                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.6.HEADLINE")}</h2>
                 </div>),
                 (<div className="carousel__slide">
                     <div className="carousel__slide__body">
-                        <h1>{strings.FIRST_LAUNCH.SLIDES[7].HEADLINE}</h1>
+                        <h1>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.HEADLINE")}</h1>
                             <ul className="carousel__slide__three__list">
                                 <li>
                                     <div
                                         onClick={this._handleClick.bind(this, psDesignTwitterURL, "twitter")}>
                                         <SVGIcon
                                             CSSID="bird"/>
-                                        <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_FIRST}</h2>
+                                        <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_FIRST")}</h2>
                                     </div>
                                 </li>
                             </ul>
@@ -133,7 +133,7 @@ define(function (require, exports, module) {
                                         onClick={this._handleClick.bind(this, githubURL, "github")}>
                                         <SVGIcon
                                             CSSID="github"/>
-                                        <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_SECOND}</h2>
+                                        <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_SECOND")}</h2>
                                     </div>
                                 </li>
                             </ul>
@@ -143,7 +143,7 @@ define(function (require, exports, module) {
                                         onClick={this._handleClick.bind(this, psForumURL, "forum")}>
                                         <SVGIcon
                                             CSSID="workspace"/>
-                                        <h2>{strings.FIRST_LAUNCH.SLIDES[7].BODY_THIRD}</h2>
+                                        <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_THIRD")}</h2>
                                     </div>
                                 </li>
                             </ul>

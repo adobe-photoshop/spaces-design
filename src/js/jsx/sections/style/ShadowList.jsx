@@ -34,7 +34,7 @@ define(function (require, exports) {
     var LayerEffect = require("js/models/effects/layereffect"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization");
 
     var Label = require("jsx!js/jsx/shared/Label"),
@@ -294,29 +294,51 @@ define(function (require, exports) {
                     "effect-list__shadow__disabled": this.props.readOnly
                 });
 
-            var shadowXPositionTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION,
-                     strings.TOOLTIPS.SET_INNER_SHADOW_X_POSITION),
-                shadowYPositionTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION,
-                     strings.TOOLTIPS.SET_INNER_SHADOW_Y_POSITION),
-                shadowColorTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_COLOR,
-                    strings.TOOLTIPS.SET_INNER_SHADOW_COLOR),
-                shadowBlurTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_BLUR,
-                    strings.TOOLTIPS.SET_INNER_SHADOW_BLUR),
-                shadowSpreadTooltip = this._stringHelper(strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD,
-                    strings.TOOLTIPS.SET_INNER_SHADOW_SPREAD),
-                shadowToggleTooltip = this._stringHelper(strings.TOOLTIPS.TOGGLE_DROP_SHADOW,
-                    strings.TOOLTIPS.TOGGLE_INNER_SHADOW),
-                shadowDeleteTooltip = this._stringHelper(strings.TOOLTIPS.DELETE_DROP_SHADOW,
-                    strings.TOOLTIPS.DELETE_INNER_SHADOW);
+            var shadowXPositionTooltip = this._stringHelper(
+                    nls.localize("strings.TOOLTIPS.SET_DROP_SHADOW_X_POSITION"),
+                    nls.localize("strings.TOOLTIPS.SET_INNER_SHADOW_X_POSITION")
+                ),
+                shadowYPositionTooltip = this._stringHelper(
+                    nls.localize("strings.TOOLTIPS.SET_DROP_SHADOW_Y_POSITION"),
+                    nls.localize("strings.TOOLTIPS.SET_INNER_SHADOW_Y_POSITION")
+                ),
+                shadowColorTooltip = this._stringHelper(
+                    nls.localize("strings.TOOLTIPS.SET_DROP_SHADOW_COLOR"),
+                    nls.localize("strings.TOOLTIPS.SET_INNER_SHADOW_COLOR")
+                ),
+                shadowBlurTooltip = this._stringHelper(
+                    nls.localize("strings.TOOLTIPS.SET_DROP_SHADOW_BLUR"),
+                    nls.localize("strings.TOOLTIPS.SET_INNER_SHADOW_BLUR")
+                ),
+                shadowSpreadTooltip = this._stringHelper(
+                    nls.localize("strings.TOOLTIPS.SET_DROP_SHADOW_SPREAD"),
+                    nls.localize("strings.TOOLTIPS.SET_INNER_SHADOW_SPREAD")
+                ),
+                shadowToggleTooltip = this._stringHelper(
+                    nls.localize("strings.TOOLTIPS.TOGGLE_DROP_SHADOW"),
+                    nls.localize("strings.TOOLTIPS.TOGGLE_INNER_SHADOW")
+                ),
+                shadowDeleteTooltip = this._stringHelper(
+                    nls.localize("strings.TOOLTIPS.DELETE_DROP_SHADOW"),
+                    nls.localize("strings.TOOLTIPS.DELETE_INNER_SHADOW")
+                );
 
-            var shadowXPosition = this._stringHelper(strings.STYLE.DROP_SHADOW.X_POSITION,
-                    strings.STYLE.INNER_SHADOW.X_POSITION),
-                shadowYPosition = this._stringHelper(strings.STYLE.DROP_SHADOW.Y_POSITION,
-                    strings.STYLE.INNER_SHADOW.Y_POSITION),
-                shadowBlur = this._stringHelper(strings.STYLE.DROP_SHADOW.BLUR,
-                    strings.STYLE.INNER_SHADOW.BLUR),
-                shadowSpread = this._stringHelper(strings.STYLE.DROP_SHADOW.SPREAD,
-                    strings.STYLE.INNER_SHADOW.SPREAD);
+            var shadowXPosition = this._stringHelper(
+                    nls.localize("strings.STYLE.DROP_SHADOW.X_POSITION"),
+                    nls.localize("strings.STYLE.INNER_SHADOW.X_POSITION")
+                ),
+                shadowYPosition = this._stringHelper(
+                    nls.localize("strings.STYLE.DROP_SHADOW.Y_POSITION"),
+                    nls.localize("strings.STYLE.INNER_SHADOW.Y_POSITION")
+                ),
+                shadowBlur = this._stringHelper(
+                    nls.localize("strings.STYLE.DROP_SHADOW.BLUR"),
+                    nls.localize("strings.STYLE.INNER_SHADOW.BLUR")
+                ),
+                shadowSpread = this._stringHelper(
+                    nls.localize("strings.STYLE.DROP_SHADOW.SPREAD"),
+                    nls.localize("strings.STYLE.INNER_SHADOW.SPREAD")
+                );
 
             var type = this.props.type,
                 blendModelistID = "shadow-blendmodes-" + type + this.props.index + "-" + this.props.document.id,
@@ -475,7 +497,7 @@ define(function (require, exports) {
             } else {
                 shadowsContent = (
                     <div className="effect-list__list-container__mixed">
-                        <i>{strings.STYLE.DROP_SHADOW.MIXED}</i>
+                        <i>{nls.localize("strings.STYLE.DROP_SHADOW.MIXED")}</i>
                     </div>
                 );
             }
@@ -484,7 +506,7 @@ define(function (require, exports) {
                 <div className="effect-list__container ">
                     <header className="section-header section-header__no-padding">
                         <h3 className="section-title__subtitle">
-                            {strings.STYLE.DROP_SHADOW.TITLE}
+                            {nls.localize("strings.STYLE.DROP_SHADOW.TITLE")}
                         </h3>
                     </header>
                     <div className="effect-list__list-container">
@@ -544,7 +566,7 @@ define(function (require, exports) {
             } else {
                 shadowsContent = (
                     <div className="effect-list__list-container__mixed">
-                        <i>{strings.STYLE.INNER_SHADOW.MIXED}</i>
+                        <i>{nls.localize("strings.STYLE.INNER_SHADOW.MIXED")}</i>
                     </div>
                 );
             }
@@ -553,7 +575,7 @@ define(function (require, exports) {
                 <div className="effect-list__container">
                     <header className="section-header section-header__no-padding">
                         <h3 className="section-title__subtitle">
-                            {strings.STYLE.INNER_SHADOW.TITLE}
+                            {nls.localize("strings.STYLE.INNER_SHADOW.TITLE")}
                         </h3>
                     </header>
                     <div className="effect-list__list-container">

@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     var Flip = React.createClass({
         mixins: [FluxMixin],
@@ -168,19 +168,19 @@ define(function (require, exports, module) {
             return (
                 <SplitButtonList className="button-radio__fixed" size="column-10">
                     <SplitButtonItem
-                        title={strings.TOOLTIPS.FLIP_HORIZONTAL}
+                        title={nls.localize("strings.TOOLTIPS.FLIP_HORIZONTAL")}
                         iconId="flip-horizontal"
                         selected={false}
                         disabled={flipDisabled}
                         onClick={this._flipX} />
                     <SplitButtonItem
-                        title={strings.TOOLTIPS.FLIP_VERTICAL}
+                        title={nls.localize("strings.TOOLTIPS.FLIP_VERTICAL")}
                         iconId="flip-vertical"
                         selected={false}
                         disabled={flipDisabled}
                         onClick={this._flipY} />
                     <SplitButtonItem
-                        title={strings.TOOLTIPS.SWAP_POSITION}
+                        title={nls.localize("strings.TOOLTIPS.SWAP_POSITION")}
                         iconId="swap"
                         selected={false}
                         disabled={swapDisabled}

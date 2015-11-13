@@ -33,7 +33,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
         
     var headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         LibraryList = require("jsx!./LibraryList"),
@@ -143,7 +143,7 @@ define(function (require, exports, module) {
                 containerContents = (
                     <div className="libraries__content panel__info">
                         <div className="panel__info__body">
-                            {strings.LIBRARIES.NO_CONNECTION}
+                            {nls.localize("strings.LIBRARIES.NO_CONNECTION")}
                         </div>
                     </div>
                 );
@@ -200,7 +200,7 @@ define(function (require, exports, module) {
                     onMouseLeave={this.props.onMouseLeaveDroppable}>
                     {dropOverlay}
                     <TitleHeader
-                        title={strings.TITLE_LIBRARIES}
+                        title={nls.localize("strings.TITLE_LIBRARIES")}
                         visible={this.props.visible}
                         disabled={this.props.disabled}
                         onDoubleClick={this.props.onVisibilityToggle} />

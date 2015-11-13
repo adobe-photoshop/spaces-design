@@ -34,7 +34,7 @@ define(function (require, exports, module) {
         Range = require("jsx!js/jsx/shared/Range"),
         Coalesce = require("js/jsx/mixin/Coalesce"),
         math = require("js/util/math"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection");
 
     var Radius = React.createClass({
@@ -106,8 +106,8 @@ define(function (require, exports, module) {
                     <Label
                         className="label__medium__left-aligned"
                         size="column-4"
-                        title={strings.TOOLTIPS.SET_RADIUS}>
-                        {strings.TRANSFORM.RADIUS}
+                        title={nls.localize("strings.TOOLTIPS.SET_RADIUS")}>
+                        {nls.localize("strings.TRANSFORM.RADIUS")}
                     </Label>
                     <div className="control-group__vertical">
                         <NumberInput

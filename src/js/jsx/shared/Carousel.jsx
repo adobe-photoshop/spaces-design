@@ -34,7 +34,7 @@ define(function (require, exports, module) {
     var synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     /**
     * Storing the English file names manually otherwise in different languages, the SVGs cannot be found
@@ -148,7 +148,7 @@ define(function (require, exports, module) {
                                 onClick={this._gotoItem.bind(this, idx, this.state.index)}>
                                 <SVGIcon
                                     CSSID={ICON_NAMES[idx]} />
-                                <h3>{strings.FIRST_LAUNCH.SLIDES[idx].TITLE}</h3>
+                                <h3>{nls.localize("strings.FIRST_LAUNCH.SLIDES." + idx + ".TITLE")}</h3>
                             </a>
                         );
                     }
@@ -166,7 +166,7 @@ define(function (require, exports, module) {
                     <a
                         className="carousel__slide-button__continue"
                         onClick={this._gotoItem.bind(this, 1, 0)}>
-                        {strings.FIRST_LAUNCH.CONTINUE}
+                        {nls.localize("strings.FIRST_LAUNCH.CONTINUE")}
                     </a>
                 );
             }

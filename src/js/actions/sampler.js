@@ -46,7 +46,7 @@ define(function (require, exports) {
         transformActions = require("./transform"),
         layerActionsUtil = require("js/util/layeractions"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     /**
      * Gets the color of the source layer, or color at the pixel
@@ -220,7 +220,7 @@ define(function (require, exports) {
             textLayers = Immutable.List(),
             transactionOpts = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.SAMPLE_COLOR,
+                    name: nls.localize("strings.ACTIONS.SAMPLE_COLOR"),
                     target: documentLib.referenceBy.id(doc.id)
                 }
             };
@@ -276,7 +276,7 @@ define(function (require, exports) {
             textLayers = Immutable.List(),
             transactionOpts = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.SAMPLE_STROKE,
+                    name: nls.localize("strings.ACTIONS.SAMPLE_STROKE"),
                     target: documentLib.referenceBy.id(doc.id)
                 }
             };
@@ -579,7 +579,7 @@ define(function (require, exports) {
             nonTextLayers = Immutable.List(),
             transactionOpts = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.PASTE_LAYER_STYLE,
+                    name: nls.localize("strings.ACTIONS.PASTE_LAYER_STYLE"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             };
@@ -831,7 +831,7 @@ define(function (require, exports) {
             .bind(this)
             .tap(function () {
                 return this.transfer(historyActions.newHistoryState, document.id,
-                    strings.ACTIONS.SAMPLE_GRAPHICS);
+                    nls.localize("strings.ACTIONS.SAMPLE_GRAPHICS"));
             })
             .then(function (path) {
                 var documentRef = documentLib.referenceBy.id(document.id),
@@ -841,7 +841,7 @@ define(function (require, exports) {
                             quality: "draft"
                         },
                         historyStateInfo: {
-                            name: strings.ACTIONS.SAMPLE_GRAPHICS,
+                            name: nls.localize("strings.ACTIONS.SAMPLE_GRAPHICS"),
                             target: documentRef,
                             coalesce: false,
                             suppressHistoryStateNotification: false

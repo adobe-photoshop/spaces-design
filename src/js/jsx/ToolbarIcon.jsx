@@ -31,7 +31,7 @@ define(function (require, exports, module) {
 
     var Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
     
     var ToolbarIcon = React.createClass({
         mixins: [FluxMixin],
@@ -73,7 +73,7 @@ define(function (require, exports, module) {
                     id={this.props.id}
                     style={this.props.style}>
                     <Button
-                        title={strings.TOOLS[toolID]}
+                        title={nls.localize("strings.TOOLS." + toolID)}
                         className={buttonClassName}
                         onClick={!this.props.disabled && this.props.onClick}
                         disabled={this.props.disabled}>

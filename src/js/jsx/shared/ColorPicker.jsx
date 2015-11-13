@@ -68,7 +68,7 @@ define(function (require, exports, module) {
         Gutter = require("jsx!js/jsx/shared/Gutter"),
         headlights = require("js/util/headlights");
     
-    var strings = require("i18n!nls/strings");
+    var nls = require("js/util/nls");
 
     /**
      * The list of valid color expression types.
@@ -728,7 +728,7 @@ define(function (require, exports, module) {
                 <div className="color-picker__rgbhsb">
                     <div className="formline">
                         <Label>
-                            {strings.COLOR_PICKER.RGB_MODEL.R}
+                            {nls.localize("strings.COLOR_PICKER.RGB_MODEL.R")}
                         </Label>
                         <NumberInput
                             disabled={this.props.disabled}
@@ -740,7 +740,7 @@ define(function (require, exports, module) {
                     </div>
                     <div className="formline">
                         <Label>
-                            {strings.COLOR_PICKER.RGB_MODEL.G}
+                            {nls.localize("strings.COLOR_PICKER.RGB_MODEL.G")}
                         </Label>
                         <NumberInput
                             disabled={this.props.disabled}
@@ -752,7 +752,7 @@ define(function (require, exports, module) {
                     </div>
                     <div className="formline">
                         <Label>
-                            {strings.COLOR_PICKER.RGB_MODEL.B}
+                            {nls.localize("strings.COLOR_PICKER.RGB_MODEL.B")}
                         </Label>
                         <NumberInput
                             disabled={this.props.disabled}
@@ -764,7 +764,7 @@ define(function (require, exports, module) {
                     </div>
                     <div className="formline">
                         <Label>
-                            {strings.COLOR_PICKER.HSB_MODEL.H}
+                            {nls.localize("strings.COLOR_PICKER.HSB_MODEL.H")}
                         </Label>
                         <NumberInput
                             disabled={this.props.disabled}
@@ -776,7 +776,7 @@ define(function (require, exports, module) {
                     </div>
                     <div className="formline">
                         <Label>
-                            {strings.COLOR_PICKER.HSB_MODEL.S}
+                            {nls.localize("strings.COLOR_PICKER.HSB_MODEL.S")}
                         </Label>
                         <NumberInput
                             disabled={this.props.disabled}
@@ -788,7 +788,7 @@ define(function (require, exports, module) {
                     </div>
                     <div className="formline">
                         <Label>
-                            {strings.COLOR_PICKER.HSB_MODEL.B}
+                            {nls.localize("strings.COLOR_PICKER.HSB_MODEL.B")}
                         </Label>
                         <NumberInput
                             disabled={this.props.disabled}
@@ -1075,8 +1075,8 @@ define(function (require, exports, module) {
                     </div>
                     <div className="slider_label">
                         <Label
-                            title={strings.COLOR_PICKER.OPACITY}>
-                            {strings.COLOR_PICKER.OPACITY}
+                            title={nls.localize("strings.COLOR_PICKER.OPACITY")}>
+                            {nls.localize("strings.COLOR_PICKER.OPACITY")}
                         </Label>
                         <NumberInput
                             size="column-5"

@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var strings = require("i18n!nls/strings"),
+    var nls = require("js/util/nls"),
         Document = require("js/models/document");
     
     var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
@@ -193,36 +193,39 @@ define(function (require, exports, module) {
         render: function () {
             var addFillButton = this._createColorButton(function (layer) {
                 return !layer.fill ? null :
-                    { color: layer.fill.color, title: strings.TOOLTIPS.ADD_FILL_COLOR };
+                    { color: layer.fill.color, title: nls.localize("strings.TOOLTIPS.ADD_FILL_COLOR") };
             });
 
             var addStrokeButton = this._createColorButton(function (layer) {
                 return !layer.stroke ? null :
-                    { color: layer.stroke.color, title: strings.TOOLTIPS.ADD_STROKE_COLOR };
+                    { color: layer.stroke.color, title: nls.localize("strings.TOOLTIPS.ADD_STROKE_COLOR") };
             });
 
             var addTextColorButton = this._createColorButton(function (layer) {
                 return !layer.isTextLayer() ? null :
-                    { color: layer.text.firstCharacterStyle.color, title: strings.TOOLTIPS.ADD_TEXT_COLOR };
+                    {
+                        color: layer.text.firstCharacterStyle.color,
+                        title: nls.localize("strings.TOOLTIPS.ADD_TEXT_COLOR")
+                    };
             });
 
             return (
                 <div className={"libraries-bar " + this.props.className}>
                     <ul className="button-radio libraries-bar__section__left">
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.ADD_GRAPHIC}
+                            title={nls.localize("strings.TOOLTIPS.ADD_GRAPHIC")}
                             iconId="libraries-addGraphic"
                             onClick={this.addGraphic}
                             disabled={!this._canAddGraphic()}
                              />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.ADD_CHARACTER_STYLE}
+                            title={nls.localize("strings.TOOLTIPS.ADD_CHARACTER_STYLE")}
                             onClick={this.addCharacterStyle}
                             iconId="libraries-addCharStyle"
                             disabled={!this._canAddCharacterStyle()}
                             />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.ADD_LAYER_STYLE}
+                            title={nls.localize("strings.TOOLTIPS.ADD_LAYER_STYLE")}
                             iconId="libraries-addLayerStyle"
                             onClick={this.addLayerStyle}
                             disabled={!this._canAddLayerStyle()}
@@ -234,11 +237,11 @@ define(function (require, exports, module) {
 
                     <ul className="button-radio libraries-bar__section__right">
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.SEARCH_ADOBE_STOCK}
+                            title={nls.localize("strings.TOOLTIPS.SEARCH_ADOBE_STOCK")}
                             iconId="libraries-stock"
                             onClick={this._handleStockButtonClicked}/>
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.SYNC_LIBRARIES}
+                            title={nls.localize("strings.TOOLTIPS.SYNC_LIBRARIES")}
                             iconId={this.props.isSyncing ? "loader" : "libraries-cc"}
                             iconPath={this.props.isSyncing ? "" : null}
                             onClick={this._handleSyncLibraries}

@@ -28,8 +28,7 @@ define(function (require, exports) {
         Immutable = require("immutable"),
         keyUtil = require("js/util/key"),
         system = require("js/util/system"),
-        strings = require("i18n!nls/strings"),
-        menuLabels = require("i18n!nls/menu");
+        nls = require("js/util/nls");
 
     var events = require("js/events");
 
@@ -38,6 +37,7 @@ define(function (require, exports) {
 
     /**
      * Get a localized label for the full path of the given menu entry ID
+     * inserting > character between parent names
      *
      * @private
      * @param {string} id
@@ -45,24 +45,27 @@ define(function (require, exports) {
      */
     var _getLabelForEntry = function (id) {
         var parts = id.split("."),
-            path = "",
-            currMenuLabels = menuLabels;
+            resultPath = "",
+            nlsPath = "menus",
+            menuTree;
 
         parts.forEach(function (part) {
-            if (currMenuLabels[part] === undefined) {
-                path = null;
+            nlsPath = nlsPath + "." + part;
+            menuTree = nls.localize(nlsPath);
+
+            if (menuTree === undefined) {
+                resultPath = null;
                 return false;
             }
 
-            if (currMenuLabels[part].$MENU) {
-                path += currMenuLabels[part].$MENU + ">";
-                currMenuLabels = currMenuLabels[part];
+            if (menuTree.$MENU) {
+                resultPath += menuTree.$MENU + ">";
             } else {
-                path += currMenuLabels[part];
+                resultPath += menuTree.part;
             }
         });
 
-        return path;
+        return resultPath;
     };
     
     /**
@@ -76,8 +79,7 @@ define(function (require, exports) {
         var modifierBits = fullShortcut.modifiers,
             keyChar = fullShortcut.keyChar,
             keyCode = fullShortcut.keyCode,
-            modifierStrings = strings.SEARCH.MODIFIERS,
-            keyCodeStrings = strings.KEYCODE,
+            modifierStrings = nls.localize("strings.SEARCH.MODIFIERS"),
             shortcut = "";
 
         var modifierChars = {
@@ -102,7 +104,7 @@ define(function (require, exports) {
         }
 
         if (keyCode) {
-            shortcut += keyCodeStrings[keyCode];
+            shortcut += nls.localize("strings.KEYCODE." + keyCode);
         }
 
         return " " + shortcut + "\u00a0\u00a0\u00a0\u00a0";
@@ -175,7 +177,7 @@ define(function (require, exports) {
     var _getGlobalShortcutString = function (fullShortcut) {
         var modifierBits = fullShortcut.modifiers,
             key = fullShortcut.key,
-            modifierStrings = strings.SEARCH.MODIFIERS,
+            modifierStrings = nls.localize("strings.SEARCH.MODIFIERS"),
             shortcut = "";
 
         if (modifierBits.command) {

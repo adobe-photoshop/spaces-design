@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
 
-    var strings = require("i18n!nls/strings"),
+    var nls = require("js/util/nls"),
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
 
     var templatesJSON = require("text!static/templates.json"),
@@ -54,13 +54,14 @@ define(function (require, exports, module) {
 
         render: function () {
             var templateLinks = templates.map(function (template, index) {
+                    var name = nls.localize("strings.TEMPLATES." + template.id);
                     return (
                         <li
                             key={index}
                             className="link-list__item"
                             onClick={this._openTemplate.bind(this, template)}>
 
-                            <span>{strings.TEMPLATES[template.id]}</span>
+                            <span>{name}</span>
                             <span>{template.width} x {template.height}</span>
                         </li>
                     );
@@ -68,7 +69,7 @@ define(function (require, exports, module) {
 
             return (
                 <section className="artboard-presets section section__active">
-                    <TitleHeader title={strings.NO_DOC.ARTBOARD_PRESETS_TITLE} />
+                    <TitleHeader title={nls.localize("strings.NO_DOC.ARTBOARD_PRESETS_TITLE")} />
                     <div className="section-container artboard-launcher__body">
                         <ul className="link-list__list">
                             {templateLinks}
