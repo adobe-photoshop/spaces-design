@@ -248,12 +248,7 @@ define(function (require, exports, module) {
                     document.layers.selected.isEmpty();
 
             if (!maskDisabled) {
-                var firstLayer = document.layers.selected.first();
-                
-                maskDisabled = maskDisabled ||
-                    firstLayer.locked ||
-                    firstLayer.kind === firstLayer.layerKinds.VECTOR ||
-                    firstLayer.isBackground;
+                maskDisabled = !document.layers.selectedLayersCanHaveVectorMask;
             }
 
             if (!maskDisabled) {

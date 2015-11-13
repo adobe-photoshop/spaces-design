@@ -523,6 +523,21 @@ define(function (require, exports, module) {
                     return layer.kind !== layer.layerKinds.GROUPEND &&
                         layer.kind !== layer.layerKinds.GROUP;
                 });
+        },
+
+        /**
+         * Determine whether a vector mask can be created on the current layer selection
+         *
+         * @return {boolean} if the layer selection can handle a vector mask
+         */
+        "selectedLayersCanHaveVectorMask": function () {
+            var layers = this.selected,
+                curLayer = layers.first();
+            return !layers.isEmpty() &&
+                curLayer.kind !== curLayer.layerKinds.GROUPEND &&
+                curLayer.kind !== curLayer.layerKinds.VECTOR &&
+                curLayer.kind !== curLayer.layerKinds.BACKGROUND &&
+                !curLayer.locked;
         }
     }));
 
