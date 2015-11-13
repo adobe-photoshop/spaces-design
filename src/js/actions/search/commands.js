@@ -33,7 +33,8 @@ define(function (require, exports) {
 
     var events = require("js/events");
 
-    var menuActions = require("js/actions/menu");
+    var menuActions = require("js/actions/menu"),
+        shortcutActions = require("js/actions/shortcuts");
 
     /**
      * Get a localized label for the full path of the given menu entry ID
@@ -65,13 +66,13 @@ define(function (require, exports) {
     };
     
     /**
-     * Get a shortcut as a string for the given menu entry shortcut object
+     * Get a shortcut as a string for themen menu entry shortcut object
      *
      * @private
      * @param {object} fullShortcut
      * @return {string}
      */
-    var _getShortcut = function (fullShortcut) {
+    var _getMenuCommandString = function (fullShortcut) {
         var modifierBits = fullShortcut.modifiers,
             keyChar = fullShortcut.keyChar,
             keyCode = fullShortcut.keyCode,
@@ -135,7 +136,7 @@ define(function (require, exports) {
                         shortcut = "";
                     
                     if (currItem.shortcut) {
-                        shortcut = _getShortcut(currItem.shortcut);
+                        shortcut = _getMenuCommandString(currItem.shortcut);
                     }
 
                     if (ancestry) {
@@ -165,6 +166,84 @@ define(function (require, exports) {
     };
 
     /**
+     * Translates the modifiers and key to a string for the UI
+     *
+     * @private
+     * @param {object} fullShortcut
+     * @return {string}
+     */
+    var _getGlobalShortcutString = function (fullShortcut) {
+        var modifierBits = fullShortcut.modifiers,
+            key = fullShortcut.key,
+            modifierStrings = strings.SEARCH.MODIFIERS,
+            shortcut = "";
+
+        if (modifierBits.command) {
+            shortcut += "\u2318";
+        }
+
+        if (modifierBits.control) {
+            shortcut += system.isMac ? "^" : modifierStrings.CONTROL;
+        }
+
+        if (modifierBits.alt) {
+            shortcut += system.isMac ? "\u2325" : modifierStrings.ALT;
+        }
+
+        if (modifierBits.shift) {
+            shortcut += "\u21E7";
+        }
+
+        if (key) {
+            shortcut += key.toString().toUpperCase();
+        }
+
+        return " " + shortcut + "\u00a0\u00a0\u00a0\u00a0";
+    };
+    
+    /**
+     * Make list global shortcuts so search store can create search options
+     * 
+     * @private
+     * @return {Immutable.List.<object>}
+    */
+    var _globalShortcutSearchOptions = function () {
+        var shortcutStore = this.flux.store("shortcut");
+        var shortcuts = shortcutStore.getState().shortcuts;
+        var shortcutCommands = [];
+
+        shortcuts.forEach(function (shortcut) {
+            var shortcutUI = _getGlobalShortcutString(shortcut);
+            // Presence of a name indicates it not a contextual global shortcut
+            if (shortcut.name) {
+                shortcutCommands.push({
+                    // Symbol() is often used as the id for shortcuts if no id is explicitly dictated.
+                    // The ids are used as keys in a flattened list of search results, therefore must be a unique string
+                    id: shortcut.name,
+                    // Shown in the UI
+                    name: shortcut.name,
+                    // Shown in the UI
+                    pathInfo: shortcutUI,
+                    iconID: "menu-commands",
+                    category: ["GLOBAL_SHORTCUT"]
+                });
+            }
+        });
+
+        return Immutable.List(shortcutCommands);
+    };
+ 
+    /**
+     * Perform menu command when its item is confirmed in search
+     *
+     * @private
+     * @param {string} id ID of menu command
+    */
+    var _confirmShortcut = function (id) {
+        shortcutActions._executeShortcut.call(this, id);
+    };
+
+    /**
      * Find SVG class for menu commands
      * If this needs to vary based on the item, use category list as parameter 
      * (see getSVGCallback type in search store)
@@ -191,5 +270,22 @@ define(function (require, exports) {
         this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, menuCommandPayload);
     };
 
+    /**
+     * Register global shortcut info for search
+     */
+    var _registerGlobalShortcutSearch = function () {
+        var globalShortcutPayload = {
+            "type": "GLOBAL_SHORTCUT",
+            "getOptions": _globalShortcutSearchOptions.bind(this),
+            "filters": Immutable.List.of("GLOBAL_SHORTCUT"),
+            "handleExecute": _confirmShortcut.bind(this),
+            "shortenPaths": false,
+            "getSVGClass": _getSVGClass
+        };
+
+        this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, globalShortcutPayload);
+    };
+
+    exports._registerGlobalShortcutSearch = _registerGlobalShortcutSearch;
     exports.registerMenuCommandSearch = registerMenuCommandSearch;
 });
