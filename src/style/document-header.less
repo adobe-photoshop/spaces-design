@@ -117,9 +117,11 @@
 
 .icon-header-buttons .button-simple.button-plus {
     // When a button is enabled and inactive (default)
+    background: none;
     fill: @icon-inactive;
-    margin-right: 2rem;
-
+    width: 4.8rem;
+    height: 4.4rem;
+    
     &:hover {
         fill: @icon-inactive;
     }
@@ -139,6 +141,19 @@
 
         &:hover {
             fill: @focus-highlight;
+        }
+    }
+    // button-simple button-simple__active button-plus tool-maskmode
+    &.button-simple__active.tool-maskmode {
+        background: @focus-highlight;
+        
+        svg {
+            fill: white;
+
+            &:hover {
+                background: @focus-highlight;
+                fill: white;
+            }
         }
     }
 }

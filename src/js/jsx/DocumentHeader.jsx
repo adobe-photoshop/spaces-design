@@ -301,21 +301,21 @@ define(function (require, exports, module) {
                     <div className="icon-header">
                         <div className="icon-header-buttons">
                             <Button
-                                className="button-plus search-button"
-                                title={nls.localize("strings.TOOLTIPS.SEARCH")}
-                                onClick={this._toggleSearch}
-                                active={this.state.searchActive}>
-                                <SVGIcon
-                                    CSSID="layer-search-app" />
-                            </Button>
-                            <Button
-                                className="button-plus"
+                                className="button-plus tool-maskmode"
                                 title={nls.localize("strings.TOOLTIPS.VECTOR_MASK_MODE")}
                                 onClick={this._changeMaskMode}
                                 disabled={maskDisabled}
                                 active={this.state.maskModeActive}>
                                 <SVGIcon
                                     CSSID="tool-maskmode" />
+                            </Button>
+                            <Button
+                                className="button-plus search-button"
+                                title={nls.localize("strings.TOOLTIPS.SEARCH")}
+                                onClick={this._toggleSearch}
+                                active={this.state.searchActive}>
+                                <SVGIcon
+                                    CSSID="layer-search-app" />
                             </Button>
                             <Button
                                 className="button-plus export-button"
