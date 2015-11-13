@@ -397,6 +397,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.JS_UI],
         transfers: [history.decrementHistory],
+        post: [layers._verifyLayerIndex],
         modal: true
     };
 
@@ -423,6 +424,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.JS_UI],
         transfers: [history.incrementHistory],
+        post: [layers._verifyLayerIndex],
         modal: true
     };
 
