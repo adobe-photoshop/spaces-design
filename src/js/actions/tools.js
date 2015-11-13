@@ -620,7 +620,7 @@ define(function (require, exports) {
             }
         }
 
-        var nonVectorModeLayer = !currentDocument.layers.canHaveVectorMask(currentLayer);
+        var nonVectorModeLayer = !currentDocument.layers.selectedLayersCanHaveVectorMask;
 
         if (vectorMaskMode && nonVectorModeLayer) {
             return Promise.resolve();
