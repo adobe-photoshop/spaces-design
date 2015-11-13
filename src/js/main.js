@@ -34,8 +34,13 @@ define(function (require, exports) {
         strings = require("i18n!nls/strings"),
         global = require("js/util/global");
 
-    var Main = React.createFactory(MainCl),
-        controller = new FluxController();
+    /**
+     * The application controller. Holds the internal Fluxxor.Flux instance.
+     *
+     * @private
+     * @type {?FluxController}
+     */
+    var _controller;
 
     /**
      * Handle error events from the FluxController instance. These errors are
@@ -96,14 +101,17 @@ define(function (require, exports) {
             }
         }
 
-        controller.on("error", _handleControllerError);
+        var Main = React.createFactory(MainCl);
+
+        _controller = new FluxController();
+        _controller.on("error", _handleControllerError);
 
         var props = {
-            controller: controller,
-            flux: controller.flux
+            controller: _controller,
+            flux: _controller.flux
         };
 
-        var startupPromises = controller.start()
+        var startupPromises = _controller.start()
             .then(function () {
                 log.debug("Actions loaded: %dms", Date.now() - startTime);
             });
@@ -124,8 +132,8 @@ define(function (require, exports) {
      * Shut down the application.
      */
     var shutdown = function () {
-        controller.off("error", _handleControllerError);
-        controller.stop();
+        _controller.off("error", _handleControllerError);
+        _controller.stop();
     };
 
     /**
@@ -134,7 +142,7 @@ define(function (require, exports) {
      * @return {FluxController}
      */
     var getController = function () {
-        return controller;
+        return _controller;
     };
 
     if (global.debug) {
