@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2015 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"), 
@@ -24,13 +24,19 @@
 define(function (require, exports) {
     "use strict";
 
-    var log = require("js/util/log");
+    var objectUtil = require("js/util/object");
 
-    var dictionaries = {
+    /**
+     * All the dictionaries we use for our strings
+     *
+     * @private
+     * @type {Object}
+     */
+    var _dictionaries = {
         strings: require("i18n!nls/strings"),
-        menus: require("i18n!nls/menu"),
-        macShortcuts: require("i18n!nls/shortcuts-mac"),
-        winShortcuts: require("i18n!nls/shortcuts-win")
+        menu: require("i18n!nls/menu"),
+        "shortcuts-mac": require("i18n!nls/shortcuts-mac"),
+        "shortcuts-win": require("i18n!nls/shortcuts-win")
     };
         
     /**
@@ -38,23 +44,16 @@ define(function (require, exports) {
      * which will help us replace it easily later on
      *
      * @param {string} key of the format [file].[dot-separated-key]
-     *
      * @return {string|Object} Translated, or fallen-back string, or the sub-tree for the ID
      */
     var localize = function (key) {
-        var value = dictionaries;
+        var value = objectUtil.getPath(_dictionaries, key);
 
-        key.split(".").some(function (part) {
-            if (value.hasOwnProperty(part)) {
-                value = value[part];
-            } else {
-                value = null;
-                log.warn("Translation not found for: " + key);
-                return true;
-            }
-        });
-
-        return value;
+        if (!value) {
+            throw new Error("Translation not found for: " + key);
+        } else {
+            return value;
+        }
     };
 
     exports.localize = localize;

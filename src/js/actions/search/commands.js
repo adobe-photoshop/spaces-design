@@ -46,7 +46,7 @@ define(function (require, exports) {
     var _getLabelForEntry = function (id) {
         var parts = id.split("."),
             resultPath = "",
-            nlsPath = "menus",
+            nlsPath = "menu",
             menuTree;
 
         parts.forEach(function (part) {

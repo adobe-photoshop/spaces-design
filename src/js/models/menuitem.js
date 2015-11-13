@@ -103,14 +103,14 @@ define(function (require, exports, module) {
 
     /**
      * Get a localized label for the given menu entry ID
-     * Helper to nls.localize, prepending "menus." to the menu item ID
+     * Helper to nls.localize, prepending "menu." to the menu item ID
      *
      * @private
      * @param {string} id
      * @return {string|Object.<string, string>}
      */
     var _getLabelForEntry = function (id) {
-        return nls.localize("menus." + id);
+        return nls.localize("menu." + id);
     };
 
     /**
