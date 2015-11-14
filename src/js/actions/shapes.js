@@ -39,7 +39,7 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         collection = require("js/util/collection"),
         layerActionsUtil = require("js/util/layeractions"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     /**
      * Merges shape specific options into given options
@@ -197,7 +197,7 @@ define(function (require, exports) {
             strokeObj = contentLayerLib.setStroke(layerRef, stroke),
             strokeJSObj = stroke.toJS();
 
-        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE);
+        options = _mergeOptions(options, document, nls.localize("strings.ACTIONS.SET_STROKE"));
 
         // toJS gets rid of color so we re-insert it here
         strokeJSObj.color = stroke.color.normalizeAlpha();
@@ -257,7 +257,7 @@ define(function (require, exports) {
             enabledChanging = true;
         }
 
-        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE_COLOR);
+        options = _mergeOptions(options, document, nls.localize("strings.ACTIONS.SET_STROKE_COLOR"));
 
         var colorPromise,
             psColor,
@@ -365,7 +365,7 @@ define(function (require, exports) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeAlignment(layerRef, alignmentType);
 
-        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE_ALIGNMENT);
+        options = _mergeOptions(options, document, nls.localize("strings.ACTIONS.SET_STROKE_ALIGNMENT"));
 
         if (_allStrokesExist(layers)) {
             // optimistically dispatch the change event    
@@ -410,7 +410,7 @@ define(function (require, exports) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setStrokeOpacity(layerRef, opacity);
 
-        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE_OPACITY);
+        options = _mergeOptions(options, document, nls.localize("strings.ACTIONS.SET_STROKE_OPACITY"));
 
         if (_allStrokesExist(layers)) {
             // optimistically dispatch the change event    
@@ -453,7 +453,7 @@ define(function (require, exports) {
         var layerRef = contentLayerLib.referenceBy.current,
             strokeObj = contentLayerLib.setShapeStrokeWidth(layerRef, width);
 
-        options = _mergeOptions(options, document, strings.ACTIONS.SET_STROKE_WIDTH);
+        options = _mergeOptions(options, document, nls.localize("strings.ACTIONS.SET_STROKE_WIDTH"));
 
         if (_allStrokesExist(layers)) {
             // dispatch the change event    
@@ -536,7 +536,7 @@ define(function (require, exports) {
                 options.coalesce),
             colorPromise;
 
-        options = _mergeOptions(options, document, strings.ACTIONS.SET_FILL_COLOR);
+        options = _mergeOptions(options, document, nls.localize("strings.ACTIONS.SET_FILL_COLOR"));
 
         if (!color && options.enabled) {
             // If color is not supplied, we want each layer to use it's own color
@@ -587,7 +587,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setFillOpacity = function (document, layers, opacity, options) {
-        options = _mergeOptions(options, document, strings.ACTIONS.SET_FILL_OPACITY);
+        options = _mergeOptions(options, document, nls.localize("strings.ACTIONS.SET_FILL_OPACITY"));
             
         var dispatchPromise = _fillChangeDispatch.call(this,
                 document,
@@ -630,7 +630,7 @@ define(function (require, exports) {
                 documentID: document.id,
                 history: {
                     newState: true,
-                    name: strings.ACTIONS.COMBINE_SHAPES
+                    name: nls.localize("strings.ACTIONS.COMBINE_SHAPES")
                 }
             };
 
@@ -643,7 +643,7 @@ define(function (require, exports) {
 
         var options = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.COMBINE_SHAPES,
+                    name: nls.localize("strings.ACTIONS.COMBINE_SHAPES"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             },

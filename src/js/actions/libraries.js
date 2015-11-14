@@ -40,7 +40,7 @@ define(function (require, exports) {
 
     var events = require("js/events"),
         locks = require("js/locks"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         pathUtil = require("js/util/path"),
         log = require("js/util/log"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -935,7 +935,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 return this.transfer(historyActions.newHistoryState, currentDocument.id,
-                    strings.ACTIONS.APPLY_LAYER_STYLE);
+                    nls.localize("strings.ACTIONS.APPLY_LAYER_STYLE"));
             })
             .then(function (path) {
                 var layerIDs = collection.pluck(selectedUnlockedLayers, "id"),
@@ -943,7 +943,7 @@ define(function (require, exports) {
                     placeObj = layerEffectAdapter.applyLayerStyleFile(layerRef, path),
                     options = {
                         historyStateInfo: {
-                            name: strings.ACTIONS.APPLY_LAYER_STYLE,
+                            name: nls.localize("strings.ACTIONS.APPLY_LAYER_STYLE"),
                             target: documentLib.referenceBy.id(currentDocument.id)
                         }
                     };
@@ -993,7 +993,7 @@ define(function (require, exports) {
             applyObj = textLayerAdapter.applyTextStyle(layerRef, styleData),
             options = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.APPLY_TEXT_STYLE,
+                    name: nls.localize("strings.ACTIONS.APPLY_TEXT_STYLE"),
                     target: documentLib.referenceBy.id(currentDocument.id)
                 }
             };
@@ -1001,7 +1001,7 @@ define(function (require, exports) {
         var playPromise = layerActionsUtil.playSimpleLayerActions(currentDocument, textLayers, applyObj,
                 false, options),
             historyPromise = this.transfer(historyActions.newHistoryState, currentDocument.id,
-                strings.ACTIONS.APPLY_TEXT_STYLE);
+                nls.localize("strings.ACTIONS.APPLY_TEXT_STYLE"));
 
         return Promise.join(playPromise, historyPromise)
             .bind(this)
@@ -1036,7 +1036,7 @@ define(function (require, exports) {
             vectorLayers = selectedLayers.filter(function (l) { return l.isVector(); }),
             transactionOpts = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.APPLY_LIBRARY_COLOR,
+                    name: nls.localize("strings.ACTIONS.APPLY_LIBRARY_COLOR"),
                     target: docAdapter.referenceBy.id(currentDocument.id)
                 }
             };

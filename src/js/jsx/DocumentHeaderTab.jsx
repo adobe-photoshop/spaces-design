@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
         
-    var strings = require("i18n!nls/strings");
+    var nls = require("js/util/nls");
 
     var DocumentHeaderTab = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool")],
@@ -66,7 +66,7 @@ define(function (require, exports, module) {
             if (this.props.unsupported) {
                 warning = (
                     <span
-                        title={strings.TOOLTIPS.UNSUPPORTED_FEATURES}
+                        title={nls.localize("strings.TOOLTIPS.UNSUPPORTED_FEATURES")}
                         className="document-controls__unsupported">
                         !
                     </span>

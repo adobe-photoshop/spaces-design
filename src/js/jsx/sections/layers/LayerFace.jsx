@@ -39,7 +39,7 @@ define(function (require, exports, module) {
         TextInput = require("jsx!js/jsx/shared/TextInput"),
         system = require("js/util/system"),
         svgUtil = require("js/util/svg"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     /**
      * Function for checking whether React component should update
@@ -310,12 +310,14 @@ define(function (require, exports, module) {
             // one region to the other. This is used to make the titles to be different,
             // and hence to force the tooltip to be invalidated.
             var tooltipPadding = _.repeat("\u200b", layerIndex),
-                tooltipTitle = layer.isArtboard ? strings.LAYER_KIND.ARTBOARD : strings.LAYER_KIND[layer.kind],
+                tooltipTitle = layer.isArtboard ?
+                    nls.localize("strings.LAYER_KIND.ARTBOARD") :
+                    nls.localize("strings.LAYER_KIND." + layer.kind),
                 iconID = svgUtil.getSVGClassFromLayer(layer),
                 showHideButton = layer.isBackground ? null : (
                     <ToggleButton
                         disabled={this.props.disabled}
-                        title={strings.TOOLTIPS.SET_LAYER_VISIBILITY + tooltipPadding}
+                        title={nls.localize("strings.TOOLTIPS.SET_LAYER_VISIBILITY") + tooltipPadding}
                         className="face__button_visibility"
                         size="column-2"
                         buttonType={ layer.visible ? "layer-visible" : "layer-not-visible" }
@@ -327,12 +329,12 @@ define(function (require, exports, module) {
 
             if (layer.isSmartObject()) {
                 if (layer.smartObject.linkMissing) {
-                    tooltipTitle += " : " + strings.LAYER_KIND_ALERTS.LINK_MISSING;
+                    tooltipTitle += " : " + nls.localize("strings.LAYER_KIND_ALERTS.LINK_MISSING");
                     iconClassModifier = "face__kind__error";
                 }
 
                 if (layer.smartObject.linkChanged) {
-                    tooltipTitle += " : " + strings.LAYER_KIND_ALERTS.LINK_CHANGED;
+                    tooltipTitle += " : " + nls.localize("strings.LAYER_KIND_ALERTS.LINK_CHANGED");
                     iconClassModifier = "face__kind__warning";
                 }
             }
@@ -378,7 +380,7 @@ define(function (require, exports, module) {
                         </span>
                         <ToggleButton
                             disabled={this.props.disabled}
-                            title={strings.TOOLTIPS.LOCK_LAYER + tooltipPadding}
+                            title={nls.localize("strings.TOOLTIPS.LOCK_LAYER") + tooltipPadding}
                             className="face__button_locked"
                             size="column-2"
                             buttonType={layer.locked ? "toggle-lock" : "toggle-unlock"}

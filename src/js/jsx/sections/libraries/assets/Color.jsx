@@ -29,7 +29,7 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         _ = require("lodash");
 
-    var strings = require("i18n!nls/strings"),
+    var nls = require("js/util/nls"),
         ColorModel = require("js/models/color"),
         headlights = require("js/util/headlights");
 
@@ -119,7 +119,7 @@ define(function (require, exports, module) {
                     key={element.id}>
                     <div className="libraries__asset__preview"
                          style={{ background: hexValue }}
-                         title={strings.LIBRARIES.CLICK_TO_APPLY}
+                         title={nls.localize("strings.LIBRARIES.CLICK_TO_APPLY")}
                          onClick={this._handleApply}/>
                 </AssetSection>
             );

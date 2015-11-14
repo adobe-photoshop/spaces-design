@@ -28,7 +28,7 @@ define(function (require, exports) {
 
     var events = require("js/events"),
         collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         libraryActions = require("js/actions/libraries"),
         librariesUtil = require("js/util/libraries");
 
@@ -98,7 +98,7 @@ define(function (require, exports) {
                     libMap = libMap.push({
                         id: id,
                         name: title,
-                        pathInfo: library.name + ": " + strings.SEARCH.CATEGORIES[categoryKey],
+                        pathInfo: library.name + ": " + nls.localize("strings.SEARCH.CATEGORIES." + categoryKey),
                         iconID: _getSVGClass([categoryKey]),
                         category: ["LIBRARY", library.id.replace(/-/g, "."), categoryKey]
                     });

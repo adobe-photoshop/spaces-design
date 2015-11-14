@@ -25,7 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         classnames = require("classnames");
 
     var TitleHeader = React.createClass({
@@ -43,9 +43,9 @@ define(function (require, exports, module) {
 
             if (this.props.onDoubleClick && !this.props.disabled) {
                 if (this.props.visible) {
-                    workingTitle += strings.TOOLTIPS.SECTION_COLLAPSE;
+                    workingTitle += nls.localize("strings.TOOLTIPS.SECTION_COLLAPSE");
                 } else {
-                    workingTitle += strings.TOOLTIPS.SECTION_EXPAND;
+                    workingTitle += nls.localize("strings.TOOLTIPS.SECTION_EXPAND");
                 }
             }
 

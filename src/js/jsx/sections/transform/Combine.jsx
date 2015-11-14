@@ -31,7 +31,7 @@ define(function (require, exports, module) {
     var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection");
 
     var Combine = React.createClass({
@@ -98,25 +98,25 @@ define(function (require, exports, module) {
                         disabled={disabled}
                         onClick={this._combineUnion}
                         onFocus={this.props.onFocus}
-                        title={strings.TOOLTIPS.UNITE_SHAPE} />
+                        title={nls.localize("strings.TOOLTIPS.UNITE_SHAPE")} />
                     <SplitButtonItem
                         iconId="xor-subtract"
                         disabled={disabled}
                         onClick={this._combineSubtract}
                         onFocus={this.props.onFocus}
-                        title={strings.TOOLTIPS.SUBTRACT_SHAPE} />
+                        title={nls.localize("strings.TOOLTIPS.SUBTRACT_SHAPE")} />
                     <SplitButtonItem
                         iconId="xor-intersect"
                         disabled={disabled}
                         onClick={this._combineIntersect}
                         onFocus={this.props.onFocus}
-                        title={strings.TOOLTIPS.INTERSECT_SHAPE} />
+                        title={nls.localize("strings.TOOLTIPS.INTERSECT_SHAPE")} />
                     <SplitButtonItem
                         iconId="xor-difference"
                         disabled={disabled}
                         onClick={this._combineDifference}
                         onFocus={this.props.onFocus}
-                        title={strings.TOOLTIPS.DIFFERENCE_SHAPE} />
+                        title={nls.localize("strings.TOOLTIPS.DIFFERENCE_SHAPE")} />
                 </SplitButtonList>
             );
         }

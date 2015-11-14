@@ -46,7 +46,7 @@ define(function (require, exports) {
         policy = require("./policy"),
         ui = require("./ui"),
         shortcuts = require("./shortcuts"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         layerActionsUtil = require("js/util/layeractions"),
         system = require("js/util/system"),
         headlights = require("js/util/headlights"),
@@ -638,7 +638,7 @@ define(function (require, exports) {
             policyPromise,
             createMaskOptions = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.ADD_VECTOR_MASK,
+                    name: nls.localize("strings.ACTIONS.ADD_VECTOR_MASK"),
                     target: documentLib.referenceBy.id(currentDocument.id)
                 }
             };
@@ -657,7 +657,7 @@ define(function (require, exports) {
                     vectorMaskEnabled: true,
                     history: {
                         newState: true,
-                        name: strings.ACTIONS.ADD_VECTOR_MASK
+                        name: nls.localize("strings.ACTIONS.ADD_VECTOR_MASK")
                     }
                 },
                 dispatchAdd = this.dispatchAsync(events.document.history.ADD_VECTOR_MASK_TO_LAYER, payload),
@@ -707,7 +707,7 @@ define(function (require, exports) {
                     if (currentLayer.vectorMaskEnabled && currentLayer.vectorMaskEmpty) {
                         var deleteMaskOptions = {
                             historyStateInfo: {
-                                name: strings.ACTIONS.DELETE_VECTOR_MASK,
+                                name: nls.localize("strings.ACTIONS.DELETE_VECTOR_MASK"),
                                 target: documentLib.referenceBy.id(currentDocument.id)
                             }
                         },
@@ -724,7 +724,7 @@ define(function (require, exports) {
                                         vectorMaskEnabled: false,
                                         history: {
                                             newState: true,
-                                            name: strings.ACTIONS.DELETE_VECTOR_MASK
+                                            name: nls.localize("strings.ACTIONS.DELETE_VECTOR_MASK")
                                         }
                                     },
                                     event = events.document.history.REMOVE_VECTOR_MASK_FROM_LAYER;

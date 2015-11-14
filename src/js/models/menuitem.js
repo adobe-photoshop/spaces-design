@@ -30,7 +30,7 @@ define(function (require, exports, module) {
 
     var UI = require("adapter").ps.ui;
 
-    var menuLabels = require("i18n!nls/menu"),
+    var nls = require("js/util/nls"),
         keyutil = require("js/util/key"),
         global = require("js/util/global");
     
@@ -103,24 +103,14 @@ define(function (require, exports, module) {
 
     /**
      * Get a localized label for the given menu entry ID
+     * Helper to nls.localize, prepending "menu." to the menu item ID
      *
      * @private
      * @param {string} id
      * @return {string|Object.<string, string>}
      */
     var _getLabelForEntry = function (id) {
-        var parts = id.split("."),
-            labels = menuLabels;
-
-        parts.forEach(function (part) {
-            if (!labels.hasOwnProperty(part)) {
-                throw new Error("Missing label for menu entry: " + id);
-            }
-
-            labels = labels[part];
-        });
-
-        return labels;
+        return nls.localize("menu." + id);
     };
 
     /**

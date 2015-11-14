@@ -31,7 +31,7 @@ define(function (require, exports) {
     var MainCl = require("jsx!js/jsx/Main"),
         FluxController = require("./fluxcontroller"),
         log = require("js/util/log"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         global = require("js/util/global");
 
     /**
@@ -58,7 +58,7 @@ define(function (require, exports) {
         if (global.debug) {
             shutdown();
         } else {
-            var dialogMessage = strings.ERR.UNRECOVERABLE;
+            var dialogMessage = nls.localize("strings.ERR.UNRECOVERABLE");
             adapter.abort({ message: dialogMessage }, function (err) {
                 var message = err instanceof Error ? (err.stack || err.message) : err;
 

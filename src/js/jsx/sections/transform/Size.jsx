@@ -33,7 +33,7 @@ define(function (require, exports, module) {
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection");
 
     var MAX_LAYER_SIZE = 32000,
@@ -190,7 +190,7 @@ define(function (require, exports, module) {
                     <ToggleButton
                         size="column-4"
                         buttonType={disconnectedClass}
-                        title={strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM}
+                        title={nls.localize("strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM")}
                         selected={proportional}
                         selectedButtonType = {connectedClass}
                         onClick={this._handleProportionChange} />
@@ -203,10 +203,10 @@ define(function (require, exports, module) {
             return (
                 <div className="control-group__horizontal">
                     <Label
-                        title={strings.TOOLTIPS.SET_WIDTH}
+                        title={nls.localize("strings.TOOLTIPS.SET_WIDTH")}
                         className="label__medium__left-aligned"
                         size="column-1">
-                        {strings.TRANSFORM.W}
+                        {nls.localize("strings.TRANSFORM.W")}
                     </Label>
                     <NumberInput
                         disabled={disabled}
@@ -221,8 +221,8 @@ define(function (require, exports, module) {
                     <Label
                         size="column-1"
                         className="label__medium__left-aligned"
-                        title={strings.TOOLTIPS.SET_HEIGHT}>
-                        {strings.TRANSFORM.H}
+                        title={nls.localize("strings.TOOLTIPS.SET_HEIGHT")}>
+                        {nls.localize("strings.TRANSFORM.H")}
                     </Label>
                     <div className="column-6">
                     <NumberInput

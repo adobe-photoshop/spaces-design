@@ -36,7 +36,7 @@ define(function (require, exports, module) {
     var DocumentHeaderTab = require("jsx!js/jsx/DocumentHeaderTab"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization"),
         searchStore = require("js/stores/search"),
         headlights = require("js/util/headlights"),
@@ -302,7 +302,7 @@ define(function (require, exports, module) {
                         <div className="icon-header-buttons">
                             <Button
                                 className="button-plus search-button"
-                                title={strings.TOOLTIPS.SEARCH}
+                                title={nls.localize("strings.TOOLTIPS.SEARCH")}
                                 onClick={this._toggleSearch}
                                 active={this.state.searchActive}>
                                 <SVGIcon
@@ -310,7 +310,7 @@ define(function (require, exports, module) {
                             </Button>
                             <Button
                                 className="button-plus"
-                                title={strings.TOOLTIPS.VECTOR_MASK_MODE}
+                                title={nls.localize("strings.TOOLTIPS.VECTOR_MASK_MODE")}
                                 onClick={this._changeMaskMode}
                                 disabled={maskDisabled}
                                 active={this.state.maskModeActive}>
@@ -319,7 +319,7 @@ define(function (require, exports, module) {
                             </Button>
                             <Button
                                 className="button-plus export-button"
-                                title={strings.TOOLTIPS.EXPORT_DIALOG}
+                                title={nls.localize("strings.TOOLTIPS.EXPORT_DIALOG")}
                                 disabled={exportDisabled}
                                 active={this.state.exportActive}
                                 onClick={this._openExportPanel}>

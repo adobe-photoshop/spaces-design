@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         _ = require("lodash"),
         classnames = require("classnames");
 
-    var strings = require("i18n!nls/strings");
+    var nls = require("js/util/nls");
 
     var LibraryDialog = require("jsx!js/jsx/sections/libraries/LibraryDialog"),
         TextInput = require("jsx!js/jsx/shared/TextInput"),
@@ -206,15 +206,15 @@ define(function (require, exports, module) {
                             {subTitle}
                         </div>
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.LIBRARY_SEND_LINK}
+                            title={nls.localize("strings.TOOLTIPS.LIBRARY_SEND_LINK")}
                             iconId="libraries-share"
                             onClick={this._handleElementButtonClicked.bind(this, "share-public-link", shareLink)} />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE}
+                            title={nls.localize("strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE")}
                             iconId="libraries-viewonsite"
                             onClick={this._handleElementButtonClicked.bind(this, "view-online", elementLink)} />
                          <SplitButtonItem
-                            title={strings.TOOLTIPS.LIBRARY_DELETE}
+                            title={nls.localize("strings.TOOLTIPS.LIBRARY_DELETE")}
                             iconId="delete"
                             onClick={this._handleDelete} />
                     </SplitButtonList>
@@ -238,10 +238,10 @@ define(function (require, exports, module) {
             }
 
             if (this.state.deleting) {
-                var dialogTitle = strings.LIBRARIES.DELETE_ASSET.replace("%s", element.name),
-                    body = strings.LIBRARIES.DELETE_ASSET_CONFIRM.replace("%s", element.name),
-                    cancelBtn = strings.LIBRARIES.BTN_CANCEL,
-                    confirmBtn = strings.LIBRARIES.BTN_DELETE;
+                var dialogTitle = nls.localize("strings.LIBRARIES.DELETE_ASSET").replace("%s", element.name),
+                    body = nls.localize("strings.LIBRARIES.DELETE_ASSET_CONFIRM").replace("%s", element.name),
+                    cancelBtn = nls.localize("strings.LIBRARIES.BTN_CANCEL"),
+                    confirmBtn = nls.localize("strings.LIBRARIES.BTN_DELETE");
 
                 deleteConfirmationDialog = (
                     <LibraryDialog

@@ -33,7 +33,7 @@ define(function (require, exports, module) {
     var LayerEffect = require("js/models/effects/layereffect"),
         StrokeEffect = require("js/models/effects/stroke"),
         collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         headlights = require("js/util/headlights"),
         synchronization = require("js/util/synchronization");
 
@@ -208,11 +208,11 @@ define(function (require, exports, module) {
                     "effect-list__stroke__disabled": this.props.readOnly
                 });
                 
-            var strokeColorTooltip = strings.TOOLTIPS.SET_STROKE_EFFECT_COLOR,
-                strokeToggleTooltip = strings.TOOLTIPS.TOGGLE_STROKE_EFFECT,
-                strokeDeleteTooltip = strings.TOOLTIPS.DELETE_STROKE_EFFECT,
-                strokeSizeTooltip = strings.TOOLTIPS.SET_STROKE_EFFECT_SIZE,
-                strokeSizeLabel = strings.STYLE.STROKE_EFFECT.SIZE;
+            var strokeColorTooltip = nls.localize("strings.TOOLTIPS.SET_STROKE_EFFECT_COLOR"),
+                strokeToggleTooltip = nls.localize("strings.TOOLTIPS.TOGGLE_STROKE_EFFECT"),
+                strokeDeleteTooltip = nls.localize("strings.TOOLTIPS.DELETE_STROKE_EFFECT"),
+                strokeSizeTooltip = nls.localize("strings.TOOLTIPS.SET_STROKE_EFFECT_SIZE"),
+                strokeSizeLabel = nls.localize("strings.STYLE.STROKE_EFFECT.SIZE");
 
             // Dialog IDs
             var blendModelistID = "stroke-blendmodes-" + this.props.index + "-" + this.props.document.id,
@@ -336,7 +336,7 @@ define(function (require, exports, module) {
             } else {
                 strokesContent = (
                     <div className="effect-list__list-container__mixed">
-                        <i>{strings.STYLE.STROKE_EFFECT.MIXED}</i>
+                        <i>{nls.localize("strings.STYLE.STROKE_EFFECT.MIXED")}</i>
                     </div>
                 );
             }
@@ -345,7 +345,7 @@ define(function (require, exports, module) {
                 <div className="effect-list__container">
                     <header className="section-header section-header__no-padding">
                         <h3 className="section-title__subtitle">
-                            {strings.STYLE.STROKE_EFFECT.TITLE}
+                            {nls.localize("strings.STYLE.STROKE_EFFECT.TITLE")}
                         </h3>
                     </header>
                     <div className="effect-list__list-container">

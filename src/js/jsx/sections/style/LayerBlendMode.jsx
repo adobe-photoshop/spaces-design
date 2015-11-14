@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var BlendMode = require("jsx!./BlendMode"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
         collection = require("js/util/collection");
@@ -93,7 +93,7 @@ define(function (require, exports, module) {
                     listID={listID}
                     modes={modes}
                     handleChange={this._handleChange}
-                    mixedTitle={strings.TRANSFORM.MIXED}
+                    mixedTitle={nls.localize("strings.TRANSFORM.MIXED")}
                     allGroups={allGroups} />
             );
         }

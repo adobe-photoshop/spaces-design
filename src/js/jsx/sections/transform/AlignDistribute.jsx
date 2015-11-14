@@ -31,7 +31,7 @@ define(function (require, exports, module) {
     var SplitButton = require("jsx!js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     var AlignDistribute = React.createClass({
         mixins: [FluxMixin],
@@ -204,49 +204,49 @@ define(function (require, exports, module) {
                 <div className="header-alignment">
                     <SplitButtonList>
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.DISTRIBUTE_HORIZONTALLY}
+                            title={nls.localize("strings.TOOLTIPS.DISTRIBUTE_HORIZONTALLY")}
                             className="button-align-distribute"
                             iconId="distribute-horizontally"
                             disabled={distributeDisabled}
                             onClick={this._distributeX} />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.DISTRIBUTE_VERTICALLY}
+                            title={nls.localize("strings.TOOLTIPS.DISTRIBUTE_VERTICALLY")}
                             className="button-align-distribute"
                             iconId="distribute-vertically"
                             disabled={distributeDisabled}
                             onClick={this._distributeY} />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.ALIGN_LEFT}
+                            title={nls.localize("strings.TOOLTIPS.ALIGN_LEFT")}
                             className="button-align-distribute"
                             iconId="align-left"
                             disabled={alignDisabled}
                             onClick={this._alignLeft} />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.ALIGN_CENTER}
+                            title={nls.localize("strings.TOOLTIPS.ALIGN_CENTER")}
                             className="button-align-distribute"
                             iconId="align-center"
                             disabled={alignDisabled}
                             onClick={this._alignHCenter} />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.ALIGN_RIGHT}
+                            title={nls.localize("strings.TOOLTIPS.ALIGN_RIGHT")}
                             className="button-align-distribute"
                             iconId="align-right"
                             disabled={alignDisabled}
                             onClick={this._alignRight} />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.ALIGN_TOP}
+                            title={nls.localize("strings.TOOLTIPS.ALIGN_TOP")}
                             className="button-align-distribute"
                             iconId="align-top"
                             disabled={alignDisabled}
                             onClick={this._alignTop} />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.ALIGN_MIDDLE}
+                            title={nls.localize("strings.TOOLTIPS.ALIGN_MIDDLE")}
                             className="button-align-distribute"
                             iconId="align-middle"
                             disabled={alignDisabled}
                             onClick={this._alignVCenter} />
                         <SplitButtonItem
-                            title={strings.TOOLTIPS.ALIGN_BOTTOM}
+                            title={nls.localize("strings.TOOLTIPS.ALIGN_BOTTOM")}
                             className="button-align-distribute"
                             iconId="align-bottom"
                             disabled={alignDisabled}

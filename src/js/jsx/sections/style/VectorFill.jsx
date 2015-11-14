@@ -37,7 +37,7 @@ define(function (require, exports, module) {
         FillColor = Fill.FillColor,
         FillVisiblity = Fill.FillVisibility,
         Label = require("jsx!js/jsx/shared/Label"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         classnames = require("classnames");
 
@@ -152,8 +152,8 @@ define(function (require, exports, module) {
                         <Label
                             size="column-4"
                             className={opacityLabelClasses}
-                            title={strings.TOOLTIPS.SET_OPACITY}>
-                            {strings.STYLE.OPACITY}
+                            title={nls.localize("strings.TOOLTIPS.SET_OPACITY")}>
+                            {nls.localize("strings.STYLE.OPACITY")}
                         </Label>
                         <Opacity
                             document={this.props.document}

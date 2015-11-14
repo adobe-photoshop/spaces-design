@@ -52,7 +52,7 @@ define(function (require, exports) {
         locks = require("js/locks"),
         locking = require("js/util/locking"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         global = require("js/util/global"),
         Bounds = require("js/models/bounds");
 
@@ -1220,7 +1220,7 @@ define(function (require, exports) {
             deletePlayObject = layerLib.delete(layerLib.referenceBy.current),
             options = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.DELETE_LAYERS,
+                    name: nls.localize("strings.ACTIONS.DELETE_LAYERS"),
                     target: documentLib.referenceBy.id(documentID)
                 }
             };
@@ -1283,7 +1283,7 @@ define(function (require, exports) {
                     groupname: groupResult.name,
                     history: {
                         newState: true,
-                        name: strings.ACTIONS.GROUP_LAYERS
+                        name: nls.localize("strings.ACTIONS.GROUP_LAYERS")
                     }
                 };
 
@@ -1409,7 +1409,7 @@ define(function (require, exports) {
                 .concat(playObjRec.deleteObjects),
             options = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.UNGROUP_LAYERS,
+                    name: nls.localize("strings.ACTIONS.UNGROUP_LAYERS"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             };
@@ -1617,7 +1617,7 @@ define(function (require, exports) {
                 coalesce: !!options.coalesce,
                 history: {
                     newState: true,
-                    name: strings.ACTIONS.CHANGE_LAYER_OPACITY
+                    name: nls.localize("strings.ACTIONS.CHANGE_LAYER_OPACITY")
                 }
             },
             playObjects = layers.map(function (layer) {
@@ -1631,7 +1631,7 @@ define(function (require, exports) {
         
         var playOptions = _.merge(options, {
             historyStateInfo: {
-                name: strings.ACTIONS.CHANGE_LAYER_OPACITY,
+                name: nls.localize("strings.ACTIONS.CHANGE_LAYER_OPACITY"),
                 target: documentLib.referenceBy.id(document.id),
                 coalesce: !!options.coalesce,
                 suppressHistoryStateNotification: !!options.coalesce
@@ -1774,9 +1774,10 @@ define(function (require, exports) {
 
         var numberRef = (typeof target === "number"),
             targetRef = numberRef ? layerLib.referenceBy.index(target) : layerLib.referenceBy[target],
-            reorderObj = layerLib.reorder(layerRef, targetRef);
+            reorderObj = layerLib.reorder(layerRef, targetRef),
+            historyStateName = nls.localize("strings.ACTIONS.REORDER_LAYERS");
       
-        return this.transfer(historyActions.newHistoryState, document.id, strings.ACTIONS.REORDER_LAYERS)
+        return this.transfer(historyActions.newHistoryState, document.id, historyStateName)
             .bind(this)
             .then(function () {
                 return descriptor.playObject(reorderObj);
@@ -1946,7 +1947,7 @@ define(function (require, exports) {
         
         options = _.merge({}, options, {
             historyStateInfo: {
-                name: strings.ACTIONS.SET_BLEND_MODE,
+                name: nls.localize("strings.ACTIONS.SET_BLEND_MODE"),
                 target: documentLib.referenceBy.id(document.id)
             }
         });
@@ -1966,7 +1967,7 @@ define(function (require, exports) {
             mode: mode,
             history: {
                 newState: true,
-                name: strings.ACTIONS.SET_BLEND_MODE
+                name: nls.localize("strings.ACTIONS.SET_BLEND_MODE")
             }
         };
 
@@ -2002,7 +2003,7 @@ define(function (require, exports) {
                 proportional: proportional,
                 history: {
                     newState: true,
-                    name: strings.ACTIONS.SET_PROPORTIONAL_SCALE
+                    name: nls.localize("strings.ACTIONS.SET_PROPORTIONAL_SCALE")
                 }
             },
             options = {
@@ -2011,7 +2012,7 @@ define(function (require, exports) {
                     quality: "draft"
                 },
                 historyStateInfo: {
-                    name: strings.ACTIONS.SET_PROPORTIONAL_SCALE,
+                    name: nls.localize("strings.ACTIONS.SET_PROPORTIONAL_SCALE"),
                     target: documentLib.referenceBy.id(document.id)
                 }
             };
@@ -2306,7 +2307,7 @@ define(function (require, exports) {
 
         var duplicateOptions = {
             historyStateInfo: {
-                name: strings.ACTIONS.DUPLICATE_LAYERS,
+                name: nls.localize("strings.ACTIONS.DUPLICATE_LAYERS"),
                 target: documentLib.referenceBy.id(document.id)
             }
         };
@@ -2479,7 +2480,7 @@ define(function (require, exports) {
         if (currentLayer.vectorMaskEnabled) {
             var deleteMaskOptions = {
                 historyStateInfo: {
-                    name: strings.ACTIONS.DELETE_VECTOR_MASK,
+                    name: nls.localize("strings.ACTIONS.DELETE_VECTOR_MASK"),
                     target: documentLib.referenceBy.id(currentDocument.id)
                 }
             };
@@ -2492,7 +2493,7 @@ define(function (require, exports) {
                             vectorMaskEnabled: false,
                             history: {
                                 newState: true,
-                                name: strings.ACTIONS.DELETE_VECTOR_MASK
+                                name: nls.localize("strings.ACTIONS.DELETE_VECTOR_MASK")
                             }
                         },
                         event = events.document.history.REMOVE_VECTOR_MASK_FROM_LAYER;

@@ -32,7 +32,7 @@ define(function (require, exports, module) {
 
     var ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         headlights = require("js/util/headlights"),
         collection = require("js/util/collection");
 
@@ -142,7 +142,7 @@ define(function (require, exports, module) {
                     id={colorInputID}
                     className="fill"
                     context={collection.pluck(this.props.layers, "id")}
-                    title={strings.TOOLTIPS.SET_FILL_COLOR}
+                    title={nls.localize("strings.TOOLTIPS.SET_FILL_COLOR")}
                     editable={!this.props.disabled}
                     defaultValue={fill.colors}
                     onChange={this._colorChanged}
@@ -189,7 +189,7 @@ define(function (require, exports, module) {
 
             return (
                 <ToggleButton
-                    title={strings.TOOLTIPS.TOGGLE_FILL}
+                    title={nls.localize("strings.TOOLTIPS.TOGGLE_FILL")}
                     name="toggleFillEnabled"
                     buttonType="layer-not-visible"
                     selected={this.props.fill.enabledFlags}

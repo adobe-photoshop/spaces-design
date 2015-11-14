@@ -49,7 +49,7 @@ define(function (require, exports, module) {
         mathUtil = require("js/util/math"),
         pathUtil = require("js/util/path"),
         collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
     
     /**
      * Strings for labeling search options
@@ -57,8 +57,8 @@ define(function (require, exports, module) {
      * @const
      * @type {object} 
     */
-    var CATEGORIES = strings.SEARCH.CATEGORIES,
-        HEADERS = strings.SEARCH.HEADERS;
+    var CATEGORIES = nls.localize("strings.SEARCH.CATEGORIES"),
+        HEADERS = nls.localize("strings.SEARCH.HEADERS");
 
     /**
      * Unique identifier for the Search Dialog

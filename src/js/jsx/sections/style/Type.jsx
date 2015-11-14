@@ -43,7 +43,7 @@ define(function (require, exports, module) {
         ColorInput = require("jsx!js/jsx/shared/ColorInput"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         Color = require("js/models/color"),
         collection = require("js/util/collection"),
         unit = require("js/util/unit"),
@@ -299,7 +299,7 @@ define(function (require, exports, module) {
                     return layer.kind === layer.layerKinds.TEXT;
                 });
 
-            if (leading === strings.STYLE.TYPE.AUTO_LEADING) {
+            if (leading === nls.localize("strings.STYLE.TYPE.AUTO_LEADING")) {
                 leading = -1;
             }
 
@@ -464,7 +464,7 @@ define(function (require, exports, module) {
                 trackings = collection.pluck(characterStyles, "tracking"),
                 leadings = characterStyles.map(function (characterStyle) {
                     if (!characterStyle || characterStyle.leading === -1) {
-                        return strings.STYLE.TYPE.AUTO_LEADING;
+                        return nls.localize("strings.STYLE.TYPE.AUTO_LEADING");
                     } else {
                         return characterStyle.leading;
                     }
@@ -506,7 +506,7 @@ define(function (require, exports, module) {
                         // Font is missing
                         var uniformValue = collection.uniformValue(postScriptNames);
                         if (uniformValue === null) {
-                            placeholderText = "[" + strings.STYLE.TYPE.MIXED + "]";
+                            placeholderText = "[" + nls.localize("strings.STYLE.TYPE.MIXED") + "]";
                         } else {
                             placeholderText = "[" + postScriptFamilyName + "]";
                         }
@@ -514,10 +514,10 @@ define(function (require, exports, module) {
                     if (postScriptStyleName) {
                         styleTitle = this._getPostScriptFontStyle(postScriptStyleName);
                     } else {
-                        styleTitle = strings.STYLE.TYPE.MIXED_STYLE;
+                        styleTitle = nls.localize("strings.STYLE.TYPE.MIXED_STYLE");
                     }
                 } else {
-                    familyName = strings.STYLE.TYPE.MIXED;
+                    familyName = nls.localize("strings.STYLE.TYPE.MIXED");
                     styleTitle = null;
                 }
             } else {
@@ -551,7 +551,7 @@ define(function (require, exports, module) {
                     .toList();
 
             var typeOverlay = function (colorTiny) {
-                if (familyName === strings.STYLE.TYPE.MIXED) {
+                if (familyName === nls.localize("strings.STYLE.TYPE.MIXED")) {
                     var fillStyle = {
                         height: "100%",
                         width: "100%",
@@ -589,7 +589,7 @@ define(function (require, exports, module) {
                 typefaceListID = "typefaces-" + this.props.document.id,
                 weightListID = "weights-" + this.props.document.id,
                 fillClassNames = classnames("formline", {
-                    "mixed-faces": familyName === strings.STYLE.TYPE.MIXED
+                    "mixed-faces": familyName === nls.localize("strings.STYLE.TYPE.MIXED")
                 }),
                 fillBlendFormline;
 
@@ -610,7 +610,7 @@ define(function (require, exports, module) {
                                 ref="color"
                                 className="color-picker__type"
                                 context={collection.pluck(this.props.document.layers.selected, "id")}
-                                title={strings.TOOLTIPS.SET_TYPE_COLOR}
+                                title={nls.localize("strings.TOOLTIPS.SET_TYPE_COLOR")}
                                 editable={!this.props.disabled}
                                 defaultValue={colors}
                                 opaque={this.state.opaque}
@@ -629,8 +629,8 @@ define(function (require, exports, module) {
                             <Label
                                 size="column-4"
                                 className={"label__medium__left-aligned"}
-                                title={strings.TOOLTIPS.SET_OPACITY}>
-                                {strings.STYLE.OPACITY}
+                                title={nls.localize("strings.TOOLTIPS.SET_OPACITY")}>
+                                {nls.localize("strings.STYLE.OPACITY")}
                             </Label>
                             <Opacity
                                 document={this.props.document}
@@ -690,35 +690,35 @@ define(function (require, exports, module) {
                                     className={"split-button__item__fixed"}
                                     selected={alignment === "left"}
                                     onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.LEFT)}
-                                    title={strings.TOOLTIPS.ALIGN_TYPE_LEFT} />
+                                    title={nls.localize("strings.TOOLTIPS.ALIGN_TYPE_LEFT")} />
                                 <SplitButtonItem
                                     disabled={locked}
                                     iconId="text-center"
                                     className={"split-button__item__fixed"}
                                     selected={alignment === "center"}
                                     onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.CENTER)}
-                                    title={strings.TOOLTIPS.ALIGN_TYPE_CENTER} />
+                                    title={nls.localize("strings.TOOLTIPS.ALIGN_TYPE_CENTER")} />
                                 <SplitButtonItem
                                     disabled={locked}
                                     iconId="text-right"
                                     className={"split-button__item__fixed"}
                                     selected={alignment === "right"}
                                     onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.RIGHT)}
-                                    title={strings.TOOLTIPS.ALIGN_TYPE_RIGHT} />
+                                    title={nls.localize("strings.TOOLTIPS.ALIGN_TYPE_RIGHT")} />
                                 <SplitButtonItem
                                     disabled={locked || !box}
                                     iconId="text-justified"
                                     className={"split-button__item__fixed"}
                                     selected={alignment === "justifyAll"}
                                     onClick={this._handleAlignmentChange.bind(this, textLayer.alignmentTypes.JUSTIFY)}
-                                    title={strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED} />
+                                    title={nls.localize("strings.TOOLTIPS.ALIGN_TYPE_JUSTIFIED")} />
                             </SplitButtonList>
                         </div>
                         <div className="control-group">
                             <Label
                                 size="column-2"
                                 disabled={locked}
-                                title={strings.TOOLTIPS.SET_LETTERSPACING}>
+                                title={nls.localize("strings.TOOLTIPS.SET_LETTERSPACING")}>
                                 <SVGIcon CSSID="text-tracking" />
                             </Label>
                             <NumberInput
@@ -734,7 +734,7 @@ define(function (require, exports, module) {
                             <Label
                                 size="column-2"
                                 disabled={locked}
-                                title={strings.TOOLTIPS.SET_LINESPACING}>
+                                title={nls.localize("strings.TOOLTIPS.SET_LINESPACING")}>
                                 <SVGIcon CSSID="text-leading" />
                             </Label>
                             <NumberInput
@@ -744,7 +744,7 @@ define(function (require, exports, module) {
                                 min={toPixels(MIN_LEADING_PTS)}
                                 max={toPixels(MAX_LEADING_PTS)}
                                 disabled={locked}
-                                special={strings.STYLE.TYPE.AUTO_LEADING}
+                                special={nls.localize("strings.STYLE.TYPE.AUTO_LEADING")}
                                 onChange={this._handleLeadingChange}
                                 valueType="size" />
                         </div>

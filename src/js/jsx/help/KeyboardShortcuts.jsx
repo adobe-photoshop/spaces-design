@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var system = require("js/util/system"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
         
@@ -55,25 +55,36 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * Helper function to translate shortcut related strings
+         *
+         * @private
+         *
+         * @param {string} key Key for the string in strings.KEYBOARD_SHORTCUTS tree
+         * @return {string} Localized result
+         */
+        _translate: function (key) {
+            return nls.localize("strings.KEYBOARD_SHORTCUTS." + key);
+        },
+
         render: function () {
-            var shortcuts = strings.KEYBOARD_SHORTCUTS,
-                holdSelectionInstruction = system.isMac ?
-                    shortcuts.SELECT_TOOL.HOLD_SEL_MAC :
-                    shortcuts.SELECT_TOOL.HOLD_SEL_WIN,
+            var holdSelectionInstruction = system.isMac ?
+                    this._translate("SELECT_TOOL.HOLD_SEL_MAC") :
+                    this._translate("SELECT_TOOL.HOLD_SEL_WIN"),
                 targetLayerInstruction = system.isMac ?
-                    shortcuts.SELECT_TOOL.TARGET_LAYER_MAC :
-                    shortcuts.SELECT_TOOL.TARGET_LAYER_WIN,
+                    this._translate("SELECT_TOOL.TARGET_LAYER_MAC") :
+                    this._translate("SELECT_TOOL.TARGET_LAYER_WIN"),
                 searchInstruction = system.isMac ?
-                    shortcuts.TOOLS.SEARCH_INSTRUCTION_MAC :
-                    shortcuts.TOOLS.SEARCH_INSTRUCTION_WIN,
+                    this._translate("TOOLS.SEARCH_INSTRUCTION_MAC") :
+                    this._translate("TOOLS.SEARCH_INSTRUCTION_WIN"),
                 exportInstruction = system.isMac ?
-                    shortcuts.TOOLS.EXPORT_INSTRUCTION_MAC :
-                    shortcuts.TOOLS.EXPORT_INSTRUCTION_WIN;
+                    this._translate("TOOLS.EXPORT_INSTRUCTION_MAC") :
+                    this._translate("TOOLS.EXPORT_INSTRUCTION_WIN");
             
             return (
                 <div className="keyboard-shortcut__content" onClick={this._dismissDialog}>
                     <div className="keyboard-shortcut__column-1">
-                        <h2 className="keyboard-shortcut__title">{shortcuts.TOOLS_TITLE}</h2>
+                        <h2 className="keyboard-shortcut__title">{this._translate("TOOLS_TITLE")}</h2>
                         <ul className="keyboard-shortcut__list">
                             <li>
                                 <Button>
@@ -81,7 +92,7 @@ define(function (require, exports, module) {
                                 </Button>
                                 <span className="keyboard-shortcut__name">
                                     
-                                    {shortcuts.TOOLS.SELECT}
+                                    {this._translate("TOOLS.SELECT")}
                                 </span>
                                 <span className="keyboard-shortcut__instr">V</span>
                             </li>
@@ -89,61 +100,61 @@ define(function (require, exports, module) {
                                 <Button>
                                     <SVGIcon CSSID="tool-rectangle" />
                                 </Button>
-                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.RECTANGLE}</span>
+                                <span className="keyboard-shortcut__name">{this._translate("TOOLS.RECTANGLE")}</span>
                                 <span className="keyboard-shortcut__instr">R</span>
                             </li>
                             <li>
                                 <Button>
                                     <SVGIcon CSSID="tool-ellipse" />
                                 </Button>
-                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.ELLIPSE}</span>
+                                <span className="keyboard-shortcut__name">{this._translate("TOOLS.ELLIPSE")}</span>
                                 <span className="keyboard-shortcut__instr">E</span>
                             </li>
                             <li>
                                 <Button>
                                     <SVGIcon CSSID="tool-pen" />
                                 </Button>
-                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.PEN}</span>
+                                <span className="keyboard-shortcut__name">{this._translate("TOOLS.PEN")}</span>
                                 <span className="keyboard-shortcut__instr">P</span>
                             </li>
                             <li>
                                 <Button>
                                     <SVGIcon CSSID="tool-typeCreateOrEdit" />
                                 </Button>
-                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.TYPE}</span>
+                                <span className="keyboard-shortcut__name">{this._translate("TOOLS.TYPE")}</span>
                                 <span className="keyboard-shortcut__instr">T</span>
                             </li>
                             <li>
                                 <Button>
                                     <SVGIcon CSSID="tool-eyedropper" />
                                 </Button>
-                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.SAMPLER}</span>
+                                <span className="keyboard-shortcut__name">{this._translate("TOOLS.SAMPLER")}</span>
                                 <span className="keyboard-shortcut__instr">I</span>
                             </li>
                             <li>
                                 <span className="keyboard-shortcut__name">
-                                    &nbsp;&nbsp;&nbsp;&nbsp;{shortcuts.TOOLS.SAMPLER_EFFECTS}
+                                    &nbsp;&nbsp;&nbsp;&nbsp;{this._translate("TOOLS.SAMPLER_EFFECTS")}
                                 </span>
                                 <span className="keyboard-shortcut__instr">
-                                    {shortcuts.TOOLS.SAMPLER_INSTRUCTION_EFFECTS}
+                                    {this._translate("TOOLS.SAMPLER_INSTRUCTION_EFFECTS")}
                                 </span>
                             </li>
                             <li>
                                 <span className="keyboard-shortcut__name">
-                                    &nbsp;&nbsp;&nbsp;&nbsp;{shortcuts.TOOLS.SAMPLER_HUD}
+                                    &nbsp;&nbsp;&nbsp;&nbsp;{this._translate("TOOLS.SAMPLER_HUD")}
                                 </span>
                                 <span className="keyboard-shortcut__instr">
-                                    {shortcuts.TOOLS.SAMPLER_INSTRUCTION_HUD}
+                                    {this._translate("TOOLS.SAMPLER_INSTRUCTION_HUD")}
                                 </span>
                             </li>
                         </ul>
-                        <h2 className="keyboard-shortcut__title">{shortcuts.MORE_TITLE}</h2>
+                        <h2 className="keyboard-shortcut__title">{this._translate("MORE_TITLE")}</h2>
                         <ul className="keyboard-shortcut__list">
                             <li>
                                 <Button>
                                     <SVGIcon CSSID="layer-search-app" />
                                 </Button>
-                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.SEARCH}</span>
+                                <span className="keyboard-shortcut__name">{this._translate("TOOLS.SEARCH")}</span>
                                 <span className="keyboard-shortcut__instr">
                                     {searchInstruction}
                                 </span>
@@ -152,14 +163,14 @@ define(function (require, exports, module) {
                                 <Button>
                                     <SVGIcon CSSID="tool-maskmode" />
                                 </Button>
-                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.MASKMODE}</span>
+                                <span className="keyboard-shortcut__name">{this._translate("TOOLS.MASKMODE")}</span>
                                 <span className="keyboard-shortcut__instr">M</span>
                             </li>
                             <li>
                                 <Button>
                                     <SVGIcon CSSID="extract-all" />
                                 </Button>
-                                <span className="keyboard-shortcut__name">{shortcuts.TOOLS.EXPORT}</span>
+                                <span className="keyboard-shortcut__name">{this._translate("TOOLS.EXPORT")}</span>
                                 <span className="keyboard-shortcut__instr">
                                     {exportInstruction}
                                 </span>
@@ -167,43 +178,43 @@ define(function (require, exports, module) {
                         </ul>
                     </div>
                     <div className="keyboard-shortcut__column-2">
-                        <h2 className="keyboard-shortcut__title">{shortcuts.SELECT_TITLE}</h2>
+                        <h2 className="keyboard-shortcut__title">{this._translate("SELECT_TITLE")}</h2>
                         <ul className="keyboard-shortcut__list">
                             <li>
                                 <span className="keyboard-shortcut__name">
-                                    {shortcuts.SELECT_TOOL.TARGET}
+                                    {this._translate("SELECT_TOOL.TARGET")}
                                 </span>
                                 <span className="keyboard-shortcut__instr">
-                                    {shortcuts.SELECT_TOOL.TARGET_INSTRUCTION}
+                                    {this._translate("SELECT_TOOL.TARGET_INSTRUCTION")}
                                 </span>
                             </li>
                             <li>
                                 <span className="keyboard-shortcut__name">
-                                    {shortcuts.SELECT_TOOL.EDIT_PATH}
+                                    {this._translate("SELECT_TOOL.EDIT_PATH")}
                                 </span>
                                 <span className="keyboard-shortcut__instr">
-                                    {shortcuts.SELECT_TOOL.EDIT_PATH_INSTRUCTION}
+                                    {this._translate("SELECT_TOOL.EDIT_PATH_INSTRUCTION")}
                                 </span>
                             </li>
                             <li>
                                 <span className="keyboard-shortcut__name">
-                                    {shortcuts.SELECT_TOOL.EDIT_SMART}
+                                    {this._translate("SELECT_TOOL.EDIT_SMART")}
                                 </span>
                                 <span className="keyboard-shortcut__instr">
-                                    {shortcuts.SELECT_TOOL.EDIT_SMART_INSTRUCTION}
+                                    {this._translate("SELECT_TOOL.EDIT_SMART_INSTRUCTION")}
                                 </span>
                             </li>
                             <li>
                                 <span className="keyboard-shortcut__name">
-                                    {shortcuts.SELECT_TOOL.BACK_OUT}
+                                    {this._translate("SELECT_TOOL.BACK_OUT")}
                                 </span>
                                 <span className="keyboard-shortcut__instr">
-                                    {shortcuts.SELECT_TOOL.BACK_OUT_INSTRUCTION}
+                                    {this._translate("SELECT_TOOL.BACK_OUT_INSTRUCTION")}
                                 </span>
                             </li>
                             <li>
                                 <span className="keyboard-shortcut__name">
-                                    {shortcuts.SELECT_TOOL.HOLD_SELECTION}
+                                    {this._translate("SELECT_TOOL.HOLD_SELECTION")}
                                 </span>
                                 <span className="keyboard-shortcut__instr">
                                     {holdSelectionInstruction}
@@ -211,7 +222,7 @@ define(function (require, exports, module) {
                             </li>
                             <li>
                                 <span className="keyboard-shortcut__name">
-                                    {shortcuts.SELECT_TOOL.TARGET_LAYER}
+                                    {this._translate("SELECT_TOOL.TARGET_LAYER")}
                                 </span>
                                 <span className="keyboard-shortcut__instr">
                                     {targetLayerInstruction}

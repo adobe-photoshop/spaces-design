@@ -32,7 +32,7 @@ define(function (require, exports, module) {
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
         NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         uiUtil = require("js/util/ui");
 
@@ -148,10 +148,10 @@ define(function (require, exports, module) {
             return (
                 <div className="control-group__horizontal">
                     <Label
-                        title={strings.TOOLTIPS.SET_X_POSITION}
+                        title={nls.localize("strings.TOOLTIPS.SET_X_POSITION")}
                         className="label__medium__left-aligned"
                         size="column-1">
-                        {strings.TRANSFORM.X}
+                        {nls.localize("strings.TRANSFORM.X")}
                     </Label>
                     <NumberInput
                         disabled={disabled}
@@ -164,10 +164,10 @@ define(function (require, exports, module) {
                     <Gutter
                         size="column-4" />
                     <Label
-                        title={strings.TOOLTIPS.SET_Y_POSITION}
+                        title={nls.localize("strings.TOOLTIPS.SET_Y_POSITION")}
                         className="label__medium__left-aligned"
                         size="column-1">
-                        {strings.TRANSFORM.Y}
+                        {nls.localize("strings.TRANSFORM.Y")}
                     </Label>
                     <NumberInput
                         disabled={disabled}

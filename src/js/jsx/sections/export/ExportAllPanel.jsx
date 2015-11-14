@@ -37,7 +37,7 @@ define(function (require, exports, module) {
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
 
-    var strings = require("i18n!nls/strings"),
+    var nls = require("js/util/nls"),
         svgUtil = require("js/util/svg"),
         collection = require("js/util/collection"),
         gridSort = require("js/util/gridsort"),
@@ -263,13 +263,13 @@ define(function (require, exports, module) {
 
             var exportButton = serviceBusy ?
                 (<SVGIcon CSSID="loader" viewbox="0 0 16 16" iconPath="" />)
-                : strings.EXPORT.BUTTON_EXPORT;
+                : nls.localize("strings.EXPORT.BUTTON_EXPORT");
 
             return (
                 <div className={panelClassnames}>
                     <TitleHeader
                         className="dialog-header"
-                        title={strings.TITLE_EXPORT} />
+                        title={nls.localize("strings.TITLE_EXPORT")} />
                     <div className="exports-panel__two-column">
                         <div className="exports-panel__asset-list__container">
                             <div className="exports-panel__asset-list__quick-selection">
@@ -279,14 +279,14 @@ define(function (require, exports, module) {
                                         onChange={this._setLayersExportEnabled.bind(this, artboardsSorted)} />
                                 </div>
                                 <div className="checkbox-label">
-                                    {strings.EXPORT.EXPORT_LIST_ALL_ARTBOARDS}
+                                    {nls.localize("strings.EXPORT.EXPORT_LIST_ALL_ARTBOARDS")}
                                 </div>
                                 <div className="column-4"></div>
                                 <CheckBox
                                         className="control-group__vertical"
                                         checked={useArtboardPrefix}
                                         onChange={this._setUseArtboardPrefix} />
-                                    {strings.EXPORT.USE_PREFIX}
+                                    {nls.localize("strings.EXPORT.USE_PREFIX")}
                             </div>
                             <div className="exports-panel__asset-list__list">
                                 {allArtboardsExportComponents}
@@ -301,7 +301,7 @@ define(function (require, exports, module) {
                                         checked={allNonABLayersExportEnabled}
                                         onChange={this._setLayersExportEnabled.bind(this, nonABLayersFiltered)} />
                                 </div>
-                                {strings.EXPORT.EXPORT_LIST_ALL_ASSETS}
+                                {nls.localize("strings.EXPORT.EXPORT_LIST_ALL_ASSETS")}
                             </div>
 
                             <div className="exports-panel__asset-list__list">

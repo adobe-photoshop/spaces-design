@@ -30,7 +30,7 @@ define(function (require, exports, module) {
         classnames = require("classnames");
         
     var libraryUtil = require("js/util/libraries"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         headlights = require("js/util/headlights");
         
     var Draggable = require("jsx!js/jsx/shared/Draggable"),
@@ -129,11 +129,11 @@ define(function (require, exports, module) {
                 previewTitle;
             
             if (!this.state.renditionPath) {
-                previewTitle = strings.TOOLTIPS.LIBRARY_EMPTY_GRAPHIC;
+                previewTitle = nls.localize("strings.TOOLTIPS.LIBRARY_EMPTY_GRAPHIC");
             } else if (libraryUtil.isEditableGraphic(element)) {
-                previewTitle = strings.TOOLTIPS.LIBRARY_EDITABLE_GRAPHIC;
+                previewTitle = nls.localize("strings.TOOLTIPS.LIBRARY_EDITABLE_GRAPHIC");
             } else {
-                previewTitle = strings.TOOLTIPS.LIBRARY_NONEDITABLE_GRAPHIC;
+                previewTitle = nls.localize("strings.TOOLTIPS.LIBRARY_NONEDITABLE_GRAPHIC");
             }
 
             var classNames = classnames({

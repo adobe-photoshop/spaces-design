@@ -28,7 +28,7 @@ define(function (require, exports) {
     var tinycolor = require("tinycolor"),
         _ = require("lodash");
         
-    var strings = require("i18n!nls/strings"),
+    var nls = require("js/util/nls"),
         libraryActions = require("js/actions/libraries");
     
     var _REPRESENTATION_TO_EXTENSION_MAP;
@@ -106,12 +106,12 @@ define(function (require, exports) {
                     var leading;
                     
                     if (style && style.adbeAutoLeading) {
-                        leading = strings.LIBRARIES.LEADING_AUTO;
+                        leading = nls.localize("strings.LIBRARIES.LEADING_AUTO");
                     } else if (style && style.lineHeight && style.lineHeight.value) {
                         leading = (Math.round(style.lineHeight.value * 100) / 100) + style.lineHeight.type;
                     }
                     
-                    return leading ? strings.LIBRARIES.LEADING.replace("%s", leading) : null;
+                    return leading ? nls.localize("strings.LIBRARIES.LEADING").replace("%s", leading) : null;
                 
                 case "tracking":
                     var tracking;
@@ -122,7 +122,7 @@ define(function (require, exports) {
                         tracking = style.letterSpacing.value * 1000;
                     }
                     
-                    return tracking ? strings.LIBRARIES.TRACKING.replace("%s", tracking) : null;
+                    return tracking ? nls.localize("strings.LIBRARIES.TRACKING").replace("%s", tracking) : null;
                 
             }
         });

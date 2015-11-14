@@ -39,7 +39,7 @@ define(function (require, exports, module) {
     var mathUtil = require("js/util/math"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
-        strings = require("i18n!nls/strings");
+        nls = require("js/util/nls");
 
     /**
      * The options for the scale datalist
@@ -203,7 +203,7 @@ define(function (require, exports, module) {
                     </div>
                     <Button
                         className="control-group__vertical button-toggle"
-                        title={strings.TOOLTIPS.EXPORT_REMOVE_ASSET}
+                        title={nls.localize("strings.TOOLTIPS.EXPORT_REMOVE_ASSET")}
                         onClick={this._handleDeleteClick}>
                         <SVGIcon CSSID="delete" />
                     </Button>
@@ -251,22 +251,22 @@ define(function (require, exports, module) {
                 <div className="layer-exports__header" >
                     <div className="formline formline__space-between">
                         <Label
-                            title={strings.EXPORT.TITLE_SCALE}
+                            title={nls.localize("strings.EXPORT.TITLE_SCALE")}
                             size="column-4"
                             className="label__medium__left-aligned scale-title">
-                            {strings.EXPORT.TITLE_SCALE}
+                            {nls.localize("strings.EXPORT.TITLE_SCALE")}
                         </Label>
                         <Label
-                            title={strings.EXPORT.TITLE_SUFFIX}
+                            title={nls.localize("strings.EXPORT.TITLE_SUFFIX")}
                             size="column-8"
                             className="label__medium__left-aligned">
-                            {strings.EXPORT.TITLE_SUFFIX}
+                            {nls.localize("strings.EXPORT.TITLE_SUFFIX")}
                         </Label>
                         <Label
-                            title={strings.EXPORT.TITLE_SETTINGS}
+                            title={nls.localize("strings.EXPORT.TITLE_SETTINGS")}
                             size="column-8"
                             className="label__medium__left-aligned">
-                            {strings.EXPORT.TITLE_SETTINGS}
+                            {nls.localize("strings.EXPORT.TITLE_SETTINGS")}
                         </Label>
                         <div className="column-2"></div>
                     </div>

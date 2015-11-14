@@ -40,7 +40,7 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         locking = require("js/util/locking"),
         math = require("js/util/math"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         layerActionsUtil = require("js/util/layeractions"),
         synchronization = require("js/util/synchronization");
 
@@ -152,7 +152,7 @@ define(function (require, exports) {
             modal = this.flux.store("tool").getModalToolState();
 
         var setFacePlayObject = textLayerLib.setPostScript(layerRefs, postscript),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE, modal),
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_FACE"), modal),
             setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
             updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
 
@@ -223,7 +223,7 @@ define(function (require, exports) {
             modal = this.flux.store("tool").getModalToolState();
 
         var setFacePlayObject = textLayerLib.setFace(layerRefs, family, style),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_FACE, modal),
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_FACE"), modal),
             setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
             updatePromise = this.transfer(updateFace, document, layers, family, style);
 
@@ -302,7 +302,7 @@ define(function (require, exports) {
             opaqueColor = normalizedColor.opaque(),
             playObject = textLayerLib.setColor(layerRefs, opaqueColor),
             modal = this.flux.store("tool").getModalToolState(),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_COLOR,
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_COLOR"),
                 modal, options.coalesce, options);
 
         if (!options.ignoreAlpha) {
@@ -386,7 +386,7 @@ define(function (require, exports) {
         size = math.clamp(size, PS_MIN_FONT_SIZE, PS_MAX_FONT_SIZE);
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_SIZE, modal),
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_SIZE"), modal),
             setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions),
             updatePromise = this.transfer(updateSize, document, layers, size);
 
@@ -454,7 +454,7 @@ define(function (require, exports) {
             psTracking = tracking / 1000; // PS expects tracking values that are 1/1000 what is shown in the UI
 
         var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, psTracking),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_TRACKING, modal),
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_TRACKING"), modal),
             setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions),
             updatePromise = this.transfer(updateTracking, document, layers, tracking);
 
@@ -526,7 +526,7 @@ define(function (require, exports) {
         }
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_LEADING, modal),
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_LEADING"), modal),
             setLeadingPromise = locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions),
             updatePromise = this.transfer(updateLeading, document, layers, leading);
 
@@ -592,7 +592,7 @@ define(function (require, exports) {
             modal = this.flux.store("tool").getModalToolState();
 
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.SET_TYPE_ALIGNMENT,
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_ALIGNMENT"),
                 modal, false, options),
             setAlignmentPromise = locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions),
             transferPromise = this.transfer(updateAlignment, document, layers, alignment);
@@ -672,7 +672,7 @@ define(function (require, exports) {
             textLayerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             applyObjects = [],
             modal = this.flux.store("tool").getModalToolState(),
-            typeOptions = _getTypeOptions(document.id, strings.ACTIONS.APPLY_TEXT_STYLE,
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.APPLY_TEXT_STYLE"),
                 modal, actionOptions.coalesce, actionOptions);
 
         applyObjects.push(textLayerLib.applyTextStyle(textLayerRefs, style));
@@ -697,7 +697,7 @@ define(function (require, exports) {
         var playPromise = layerActionsUtil.playSimpleLayerActions(document, targetLayers,
                 applyObjects, true, typeOptions),
             historyPromise = this.transfer(historyActions.newHistoryState, document.id,
-                strings.ACTIONS.APPLY_TEXT_STYLE);
+                nls.localize("strings.ACTIONS.APPLY_TEXT_STYLE"));
 
         return Promise.join(playPromise, historyPromise)
             .bind(this)

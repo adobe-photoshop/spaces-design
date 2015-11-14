@@ -40,7 +40,7 @@ define(function (require, exports) {
         globalUtil = require("js/util/global"),
         objUtil = require("js/util/object"),
         collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         log = require("js/util/log"),
         global = require("js/util/global"),
         ExportAsset = require("js/models/exportasset"),
@@ -115,7 +115,7 @@ define(function (require, exports) {
 
         var playOptions = suppressHistory ? undefined : {
                 historyStateInfo: {
-                    name: strings.ACTIONS.MODIFY_EXPORT_ASSETS,
+                    name: nls.localize("strings.ACTIONS.MODIFY_EXPORT_ASSETS"),
                     target: documentLib.referenceBy.id(documentID)
                 }
             };
@@ -174,7 +174,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var _exportAsset = function (document, layer, assetIndex, asset, baseDir, prefix) {
-        var baseName = layer ? layer.name : document.nameWithoutExtension || strings.EXPORT.EXPORT_DOCUMENT_FILENAME,
+        var baseName = (layer ? layer.name : document.nameWithoutExtension) ||
+                nls.localize("strings.EXPORT.EXPORT_DOCUMENT_FILENAME"),
             fileName = baseName + asset.suffix,
             _layers = layer ? Immutable.List.of(layer) : null;
 
@@ -258,7 +259,7 @@ define(function (require, exports) {
             assetIndex: assetIndex,
             history: {
                 newState: true,
-                name: strings.ACTIONS.MODIFY_EXPORT_ASSETS
+                name: nls.localize("strings.ACTIONS.MODIFY_EXPORT_ASSETS")
             }
         };
 
@@ -387,7 +388,7 @@ define(function (require, exports) {
             assetPropsArray: shiftedPropsArray,
             history: {
                 newState: true,
-                name: strings.ACTIONS.MODIFY_EXPORT_ASSETS
+                name: nls.localize("strings.ACTIONS.MODIFY_EXPORT_ASSETS")
             }
         };
 
@@ -597,7 +598,7 @@ define(function (require, exports) {
                 assetIndex: assetIndex,
                 history: {
                     newState: true,
-                    name: strings.ACTIONS.MODIFY_EXPORT_ASSETS
+                    name: nls.localize("strings.ACTIONS.MODIFY_EXPORT_ASSETS")
                 }
             };
 

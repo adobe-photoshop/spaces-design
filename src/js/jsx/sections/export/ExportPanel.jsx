@@ -37,7 +37,7 @@ define(function (require, exports, module) {
         TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
         Button = require("jsx!js/jsx/shared/Button"),
         SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         ExportAsset = require("js/models/exportasset"),
         synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
@@ -231,14 +231,16 @@ define(function (require, exports, module) {
                     if (supportedLayers.isEmpty()) {
                         // Special case: there are selected layers, but none is supported
                         disabled = true;
-                        containerContents = this._messageComponent(strings.EXPORT.ONLY_UNSUPPORTED_LAYERS_SELECTED);
+                        containerContents = this._messageComponent(
+                            nls.localize("strings.EXPORT.ONLY_UNSUPPORTED_LAYERS_SELECTED")
+                        );
                     } else if (documentExports.getUniformAssetsOnly(supportedLayers).isEmpty()) {
                         if (documentExports.layersHaveSomeAssets(supportedLayers)) {
                             // No uniform assets, but SOME assets, so this is a mixed state
-                            containerContents = this._messageComponent(strings.EXPORT.EXPORT_MIXED);
+                            containerContents = this._messageComponent(nls.localize("strings.EXPORT.EXPORT_MIXED"));
                         } else {
                             // The selected+supported layers have no assets what-so-ever
-                            containerContents = this._messageComponent(strings.EXPORT.NO_ASSETS);
+                            containerContents = this._messageComponent(nls.localize("strings.EXPORT.NO_ASSETS"));
                         }
                     }
                 } else {
@@ -271,7 +273,7 @@ define(function (require, exports, module) {
                     className={sectionClasses}
                     onScroll={this._handleScroll}>
                     <TitleHeader
-                        title={strings.TITLE_EXPORT}
+                        title={nls.localize("strings.TITLE_EXPORT")}
                         visible={this.props.visible}
                         disabled={false}
                         onDoubleClick={this.props.onVisibilityToggle}>
@@ -280,7 +282,7 @@ define(function (require, exports, module) {
                             <Button
                                 className="button-plus"
                                 disabled={disabled}
-                                title={strings.TOOLTIPS.EXPORT_ADD_ASSET}
+                                title={nls.localize("strings.TOOLTIPS.EXPORT_ADD_ASSET")}
                                 onClick={this._addAssetClickHandler}>
                                 <SVGIcon
                                     viewbox="0 0 16 16"
@@ -289,7 +291,7 @@ define(function (require, exports, module) {
                             <Button
                                 className="button-iOS"
                                 disabled={disabled}
-                                title={strings.TOOLTIPS.EXPORT_IOS_PRESETS}
+                                title={nls.localize("strings.TOOLTIPS.EXPORT_IOS_PRESETS")}
                                 onClick={this._addAssetClickHandler.bind(this, "IOS")}>
                                 <SVGIcon
                                     viewbox="0 0 24 16"
@@ -298,7 +300,7 @@ define(function (require, exports, module) {
                             <Button
                                 className="button-xdpi"
                                 disabled={disabled}
-                                title={strings.TOOLTIPS.EXPORT_HDPI_PRESETS}
+                                title={nls.localize("strings.TOOLTIPS.EXPORT_HDPI_PRESETS")}
                                 onClick={this._addAssetClickHandler.bind(this, "HDPI")}>
                                 <SVGIcon
                                     viewbox="0 0 28 16"
@@ -307,7 +309,7 @@ define(function (require, exports, module) {
                             <Button
                                 className="button-plus"
                                 disabled={exportDisabled || disabled}
-                                title={strings.TOOLTIPS.EXPORT_EXPORT_ASSETS}
+                                title={nls.localize("strings.TOOLTIPS.EXPORT_EXPORT_ASSETS")}
                                 onClick={this._exportAssetsClickHandler}>
                                 <SVGIcon
                                     CSSID={exportState.serviceBusy ? "loader" : "export"}

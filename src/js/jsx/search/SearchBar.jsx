@@ -34,7 +34,7 @@ define(function (require, exports, module) {
     var os = require("adapter").os;
 
     var collection = require("js/util/collection"),
-        strings = require("i18n!nls/strings"),
+        nls = require("js/util/nls"),
         Datalist = require("jsx!js/jsx/shared/Datalist"),
         headlights = require("js/util/headlights"),
         Button = require("jsx!js/jsx/shared/Button");
@@ -209,7 +209,9 @@ define(function (require, exports, module) {
             if (id) {
                 var currFilter = this.refs.datalist.getInputValue().split(" "),
                 idString = _.map(id, function (idWord) {
-                    var toRemove = strings.SEARCH.CATEGORIES[idWord] || this.state.safeFilterNameMap[idWord];
+                    var category = nls.localize("strings.SEARCH.CATEGORIES." + idWord),
+                        toRemove = category || this.state.safeFilterNameMap[idWord];
+                        
                     if (toRemove) {
                         return toRemove.toLowerCase().replace(" ", "");
                     }
@@ -485,10 +487,10 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var searchStrings = strings.SEARCH,
+            var searchStrings = nls.localize("strings.SEARCH"),
                 noMatchesOption = {
                     id: PLACEHOLDER_ID,
-                    title: strings.SEARCH.NO_OPTIONS,
+                    title: nls.localize("strings.SEARCH.NO_OPTIONS"),
                     type: "placeholder"
                 };
 
