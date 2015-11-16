@@ -38,7 +38,7 @@ define(function (require, exports, module) {
         Droppable = require("jsx!js/jsx/shared/Droppable");
     
     var Scrim = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("dialog", "tool", "ui", "application", "preferences", "draganddrop")],
+        mixins: [FluxMixin, StoreWatchMixin("dialog", "tool", "ui", "application", "preferences")],
 
         /**
          * Dispatches (synthetic) click events from the scrim to the currently
@@ -53,6 +53,12 @@ define(function (require, exports, module) {
             if (tool && tool.onClick) {
                 tool.onClick.call(this, event);
             }
+        },
+        
+        getInitialState: function () {
+            return {
+                isDropTarget: false
+            };
         },
 
         /**
@@ -177,10 +183,7 @@ define(function (require, exports, module) {
                 applicationState = applicationStore.getState(),
                 policyFrames = preferenceStore.getState().get("policyFramesEnabled"),
                 document = applicationStore.getCurrentDocument(),
-                dndState = flux.store("draganddrop").getState(),
-                appIsModal = flux.store("dialog").getState().appIsModal,
-                dragTargets = dndState.dragTargets,
-                isDropTarget = dndState.dropTarget && dndState.dropTarget.key === DroppableScrim.DROPPABLE_KEY;
+                appIsModal = flux.store("dialog").getState().appIsModal;
 
             return {
                 current: toolState.current,
@@ -190,8 +193,6 @@ define(function (require, exports, module) {
                 document: document,
                 activeDocumentInitialized: applicationState.activeDocumentInitialized,
                 recentFilesInitialized: applicationState.recentFilesInitialized,
-                isDragging: !!dragTargets,
-                isDropTarget: isDropTarget,
                 appIsModal: appIsModal
             };
         },
@@ -209,9 +210,7 @@ define(function (require, exports, module) {
                 return false;
             }
             
-            if (this.state.isDragging &&
-                nextState.isDragging &&
-                this.state.isDropTarget === nextState.isDropTarget) {
+            if (this.state.isDropTarget === nextState.isDropTarget) {
                 return false;
             }
 
@@ -244,10 +243,10 @@ define(function (require, exports, module) {
                 overlays = !disabled && this.state.overlaysEnabled,
                 transform = this.state.transform,
                 transformString = this._getTransformString(transform),
-                isDragging = this.state.isDragging,
+                isDropTarget = this.state.isDropTarget,
                 tool = this.state.current;
                 
-            if (!overlays || !transform || isDragging) {
+            if (!overlays || !transform || isDropTarget) {
                 return null;
             }
 
@@ -274,6 +273,47 @@ define(function (require, exports, module) {
 
             return "matrix(" + transformMatrix.join(",") + ")";
         },
+        
+        /**
+         * Handle drop graphic.
+         * 
+         * @private
+         * @type {Droppable~onDrop}
+         */
+        _handleDropGraphic: function (draggedTargets) {
+            this.setState({ isDropTarget: false });
+
+            var flux = this.getFlux(),
+                dndState = flux.store("draganddrop").getState(),
+                dropPosition = dndState.dragPosition,
+                dragGraphic = draggedTargets.first(),
+                uiStore = flux.store("ui"),
+                canvasLocation = uiStore.transformWindowToCanvas(dropPosition.x, dropPosition.y);
+
+            headlights.logEvent("libraries", "element", "place-graphic");
+
+            return flux.actions.libraries.createLayerFromElement(dragGraphic, canvasLocation);
+        },
+        
+        /**
+         * Handle drag enter.
+         * 
+         * @private
+         * @type {Droppable~onDragTargetEnter}
+         */
+        _handleDragTargetEnter: function () {
+            this.setState({ isDropTarget: true });
+        },
+        
+        /**
+         * Handle drag leave.
+         * 
+         * @private
+         * @type {Droppable~onDragTargetLeave}
+         */
+        _handleDragTargetLeave: function () {
+            this.setState({ isDropTarget: false });
+        },
 
         render: function () {
             var document = this.state.document,
@@ -281,7 +321,7 @@ define(function (require, exports, module) {
                 toolOverlay = this._renderToolOverlay(),
                 policyOverlay = this.state.policyFrames ? (<PolicyOverlay/>) : null,
                 guidesOverlay = !disabled ? (<GuidesOverlay/>) : null;
-            
+
             var classNames = classnames({
                 "scrim": true,
                 "scrim-drop": this.state.isDropTarget,
@@ -290,74 +330,30 @@ define(function (require, exports, module) {
 
             // Only the mouse event handlers are attached to the scrim
             return (
-                <div ref="scrim"
-                     className={classNames}
-                     onClick={!disabled && this._handleClick}
-                     onDoubleClick={!disabled && this._handleDoubleClick}
-                     onMouseDown={!disabled && this._handleMouseDown}
-                     onMouseMove={!disabled && this._handleMouseMove}
-                     onMouseUp={!disabled && this._handleMouseUp}
-                     onMouseEnter={!disabled && this.props.onMouseEnterDroppable}
-                     onMouseLeave={!disabled && this.props.onMouseLeaveDroppable}>
-                    <svg width="100%" height="100%">
-                        <g id="overlay" width="100%" height="100%">
-                            {policyOverlay}
-                            {toolOverlay}
-                            {guidesOverlay}
-                        </g>
-                    </svg>
-                </div>
+                <Droppable
+                    accept="graphic"
+                    onDrop={this._handleDropGraphic}
+                    onDragTargetEnter={this._handleDragTargetEnter}
+                    onDragTargetLeave={this._handleDragTargetLeave}>
+                    <div ref="scrim"
+                         className={classNames}
+                         onClick={!disabled && this._handleClick}
+                         onDoubleClick={!disabled && this._handleDoubleClick}
+                         onMouseDown={!disabled && this._handleMouseDown}
+                         onMouseMove={!disabled && this._handleMouseMove}
+                         onMouseUp={!disabled && this._handleMouseUp}>
+                         <svg width="100%" height="100%">
+                             <g id="overlay" width="100%" height="100%">
+                                 {policyOverlay}
+                                 {toolOverlay}
+                                 {guidesOverlay}
+                            </g>
+                        </svg>
+                    </div>
+                </Droppable>
             );
         }
     });
     
-    /**
-     * Droppabl callback. Decide whether the draged graphic asset can be droped.
-     * @return {{valid: boolean, compatible: boolean}} 
-     */
-    var canDropGraphic = function (dropInfo) {
-        var droppableScrim = dropInfo.droppable;
-        
-        return {
-            // Don't allow dropping if the position of the draged targets is not inside the Scrim component.
-            valid: droppableScrim.state.isMouseOver,
-            compatible: droppableScrim.state.isMouseOver
-        };
-    };
-    
-    /**
-     * Droppabl callback. Handle graphic asset drop event.
-     * @return {Promise} 
-     */
-    var handleDropGraphic = function () {
-        var flux = require("js/main").getController().flux,
-            dndState = flux.store("draganddrop").getState(),
-            dropPosition = dndState.dragPosition,
-            dropTarget = dndState.dragTargets.first(),
-            uiStore = flux.store("ui"),
-            canvasLocation = uiStore.transformWindowToCanvas(dropPosition.x, dropPosition.y);
-            
-        headlights.logEvent("libraries", "element", "place-graphic");
-        
-        return flux.actions.libraries.createLayerFromElement(dropTarget, canvasLocation);
-    };
-    
-    /**
-     * Droppable callback. Return required settings that will allow DroppableScrim to work.
-     */
-    var droppableSettings = function () {
-        return {
-            zone: DroppableScrim.DROPPABLE_ZONE,
-            key: DroppableScrim.DROPPABLE_KEY,
-            keyObject: { key: DroppableScrim.DROPPABLE_KEY },
-            isValid: canDropGraphic,
-            handleDrop: handleDropGraphic
-        };
-    };
-    
-    var DroppableScrim = Droppable.createWithComponent(Scrim, droppableSettings);
-    DroppableScrim.DROPPABLE_KEY = "Scrim";
-    DroppableScrim.DROPPABLE_ZONE = -1;
-    
-    module.exports = DroppableScrim;
+    module.exports = Scrim;
 });

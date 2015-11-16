@@ -26,128 +26,142 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        Promise = require("bluebird");
+        
+    var droppableCounter = 0;
 
-    /**
-     * Create a composed Droppoable component
-     * 
-     * The getProps function should return an object of the form:
-     *  {
-     *     key: (Unique key for this droppable),
-     *     keyObject: (Object that is being dropped on),
-     *     validate: (Function that accepts an argument of 
-     *         object being dropped on this keyObject, returns a boolean),
-     *     handleDrop: (Function to handle dropping of object on this droppable)
-     *    }
-     *
-     * @param {ReactComponent} Component Component to wrap
-     * @param {function} getProps function to return an object with the props required by Droppable
-     * @param {function?} isEqual
-     * @param {function?} shouldUpdate
-     * @return {ReactComponent}
-     */
-    var createWithComponent = function (Component, getProps, isEqual, shouldUpdate) {
-        var Droppable = React.createClass({
-            mixins: [FluxMixin],
+    var Droppable = React.createClass({
+        mixins: [FluxMixin],
+        
+        propTypes: {
+            // Type of Draggable that is accepted
+            accept: React.PropTypes.string.isRequired,
 
             /**
-             * Register the droppable component with the draganddrop store.
+             * @callback Draggable~handleDragTargetEnter
+             * @param {Immutable.List.<object>} draggedTargets
+             * @param {{x: number, y:number}} position
              */
-            _register: function () {
-                var flux = this.getFlux(),
-                    options = getProps(this.props),
-                    zone = options.zone,
-                    droppable = {
-                        node: React.findDOMNode(this),
-                        key: options.key,
-                        keyObject: options.keyObject,
-                        isValid: options.isValid,
-                        onDrop: options.handleDrop,
-                        droppable: this
-                    };
-
-                flux.store("draganddrop").registerDroppable(zone, droppable);
-            },
-
-            shouldComponentUpdate: shouldUpdate,
-
-            /**
-             * Get the droppable's registration information.
-             *
-             * Returned object has properties:
-             *     key: (Unique key for this droppable),
-             *     keyObject: (Object that is being dropped on),
-             *     node: (DOM element for this droppable),
-             *     isValid: (Function that accepts an argument of 
-             *         object being dropped on this keyObject, returns a boolean),
-             *     handleDrop: (Function to handle dropping of object on this droppable)
-             *
-             * @return {Array.<object>} with information about registration for easy ingestion into OrderedMap
-             */
-            getRegistration: function () {
-                var options = getProps(this.props);
-
-                return {
-                    key: options.key,
-                    node: React.findDOMNode(this),
-                    isValid: options.isValid,
-                    onDrop: options.handleDrop,
-                    keyObject: options.keyObject
-                };
-            },
-            
-            getInitialState: function () {
-                return { isMouseOver: false };
-            },
-
-            componentDidMount: function () {
-                this._register();
-            },
-
-            componentWillUnmount: function () {
-                var options = getProps(this.props),
-                    flux = this.getFlux();
-
-                flux.store("draganddrop").deregisterDroppable(options.zone, options.key);
-            },
-
-            componentDidUpdate: function (prevProps) {
-                if (isEqual && !isEqual(getProps(this.props).keyObject, getProps(prevProps).keyObject)) {
-                    this._register();
-                }
-            },
+            handleDragTargetEnter: React.PropTypes.func,
             
             /**
-             * Handle mouse enter. To use the "isMouseOver" prop, child component must call the 
-             * "onMouseEnterDroppable" prop to notify a mouse enter event.
-             * @private
+             * @callback Draggable~handleDragTargetMove
+             * @param {Immutable.List.<object>} draggedTargets
+             * @param {{x: number, y:number}} position
              */
-            _handleMouseEnter: function () {
-                this.setState({ isMouseOver: true });
-            },
+            handleDragTargetMove: React.PropTypes.func,
             
             /**
-             * Handle mouse leave. To use the "isMouseOver" prop, child component must call the 
-             * "onMouseLeaveDroppable" prop to notify a mouse leave event.
-             * @private
+             * @callback Draggable~handleDragTargetLeave
+             * @param {Immutable.List.<object>} draggedTargets
+             * @param {{x: number, y:number}} position
              */
-            _handleMouseLeave: function () {
-                this.setState({ isMouseOver: false });
-            },
+            handleDragTargetLeave: React.PropTypes.func,
+            
+            /**
+             * @callback Draggable~handleDrop
+             * @param {Immutable.List.<object>} draggedTargets
+             * @param {{x: number, y:number}} position
+             * @return {Promise}
+             */
+            handleDrop: React.PropTypes.func
+        },
 
-            render: function () {
-                return (
-                    <Component
-                        {...this.props}
-                        isMouseOver={this.isMouseOver}
-                        onMouseEnterDroppable={this._handleMouseEnter}
-                        onMouseLeaveDroppable={this._handleMouseLeave} />
-                );
+        getInitialState: function () {
+            return { isMouseOver: false };
+        },
+
+        componentDidMount: function () {
+            this._droppablID = droppableCounter++;
+            
+            // Mark the child HTML element with the id of the DropTarget, so that 
+            // we can regonize the DropTarget of the element during a mousemove event. 
+            // See "draganddrop._findDropTarget" for details.
+            React.findDOMNode(this).dataset.droppablid = this._droppablID;
+            
+            this.getFlux().store("draganddrop").registerDroppable({
+                id: this._droppablID,
+                accept: this.props.accept,
+                onDrop: this._handleDrop,
+                component: this,
+                handleDragTargetEnter: this._handleDragTargetEnter,
+                handleDragTargetMove: this._handleDragTargetMove,
+                handleDragTargetLeave: this._handleDragTargetLeave
+            });
+        },
+        
+        componentDidUpdate: function () {
+            // The child HTML element may be replaced due to re-rendering. If so, we assign 
+            // the id to the new HTML element.
+            if (!React.findDOMNode(this).dataset.droppablid) {
+                React.findDOMNode(this).dataset.droppablid = this._droppablID;
             }
-        });
+        },
 
-        return Droppable;
-    };
+        componentWillUnmount: function () {
+            this.getFlux().store("draganddrop").deregisterDroppable(this._droppablID);
+        },
+        
+        /**
+         * Handle drop.
+         *
+         * @private
+         * @param {Immutable.List.<object>} dragTargets
+         * @param {{x: number, y: number}} dragPosition
+         * @return {Promise}
+         */
+        _handleDrop: function (dragTargets, dragPosition) {
+            if (this.props.onDrop) {
+                return this.props.onDrop(dragTargets, dragPosition);
+            } else {
+                return Promise.resolve();
+            }
+        },
+        
+        /**
+         * Handle drag enter
+         *
+         * @private
+         * @param {Immutable.List.<object>} draggedTargets
+         * @param {{x: number, y: number}} dragPosition
+         */
+        _handleDragTargetEnter: function (draggedTargets, dragPosition) {
+            if (this.props.onDragTargetEnter) {
+                this.props.onDragTargetEnter(draggedTargets, dragPosition);
+            }
+        },
+        
+        /**
+         * Handle drag move
+         *
+         * @private
+         * @param {Immutable.List.<object>} draggedTargets
+         * @param {{x: number, y: number}} dragPosition
+         */
+        _handleDragTargetMove: function (draggedTargets, dragPosition) {
+            if (this.props.onDragTargetMove) {
+                this.props.onDragTargetMove(draggedTargets, dragPosition);
+            }
+        },
+        
+        /**
+         * Handle drag leave
+         *
+         * @private
+         * @param {Immutable.List.<object>} draggedTargets
+         * @param {{x: number, y: number}} dragPosition
+         */
+        _handleDragTargetLeave: function (draggedTargets, dragPosition) {
+            if (this.props.onDragTargetLeave) {
+                this.props.onDragTargetLeave(draggedTargets, dragPosition);
+            }
+        },
 
-    module.exports = { createWithComponent: createWithComponent };
+        render: function () {
+            return this.props.children;
+        }
+    });
+
+    module.exports = Droppable;
 });

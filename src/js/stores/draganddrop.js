@@ -24,9 +24,22 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Fluxxor = require("fluxxor");
+    var Fluxxor = require("fluxxor"),
+        Promise = require("bluebird"),
+        Immutable = require("immutable");
 
     var events = require("../events");
+    
+    /**
+     * @typedef {object} DropTarget
+     * @property {number} id
+     * @property {string} accept
+     * @property {ReactComponent} component
+     * @property {function} onDrop
+     * @property {function} handleDragTargetEnter
+     * @property {function} handleDragTargetMove
+     * @property {function} handleDragTargetLeave
+     */
 
     /**
      * Holds global state needed by view components to implement drag-and-drop.
@@ -34,30 +47,6 @@ define(function (require, exports, module) {
      * @constructor
      */
     var DragAndDropStore = Fluxxor.createStore({
-
-        /**
-         * All available drop targets, mapped by key, categorized by zone.
-         *
-         * Drop targets are described by a droppable data structure: {
-         *  key: number,
-         *  keyObject: object,
-         *  validate: function:
-         *  onDrop: function(keyObject) 
-         *      function should return a Promise instance to indicate the completion of an onDrop event. 
-         * }
-         * 
-         * @private
-         * @type {Map.<number, Map.<number, object>>}
-         */
-        _dropTargetsByZone: null,
-
-        /**
-         * Drop target keys, orderized by recency, categorized by zone.
-         * 
-         * @private
-         * @type {Map.<number, Array.<number>>}
-         */
-        _dropTargetOrderingsByZone: null,
 
         /**
          * Currently Active drag targets
@@ -76,29 +65,33 @@ define(function (require, exports, module) {
         _dropTarget: null,
         
         /**
-         * Indicates whether _dropTarget is valid for the dragged targets.
+         * Map from the id to the DropTarget.
          * 
+         * @private
+         * @type {Immutable.Map.<string, DropTarget>}
+         */
+        _idToDropTarget: null,
+        
+        /**
+         * Whether the store is processing a drop event.
+         *
          * @private
          * @type {boolean}
          */
-        _hasValidDropTarget: null,
-
-        /**
-         * Past drag target (for maintaining position during render)
-         * 
-         * @private
-         * @type {Object} 
-         */
-        _pastDragTargets: null,
+        _isDropping: null,
         
         /**
          * The initial mouse position when a drag event is triggered.
+         *
+         * @private
          * @type {{x: number, y: number}}
          */
         _initialDragPosition: null,
         
         /**
          * The last mouse position of a drag event.
+         *
+         * @private
          * @type {{x: number, y: number}}
          */
         _dragPosition: null,
@@ -112,8 +105,7 @@ define(function (require, exports, module) {
             );
             
             // These setting attributes should be initialized once.
-            this._dropTargetsByZone = new Map();
-            this._dropTargetOrderingsByZone = new Map();
+            this._idToDropTarget = new Map();
 
             this._handleReset();
         },
@@ -126,85 +118,83 @@ define(function (require, exports, module) {
         _handleReset: function () {
             var hasDragTargets = !!this._dragTargets;
             
-            this._pastDragTargets = null;
-            this._dragTargets = null;
+            this._dragTargetType = null;
+            this._dragTargets = Immutable.List();
             this._dropTarget = null;
             this._hasValidDropTarget = false;
             this._dragPosition = null;
+            this._isDropping = false;
             
             if (hasDragTargets) {
                 this.emit("change");
             }
         },
-
+        
         /**
-         * @return {object}
+         * Find the DropTarget associated with the mouseover HTML element, by comparing the "droppabled" attribute 
+         * of the HTML element and the id of the DropTarget. The "droppablid" attribute is maintained by Droppable 
+         * component. See "Droppable.componentDidMount" for details.
+         *
+         * @private
+         * @param  {HTMLElement} element
+         * @return {?DropTarget}
          */
+        _findDropTarget: function (element) {
+            do {
+                if (element.dataset) {
+                    var droppablID = element.dataset.droppablid,
+                        dropTarget = this._idToDropTarget[droppablID];
+                    
+                    if (dropTarget) {
+                        return dropTarget;
+                    }
+                }
+
+                element = element.parentNode;
+            } while (element);
+
+            return null;
+        },
+
         getState: function () {
             return {
                 dragTargets: this._dragTargets,
                 dropTarget: this._dropTarget,
-                hasValidDropTarget: this._hasValidDropTarget,
                 initialDragPosition: this._initialDragPosition,
-                dragPosition: this._dragPosition,
-                pastDragTargets: this._pastDragTargets
+                dragPosition: this._dragPosition
             };
         },
 
         /**
          * Add a drop target to the given drop zone.
          *
-         * @param {number} zone
-         * @param {object} droppable
+         * @param {DropTarget} dropTarget
          */
-        registerDroppable: function (zone, droppable) {
-            var dropTargets = this._dropTargetsByZone.get(zone);
-            if (!dropTargets) {
-                dropTargets = new Map();
-                this._dropTargetsByZone.set(zone, dropTargets);
-            }
-
-            var dropTargetOrderings = this._dropTargetOrderingsByZone.get(zone);
-            if (!dropTargetOrderings) {
-                dropTargetOrderings = [];
-                this._dropTargetOrderingsByZone.set(zone, dropTargetOrderings);
-            }
-
-            var key = droppable.key;
-            dropTargets.set(key, droppable);
-            dropTargetOrderings.push(key);
+        registerDroppable: function (dropTarget) {
+            this._idToDropTarget[dropTarget.id] = dropTarget;
         },
 
         /**
-         * Remove a drop target (by key) from the given drop zone.
+         * Remove a drop target by id
          *
-         * @param {number} zone
-         * @param {number} key
+         * @param {number} dropTargetID
          */
-        deregisterDroppable: function (zone, key) {
-            var dropTargets = this._dropTargetsByZone.get(zone),
-                dropTargetOrderings = this._dropTargetOrderingsByZone.get(zone);
-
-            if (!dropTargets || !dropTargetOrderings) {
-                throw new Error("Unable to remove droppables from an empty drop target zone");
-            }
-
-            dropTargets.delete(key);
-
-            var index = dropTargetOrderings.indexOf(key);
-            if (index > -1) {
-                dropTargetOrderings.splice(index, 1);
-            }
+        deregisterDroppable: function (dropTargetID) {
+            this._idToDropTarget[dropTargetID] = null;
         },
         
         /**
          * Begin a drag operation with the given drag targets.
          *
+         * @param {string} type
          * @param {Immutalbe.Iterable.<object>} dragTargets
          */
-        startDrag: function (dragTargets, point) {
+        startDrag: function (type, dragTargets, position) {
+            this._dragTargetType = type;
             this._dragTargets = dragTargets;
-            this._initialDragPosition = point;
+            this._dragPosition = position;
+            this._initialDragPosition = position;
+
             // Provide optional way for listening on start-drag event only.
             this.emit("start-drag");
             this.emit("change");
@@ -214,72 +204,58 @@ define(function (require, exports, module) {
          * End the current drag operation.
          */
         stopDrag: function () {
-            var _reset = function () {
-                this._pastDragTargets = this._dragTargets;
-                this._dragTargets = null;
-                this._dropTarget = null;
-                this._hasValidDropTarget = false;
-                this._dragPosition = null; // Removing this causes an offset
-                this.emit("change");
-            }.bind(this);
-            
-            if (this._hasValidDropTarget) {
-                // It uses Promise to get completion confirmation from the onDrop callback before reset everything.
-                // This will keep the dragged target(s) in the "dragging" state until the drop event is completed. 
-                // Otherwise, the target(s) will snap back immediately before they get handled and updated completely.
-                this._dropTarget
-                    .onDrop(this._dropTarget, this._dragTargets)
-                    .then(_reset);
-            } else {
-                _reset();
-            }
-        },
+            var onDropPromise = Promise.resolve();
 
+            if (this._dropTarget) {
+                onDropPromise = this._dropTarget.onDrop(this._dragTargets, this._dragPosition);
+            }
+            
+            this._isDropping = true;
+
+            onDropPromise
+                .bind(this)
+                .then(function () {
+                    this._dragTargetType = null;
+                    this._dragTargets = Immutable.List();
+                    this._dropTarget = null;
+                    this._hasValidDropTarget = false;
+                    this._dragPosition = null; // Removing this causes an offset
+                    this._initialDragPosition = null;
+                    this._isDropping = false;
+                    this.emit("stop-drag");
+                    this.emit("change");
+                });
+        },
+            
         /**
-         * Checks the bounds of all the drop targets for this point
-         * Sets this._dropTarget if an intersection and valid target are found
-         * Sets _dragPosition which is used for moving dragged object on screen 
-         * Emits change event which causes re-render
+         * Update the DropTarget via the current mouseover HTML element, and call DropTarget callbacks.
          *
-         * @param {number} zone
-         * @param {{x: number, y: number}} point Point were event occurred
+         * @param {{x: number, y: number}} position
+         * @param {HTMLElement} mouseOverElement
          */
-        updateDrag: function (zone, point) {
-            var dragTargets = this._dragTargets;
-            if (!dragTargets) {
+        updateDrag: function (position, mouseOverElement) {
+            if (this._isDropping) {
                 return;
             }
+            
+            this._dragPosition = position;
+            
+            var nextDropTarget = this._findDropTarget(mouseOverElement);
 
-            var dropTargets = this._dropTargetsByZone.get(zone),
-                dropTargetOrderings = this._dropTargetOrderingsByZone.get(zone),
-                foundDropTargetIndex = -1;
-        
-            this._dropTarget = null;
-            this._hasValidDropTarget = false;
-            this._dragPosition = point;
+            if (this._dropTarget) {
+                if (this._dropTarget !== nextDropTarget) {
+                    this._dropTarget.handleDragTargetLeave(this._dragTargets, this._dragPosition);
+                    this._dropTarget = null;
+                }
+            }
 
-            dropTargetOrderings.some(function (key, index) {
-                var dropTarget = dropTargets.get(key),
-                    validationInfo = dropTarget.isValid(dropTarget, dragTargets, point),
-                    compatible = validationInfo.compatible,
-                    valid = validationInfo.valid;
-
-                if (!compatible) {
-                    return false;
+            if (nextDropTarget && nextDropTarget.accept === this._dragTargetType) {
+                if (!this._dropTarget) {
+                    nextDropTarget.handleDragTargetEnter(this._dragTargets, this._dragPosition);
                 }
 
-                foundDropTargetIndex = index;
-                
-                this._dropTarget = dropTarget;
-                this._hasValidDropTarget = valid;
-
-                return true;
-            }, this);
-
-            // Move this drop target to the front of the list for the next search
-            if (foundDropTargetIndex > -1) {
-                var removedKeys = dropTargetOrderings.splice(foundDropTargetIndex, 1);
-                dropTargetOrderings.unshift(removedKeys[0]);
+                this._dropTarget = nextDropTarget;
+                this._dropTarget.handleDragTargetMove(this._dragTargets, this._dragPosition);
             }
 
             this.emit("change");

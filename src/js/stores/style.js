@@ -92,7 +92,7 @@ define(function (require, exports, module) {
         /**
          * Returns the style types to be shown at the HUD, if any
          *
-         * @return {object?}
+         * @return {?object}
          */
         getHUDStyles: function () {
             return this._sampleTypes;

@@ -38,8 +38,7 @@ define(function (require, exports, module) {
         Color = require("jsx!./assets/Color"),
         CharacterStyle = require("jsx!./assets/CharacterStyle"),
         LayerStyle = require("jsx!./assets/LayerStyle"),
-        ColorTheme = require("jsx!./assets/ColorTheme"),
-        Scrim = require("jsx!js/jsx/Scrim");
+        ColorTheme = require("jsx!./assets/ColorTheme");
 
     /**
      * List of asset types in the CC libraries packge.
@@ -150,7 +149,6 @@ define(function (require, exports, module) {
                 this.props.onFocus(event);
             }
         },
-        
         /**
          * Handle drag start event of graphic asset.
          *
@@ -161,7 +159,7 @@ define(function (require, exports, module) {
             // to true to prevent unexpected scrolling. 
             this.setState({ hasDraggedItem: true });
         },
-        
+
         /**
          * Handle drag stop event of graphic asset.
          *
@@ -199,8 +197,6 @@ define(function (require, exports, module) {
                         return React.createElement(AssetComponent, {
                             key: element.id,
                             element: element,
-                            keyObject: element,
-                            zone: Scrim.DROPPABLE_ZONE,
                             onSelect: this._handleSelectElement,
                             selected: element === this.state.selectedElement,
                             onDragStart: this._handleDragStart,

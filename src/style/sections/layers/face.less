@@ -29,6 +29,7 @@
 .layer__dummy {
     min-height: 2.5rem;
     max-height: 2.5rem;
+    cursor: default;
 }
 
 .layer__dummy_drop {
@@ -44,10 +45,6 @@
     position: relative;
     padding-left: 1rem;
     padding-right: 1rem;
-}
-
-.face:hover {
-    cursor: pointer;
 }
 
 .face__separator {
@@ -101,10 +98,6 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     cursor: inherit;
 }
 
-.layer-list__dragging .face__name[disabled] {
-    cursor: -webkit-grabbing;
-}
-
 @media (resolution: 1dppx){
     .face__name {
         margin-top: -1px;
@@ -140,11 +133,6 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     }
 }
 
-.layer-list__dragging .face:hover {
-    background-color: transparent;
-    cursor: -webkit-grabbing;
-}
-
 .face__not-visible input[type="text"].face__name {
     color: @item-hover;
     opacity: @label-hidden-opacity;
@@ -159,10 +147,6 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
 }
 
 .face__select_immediate, .face__select_immediate:hover {
-    background-color: @list-select-color;
-}
-
-.layer-list__dragging .face__select_immediate:hover {
     background-color: @list-select-color;
 }
 
@@ -193,6 +177,7 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
 
 .face__drop_target, .face__drop_target:hover {
     background-color: none;
+    cursor: -webkit-grabbing;
 }
 
 .face__select_immediate input[type="text"].face__name {
@@ -229,7 +214,7 @@ input[type="text"].face__name:focus {
 }
 
 .face__drop_target_on {
-    border: .25rem inset @focus-highlight;
+    box-shadow: inset 0px 0px 0px .25rem @focus-highlight;
 }
 
 // Drag state

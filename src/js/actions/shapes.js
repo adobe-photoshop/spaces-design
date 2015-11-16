@@ -231,7 +231,7 @@ define(function (require, exports) {
      * 
      * @param {Document} document
      * @param {Immutable.List.<Layer>} layers list of layers being updating
-     * @param {Color?} color
+     * @param {?Color} color
      * @param {object} options
      * @param {boolean=} options.enabled optional enabled flag, default=true.
      *                                  If supplied, causes a resetBounds afterwards
