@@ -39,19 +39,7 @@ define(function (require) {
 
     var stylesReady = ui.getPSColorStop()
         .then(function (stop) {
-            var link = window.document.createElement("link");
-
-            link.type = "text/css";
-            link.rel = "stylesheet";
-            link.href = "./style/style-" + stop + ".css";
-
-            var linkPromise = new Promise(function (resolve) {
-                link.addEventListener("load", resolve);
-            });
-
-            window.document.head.appendChild(link);
-
-            return linkPromise;
+            window.document.body.classList.add(stop);
         });
 
     Promise.join(windowReady, stylesReady, function () {

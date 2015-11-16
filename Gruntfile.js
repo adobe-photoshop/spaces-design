@@ -56,29 +56,6 @@ module.exports = function (grunt) {
         };
     };
 
-    /**
-     * Get options for LESS compilation parametrized by color stop.
-     *
-     * @param {string} stop
-     * @return {object}
-     */
-    var getLessConfigForStop = function (stop) {
-        var config = {
-            options: {
-                globalVars: {
-                    stop: stop
-                }
-            },
-            files: {}
-        };
-
-        var target = "build/style/style-" + stop + ".css";
-
-        config.files[target] = "src/style/main.less";
-
-        return config;
-    };
-
     grunt.initConfig({
         jshint: {
             options: {
@@ -161,10 +138,11 @@ module.exports = function (grunt) {
             ja: getRequireOptions("ja")
         },
         less: {
-            original: getLessConfigForStop("original"),
-            light: getLessConfigForStop("light"),
-            medium: getLessConfigForStop("medium"),
-            dark: getLessConfigForStop("dark")
+            style: {
+                files: {
+                    "build/style/main.css": "src/style/main.less"
+                }
+            }
         },
         concurrent: {
             test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
