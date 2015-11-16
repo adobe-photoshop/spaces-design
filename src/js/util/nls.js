@@ -26,28 +26,24 @@ define(function (require, exports) {
 
     var objectUtil = require("js/util/object");
 
-    /**
-     * All the dictionaries we use for our strings
-     *
-     * @private
-     * @type {Object}
-     */
-    var _dictionaries = {
-        strings: require("i18n!nls/strings"),
-        menu: require("i18n!nls/menu"),
-        "shortcuts-mac": require("i18n!nls/shortcuts-mac"),
-        "shortcuts-win": require("i18n!nls/shortcuts-win")
-    };
-        
+    // We resolve this in webpack
+    var dictionary = require("nls/dictionary.json");
+
     /**
      * Thin wrapper around i18n so it's centralized
      * which will help us replace it easily later on
+     *
+     * Background: Webpack-i18n uses __(key) and only allows strings
+     * however, we sometimes require the entire localized subtree
+     * So, we build the dictionaries ourselves with fallbacks to English 
+     * during compilation
+     * 
      *
      * @param {string} key of the format [file].[dot-separated-key]
      * @return {string|Object} Translated, or fallen-back string, or the sub-tree for the ID
      */
     var localize = function (key) {
-        var value = objectUtil.getPath(_dictionaries, key);
+        var value = objectUtil.getPath(dictionary, key);
 
         if (!value) {
             throw new Error("Translation not found for: " + key);

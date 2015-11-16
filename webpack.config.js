@@ -56,7 +56,7 @@ var jsConfigs = languages.map(function (lang) {
                     loader: "babel",
                     query: {
                         cacheDirectory: true,
-                        presets: ["es2015", "react"]
+                        presets: ["react"]
                     }
                 },
                 // JSON files are loaded directly to memory
@@ -86,7 +86,7 @@ var jsConfigs = languages.map(function (lang) {
                 // TODO: Look into externalizing React, or see if React 0.14 is plausible
                 "react": path.join(__dirname, "/bower_components/react/react-with-addons.js"),
                 // We alias the localization here
-                "nls": path.join(__dirname, "/src/nls/" + lang),
+                "nls/dictionary.json": path.join(__dirname, "/src/nls/" + lang + ".json"),
                 "file://shared": path.join(__dirname, "/src/vendor")
             },
             extensions: ["", ".js", ".jsx", ".json"]
@@ -116,6 +116,7 @@ var lessConfigs = colorStops.map(function (stop) {
     // Allowing us to build one css file for each color stop
     // TODO MAJOR: Instead of separately building these files, we should build one css file
     //              and change what we use in styles based on color stop
+    //              Note: Eric is working on this on master side, using less scoped imports
     var lessOptions = {
             globalVars: {
                 stop: stop

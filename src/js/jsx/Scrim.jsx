@@ -33,8 +33,7 @@ define(function (require, exports, module) {
     var adapterOS = require("adapter").os,
         headlights = require("js/util/headlights");
 
-    var main = require("js/main"),
-        PolicyOverlay = require("js/jsx/tools/PolicyOverlay"),
+    var PolicyOverlay = require("js/jsx/tools/PolicyOverlay"),
         GuidesOverlay = require("js/jsx/tools/GuidesOverlay"),
         Droppable = require("js/jsx/shared/Droppable");
     
