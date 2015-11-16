@@ -39,7 +39,7 @@ define(function (require) {
 
     var stylesReady = ui.getPSColorStop()
         .then(function (stop) {
-            window.document.body.classList.add(stop);
+            window.document.body.classList.add("color-stop__" + stop);
         });
 
     Promise.join(windowReady, stylesReady, function () {
