@@ -29,11 +29,6 @@ define(function (require) {
     var ui = require("./util/ui"),
         main = require("./main");
 
-    var mainLess = require("text!style/main.less");
-
-    // HACK: we need to fix our imports to support this kind of dynamic loading?
-    mainLess = mainLess.replace(/@import \".\//g, "@import \"./style/");
-
     var windowReady = new Promise(function (resolve) {
         if (window.document.readyState === "complete") {
             resolve();
@@ -44,25 +39,7 @@ define(function (require) {
 
     var stylesReady = ui.getPSColorStop()
         .then(function (stop) {
-            return window.less.render(mainLess, {
-                globalVars: {
-                    "stop": stop
-                }
-            });
-        })
-        .then(function (result) {
-            var style = window.document.createElement("style");
-
-            style.type = "text/css";
-            style.innerHTML = result.css;
-
-            var stylePromise = new Promise(function (resolve) {
-                style.addEventListener("load", resolve);
-            });
-
-            window.document.head.appendChild(style);
-
-            return stylePromise;
+            window.document.body.classList.add("color-stop__" + stop);
         });
 
     Promise.join(windowReady, stylesReady, function () {

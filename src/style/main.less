@@ -23,53 +23,32 @@
 
 @import "./reset.less";
 
-@import "./document-header.less";
-@import "./scrim.less";
-@import "./toolbar.less";
-@import "./panel.less";
-@import "./guard.less";
-
-@import "./shared/animation.less";
-@import "./shared/label.less";
 @import "./shared/colors-shared.less";
-@import "./shared/colors-@{stop}.less";
 
-@import "./shared/compact-stats.less";
-@import "./shared/drop-down.less";
-@import "./shared/icons.less";
-@import "./shared/button.less";
-@import "./shared/gutter.less";
-@import "./shared/number-input.less";
-@import "./shared/color-picker.less";
-@import "./shared/color-input.less";
-@import "./shared/dialog.less";
-@import "./shared/typeface-list.less";
-@import "./shared/scrollbar.less";
-@import "./shared/range.less";
-@import "./shared/title-header.less";
-@import "./shared/text-input.less";
-@import "./shared/select.less";
-@import "./shared/split-button.less";
-@import "./shared/link-list.less";
+html {
+    height: 100%;
+    font-size: @base-10;
+}
 
-@import "./sections/exports/exports.less";
-@import "./sections/layers/face.less";
-@import "./sections/layers/layers-section.less";
-@import "./sections/libraries/libraries-section.less";
-@import "./sections/style/layer-effect.less";
-@import "./sections/style/fill.less";
-@import "./sections/style/glyphs.less";
-@import "./sections/style/lorem-ipsum.less";
-@import "./sections/style/stroke.less";
-@import "./sections/style/style-section.less";
-@import "./sections/transform/align-distribute.less";
-@import "./search/search-bar.less";
+body {
+    font-family: "Adobe Clean";
+    font-weight: normal;
+    text-rendering: geometricPrecision;
+    height: 100%;
+    -webkit-font-feature-settings: "calt", "liga", "clig", "kern", "tnum";
+    font-size: 1.2rem;
+}
 
-@import "./tools/super-select.less";
-@import "./tools/sampler.less";
-@import "./tools/guides.less";
+input {
+    font-weight: normal;
+    font-family: "Adobe Clean";
+    text-rendering: geometricPrecision;
+    -webkit-font-feature-settings: "calt", "liga", "clig", "kern", "tnum";
+}
 
-@import "./help/first-launch.less";
+.hide {
+    display: none;
+}
 
 @font-face {
   font-family: 'Adobe Clean';
@@ -117,115 +96,6 @@
 @text-medium: 1.4rem;
 @text-large: 1.6rem;
 @text-xxlarge: 2.0rem;
-
-.size(@sz) {
-    width: @sz;
-    height: @sz;
-}
-
-.column-size(@sz){
-    width: @sz;
-    height: 2rem;
-}
-
-hr {
-    width: 100%;
-    height: @hairline;
-    border: 0;
-    background: @mid-bg-alt;
-}
-
-[data-scrubby=true] {
-    cursor: col-resize;
-}
-
-textarea,
-input[type="text"] {
-    background-color: transparent;
-    color: @item-active;
-    border-top: none;
-    border-left: none;
-    border-bottom: solid @hairline transparent;
-    border-right: none;
-    border-radius: 0;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-textarea:hover,
-input[type="text"]:hover {
-   color: @item-hover;
-}
-
-input[type="text"] {
-    font-size: 1.4rem;
-    height: 2rem;
-    border-bottom: @hairline solid @underlines;
-
-    &:hover {
-        border-bottom: @hairline solid @item-inactive;            
-    }
-    &:hover:disabled, &:disabled{
-        color: @item-disabled;
-        border-bottom-color: @underlines-disabled;
-    }
-    &:focus{
-        color: @item;
-        border-bottom-color: @focus-highlight;
-    }
-}
-
-input[list]:focus {
-    text-decoration: none;
-}
-
-* {
-
-  box-sizing: border-box;
-  flex-shrink: 0;
-}
-
-*:focus {
-    outline: 0;
-    border: 0;
-    box-shadow: none;
-}
-
-*::selection {
-    background: @text-highlight;
-    border-radius: .2rem;
-}
-
-input[disabled]::selection {
-  color: @item-disabled;
-}
-
-html {
-    height: 100%;
-    font-size: @base-10;
-}
-
-body {
-    font-family: "Adobe Clean";
-    font-weight: normal;
-    text-rendering: geometricPrecision;
-    color: @item-active;
-    height: 100%;
-    -webkit-font-feature-settings: "calt", "liga", "clig", "kern", "tnum";
-    font-size: 1.2rem;
-}
-
-input {
-    font-weight: normal;
-    font-family: "Adobe Clean";
-    text-rendering: geometricPrecision;
-    -webkit-font-feature-settings: "calt", "liga", "clig", "kern", "tnum";
-}
-
-.hide {
-    display: none;
-}
 
 // Standard def displays
 @media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 801px) and (max-device-width: 1280px) {
@@ -280,4 +150,33 @@ input {
 
   html { font-size: @base-11; }
 
+}
+
+/* Setup Color Stops */
+.color-stop__light {
+    @import (multiple) "./shared/colors-light.less";
+    @import (multiple) "./component-styles.less";
+
+    color: @item-active;
+}
+
+.color-stop__dark {
+    @import (multiple) "./shared/colors-dark.less";
+    @import (multiple) "./component-styles.less";
+
+    color: @item-active;
+}
+
+.color-stop__medium {
+    @import (multiple) "./shared/colors-medium.less";
+    @import (multiple) "./component-styles.less";
+
+    color: @item-active;
+}
+
+.color-stop__original {
+    @import (multiple) "./shared/colors-original.less";
+    @import (multiple) "./component-styles.less";
+
+    color: @item-active;
 }
