@@ -1065,7 +1065,7 @@ define(function (require, exports) {
      */
     var rename = function (document, layer, newName) {
         var docRef = documentLib.referenceBy.id(document.id),
-            actionName = strings.ACTIONS.RENAME_LAYER,
+            actionName = nls.localize("strings.ACTIONS.RENAME_LAYER"),
             payload = {
                 documentID: document.id,
                 layerID: layer.id,
@@ -1568,7 +1568,9 @@ define(function (require, exports) {
         }
 
         var docRef = documentLib.referenceBy.id(document.id),
-            actionName = locked ? strings.ACTIONS.LOCK_LAYER : strings.ACTIONS.UNLOCK_LAYER,
+            actionName = locked ?
+                nls.localize("strings.ACTIONS.LOCK_LAYER") :
+                nls.localize("strings.ACTIONS.UNLOCK_LAYER"),
             payload = {
                 documentID: document.id,
                 layerID: layer.id,
@@ -2235,7 +2237,7 @@ define(function (require, exports) {
                     suppressChange: true,
                     history: {
                         newState: true,
-                        name: strings.ACTIONS.CREATE_ARTBOARD
+                        name: nls.localize("strings.ACTIONS.CREATE_ARTBOARD")
                     }
                 };
 
