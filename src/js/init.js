@@ -29,6 +29,8 @@ define(function (require) {
     var ui = require("./util/ui"),
         main = require("./main");
 
+    require("../style/main.less");
+
     var windowReady = new Promise(function (resolve) {
         if (window.document.readyState === "complete") {
             resolve();

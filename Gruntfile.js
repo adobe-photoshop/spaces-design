@@ -32,21 +32,7 @@ module.exports = function (grunt) {
             cwd: "src/nls"
         }, "*");
     
-    /**
-     * Concatenates the json files in the locale folder   
-     *
-     * @param {string} locale
-     * @return {Object} [description]
-     */
-    var i18nGetConcatOptions = function (locale) {
-        return {
-            dest: "src/nls/" + locale + ".json",
-            src: "*.json",
-            cwd: "src/nls/" + locale
-        };
-    };
-
-    var gruntConfig = {
+    grunt.initConfig({
         jshint: {
             options: {
                 jshintrc: true
@@ -119,65 +105,65 @@ module.exports = function (grunt) {
                 newlineMaximum: 1
             }
         },
+        // Preparation tasks
+        // Concatenates the multiple dictionary files
+        // into a single json file per locale
+        "concat-json": {
+            i18n: {
+                files: ALL_LOCALES.map(function (locale) {
+                    return {
+                        dest: "src/nls/" + locale + ".json",
+                        src: "*.json",
+                        cwd: "src/nls/" + locale
+                    };
+                })
+            },
+            options: {
+                space: " "
+            }
+        },
+        // Merges the non-en locale dictionaries with English so any missing string
+        // is replaced by the English one
+        "merge-json": {
+            i18n: {
+                files: ALL_LOCALES.reduce(function (map, locale) {
+                    // No need to merge English
+                    if (locale === "en") {
+                        return map;
+                    }
 
+                    var source = "src/nls/" + locale + ".json",
+                        target = "src/nls/" + locale + ".json";
+
+                    map[target] = ["src/nls/en.json", source];
+                    return map;
+                }, {})
+            },
+            options: {
+                space: " "
+            }
+        },
+        // Utility tasks
         clean: {
             build: ["./build"],
             i18n: ["./src/nls/*.json"]
         },
         copy: {
-            requirejs: { src: "bower_components/requirejs/require.js", dest: "build/js/require.js" },
-            html: { src: "src/index-build.html", dest: "build/index.html" },
+            html: { src: "src/index.html", dest: "build/index.html" },
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
-        less: {
-            style: {
-                files: {
-                    "build/style/main.css": "src/style/main.less"
-                }
+        // Build tasks
+        webpack: {
+            design: require("./webpack.config.js"),
+            options: {
+                watch: !!grunt.option("watch"),
+                keepalive: !!grunt.option("watch")
             }
         },
         concurrent: {
             test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
         }
-    };
-
-    // Auto create all i18n tasks
-    
-    gruntConfig["concat-json"] = {
-        i18n: {
-            files: ALL_LOCALES.map(function (locale) {
-                return i18nGetConcatOptions(locale);
-            })
-        },
-        options: {
-            space: " "
-        }
-    };
-
-    // Merge dictionaries with English for missing keys
-    var jsonMergeTargets = {};
-
-    ALL_LOCALES.forEach(function (locale) {
-        if (locale === "en") {
-            return;
-        }
-
-        var source = "src/nls/" + locale + ".json",
-            target = "src/nls/" + locale + ".json";
-
-        jsonMergeTargets[target] = ["src/nls/en.json", source];
     });
-
-    gruntConfig["merge-json"] = {
-        i18n: {
-            files: jsonMergeTargets
-        },
-        options: {
-            space: " "
-        }
-    };
-
-    grunt.initConfig(gruntConfig);
 
     grunt.loadNpmTasks("grunt-jsxhint");
     grunt.loadNpmTasks("grunt-jscs");
@@ -187,8 +173,8 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
-    grunt.loadNpmTasks("grunt-contrib-requirejs");
-    grunt.loadNpmTasks("grunt-contrib-less");
+
+    grunt.loadNpmTasks("grunt-webpack");
 
     grunt.loadNpmTasks("grunt-concurrent");
     grunt.loadNpmTasks("grunt-concat-json");
@@ -196,10 +182,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("seqtest", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
     grunt.registerTask("test", ["concurrent:test"]);
-    grunt.registerTask("seqcompile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs"]);
-    grunt.registerTask("compile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "concurrent:requirejs"]);
-    grunt.registerTask("compile:en", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs:en"]);
     grunt.registerTask("i18n", ["clean:i18n", "concat-json", "merge-json"]);
-    grunt.registerTask("build", ["test", "compile"]);
+    grunt.registerTask("compile", ["test", "clean:build", "i18n", "copy", "webpack", "clean:i18n"]);
     grunt.registerTask("default", ["test"]);
 };

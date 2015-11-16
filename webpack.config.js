@@ -29,29 +29,30 @@ var path = require("path"),
 
 require("es6-promise").polyfill(); // Required for css loading
 
-// If we call webpack with --watch or --dev, we only compile English language
+// If we call webpack with --dev, we only compile English language,
+// and create sourceMaps
 var devMode = process.argv.some(function (value) {
-    return value === "--watch" || value === "--dev";
+    return value === "--dev";
 });
 
-// Always nice to hear from your build tools
-console.log(devMode ? "Dev mode, only English will be built" : "Release mode, all locales are built");
-
+// TODO: Similar to gruntfile, find a way to make this dynamic
 var languages = devMode ? ["en"] : ["en", "de", "fr", "ja"];
 
-var jsConfigs = languages.map(function (lang) {
+var buildConfigs = languages.map(function (lang) {
     var options = {
         entry: ["./src/js/init.js"],
         output: {
             path: "./build/",
             filename: "spaces-design-" + lang + ".js"
         },
-        bail: true,
+        bail: true, // Abort after first error
         module: {
             loaders: [
-                // Transpiling React and ES2015 code to ES5
+                // Transpiling React code to js
+                // TODO: Right now, js files don't get babelified correctly
+                // For es6 support, we need this fixed
                 {
-                    test: /\.(js|jsx)$/,
+                    test: /\.(jsx)$/,
                     exclude: /(node_modules|bower_components)/,
                     loader: "babel",
                     query: {
@@ -59,16 +60,34 @@ var jsConfigs = languages.map(function (lang) {
                         presets: ["react"]
                     }
                 },
-                // JSON files are loaded directly to memory
+                // JSON files are parsed and directly loaded into the bundle
                 {
                     test: /\.json$/,
                     exclude: /(node_modules|bower_components)/,
                     loader: "json"
                 },
+                // For less files, compile them into a single css file (look below at Plugins)
+                {
+                    test: /\.less$/,
+                    loader: ExtractTextPlugin.extract("css?sourceMap!less?sourceMap")
+                },
                 // SVG files get loaded to memory if they are smaller than 100 KB
+                // TODO: We have a lot of svg files that are external
+                // and read at run time, see if bundling them along is any better
+                // using require.context
                 {
                     test: /\.svg$/,
                     exclude: /(node_modules|bower_components)/,
+                    loader: "url",
+                    query: {
+                        name: "[name].[ext]" // This keeps the file name intact
+                    }
+                },
+                // These are in src/vendor, our file://shared files. There doesn't 
+                // seem to be a good way to skip bundling these files in a way that
+                // will be loadable at run time
+                {
+                    test: /\.otf$/,
                     loader: "url"
                 }
             ]
@@ -76,28 +95,38 @@ var jsConfigs = languages.map(function (lang) {
         resolve: {
             root: [
                 path.join(__dirname, "src"),
+                // TODO: Move us to npm at some point so we don't have any bower deps
                 path.join(__dirname, "bower_components")
             ],
             alias: {
-                // TODO: Instead of this, have spaces-adapter point to it"s bundle in
-                // it"s package.json
-                "adapter": "spaces-adapter/build/spaces-adapter",
-                "eventEmitter": "events",
+                // Until spaces-adapter is better built and points to it's main.js in it's package.json
+                "adapter": path.join(__dirname, "/bower_components/spaces-adapter/src/main.js"),
+                // Eventually clean all this up and use "events" that node provides to webpack
+                // But that requires some code changes too (emitEvent => emit)
+                "eventEmitter": path.join(__dirname, "/node_modules/wolfy87-eventemitter/EventEmitter.js"),
                 // TODO: Look into externalizing React, or see if React 0.14 is plausible
                 "react": path.join(__dirname, "/bower_components/react/react-with-addons.js"),
-                // We alias the localization here
+                // We alias the localization here (@/src/js/util/nls.js)
                 "nls/dictionary.json": path.join(__dirname, "/src/nls/" + lang + ".json"),
-                "file://shared": path.join(__dirname, "/src/vendor")
+                // Since there is no dynamic loading of these external files
+                // they need to be copied to src/vendor
+                "file://shared": path.join(__dirname, "/src/vendor"),
+                // Used for explicit svg links in less files
+                "src/img": path.join(__dirname, "src/img")
             },
-            extensions: ["", ".js", ".jsx", ".json"]
+            extensions: ["", ".js", ".jsx", ".json", ".less"]
         },
         plugins: [
+            // This tells webpack to read bower.json file for finding dependencies
             new webpack.ResolverPlugin(
                 new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin("bower.json", ["main"])
             ),
+            // This passes __PG_DEBUG__ variable to the bundle
             new webpack.DefinePlugin({
                 __PG_DEBUG__: devMode
-            })
+            }),
+            // This extracts the styling to it's own file / sourcemap
+            new ExtractTextPlugin("style.css")
         ]
     };
 
@@ -108,73 +137,5 @@ var jsConfigs = languages.map(function (lang) {
 
     return options;
 });
-
-var colorStops = ["original", "light", "medium", "dark"];
-
-var lessConfigs = colorStops.map(function (stop) {
-    // For the color stop, we build the loader name here and pass it to less files
-    // Allowing us to build one css file for each color stop
-    // TODO MAJOR: Instead of separately building these files, we should build one css file
-    //              and change what we use in styles based on color stop
-    //              Note: Eric is working on this on master side, using less scoped imports
-    var lessOptions = {
-            globalVars: {
-                stop: stop
-            }
-        },
-        lessLoaderName = "css!less?" + JSON.stringify(lessOptions);
-
-    var options = {
-        entry: ["./src/style/main.less"],
-        output: {
-            path: "./build/style/",
-            filename: "style-" + stop + ".css"
-        },
-        bail: true, // Bail on first error
-        module: {
-            loaders: [
-                // Bundle directly loaded svg files alongside with their original names
-                {
-                    test: /\.svg$/,
-                    exclude: /(node_modules|bower_components)/,
-                    loader: "file",
-                    query: {
-                        name: "[name].[ext]"
-                    }
-                },
-                // Embed font files directly
-                // TODO: Figure out a way to load these files at runtime from www-shared
-                {
-                    test: /\.otf$/,
-                    loader: "url"
-                },
-                {
-                    test: /\.(less|css)$/,
-                    loader: ExtractTextPlugin.extract(lessLoaderName)
-                }
-            ]
-        },
-        resolve: {
-            root: [
-                path.join(__dirname, "src")
-            ],
-            alias: {
-                // TODO: Remove this alias when we figure out runtime links
-                "file://shared": path.join(__dirname, "/src/vendor"),
-                // Used for explicit svg links in less files
-                "src/img": path.join(__dirname, "src/img")
-            },
-            extensions: ["", ".less"]
-        },
-        plugins: [
-            // This pulls out the css file from the bundle, effectively rendering it empty, so we get a valid css file
-            new ExtractTextPlugin("style-" + stop + ".css", { allChunks: true })
-        ]
-    };
-
-    return options;
-});
-
-var buildConfigs = jsConfigs.concat(lessConfigs);
 
 module.exports = buildConfigs;
