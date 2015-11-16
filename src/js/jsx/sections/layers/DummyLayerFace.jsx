@@ -109,7 +109,7 @@ define(function (require, exports, module) {
                     onDrop={this._handleDropLayers}
                     onDragTargetEnter={this._handleDragTargetEnter}
                     onDragTargetLeave={this._handleDragTargetLeave}>
-                    <li className={dummyClassNames}/>
+                    <div className={dummyClassNames}/>
                 </Droppable>
             );
         }

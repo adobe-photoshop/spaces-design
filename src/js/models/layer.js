@@ -384,6 +384,7 @@ define(function (require, exports, module) {
                 smartObject: this.smartObject
             });
         },
+
         /**
          * This layer is safe to be super-selected
          * @type {boolean}
