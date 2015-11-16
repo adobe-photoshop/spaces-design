@@ -77,11 +77,6 @@ define(function (require, exports, module) {
     var MAX_RETRY_WINDOW = 6400;
 
     /**
-    *@type {Object}
-    */
-    var _allActions = {};
-
-    /**
      * Priority order comparator for action modules.
      *
      * @private
@@ -90,8 +85,8 @@ define(function (require, exports, module) {
      * @return {number}
      */
     var _actionModuleComparator = function (moduleName1, moduleName2) {
-        var module1 = _allActions[moduleName1],
-            module2 = _allActions[moduleName2],
+        var module1 = actionIndex[moduleName1],
+            module2 = actionIndex[moduleName2],
             priority1 = module1._priority || 0,
             priority2 = module2._priority || 0;
 
@@ -114,7 +109,7 @@ define(function (require, exports, module) {
         this._synchronizedActions = new Map();
         this._idleTasks = new Set();
 
-        var actions = this._synchronizeAllModules(_allActions),
+        var actions = this._synchronizeAllModules(this._allActions),
             stores = storeIndex.create(),
             allStores = _.merge(stores, testStores || {});
 
@@ -145,6 +140,22 @@ define(function (require, exports, module) {
      * @type {ActionQueue} 
      */
     FluxController.prototype._actionQueue = null;
+
+    /**
+     * local store of all the available properly defined flux actions
+     * 
+     * @private 
+     * @type {Object}
+     */
+    FluxController.prototype._allActions = null;
+
+    /**
+     * Map from action functions to modules
+     *
+     * @private
+     * @type {Map.<function, string>}
+     */
+    FluxController.prototype._actionModules = null;
 
     /**
      * Map from unsynchronized action functions to pathnames.
@@ -231,17 +242,23 @@ define(function (require, exports, module) {
      * @private
      */
     FluxController.prototype._initAllActions = function () {
+        this._allActions = {};
+        this._actionModules = new Map();
+
         Object.keys(actionIndex).forEach(function (actionModuleName) {
             var actionModule = actionIndex[actionModuleName],
                 moduleActions = {};
             Object.keys(actionModule)
+                .filter(function (actionName) {
+                    return actionModule[actionName].action;
+                })
                 .forEach(function (actionName) {
-                    if (actionModule[actionName].action) {
-                        actionModule[actionName].module = actionModuleName;
-                        moduleActions[actionName] = actionModule[actionName];
-                    }
-                });
-            _allActions[actionModuleName] = moduleActions;
+                    var action = actionModule[actionName];
+
+                    this._actionModules.set(action, actionModuleName);
+                    moduleActions[actionName] = action;
+                }, this);
+            this._allActions[actionModuleName] = moduleActions;
         }, this);
     };
 
@@ -254,8 +271,8 @@ define(function (require, exports, module) {
         this._actionsByName = new Map();
         this._actionNames = new Map();
 
-        Object.keys(_allActions).forEach(function (actionModuleName) {
-            var actionModule = _allActions[actionModuleName];
+        Object.keys(this._allActions).forEach(function (actionModuleName) {
+            var actionModule = this._allActions[actionModuleName];
 
             Object.keys(actionModule)
                 .filter(function (actionName) {
@@ -380,8 +397,8 @@ define(function (require, exports, module) {
         var dispatchBinder = flux.dispatchBinder,
             actionReceivers = new Map();
         
-        Object.keys(_allActions).forEach(function (actionModuleName) {
-            var actionModule = _allActions[actionModuleName];
+        Object.keys(this._allActions).forEach(function (actionModuleName) {
+            var actionModule = this._allActions[actionModuleName];
 
             Object.keys(actionModule)
                 .filter(function (actionName) {
@@ -492,9 +509,9 @@ define(function (require, exports, module) {
                     }
     
                     if (nextAction.private) {
-                        if (nextAction.module !== action.module) {
+                        if (self._actionModule.get(nextAction) !== self._actionModule.get(action)) {
                             var privateMessage = "Invalid transfer from " + actionName + " to " + nextActionName +
-                                    ". " + nextActionName + " is declaed private and is in a different module from" +
+                                    ". " + nextActionName + " is declared private and is in a different module from" +
                                     actionName + ".";
 
                             throw new Error(privateMessage);
@@ -759,7 +776,7 @@ define(function (require, exports, module) {
         } else {
             actionTitle = "action " + actionName;
             if (action.private) {
-                throw new Error("Action " + actionName + "is private and cannot be exectued");
+                throw new Error("Action " + actionName + "is private and cannot be executed");
             }
         }
 
@@ -958,7 +975,7 @@ define(function (require, exports, module) {
             }
         };
 
-        var allMethodPromises = Object.keys(_allActions)
+        var allMethodPromises = Object.keys(this._allActions)
                 .filter(function (moduleName) {
                     if (this._flux.actions[moduleName].hasOwnProperty(methodName)) {
                         return true;
