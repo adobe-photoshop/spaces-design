@@ -26,7 +26,7 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         Promise = require("bluebird"),
-        EventEmitter = require("events").EventEmitter,
+        EventEmitter = require("eventEmitter"),
         _ = require("lodash");
 
     var ps = require("adapter").ps,

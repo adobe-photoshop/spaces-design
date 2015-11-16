@@ -25,7 +25,7 @@ define(function (require, exports, module) {
     "use strict";
     
     var _ = require("lodash"),
-        EventEmitter = require("events").EventEmitter;
+        EventEmitter = require("eventEmitter");
     
     var log = require("js/util/log");
 

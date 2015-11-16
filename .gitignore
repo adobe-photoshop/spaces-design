@@ -3,5 +3,5 @@ build/
 *.~
 bower_components
 node_modules
-src/font/*.otf
+src/vendor
 docs/jsdoc
