@@ -590,7 +590,6 @@ define(function (require, exports) {
             payload.size = newSize;
             
             dispatchPromise = this.dispatchAsync(events.document.history.RESIZE_DOCUMENT, payload);
-            // TODO is this missing historyStateInfo?
             sizePromise = descriptor.playObject(resizeObj);
         } else {
             var documentRef = documentLib.referenceBy.id(document.id),
@@ -1272,17 +1271,7 @@ define(function (require, exports) {
                         textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
                         otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers);
 
-                    // When moving a mixture of both text and non-text layers, the individual actions do not
-                    // affect history.  Instead, a single, separate event is dispatched to provide a unified
-                    // finalization of this history transaction with the updated model.
-                    // TODO in the new unifiedHistory system, can the two above separate calls just amend history?
-                    // if so, then remove the following
-                    return Promise.join(textLayersPromise, otherLayersPromise)
-                        .bind(this)
-                        .then(function () {
-                            return this.dispatchAsync(events.history.FINALIZE_HISTORY_STATE,
-                                { documentID: currentDoc.id });
-                        });
+                    return Promise.join(textLayersPromise, otherLayersPromise);
                 }
             }, this, 200);
 

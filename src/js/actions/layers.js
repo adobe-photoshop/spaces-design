@@ -30,7 +30,6 @@ define(function (require, exports) {
         
     var photoshopEvent = require("adapter").lib.photoshopEvent,
         artboardLib = require("adapter").lib.artboard,
-        boundsLib = require("adapter").lib.bounds,
         descriptor = require("adapter").ps.descriptor,
         documentLib = require("adapter").lib.document,
         layerLib = require("adapter").lib.layer,
@@ -1065,23 +1064,24 @@ define(function (require, exports) {
      * @returns {Promise}
      */
     var rename = function (document, layer, newName) {
-        var payload = {
-            documentID: document.id,
-            layerID: layer.id,
-            name: newName,
-            history: {
-                newState: true
-            }
-        };
-
-        // TODO missing historyInfo?
-        var dispatchPromise = this.dispatchAsync(events.document.history.RENAME_LAYER, payload),
+        var docRef = documentLib.referenceBy.id(document.id),
+            actionName = strings.ACTIONS.RENAME_LAYER,
+            payload = {
+                documentID: document.id,
+                layerID: layer.id,
+                name: newName,
+                history: {
+                    newState: true,
+                    name: actionName
+                }
+            },
             layerRef = [
-                documentLib.referenceBy.id(document.id),
+                docRef,
                 layerLib.referenceBy.id(layer.id)
             ],
             renameObj = layerLib.rename(layerRef, newName),
-            renamePromise = descriptor.playObject(renameObj);
+            renamePromise = descriptor.playObject(renameObj),
+            dispatchPromise = this.dispatchAsync(events.document.history.RENAME_LAYER, payload);
 
         return Promise.join(dispatchPromise, renamePromise);
     };
@@ -1563,28 +1563,29 @@ define(function (require, exports) {
      * @returns {Promise}
      */
     var setLocking = function (document, layer, locked) {
-        var payload = {
+        if (layer.isBackground) {
+            return _unlockBackgroundLayer.call(this, document, layer);
+        }
+
+        var docRef = documentLib.referenceBy.id(document.id),
+            actionName = locked ? strings.ACTIONS.LOCK_LAYER : strings.ACTIONS.UNLOCK_LAYER,
+            payload = {
                 documentID: document.id,
                 layerID: layer.id,
                 locked: locked,
                 history: {
-                    newState: true
+                    newState: true,
+                    name: actionName
                 }
             },
             layerRef = [
-                documentLib.referenceBy.id(document.id),
+                docRef,
                 layerLib.referenceBy.id(layer.id)
-            ];
+            ],
+            dispatchPromise = this.dispatchAsync(events.document.history.LOCK_CHANGED, payload),
+            lockPromise = descriptor.playObject(layerLib.setLocking(layerRef, locked));
 
-        if (layer.isBackground) {
-            return _unlockBackgroundLayer.call(this, document, layer);
-        } else {
-            // TODO does this set historyInfo?
-            var dispatchPromise = this.dispatchAsync(events.document.history.LOCK_CHANGED, payload),
-                lockPromise = descriptor.playObject(layerLib.setLocking(layerRef, locked));
-
-            return Promise.join(dispatchPromise, lockPromise);
-        }
+        return Promise.join(dispatchPromise, lockPromise);
     };
     setLocking.action = {
         reads: [locks.PS_DOC, locks.JS_DOC],
@@ -2211,7 +2212,6 @@ define(function (require, exports) {
         return unlockBackgroundPromise
             .bind(this)
             .then(function () {
-                // TODO why doesn't this have historyOptions?
                 var createObj = artboardLib.make(layerRef, finalBounds);
 
                 return descriptor.playObject(createObj);
@@ -2234,7 +2234,8 @@ define(function (require, exports) {
                     // don't redraw UI until after resetting the index
                     suppressChange: true,
                     history: {
-                        newState: true
+                        newState: true,
+                        name: strings.ACTIONS.CREATE_ARTBOARD
                     }
                 };
 
@@ -2410,49 +2411,6 @@ define(function (require, exports) {
         reads: [locks.JS_TOOL],
         writes: [locks.PS_DOC],
         transfers: [tools.select],
-        modal: true
-    };
-
-    /**
-     * create a vector mask on the selected layer
-     *
-     * @return {Promise}
-     */
-    var addVectorMask = function () {
-        var applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
-
-        if (currentDocument === null) {
-            return Promise.resolve();
-        }
-
-        var layers = currentDocument.layers.selected;
-
-        if (layers === null || layers.isEmpty()) {
-            return Promise.resolve();
-        }
-
-        var layer = layers.first(),
-            bounds = boundsLib.bounds(layer.bounds),
-            payload = {
-                documentID: currentDocument.id,
-                layerIDs: Immutable.List.of(layer.id),
-                vectorMaskEnabled: true,
-                history: {
-                    newState: true
-                }
-            };
-
-        this.dispatch(events.document.history.ADD_VECTOR_MASK_TO_LAYER, payload);
-
-        // TODO needs historyInfo?
-        return descriptor.batchPlayObjects([vectorMaskLib.makeBoundsWorkPath(bounds),
-            vectorMaskLib.makeVectorMaskFromWorkPath(),
-            vectorMaskLib.deleteWorkPath()]);
-    };
-    addVectorMask.action = {
-        reads: [locks.JS_TOOL],
-        writes: [locks.PS_DOC],
         modal: true
     };
 
@@ -2802,7 +2760,6 @@ define(function (require, exports) {
     exports.handleCanvasShift = handleCanvasShift;
     exports.editVectorMask = editVectorMask;
     exports.selectVectorMask = selectVectorMask;
-    exports.addVectorMask = addVectorMask;
     exports.deleteVectorMask = deleteVectorMask;
     exports.getLayerIDsForDocumentID = getLayerIDsForDocumentID;
 
