@@ -32,8 +32,7 @@ define(function (require, exports, module) {
         Promise = require("bluebird"),
         Immutable = require("immutable");
         
-    var main = require("js/main"),
-        headlights = require("js/util/headlights"),
+    var headlights = require("js/util/headlights"),
         nls = require("js/util/nls");
 
     var TitleHeader = require("js/jsx/shared/TitleHeader"),

@@ -26,37 +26,27 @@
 module.exports = function (grunt) {
     "use strict";
     
+    // Matches every root folder in src/nls into a locale name
+    var ALL_LOCALES = grunt.file.expand({
+            filter: "isDirectory",
+            cwd: "src/nls"
+        }, "*");
+    
     /**
-     * Get options for r.js parametrized by locale.
+     * Concatenates the json files in the locale folder   
      *
      * @param {string} locale
-     * @return {object}
+     * @return {Object} [description]
      */
-    var getRequireOptions = function (locale) {
+    var i18nGetConcatOptions = function (locale) {
         return {
-            options: {
-                baseUrl: "src/",
-                mainConfigFile: "src/js/config.js",
-                name: "js/init-build",
-                out: "build/js/init-build-" + locale + ".js",
-                // optimize: "none",
-                paths: {
-                    "react": "../bower_components/react/react-with-addons.min",
-                    "JSXTransformer": "../bower_components/jsx-requirejs-plugin/js/JSXTransformer"
-                },
-                stubModules: ["jsx"],
-                exclude: ["JSXTransformer"],
-                useStrict: true,
-                config: {
-                    i18n: {
-                        locale: locale
-                    }
-                }
-            }
+            dest: "src/nls/" + locale + ".json",
+            src: "*.json",
+            cwd: "src/nls/" + locale
         };
     };
 
-    grunt.initConfig({
+    var gruntConfig = {
         jshint: {
             options: {
                 jshintrc: true
@@ -121,7 +111,8 @@ module.exports = function (grunt) {
                 "src/**/*.svg",
                 "src/**/*.less",
                 "!src/**/*.gif",
-                "!src/vendor/**/*"
+                "!src/vendor/**/*",
+                "!src/nls/*.json"
             ],
             options: {
                 newline: true,
@@ -129,17 +120,14 @@ module.exports = function (grunt) {
             }
         },
 
-        clean: ["./build"],
+        clean: {
+            build: ["./build"],
+            i18n: ["./src/nls/*.json"]
+        },
         copy: {
             requirejs: { src: "bower_components/requirejs/require.js", dest: "build/js/require.js" },
             html: { src: "src/index-build.html", dest: "build/index.html" },
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
-        },
-        requirejs: {
-            en: getRequireOptions("en"),
-            de: getRequireOptions("de"),
-            fr: getRequireOptions("fr"),
-            ja: getRequireOptions("ja")
         },
         less: {
             style: {
@@ -149,10 +137,47 @@ module.exports = function (grunt) {
             }
         },
         concurrent: {
-            test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
-            requirejs: ["requirejs:en", "requirejs:de", "requirejs:fr", "requirejs:ja"]
+            test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
         }
+    };
+
+    // Auto create all i18n tasks
+    
+    gruntConfig["concat-json"] = {
+        i18n: {
+            files: ALL_LOCALES.map(function (locale) {
+                return i18nGetConcatOptions(locale);
+            })
+        },
+        options: {
+            space: " "
+        }
+    };
+
+    // Merge dictionaries with English for missing keys
+    var jsonMergeTargets = {};
+
+    ALL_LOCALES.forEach(function (locale) {
+        if (locale === "en") {
+            return;
+        }
+
+        var source = "src/nls/" + locale + ".json",
+            target = "src/nls/" + locale + ".json";
+
+        jsonMergeTargets[target] = ["src/nls/en.json", source];
     });
+
+    gruntConfig["merge-json"] = {
+        i18n: {
+            files: jsonMergeTargets
+        },
+        options: {
+            space: " "
+        }
+    };
+
+    grunt.initConfig(gruntConfig);
 
     grunt.loadNpmTasks("grunt-jsxhint");
     grunt.loadNpmTasks("grunt-jscs");
@@ -166,12 +191,15 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-less");
 
     grunt.loadNpmTasks("grunt-concurrent");
+    grunt.loadNpmTasks("grunt-concat-json");
+    grunt.loadNpmTasks("grunt-merge-json");
 
     grunt.registerTask("seqtest", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
     grunt.registerTask("test", ["concurrent:test"]);
     grunt.registerTask("seqcompile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs"]);
     grunt.registerTask("compile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "concurrent:requirejs"]);
     grunt.registerTask("compile:en", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs:en"]);
+    grunt.registerTask("i18n", ["clean:i18n", "concat-json", "merge-json"]);
     grunt.registerTask("build", ["test", "compile"]);
     grunt.registerTask("default", ["test"]);
 };
