@@ -172,6 +172,21 @@ module.exports = function (grunt) {
                 keepalive: !!grunt.option("watch")
             }
         },
+        uglify: {
+            design: {
+                options: {
+                    compress: {
+                        unused: false // This saves us about half an hour, losing 200 KB
+                    }
+                },
+                files: !!grunt.option("dev") ? {} : ALL_LOCALES.reduce(function (map, locale) {
+                    var target = "build/spaces-design-" + locale + ".js";
+
+                    map[target] = [target];
+                    return map;
+                }, {})
+            }
+        },
         concurrent: {
             test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
         }
@@ -186,6 +201,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-less");
+    grunt.loadNpmTasks("grunt-contrib-uglify");
 
     grunt.loadNpmTasks("grunt-webpack");
 
@@ -196,6 +212,6 @@ module.exports = function (grunt) {
     grunt.registerTask("seqtest", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
     grunt.registerTask("test", ["concurrent:test"]);
     grunt.registerTask("i18n", ["clean:i18n", "concat-json", "merge-json"]);
-    grunt.registerTask("compile", ["test", "clean:build", "i18n", "copy", "less", "webpack", "clean:i18n"]);
+    grunt.registerTask("compile", ["test", "clean:build", "i18n", "copy", "less", "webpack", "uglify", "clean:i18n"]);
     grunt.registerTask("default", ["test"]);
 };
