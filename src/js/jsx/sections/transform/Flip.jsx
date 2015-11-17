@@ -126,8 +126,7 @@ define(function (require, exports, module) {
             return document.unsupported ||
                 layers.isEmpty() ||
                 layers.some(function (layer) {
-                    if (layer.isBackground ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT) {
+                    if (layer.isBackground || layer.isAdjustment) {
                         return true;
                     }
 
@@ -157,7 +156,7 @@ define(function (require, exports, module) {
                 layers.some(function (layer) {
                     return !layer.isArtboard && document.layers.isEmptyGroup(layer) ||
                         layer.isBackground ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT;
+                        layer.isAdjustment;
                 });
         },
 

@@ -72,7 +72,7 @@ define(function (require, exports) {
     var _filterTransform = function (document, layers, filterArtboards) {
         return layers.filterNot(function (layer) {
             // Adjustment and background layers can't be transformed
-            if (layer.kind === layer.layerKinds.ADJUSTMENT || layer.isBackground) {
+            if (layer.isAdjustment || layer.isBackground) {
                 return true;
             }
 
@@ -409,7 +409,7 @@ define(function (require, exports) {
      */
     var setPosition = function (document, layerSpec, position, refPoint) {
         layerSpec = layerSpec.filterNot(function (layer) {
-            return layer.kind === layer.layerKinds.GROUPEND;
+            return layer.isGroupEnd;
         });
 
         var payload = {
@@ -555,7 +555,7 @@ define(function (require, exports) {
      */
     var setSize = function (document, layerSpec, size, refPoint) {
         layerSpec = layerSpec.filterNot(function (layer) {
-            return layer.kind === layer.layerKinds.GROUPEND ||
+            return layer.isGroupEnd ||
                 document.layers.strictAncestors(layer)
                 .some(function (ancestor) {
                     return layerSpec.contains(ancestor);
@@ -635,7 +635,7 @@ define(function (require, exports) {
             .bind(this)
             .then(function () {
                 var typeLayers = layerSpec.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
+                    return layer.isText;
                 });
 
                 // Reset type layers to pick up their implicit font size changes.
@@ -1260,10 +1260,10 @@ define(function (require, exports) {
                 } else {
                     var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
                             // Reset these layers completely because their impliedFontSize may have changed
-                            return layer.kind === layer.layerKinds.TEXT;
+                            return layer.isText;
                         }),
                         otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
-                            return layer.kind === layer.layerKinds.TEXT;
+                            return layer.isText;
                         }),
 
                         // note that in this case, the debouncing is critical even for just one "move" event

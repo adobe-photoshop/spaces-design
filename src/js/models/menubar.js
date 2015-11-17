@@ -205,7 +205,7 @@ define(function (require, exports, module) {
                 !document.unsupported &&
                 (document.layers !== null) &&
                 (document.layers.selected.every(function (layer) {
-                    return layer.kind === layer.layerKinds.VECTOR;
+                    return layer.isVector;
                 })),
             "no-background":
                 (document !== null) &&

@@ -161,16 +161,16 @@ define(function (require, exports, module) {
 
             var layerKinds = collection.pluck(this.props.document.layers.selected, "kind"),
                 uniformLayerKind = collection.uniformValue(layerKinds, false),
-                hasSomeTextLayers = Layer.layerKinds.TEXT === uniformLayerKind,
+                hasSomeTextLayers = Layer.KINDS.TEXT === uniformLayerKind,
                 hasSomeVectorLayers;
 
             if (!uniformLayerKind) {
                 hasSomeTextLayers = layerKinds.some(function (layerKind) {
-                    return Layer.layerKinds.TEXT === layerKind;
+                    return Layer.KINDS.TEXT === layerKind;
                 });
                 
                 hasSomeVectorLayers = layerKinds.some(function (layerKind) {
-                    return Layer.layerKinds.VECTOR === layerKind;
+                    return Layer.KINDS.VECTOR === layerKind;
                 });
             }
 

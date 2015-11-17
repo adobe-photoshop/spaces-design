@@ -151,7 +151,7 @@ define(function (require, exports, module) {
                     var childBounds = layerTree.childBounds(layer);
                     
                     return layer.isBackground ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT ||
+                        layer.isAdjustment ||
                         (!childBounds || childBounds.empty) ||
                         (!layer.isArtboard && document.layers.isEmptyGroup(layer));
                 }) ||

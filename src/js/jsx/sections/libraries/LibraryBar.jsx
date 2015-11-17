@@ -128,7 +128,7 @@ define(function (require, exports, module) {
             }
 
             var layersAreAllEmpty = selectedLayers.every(function (layer) {
-                return layer.kind === layer.layerKinds.GROUP && this.props.document.layers.isEmptyGroup(layer);
+                return layer.isGroup && this.props.document.layers.isEmptyGroup(layer);
             }.bind(this));
 
             return !layersAreAllEmpty;
@@ -143,7 +143,7 @@ define(function (require, exports, module) {
         _canAddCharacterStyle: function () {
             if (this.props.disabled ||
                 this.props.document.layers.selected.size !== 1 ||
-                !this.props.document.layers.selected.first().isTextLayer()) {
+                !this.props.document.layers.selected.first().isText) {
                 return false;
             }
 
@@ -202,7 +202,7 @@ define(function (require, exports, module) {
             });
 
             var addTextColorButton = this._createColorButton(function (layer) {
-                return !layer.isTextLayer() ? null :
+                return !layer.isText ? null :
                     {
                         color: layer.text.firstCharacterStyle.color,
                         title: nls.localize("strings.TOOLTIPS.ADD_TEXT_COLOR")

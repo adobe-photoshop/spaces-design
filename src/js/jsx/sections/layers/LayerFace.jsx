@@ -122,7 +122,7 @@ define(function (require, exports, module) {
          */
         _handleIconClick: function (event) {
             var layer = this.props.layer;
-            if (layer.kind !== layer.layerKinds.GROUP) {
+            if (!layer.isGroup) {
                 return;
             }
 
@@ -268,7 +268,7 @@ define(function (require, exports, module) {
             }
 
             // Drop on is only allowed for groups
-            if (target.kind !== target.layerKinds.GROUP && dropPosition === "on") {
+            if (!target.isGroup && dropPosition === "on") {
                 return false;
             }
 
@@ -279,7 +279,7 @@ define(function (require, exports, module) {
             // Target depth is incremented if we're dropping INTO a group
             switch (dropPosition) {
             case "below":
-                if (target.kind === target.layerKinds.GROUP && target.expanded) {
+                if (target.isGroup && target.expanded) {
                     targetDepth++;
                 }
                 break;
@@ -324,7 +324,7 @@ define(function (require, exports, module) {
                 }
 
                 // The special case of dragging a group below itself
-                if (child.kind === child.layerKinds.GROUPEND &&
+                if (child.isGroupEnd &&
                     dropPosition === "above" && doc.layers.indexOf(child) - doc.layers.indexOf(target) === 1) {
                     return false;
                 }
@@ -347,7 +347,7 @@ define(function (require, exports, module) {
                 bounds = React.findDOMNode(this).getBoundingClientRect(),
                 dropPosition;
 
-            if (layer.kind === layer.layerKinds.GROUP) {
+            if (layer.isGroup) {
                 // Groups can be dropped above, below or on
                 if (dragPosition.y < (bounds.top + (bounds.height / 4))) {
                     // Point is in the top quarter
@@ -454,7 +454,7 @@ define(function (require, exports, module) {
                     dropOffset = 0;
                     break;
                 case "below":
-                    if (dropLayer.kind === dropLayer.layerKinds.GROUP && !dropLayer.expanded) {
+                    if (dropLayer.isGroup && !dropLayer.expanded) {
                         // Drop below the closed group
                         dropOffset = doc.layers.descendants(dropLayer).size;
                     } else {
@@ -520,7 +520,7 @@ define(function (require, exports, module) {
                 isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
-                isGroupStart = layer.kind === layer.layerKinds.GROUP || layer.isArtboard;
+                isGroupStart = layer.isGroup || layer.isArtboard;
 
             var depth = layerStructure.depth(layer),
                 endOfGroupStructure = false,
@@ -533,11 +533,11 @@ define(function (require, exports, module) {
                 // We can skip some rendering calculations if dragging
                 isLastInGroup = layerIndex > 0 &&
                     isChildOfSelected &&
-                    layerStructure.byIndex(layerIndex - 1).kind === layer.layerKinds.GROUPEND;
+                    layerStructure.byIndex(layerIndex - 1).isGroupEnd;
                 
                 // Check to see if this layer is the last in a bunch of nested groups
                 if (isStrictDescendantOfSelected &&
-                    layerStructure.byIndex(layerIndex - 1).kind === layer.layerKinds.GROUPEND) {
+                    layerStructure.byIndex(layerIndex - 1).isGroupEnd) {
                     var nextVisibleLayer = doc.layers.allVisibleReversed.get(this.props.visibleLayerIndex + 1);
                     if (nextVisibleLayer && !doc.layers.hasStrictSelectedAncestor(nextVisibleLayer)) {
                         endOfGroupStructure = true;
@@ -555,7 +555,7 @@ define(function (require, exports, module) {
                 "layer__select_descendant": isStrictDescendantOfSelected,
                 "layer__group_end": isLastInGroup,
                 "layer__nested_group_end": endOfGroupStructure,
-                "layer__group_collapsed": layer.kind === layer.layerKinds.GROUP && !layer.expanded,
+                "layer__group_collapsed": layer.isGroup && !layer.expanded,
                 "layer__ancestor_collapsed": doc.layers.hasCollapsedAncestor(layer)
             };
 
@@ -600,7 +600,7 @@ define(function (require, exports, module) {
                 ),
                 iconClassModifier;
 
-            if (layer.isSmartObject()) {
+            if (layer.isSmartObject) {
                 if (layer.smartObject.linkMissing) {
                     tooltipTitle += " : " + nls.localize("strings.LAYER_KIND_ALERTS.LINK_MISSING");
                     iconClassModifier = "face__kind__error";
@@ -611,7 +611,7 @@ define(function (require, exports, module) {
                     iconClassModifier = "face__kind__warning";
                 }
             }
-            if (layer.isTextLayer()) {
+            if (layer.isText) {
                 if (layer.textWarningLevel === 2) {
                     iconClassModifier = "face__kind__alert";
                 }
@@ -635,13 +635,13 @@ define(function (require, exports, module) {
                                 style={dragStyle}
                                 className={classnames(faceClasses)}
                                 data-layer-id={layer.id}
-                                data-kind={layer.kind}
+                                data-kind={layer.kind.toLowerCase()}
                                 onClick={!this.props.disabled && this._handleLayerClick}>
                                 <Button
                                     title={tooltipTitle + tooltipPadding}
                                     disabled={this.props.disabled}
                                     className={classnames("face__kind", iconClassModifier)}
-                                    data-kind={layer.isArtboard ? "artboard" : layer.kind}
+                                    data-kind={layer.isArtboard ? "artboard" : layer.kind.toLowerCase()}
                                     onClick={this._handleIconClick}
                                     onDoubleClick={this._handleLayerEdit}>
                                     <SVGIcon

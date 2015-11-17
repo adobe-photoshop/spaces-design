@@ -24,16 +24,15 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Immutable = require("immutable");
+    var Immutable = require("immutable"),
+        _ = require("lodash");
 
     var layerLib = require("adapter").lib.layer;
 
     var object = require("js/util/object"),
-        Bounds = require("./bounds"),
         Radii = require("./radii"),
         Stroke = require("./stroke"),
         SmartObject = require("./smartobject"),
-        Fill = require("./fill"),
         LayerEffect = require("./effects/layereffect"),
         Text = require("./text");
 
@@ -110,7 +109,7 @@ define(function (require, exports, module) {
 
         /**
          * Layer Kind
-         * @type {number}
+         * @type {string}
          */
         kind: null,
 
@@ -125,12 +124,6 @@ define(function (require, exports, module) {
          * @type {Bounds}
          */
         bounds: null,
-
-        /**
-         * True if this layer is a background layer
-         * @type {boolean}
-         */
-        isBackground: null,
 
         /**
          * Layer opacity as a percentage in [0,100];
@@ -178,11 +171,6 @@ define(function (require, exports, module) {
         /**
          * @type {object}
          */
-        layerKinds: layerLib.layerKinds,
-
-        /**
-         * @type {object}
-         */
         smartObjectTypes: smartObjectTypes,
 
         /**
@@ -194,6 +182,66 @@ define(function (require, exports, module) {
          *  @type {boolean}
          */
         isArtboard: null,
+        
+        /**
+         * True if this layer is a background layer
+         * @type {boolean}
+         */
+        isBackground: null,
+        
+        /**
+         * True if this layer is a pixel layer
+         * @type {boolean}
+         */
+        isPixel: false,
+        
+        /**
+         * True if this layer is an adjustment layer
+         * @type {boolean}
+         */
+        isAdjustment: false,
+        
+        /**
+         * True if this layer is a text layer
+         * @type {boolean}
+         */
+        isText: false,
+        
+        /**
+         * True if this layer is a vector layer
+         * @type {boolean}
+         */
+        isVector: false,
+        
+        /**
+         * True if this layer is a smart object
+         * @type {boolean}
+         */
+        isSmartObject: false,
+        
+        /**
+         * True if this layer is a group layer
+         * @type {boolean}
+         */
+        isGroup: false,
+        
+        /**
+         * True if this layer is a group end layer
+         * @type {boolean}
+         */
+        isGroupEnd: false,
+        
+        /**
+         * True if this layer is a 3D layer
+         * @type {boolean}
+         */
+        is3D: false,
+        
+        /**
+         * True if this layer is a video layer
+         * @type {boolean}
+         */
+        isVideo: false,
 
         /**
          *  @type {boolean}
@@ -248,11 +296,55 @@ define(function (require, exports, module) {
          * @type {number}
          */
         textWarningLevel: 0
- 
     });
-
-    Layer.layerKinds = layerLib.layerKinds;
-
+    
+    /**
+     * List of layer kinds.
+     *
+     * @const
+     * @enum {LayerKind}
+     * @typedef {string} LayerKind
+     */
+    Layer.KINDS = Object.freeze({
+        ANY: "ANY",
+        PIXEL: "PIXEL",
+        ADJUSTMENT: "ADJUSTMENT",
+        TEXT: "TEXT",
+        VECTOR: "VECTOR",
+        SMARTOBJECT: "SMARTOBJECT",
+        VIDEO: "VIDEO",
+        GROUP: "GROUP",
+        GROUPEND: "GROUPEND",
+        GRADIENT: "GRADIENT",
+        PATTERN: "PATTERN",
+        SOLIDCOLOR: "SOLIDCOLOR",
+        BACKGROUND: "BACKGROUND",
+        "3D": "3D"
+    });
+    
+    /**
+     * Used to convert the Adapter's internal layer kind id into names. For example: 1 -> PIXEL
+     * 
+     * @const
+     * @type {Map.<number, LayerKind>}
+     */
+    Layer.KIND_TO_NAME = Object.freeze(_.zipObject([
+       [layerLib.layerKinds.ANY, Layer.KINDS.ANY],
+       [layerLib.layerKinds.PIXEL, Layer.KINDS.PIXEL],
+       [layerLib.layerKinds.ADJUSTMENT, Layer.KINDS.ADJUSTMENT],
+       [layerLib.layerKinds.TEXT, Layer.KINDS.TEXT],
+       [layerLib.layerKinds.VECTOR, Layer.KINDS.VECTOR],
+       [layerLib.layerKinds.SMARTOBJECT, Layer.KINDS.SMARTOBJECT],
+       [layerLib.layerKinds.VIDEO, Layer.KINDS.VIDEO],
+       [layerLib.layerKinds.GROUP, Layer.KINDS.GROUP],
+       [layerLib.layerKinds.GROUPEND, Layer.KINDS.GROUPEND],
+       [layerLib.layerKinds["3D"], Layer.KINDS["3D"]],
+       [layerLib.layerKinds.GRADIENT, Layer.KINDS.GRADIENT],
+       [layerLib.layerKinds.PATTERN, Layer.KINDS.PATTERN],
+       [layerLib.layerKinds.SOLIDCOLOR, Layer.KINDS.SOLIDCOLOR],
+       [layerLib.layerKinds.BACKGROUND, Layer.KINDS.BACKGROUND]
+   ]));
+    
     Layer.smartObjectTypes = smartObjectTypes;
 
     Object.defineProperties(Layer.prototype, object.cachedGetSpecs({
@@ -263,8 +355,8 @@ define(function (require, exports, module) {
          */
         unsupported: function () {
             switch (this.kind) {
-            case layerLib.layerKinds.VIDEO:
-            case layerLib.layerKinds["3D"]:
+            case Layer.KINDS.VIDEO:
+            case Layer.KINDS["3D"]:
                 return true;
             default:
                 return false;
@@ -297,9 +389,7 @@ define(function (require, exports, module) {
          * @type {boolean}
          */
         superSelectable: function () {
-            return !this.locked &&
-                this.kind !== this.layerKinds.ADJUSTMENT &&
-                this.kind !== this.layerKinds.GROUPEND;
+            return !this.locked && !this.isAdjustment && !this.isGroupEnd;
         },
         
         /**
@@ -469,6 +559,26 @@ define(function (require, exports, module) {
     var _extractHasLayerEffect = function (layerDescriptor) {
         return !!object.getPath(layerDescriptor, "layerEffects");
     };
+    
+    /**
+     * Return the capitalized layer kind name. For example: SMARTOBJECT -> SmartObject
+     *
+     * @private
+     * @param {LayerKind} layerKind
+     * @return {string}
+     */
+    var _capitalizeLayerKindName = function (layerKind) {
+        switch (layerKind) {
+            case Layer.KINDS.SMARTOBJECT:
+                return "SmartObject";
+            case Layer.KINDS.GROUPEND:
+                return "GroupEnd";
+            case Layer.KINDS.SOLIDCOLOR:
+                return "SolidColor";
+            default:
+                return _.capitalize(layerKind.toLowerCase());
+        }
+    };
 
     /**
      * Construct a Layer model from information Photoshop gives after grouping layers
@@ -484,32 +594,37 @@ define(function (require, exports, module) {
      */
     Layer.fromGroupDescriptor = function (documentID, layerID, layerName, isGroupEnd,
         isArtboard, boundsDescriptor) {
-        return new Layer({
-            id: layerID,
-            key: documentID + "." + layerID,
-            name: isGroupEnd ? "</Layer Group>" : layerName,
-            kind: isGroupEnd ? layerLib.layerKinds.GROUPEND : layerLib.layerKinds.GROUP,
-            visible: true,
-            locked: false,
-            expanded: true,
-            isBackground: false,
-            opacity: 100,
-            selected: true, // We'll set selected after moving layers
-            fill: null,
-            stroke: null,
-            dropShadows: Immutable.List(),
-            innerShadows: Immutable.List(),
-            effects: LayerEffect.EMPTY_EFFECTS,
-            mode: "passThrough",
-            proportionalScaling: false,
-            isArtboard: !!isArtboard,
-            bounds: isArtboard ? new Bounds(boundsDescriptor) : null,
-            isLinked: false,
-            vectorMaskEnabled: false,
-            vectorMaskEmpty: true,
-            textWarningLevel: 0,
-            initialized: true
-        });
+        var Bounds = require("./bounds"),
+            model = {
+                id: layerID,
+                key: documentID + "." + layerID,
+                name: isGroupEnd ? "</Layer Group>" : layerName,
+                kind: isGroupEnd ? Layer.KINDS.GROUPEND : Layer.KINDS.GROUP,
+                visible: true,
+                locked: false,
+                expanded: true,
+                isBackground: false,
+                opacity: 100,
+                selected: true, // We'll set selected after moving layers
+                fill: null,
+                stroke: null,
+                dropShadows: Immutable.List(),
+                innerShadows: Immutable.List(),
+                effects: LayerEffect.EMPTY_EFFECTS,
+                mode: "passThrough",
+                proportionalScaling: false,
+                isArtboard: !!isArtboard,
+                bounds: isArtboard ? new Bounds(boundsDescriptor) : null,
+                isLinked: false,
+                vectorMaskEnabled: false,
+                vectorMaskEmpty: true,
+                textWarningLevel: 0,
+                initialized: true
+            };
+
+        model["is" + _capitalizeLayerKindName(model.kind)] = true;
+
+        return new Layer(model);
     };
 
     /**
@@ -537,34 +652,38 @@ define(function (require, exports, module) {
             resolution = object.getPath(document, "resolution._value");
         }
 
-        var model = {
-            documentID: documentID,
-            id: id,
-            key: documentID + "." + id,
-            name: layerDescriptor.name,
-            kind: layerDescriptor.layerKind,
-            visible: layerDescriptor.visible,
-            expanded: _extractExpanded(layerDescriptor),
-            locked: _extractLocked(layerDescriptor),
-            isBackground: layerDescriptor.background,
-            opacity: _extractOpacity(layerDescriptor),
-            selected: selected,
-            bounds: Bounds.fromLayerDescriptor(layerDescriptor),
-            radii: Radii.fromLayerDescriptor(layerDescriptor),
-            stroke: Stroke.fromLayerDescriptor(layerDescriptor),
-            fill: Fill.fromLayerDescriptor(layerDescriptor),
-            effects: LayerEffect.fromLayerDescriptor(layerDescriptor),
-            text: Text.fromLayerDescriptor(resolution, layerDescriptor),
-            proportionalScaling: layerDescriptor.proportionalScaling,
-            isArtboard: layerDescriptor.artboardEnabled,
-            vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
-            exportEnabled: exportEnabled,
-            vectorMaskEmpty: layerDescriptor.vectorMaskEmpty,
-            textWarningLevel: layerDescriptor.textWarningLevel,
-            isLinked: _extractIsLinked(layerDescriptor),
-            initialized: initialized || selected
-            // if not explicitly marked as initialized, then it is initialized iff it is selected
-        };
+        var Bounds = require("./bounds"),
+            Fill = require("./fill"),
+            model = {
+                documentID: documentID,
+                id: id,
+                key: documentID + "." + id,
+                name: layerDescriptor.name,
+                kind: Layer.KIND_TO_NAME[layerDescriptor.layerKind],
+                visible: layerDescriptor.visible,
+                expanded: _extractExpanded(layerDescriptor),
+                locked: _extractLocked(layerDescriptor),
+                isBackground: layerDescriptor.background,
+                opacity: _extractOpacity(layerDescriptor),
+                selected: selected,
+                bounds: Bounds.fromLayerDescriptor(layerDescriptor),
+                radii: Radii.fromLayerDescriptor(layerDescriptor),
+                stroke: Stroke.fromLayerDescriptor(layerDescriptor),
+                fill: Fill.fromLayerDescriptor(layerDescriptor),
+                effects: LayerEffect.fromLayerDescriptor(layerDescriptor),
+                text: Text.fromLayerDescriptor(resolution, layerDescriptor),
+                proportionalScaling: layerDescriptor.proportionalScaling,
+                isArtboard: layerDescriptor.artboardEnabled,
+                vectorMaskEnabled: layerDescriptor.vectorMaskEnabled,
+                exportEnabled: exportEnabled,
+                vectorMaskEmpty: layerDescriptor.vectorMaskEmpty,
+                textWarningLevel: layerDescriptor.textWarningLevel,
+                isLinked: _extractIsLinked(layerDescriptor),
+                initialized: initialized || selected
+                // if not explicitly marked as initialized, then it is initialized iff it is selected
+            };
+
+        model["is" + _capitalizeLayerKindName(model.kind)] = true;
 
         object.assignIf(model, "blendMode", _extractBlendMode(layerDescriptor));
         object.assignIf(model, "usedToHaveLayerEffect", _extractHasLayerEffect(layerDescriptor));
@@ -585,12 +704,14 @@ define(function (require, exports, module) {
      * @return {Layer}
      */
     Layer.prototype.resetFromDescriptor = function (layerDescriptor, previousDocument, lazy) {
-        var resolution = previousDocument.resolution,
+        var Bounds = require("./bounds"),
+            Fill = require("./fill"),
+            resolution = previousDocument.resolution,
             artboardEnabled = layerDescriptor.artboardEnabled,
             exportEnabled = artboardEnabled && layerDescriptor.exportEnabled !== false || layerDescriptor.exportEnabled,
             model = {
                 name: layerDescriptor.name,
-                kind: layerDescriptor.layerKind,
+                kind: Layer.KIND_TO_NAME[layerDescriptor.layerKind],
                 visible: layerDescriptor.visible,
                 locked: _extractLocked(layerDescriptor),
                 expanded: _extractExpanded(layerDescriptor),
@@ -621,30 +742,6 @@ define(function (require, exports, module) {
 
         return this.merge(model);
     };
-    
-    /**
-     * True if the layer is text layer.
-     * @return {boolean}  
-     */
-    Layer.prototype.isTextLayer = function () {
-        return this.kind === this.layerKinds.TEXT;
-    };
-
-    /**
-     * True if the layer is a smart object
-     * @return {boolean}
-     */
-    Layer.prototype.isSmartObject = function () {
-        return this.kind === this.layerKinds.SMARTOBJECT;
-    };
-    
-    /**
-     * True if the layer is a vector
-     * @return {boolean}
-     */
-    Layer.prototype.isVector = function () {
-        return this.kind === this.layerKinds.VECTOR;
-    };
 
     /**
      * Returns the smart object type for smart object layers, null otherwise
@@ -652,7 +749,7 @@ define(function (require, exports, module) {
      * @return {?SmartObjectType}
      */
     Layer.prototype.smartObjectType = function () {
-        if (!this.isSmartObject()) {
+        if (!this.isSmartObject) {
             return null;
         }
 
@@ -696,7 +793,7 @@ define(function (require, exports, module) {
         // then we sync the new opacity to its CharacterStyle.
         // 
         // FIXME: we should avoid keeping multiple copies of the same attribute in different objects.
-        if (properties.opacity && this.isTextLayer()) {
+        if (properties.opacity && this.isText) {
             var charStyle = nextLayer.text.characterStyle,
                 nextCharStyle = !charStyle.color ? charStyle :
                     charStyle.set("color", charStyle.color.setOpacity(nextLayer.opacity)),

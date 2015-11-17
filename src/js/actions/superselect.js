@@ -38,6 +38,7 @@ define(function (require, exports) {
         locks = require("js/locks"),
         events = require("js/events"),
         Bounds = require("js/models/bounds"),
+        Layer = require("js/models/layer"),
         documentActions = require("./documents"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
@@ -243,7 +244,7 @@ define(function (require, exports) {
                 }, new Set()),
             selectableCoveredLayers = coveredLayers.filter(function (layer) {
                 return !layer.locked && // Only allow for unlocked layers
-                    layer.kind !== layer.layerKinds.GROUPEND &&
+                    !layer.isGroupEnd &&
                     !selectedLayerAncestors.has(layer);
             });
 
@@ -266,12 +267,11 @@ define(function (require, exports) {
             return Promise.resolve();
         }
         
-        var kinds = layer.layerKinds,
-            tool,
+        var tool,
             resultPromise;
 
         switch (layer.kind) {
-        case kinds.VECTOR:
+        case Layer.KINDS.VECTOR:
             // If this is called through keyboard, we calculate the center of the layer
             // This will not work if the layer is concave, as we can't click on an empty pixel
             if (!x || !y) {
@@ -300,7 +300,7 @@ define(function (require, exports) {
                     return adapterOS.postEvent({ eventKind: eventKind, location: coordinates });
                 });
             break;
-        case kinds.TEXT:
+        case Layer.KINDS.TEXT:
             tool = this.flux.store("tool").getToolByID("superselectType");
             
             _logSuperselect("edit_text");
@@ -310,7 +310,7 @@ define(function (require, exports) {
                     return adapterUI.startEditWithCurrentModalTool();
                 });
             break;
-        case kinds.SMARTOBJECT:
+        case Layer.KINDS.SMARTOBJECT:
             if (layer.isCloudLinkedSmartObject()) {
                 _logSuperselect("edit_cloud_object");
                 

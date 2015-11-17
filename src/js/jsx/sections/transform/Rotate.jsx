@@ -126,9 +126,7 @@ define(function (require, exports, module) {
             return document.unsupported ||
                 layers.isEmpty() ||
                 layers.some(function (layer) {
-                    if (layer.isBackground ||
-                        layer.isArtboard ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT) {
+                    if (layer.isBackground || layer.isArtboard || layer.isAdjustment) {
                         return true;
                     }
 

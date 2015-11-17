@@ -79,7 +79,7 @@ define(function (require, exports, module) {
             var layers = this.props.layers,
                 modes = collection.pluck(layers, "blendMode"),
                 allGroups = layers.every(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUP;
+                    return layer.isGroup;
                 }),
                 disabled = this.props.disabled || layers.every(function (layer) {
                     return layer.isBackground;

@@ -568,9 +568,9 @@ define(function (require, exports) {
             var property;
             if (layer.isArtboard) {
                 property = "artboard";
-            } else if (layer.kind === layer.layerKinds.VECTOR) {
+            } else if (layer.isVector) {
                 property = "pathBounds";
-            } else if (layer.kind === layer.layerKinds.TEXT) {
+            } else if (layer.isText) {
                 property = "boundingBox";
             } else {
                 property = "boundsNoMask";
@@ -644,7 +644,7 @@ define(function (require, exports) {
         }
 
         var linkedLayers = document.layers.all.filter(function (layer) {
-            return layer.kind === layer.layerKinds.SMARTOBJECT;
+            return layer.isSmartObject;
         });
 
         if (linkedLayers.isEmpty()) {
@@ -780,7 +780,7 @@ define(function (require, exports) {
 
         layers = layers
             .filter(function (layer) {
-                return layer.kind === layer.layerKinds.GROUP;
+                return layer.isGroup;
             });
 
         if (layers.isEmpty()) {
@@ -1342,8 +1342,8 @@ define(function (require, exports) {
             layers = document.layers.selectedNormalized,
             hasLeaf = layers.some(function (layer) {
                 switch (layer.kind) {
-                case layer.layerKinds.GROUP:
-                case layer.layerKinds.GROUPEND:
+                case Layer.KINDS.GROUP:
+                case Layer.KINDS.GROUPEND:
                     return false;
                 default:
                     return true;
@@ -1354,7 +1354,7 @@ define(function (require, exports) {
         // reordering higher layers doesn't affect the z-index of lower layers
         var playObjRec = layers.reverse().reduce(function (playObjRec, layer) {
             var parent = document.layers.parent(layer),
-                group = layer.kind === layer.layerKinds.GROUP,
+                group = layer.isGroup,
                 childLayerRef,
                 layerTargetRef,
                 targetIndex,
@@ -1419,7 +1419,7 @@ define(function (require, exports) {
                 return document.layers.strictDescendants(group);
             })
             .filterNot(function (layer) {
-                return layer.kind === layer.layerKinds.GROUPEND;
+                return layer.isGroupEnd;
             });
 
         // Restore and augment selection after ungrouping
@@ -1996,7 +1996,7 @@ define(function (require, exports) {
      */
     var setProportional = function (document, layerSpec, proportional) {
         layerSpec = layerSpec.filterNot(function (layer) {
-            return layer.kind === layer.layerKinds.GROUPEND;
+            return layer.isGroupEnd;
         });
 
         var layerIDs = collection.pluck(layerSpec, "id"),

@@ -188,7 +188,7 @@ define(function (require, exports, module) {
                 layers.isEmpty() ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
-                        layer.kind === layer.layerKinds.ADJUSTMENT ||
+                        layer.isAdjustment ||
                         document.layers.hasStrictSelectedAncestor(layer);
                 }) ||
                 layers.every(function (layer) {

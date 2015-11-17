@@ -224,7 +224,7 @@ define(function (require, exports, module) {
         "allVisible": function () {
             return this.all
                 .filterNot(function (layer) {
-                    return layer.kind === layer.layerKinds.GROUPEND;
+                    return layer.isGroupEnd;
                 });
         },
 
@@ -256,7 +256,7 @@ define(function (require, exports, module) {
                     return this.byID(node.id);
                 }, this)
                 .filter(function (layer) {
-                    return layer.kind !== layer.layerKinds.GROUPEND;
+                    return !layer.isGroupEnd;
                 })
                 .toList();
         },
@@ -272,7 +272,7 @@ define(function (require, exports, module) {
                     if (layer.isArtboard) {
                         return this.children(layer)
                             .filter(function (layer) {
-                                return layer.kind !== layer.layerKinds.GROUPEND;
+                                return !layer.isGroupEnd;
                             })
                             .push(layer);
                     } else {
@@ -390,8 +390,8 @@ define(function (require, exports, module) {
          */
         "leaves": function () {
             return this.all.filter(function (layer) {
-                return layer.kind !== layer.layerKinds.GROUPEND &&
-                    layer.kind !== layer.layerKinds.GROUP &&
+                return !layer.isGroupEnd &&
+                    !layer.isGroup &&
                     layer.visible &&
                     !this.hasLockedAncestor(layer);
             }, this);
@@ -520,8 +520,7 @@ define(function (require, exports, module) {
             return !allSelectedLayers.isEmpty() &&
                 !notSelectedLayers.isEmpty() &&
                 notSelectedLayers.some(function (layer) {
-                    return layer.kind !== layer.layerKinds.GROUPEND &&
-                        layer.kind !== layer.layerKinds.GROUP;
+                    return !layer.isGroupEnd && !layer.isGroup;
                 });
         },
 
@@ -534,9 +533,9 @@ define(function (require, exports, module) {
             var layers = this.selected,
                 curLayer = layers.first();
             return !layers.isEmpty() &&
-                curLayer.kind !== curLayer.layerKinds.GROUPEND &&
-                curLayer.kind !== curLayer.layerKinds.VECTOR &&
-                curLayer.kind !== curLayer.layerKinds.BACKGROUND &&
+                !curLayer.isGroupEnd &&
+                !curLayer.isVector &&
+                !curLayer.isBackground &&
                 !curLayer.locked;
         }
     }));
@@ -830,7 +829,7 @@ define(function (require, exports, module) {
     Object.defineProperty(LayerStructure.prototype, "hasVisibleDescendant", objUtil.cachedLookupSpec(function (layer) {
         return this.descendants(layer)
             .filterNot(function (layer) {
-                return (layer.kind === layer.layerKinds.GROUP || layer.kind === layer.layerKinds.GROUPEND) &&
+                return (layer.isGroup || layer.isGroupEnd) &&
                     !layer.isArtboard;
             })
             .some(function (layer) {
@@ -845,10 +844,10 @@ define(function (require, exports, module) {
      * @return {boolean}
      */
     Object.defineProperty(LayerStructure.prototype, "isEmptyGroup", objUtil.cachedLookupSpec(function (layer) {
-        return layer.kind === layer.layerKinds.GROUP &&
+        return layer.isGroup &&
             this.children(layer)
             .filterNot(function (layer) {
-                return layer.kind === layer.layerKinds.ADJUSTMENT || this.isEmptyGroup(layer);
+                return layer.isAdjustment || this.isEmptyGroup(layer);
             }, this)
             .size === 1; // only contains groupend
     }));
@@ -862,7 +861,7 @@ define(function (require, exports, module) {
      */
     Object.defineProperty(LayerStructure.prototype, "childBounds", objUtil.cachedLookupSpec(function (layer) {
         switch (layer.kind) {
-            case layer.layerKinds.GROUP:
+            case Layer.KINDS.GROUP:
                 if (layer.isArtboard) {
                     return layer.bounds;
                 }
@@ -874,7 +873,7 @@ define(function (require, exports, module) {
                     });
 
                 return Bounds.union(childBounds);
-            case layer.layerKinds.GROUPEND:
+            case Layer.KINDS.GROUPEND:
                 return null;
             default:
                 return layer.bounds;
@@ -891,7 +890,7 @@ define(function (require, exports, module) {
      */
     Object.defineProperty(LayerStructure.prototype, "relativeChildBounds", objUtil.cachedLookupSpec(function (layer) {
         switch (layer.kind) {
-            case layer.layerKinds.GROUP:
+            case Layer.KINDS.GROUP:
                 if (layer.isArtboard) {
                     return layer.bounds;
                 }
@@ -903,7 +902,7 @@ define(function (require, exports, module) {
                     });
 
                 return Bounds.union(childBounds);
-            case layer.layerKinds.GROUPEND:
+            case Layer.KINDS.GROUPEND:
                 return null;
             default:
                 var topAncestor = this.topAncestor(layer);
@@ -950,7 +949,7 @@ define(function (require, exports, module) {
             return !childBounds ||
                 childBounds.empty ||
                 layer.isBackground ||
-                layer.kind === layer.layerKinds.ADJUSTMENT ||
+                layer.isAdjustment ||
                 this.isEmptyGroup(layer);
         }, this);
     }));
@@ -986,7 +985,7 @@ define(function (require, exports, module) {
             // The selected layer should be empty and a non-background layer unless replace is explicitly provided true
             replace = replaceLayer &&
                 (replace ||
-                (!replaceLayer.isBackground && replaceLayer.kind === replaceLayer.layerKinds.PIXEL &&
+                (!replaceLayer.isBackground && replaceLayer.isPixel &&
                 replaceLayer.bounds && !replaceLayer.bounds.area));
         }
 
@@ -1104,8 +1103,8 @@ define(function (require, exports, module) {
                     return;
                 }
 
-                // Inject layer kind in here for bound reset function
-                descriptor.layerKind = layer.kind;
+                // Inject layer kind name in here for bound reset function
+                descriptor.layerKindName = layer.kind;
 
                 // Also inject the artboard flag so we read the correct property
                 descriptor.artboardEnabled = layer.isArtboard;
