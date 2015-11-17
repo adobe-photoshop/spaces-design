@@ -1143,12 +1143,9 @@ define(function (require, exports) {
                     name: nls.localize("strings.ACTIONS.ROTATE_LAYERS"),
                     target: documentLib.referenceBy.id(document.id)
                 }
-            },
-            historyPromise = this.transfer(historyActions.newHistoryState, document.id,
-                nls.localize("strings.ACTIONS.ROTATE_LAYERS")),
-            playPromise = locking.playWithLockOverride(document, layers, rotateObj, options);
+            };
 
-        return Promise.join(historyPromise, playPromise)
+        return locking.playWithLockOverride(document, layers, rotateObj, options)
             .bind(this)
             .then(function () {
                 var descendants = layers.flatMap(document.layers.descendants, document.layers);
@@ -1159,7 +1156,10 @@ define(function (require, exports) {
     rotate.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds],
+        history: {
+            name: nls.localize("strings.ACTIONS.ROTATE_LAYERS")
+        }
     };
 
     /**

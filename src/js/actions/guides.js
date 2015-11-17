@@ -317,11 +317,7 @@ define(function (require, exports) {
         var payload = {
             documentID: document.id,
             guide: guide,
-            index: index,
-            history: {
-                newState: true,
-                amendRogue: true
-            }
+            index: index
         };
 
         return this.dispatchAsync(events.document.history.GUIDE_SET, payload)
@@ -333,7 +329,10 @@ define(function (require, exports) {
     setGuide.action = {
         reads: [],
         writes: [locks.JS_DOC],
-        transfers: [resetGuidePolicies, deleteGuide]
+        transfers: [resetGuidePolicies, deleteGuide],
+        history: {
+            amendRogue: true
+        }
     };
 
     /**

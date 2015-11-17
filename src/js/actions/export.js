@@ -595,11 +595,7 @@ define(function (require, exports) {
             payload = {
                 documentID: documentID,
                 layerIDs: layerIDs,
-                assetIndex: assetIndex,
-                history: {
-                    newState: true,
-                    name: nls.localize("strings.ACTIONS.MODIFY_EXPORT_ASSETS")
-                }
+                assetIndex: assetIndex
             };
 
         return this.dispatchAsync(events.export.history.DELETE_ASSET, payload)
@@ -610,7 +606,13 @@ define(function (require, exports) {
     };
     deleteExportAsset.action = {
         reads: [locks.JS_DOC],
-        writes: [locks.JS_EXPORT, locks.PS_DOC]
+        writes: [locks.JS_EXPORT, locks.PS_DOC],
+        history: {
+            name: nls.localize("strings.ACTIONS.MODIFY_EXPORT_ASSETS")
+        },
+        pre: function (document, layers, assetIndex) {
+            return document && Number.isInteger(assetIndex);
+        }
     };
 
     /**

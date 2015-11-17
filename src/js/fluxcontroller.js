@@ -254,6 +254,13 @@ define(function (require, exports, module) {
             if (!dependencies) {
                 dependencies = new Set([action]);
                 if (actionObject) {
+                    // sorta hack
+                    if (actionObject.history) {
+                        if (!actionObject.transfers) {
+                            actionObject.transfers = [];
+                        }
+                        actionObject.transfers.push("history.newHistoryState");
+                    }
                     if (actionObject.transfers) {
                         actionObject.transfers.forEach(function (dependency, index) {
                             // Translate action pathnames to unsynchronized action functions
@@ -580,7 +587,9 @@ define(function (require, exports, module) {
         }
 
         var lockUI = actionObject.lockUI,
+            pre = actionObject.pre,
             post = actionObject.post,
+            history = actionObject.history,
             modal = actionObject.modal || false,
             actionTitle;
 
@@ -608,6 +617,24 @@ define(function (require, exports, module) {
 
         return modalPromise
             .bind(this)
+            .then(function () {
+                if (pre) {
+                    var preCondition = pre.apply(actionReceiver, params);
+                    if (!preCondition) {
+                        return Promise.reject(new Error("Precondition validation failed"));
+                    }
+                }
+            })
+            .then(function () {
+                if (history) {
+                    var documentID = flux.store("application").getCurrentDocumentID();
+                    if (!documentID) {
+                        return Promise.reject(new Error("Can not create history state without a current document"));
+                    }
+                    return actionReceiver.transfer("history.newHistoryState",
+                        documentID, history.name, history.amendRogue);
+                }
+            })
             .then(function () {
                 var actionPromise = action.apply(actionReceiver, params);
                 if (!(actionPromise instanceof Promise)) {
