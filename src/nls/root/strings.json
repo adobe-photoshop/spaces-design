@@ -149,6 +149,7 @@
     },
     "TITLE_TRANSFORM": "Transform",
     "TOOLS": {
+        "superselectVector": "A - Select Vector Tool",
         "newSelect": "V - Select Tool",
         "rectangle": "R - Rectangle Tool",
         "ellipse": "E - Ellipse Tool",
