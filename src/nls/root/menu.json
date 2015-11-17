@@ -30,7 +30,24 @@
         },
         "OPEN": "Open…",
         "OPEN_RECENT": {
-            "$MENU": "Open Recent"
+            "$MENU": "Open Recent",
+            "16": "16",
+            "15": "15",
+            "14": "14",
+            "13": "13",
+            "12": "12",
+            "11": "11",
+            "10": "10",
+            "9": "9",
+            "8": "8",
+            "7": "7",
+            "6": "6",
+            "5": "5",
+            "4": "4",
+            "3": "3",
+            "2": "2",
+            "1": "1",
+            "0": "0"
         },
         "CLOSE": "Close",
         "SAVE": "Save",
@@ -213,6 +230,7 @@
         "TOGGLE_SINGLE_COLUMN_MODE": "Single-Column Mode",
         "PREVIOUS_DOCUMENT": "Previous Document",
         "RETURN_TO_STANDARD": "Return to Standard Photoshop",
+        "OPEN_DOCUMENT": "Open Document",
         "OPEN_DOCUMENT_ONE": "Document Name 1",
         "OPEN_DOCUMENT_TWO": "Document Name 2",
         "OPEN_DOCUMENT_THREE": "…etc…"
