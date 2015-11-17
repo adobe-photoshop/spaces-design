@@ -421,6 +421,7 @@ define(function (require, exports) {
                 }
             },
             options = {
+                paintOptions: _paintOptions,
                 historyStateInfo: {
                     name: nls.localize("strings.ACTIONS.SET_LAYER_POSITION"),
                     target: documentLib.referenceBy.id(document.id)

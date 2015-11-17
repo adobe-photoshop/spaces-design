@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
         
     var Gutter = require("jsx!js/jsx/shared/Gutter"),
         Label = require("jsx!js/jsx/shared/Label"),
@@ -44,6 +45,12 @@ define(function (require, exports, module) {
         propTypes: {
             referencePoint: React.PropTypes.string.isRequired
         },
+
+        /**
+         *@private variables for storing inital srub value to determine correct offset.
+         */
+        _xScrubbyValue: null,
+        _yScrubbyValue: null,
 
         getDefaultProps: function () {
             return {
@@ -85,6 +92,77 @@ define(function (require, exports, module) {
                 positionObj, this.props.referencePoint);
         },
 
+        /**
+         * Update the current X position of the selected layers.
+         *
+         * @private
+         */
+        _handleXScrubBegin: function () {
+            var document = this.props.document,
+                bounds = document.layers.selectedRelativeChildBounds,
+                positionKeys = uiUtil.getPositionKeysByRefPoint(this.props.referencePoint),
+                xValues = collection.pluck(bounds, positionKeys.x),
+                value = collection.uniformValue(xValues);
+
+            this._xScrubbyValue = value;
+        },
+
+        /**
+         * Update the current X position of the selected layers.
+         *
+         * @private
+         * @param {number} newX
+         */
+        _handleXScrub: function (newX) {
+            if (_.isNumber(this._xScrubbyValue)) {
+                var document = this.props.document,
+                    uiStore = this.getFlux().store("ui"),
+                    resolution = document.resolution,
+                    positionObj = {
+                        x: (uiStore.zoomCanvasToWindow(newX * resolution) / resolution) + this._xScrubbyValue,
+                        relative: true
+                    };
+
+                    
+                this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected,
+                    positionObj, this.props.referencePoint);
+            }
+        },
+
+        /**
+         * Update the current X position of the selected layers.
+         *
+         * @private
+         */
+        _handleYScrubBegin: function () {
+            var document = this.props.document,
+                bounds = document.layers.selectedRelativeChildBounds,
+                positionKeys = uiUtil.getPositionKeysByRefPoint(this.props.referencePoint),
+                yValues = collection.pluck(bounds, positionKeys.y),
+                value = collection.uniformValue(yValues);
+
+            this._yScrubbyValue = value;
+        },
+        /**
+         * Update the current X position of the selected layers.
+         *
+         * @private
+         * @param {number} newY
+         */
+        _handleYScrub: function (newY) {
+            if (_.isNumber(this._yScrubbyValue)) {
+                var document = this.props.document,
+                    uiStore = this.getFlux().store("ui"),
+                    resolution = document.resolution,
+                    positionObj = {
+                        y: (uiStore.zoomCanvasToWindow(newY * resolution) / resolution) + this._yScrubbyValue,
+                        relative: true
+                    };
+
+                this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected,
+                    positionObj, this.props.referencePoint);
+            }
+        },
         /**
          * Update the current Y position of the selected layers.
          *
@@ -150,7 +228,9 @@ define(function (require, exports, module) {
                     <Label
                         title={nls.localize("strings.TOOLTIPS.SET_X_POSITION")}
                         className="label__medium__left-aligned"
-                        size="column-1">
+                        size="column-1"
+                        onScrub={this._handleXScrub}
+                        onScrubStart={this._handleXScrubBegin}>
                         {nls.localize("strings.TRANSFORM.X")}
                     </Label>
                     <NumberInput
@@ -166,7 +246,9 @@ define(function (require, exports, module) {
                     <Label
                         title={nls.localize("strings.TOOLTIPS.SET_Y_POSITION")}
                         className="label__medium__left-aligned"
-                        size="column-1">
+                        size="column-1"
+                        onScrub={this._handleYScrub}
+                        onScrubStart={this._handleYScrubBegin}>
                         {nls.localize("strings.TRANSFORM.Y")}
                     </Label>
                     <NumberInput
