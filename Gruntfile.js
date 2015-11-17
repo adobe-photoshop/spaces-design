@@ -153,6 +153,18 @@ module.exports = function (grunt) {
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
         // Build tasks
+        less: {
+            style: {
+                files: {
+                    "build/style.css": "src/style/main.less"
+                },
+                options: {
+                    sourceMap: !!grunt.option("dev"),
+                    sourceMapFilename: "build/style.css.map", // Put it in build
+                    sourceMapURL: "style.css.map" // But point to it in the same folder
+                }
+            }
+        },
         webpack: {
             design: require("./webpack.config.js"),
             options: {
@@ -173,6 +185,7 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
+    grunt.loadNpmTasks("grunt-contrib-less");
 
     grunt.loadNpmTasks("grunt-webpack");
 
@@ -183,6 +196,6 @@ module.exports = function (grunt) {
     grunt.registerTask("seqtest", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
     grunt.registerTask("test", ["concurrent:test"]);
     grunt.registerTask("i18n", ["clean:i18n", "concat-json", "merge-json"]);
-    grunt.registerTask("compile", ["test", "clean:build", "i18n", "copy", "webpack", "clean:i18n"]);
+    grunt.registerTask("compile", ["test", "clean:build", "i18n", "copy", "less", "webpack", "clean:i18n"]);
     grunt.registerTask("default", ["test"]);
 };

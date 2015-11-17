@@ -20,7 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-
+/* global __PG_DEBUG__ */
 define(function (require, exports) {
     "use strict";
 
@@ -31,7 +31,7 @@ define(function (require, exports) {
      * @const
      * @type {boolean} 
      */
-    var DEBUG = !!__PG_DEBUG__; // jshint ignore:line
+    var DEBUG = !!__PG_DEBUG__;
 
     /**
      * Namespace used for photoshop extension data
