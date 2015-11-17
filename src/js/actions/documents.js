@@ -44,7 +44,6 @@ define(function (require, exports) {
         preferencesActions = require("./preferences"),
         menu = require("./menu"),
         ui = require("./ui"),
-        synchronization = require("js/util/synchronization"),
         events = require("../events"),
         locks = require("js/locks"),
         pathUtil = require("js/util/path"),
@@ -1098,26 +1097,10 @@ define(function (require, exports) {
         }.bind(this);
         descriptor.addListener("paste", _pasteHandler);
 
-        // A debounced version of the place event handler action
-        var debouncedPlaceEvent = synchronization.debounce(this.flux.actions.documents.handlePlaceEvent, this, 200);
-
         // This event is triggered when a new smart object layer is placed,
         // e.g., by dragging an image into an open document.
         _placeEventHandler = function (event) {
-            var layerID = event.ID;
-
-            // If an ID was not supplied, this is one of the first N-1 of N placements (probably via OS drag)
-            // we debounce so as to only call updateDocument once.
-            // This also forces the final placeEvent (which includes an ID)
-            // to occur first, which is desirable so that it won't try
-            // to add the new layer after it is already loaded via the udpateDocument.
-            // This allows effecient handling of single place events, but also tolerant of multi-object placements
-            // despite the core bug that prevents ID from being included in the first N-1 events.
-            if (!layerID) {
-                debouncedPlaceEvent(event);
-            } else {
-                this.flux.actions.documents.handlePlaceEvent(event);
-            }
+            this.flux.actions.documents.handlePlaceEvent(event);
         }.bind(this);
         descriptor.addListener("placeEvent", _placeEventHandler);
 
