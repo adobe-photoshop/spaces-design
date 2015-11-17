@@ -771,7 +771,7 @@ define(function (require, exports, module) {
                             value={Math.round(hsv.h)}
                             onChange={this._handleHSVChange.bind(this, "h")}
                             min={0}
-                            max={359}
+                            max={360}
                             size="column-5" />
                     </div>
                     <div className="formline">
@@ -1082,6 +1082,8 @@ define(function (require, exports, module) {
                             size="column-5"
                             placeholder="100"
                             ref="opacity"
+                            min={0}
+                            max={100}
                             value={Math.round(color.a * 100)}
                             onKeyDown={this._handleKeyDown}
                             onChange={this._handleTransparencyInput}/>
