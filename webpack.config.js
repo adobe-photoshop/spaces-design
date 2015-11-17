@@ -24,8 +24,7 @@
 "use strict";
 
 var path = require("path"),
-    webpack = require("webpack"),
-    ExtractTextPlugin = require("extract-text-webpack-plugin");
+    webpack = require("webpack");
 
 require("es6-promise").polyfill(); // Required for css loading
 
@@ -66,11 +65,6 @@ var buildConfigs = languages.map(function (lang) {
                     exclude: /(node_modules|bower_components)/,
                     loader: "json"
                 },
-                // For less files, compile them into a single css file (look below at Plugins)
-                {
-                    test: /\.less$/,
-                    loader: ExtractTextPlugin.extract("css?sourceMap!less?sourceMap")
-                },
                 // SVG files get loaded to memory if they are smaller than 100 KB
                 // TODO: We have a lot of svg files that are external
                 // and read at run time, see if bundling them along is any better
@@ -110,9 +104,7 @@ var buildConfigs = languages.map(function (lang) {
                 "nls/dictionary.json": path.join(__dirname, "/src/nls/" + lang + ".json"),
                 // Since there is no dynamic loading of these external files
                 // they need to be copied to src/vendor
-                "file://shared": path.join(__dirname, "/src/vendor"),
-                // Used for explicit svg links in less files
-                "src/img": path.join(__dirname, "src/img")
+                "file://shared": path.join(__dirname, "/src/vendor")
             },
             extensions: ["", ".js", ".jsx", ".json", ".less"]
         },
@@ -124,9 +116,7 @@ var buildConfigs = languages.map(function (lang) {
             // This passes __PG_DEBUG__ variable to the bundle
             new webpack.DefinePlugin({
                 __PG_DEBUG__: devMode
-            }),
-            // This extracts the styling to it's own file / sourcemap
-            new ExtractTextPlugin("style.css")
+            })
         ]
     };
 
