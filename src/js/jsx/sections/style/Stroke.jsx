@@ -289,7 +289,7 @@ define(function (require, exports, module) {
                     size="column-2" />);
 
             return (
-                <div className="formline">
+                <div className="formline formline__space-between">
                     <div className="control-group__vertical">
                         <ColorInput
                             id={colorInputID}
