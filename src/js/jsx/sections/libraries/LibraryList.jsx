@@ -147,7 +147,7 @@ define(function (require, exports, module) {
          * Return library commands based on currently selected library.
          *
          * @private
-         * @return {{title: String, id: string, type: string?, searchable: boolean }}
+         * @return {{title: String, id: string, type: string?, searchable: boolean}}
          */
         _getLibraryCommandOptions: function () {
             var selectedLibrary = this.props.selected,
