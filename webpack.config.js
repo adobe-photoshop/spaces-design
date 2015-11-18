@@ -28,14 +28,16 @@ var path = require("path"),
 
 require("es6-promise").polyfill(); // Required for css loading
 
-// If we call webpack with --dev, we only compile English language,
-// and create sourceMaps
-var devMode = process.argv.some(function (value) {
-    return value === "--dev";
-});
+// In dev mode, we only compile English and build sourcemaps
+var devMode = !!process.env.SPACES_DEV_MODE,
+    // If grunt didn't pass us locales, we go with only English
+    locales = process.env.SPACES_LOCALES,
+    languages = locales ? locales.split(",") : ["en"];
 
-// TODO: Similar to gruntfile, find a way to make this dynamic
-var languages = devMode ? ["en"] : ["en", "de", "fr", "ja"];
+// We need grunt to build the nls and less files, so don't allow webpack by itself
+if (!locales) {
+    throw new Error("Please compile using `grunt compile` instead of webpack directly");
+}
 
 var buildConfigs = languages.map(function (lang) {
     var options = {
