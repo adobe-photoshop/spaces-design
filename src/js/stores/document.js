@@ -282,15 +282,24 @@ define(function (require, exports, module) {
          * Update the visibility of a document's guides or smart guides
          *
          * @private
-         * @param {{documentID: number, guidesVisible: boolean, smartGuidesVisible: boolean=}} payload
+         * @param {object} payload
+         * @param {number} payload.documentID
+         * @param {boolean} payload.guidesVisible
+         * @param {boolean} payload.smartGuidesVisible
+         * @param {Array.<object>=} payload.guides
          */
         _updateDocumentGuidesVisibility: function (payload) {
             var documentID = payload.documentID,
                 props = _.pick(payload, ["guidesVisible", "smartGuidesVisible"]),
                 document = this._openDocuments[documentID],
-                nextDocument = document.merge(props);
+                nextDocument = document.merge(props),
+                guides = payload.guides;
 
-            this.setDocument(nextDocument);
+            this.setDocument(nextDocument, false, !!guides);
+
+            if (guides) {
+                this._handleGuidesUpdated(payload);
+            }
         },
 
         /**
@@ -1069,10 +1078,10 @@ define(function (require, exports, module) {
          * Updates the overall guides information of the document
          *
          * @private
-         * @param {{document: Document, guides: Array.<object>}} payload
+         * @param {{document: Document=, documentID: number=, guides: Array.<object>}} payload
          */
         _handleGuidesUpdated: function (payload) {
-            var document = payload.document,
+            var document = payload.document || this._openDocuments[payload.documentID],
                 guideDescriptors = payload.guides,
                 nextGuides = Guide.fromDescriptors(document, guideDescriptors),
                 nextDocument = document.set("guides", nextGuides);

@@ -161,7 +161,7 @@ define(function (require, exports, module) {
                 !document.unsupported,
             "have-guides":
                 (document !== null) &&
-                !document.guides.isEmpty(),
+                (document.guides && !document.guides.isEmpty()),
             "export-enabled":
                 (document !== null) && exportEnabled,
             "psd-document":
