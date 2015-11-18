@@ -27,10 +27,15 @@ module.exports = function (grunt) {
     "use strict";
     
     // Matches every root folder in src/nls into a locale name
-    var ALL_LOCALES = grunt.file.expand({
+    // If we are in dev mode, compiles only English
+    var DEV_MODE = !!grunt.option("dev"),
+        ALL_LOCALES = DEV_MODE ? ["en"] : grunt.file.expand({
             filter: "isDirectory",
             cwd: "src/nls"
         }, "*");
+
+    process.env.SPACES_LOCALES = ALL_LOCALES;
+    process.env.SPACES_DEV_MODE = DEV_MODE;
     
     grunt.initConfig({
         jshint: {
