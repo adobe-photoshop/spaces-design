@@ -4,6 +4,7 @@
         "ADD_FILL": "塗りつぶしを追加",
         "ADD_VECTOR_MASK": "ベクトルマスクを追加",
         "APPLY_LIBRARY_COLOR": "ライブラリカラーを適用",
+        "CREATE_ARTBOARD": "能_[8555519] Create Artboard",
         "SET_STROKE_COLOR": "ストロークのカラーを設定",
         "SET_STROKE": "ストロークを設定",
         "SET_STROKE_OPACITY": "ストロークの不透明度を設定",
@@ -21,6 +22,8 @@
         "SET_RADIUS": "半径を設定",
         "ROTATE_LAYERS": "レイヤーを回転",
         "DUPLICATE_LAYERS": "レイヤーを複製",
+        "LOCK_LAYER": "レイヤーをロック",
+        "UNLOCK_LAYER": "レイヤーのロック解除",
         "SET_LAYER_EFFECTS": "レイヤー効果を設定",
         "SET_LAYER_POSITION": "位置を設定",
         "SET_LAYER_SIZE": "サイズを設定",
@@ -28,6 +31,7 @@
         "SWAP_LAYERS": "レイヤーを切り替える",
         "COMBINE_SHAPES": "シェイプを結合",
         "PASTE_LAYER_STYLE": "レイヤースタイルをペースト",
+        "RENAME_LAYER": "レイヤー名の変更",
         "SAMPLE_GRAPHICS": "サンプルグラフィック",
         "SAMPLE_COLOR": "サンプルカラー",
         "SAMPLE_STROKE": "サンプル線",
@@ -38,7 +42,9 @@
         "SET_TYPE_LEADING": "文字の行送りを設定",
         "SET_TYPE_TRACKING": "文字トラッキングを設定",
         "SET_TYPE_ALIGNMENT": "文字の整列を設定",
-        "UNGROUP_LAYERS": "レイヤーをグループ解除",
+        "GROUP_LAYERS": "レイヤーをグループ化",
+        "UNGROUP_LAYERS": "レイヤーのグループ解除",
+        "REORDER_LAYERS": "能_[8555515] Reorder Layers",
         "MODIFY_EXPORT_ASSETS": "更新された書き出しアセット設定",
         "APPLY_TEXT_STYLE": "テキストスタイルを適用",
         "APPLY_LAYER_STYLE": "レイヤースタイルを適用",
@@ -67,8 +73,8 @@
             },
             {
                 "TITLE": "サンプラー",
-                "HEADLINE_FIRST": "クリックまたは Shift キーを押しながらクリックするだけで、カラーと効果をサンプリング。",
-                "HEADLINE_SECOND": "スペースバーで、他のすべて、グラフィックさえもサンプリング。"
+                "HEADLINE_FIRST": "クリックまたは Shift キーを押しながらクリックするだけで、カラーと効果をサンプリングできます。",
+                "HEADLINE_SECOND": "スペースパーで、他のすべて、グラフィックさえもサンプリングできます。"
             },
             {
                 "TITLE": "アートボード",
@@ -80,7 +86,7 @@
             },
             {
                 "TITLE": "切り替え",
-                "HEADLINE": "高度な写真機能を使用する場合は、標準の Photoshop にシームレスな切り替えが可能。"
+                "HEADLINE": "高度な写真機能を使用する場合は、標準の Photoshop にシームレスな切り替えが可能です。"
             },
             {
                 "TITLE": "連絡先",
@@ -115,18 +121,18 @@
             "MASKMODE": "マスクモード"
         },
         "SELECT_TOOL": {
-            "TARGET": "ネスト化されたグループまたはレイヤーをターゲットとして設定",
+            "TARGET": "ネスト化したグループ / レイヤーを対象に設定",
             "TARGET_INSTRUCTION": "カンバスをダブルクリック",
-            "EDIT_PATH": "パスまたはテキストを編集",
-            "EDIT_PATH_INSTRUCTION": "ベクトルオブジェクトまたは文字をダブルクリック",
-            "EDIT_SMART": "設定したアプリケーションで編集または開く",
+            "EDIT_PATH": "パス / テキストを編集",
+            "EDIT_PATH_INSTRUCTION": "ベクトルオブジェクト / 文字をダブルクリック",
+            "EDIT_SMART": "設定したアプリケーションで編集 / 開く",
             "EDIT_SMART_INSTRUCTION": "スマートオブジェクトをダブルクリック",
             "BACK_OUT": "階層から戻る",
             "BACK_OUT_INSTRUCTION": "Esc",
             "HOLD_SELECTION": "各レイヤーの最上位の選択を保持",
             "HOLD_SEL_MAC": "Opt+Esc",
             "HOLD_SEL_WIN": "Shift+Esc",
-            "TARGET_LAYER": "特定のレイヤーをターゲットとして設定",
+            "TARGET_LAYER": "特定のレイヤーを対象に設定",
             "TARGET_LAYER_MAC": "Cmd キーを押しながらクリック",
             "TARGET_LAYER_WIN": "Ctrl キーを押しながらクリック"
         }
@@ -143,6 +149,7 @@
     },
     "TITLE_TRANSFORM": "変形",
     "TOOLS": {
+        "superselectVector": "能_[8555523] A - Select Vector Tool",
         "newSelect": "V - 選択ツール",
         "rectangle": "R - 長方形ツール",
         "ellipse": "E - 楕円形ツール",
@@ -234,10 +241,10 @@
         "SET_INNER_SHADOW_Y_POSITION": "シャドウ (内側) の Y 位置を設定",
         "SET_INNER_SHADOW_BLUR": "シャドウ (内側) のぼかしを設定",
         "SET_INNER_SHADOW_SPREAD": "シャドウ (内側) のスプレッドを設定",
-        "SECTION_COLLAPSE": ": ダブルクリックして折りたたむ",
-        "SECTION_EXPAND": ": ダブルクリックして展開",
-        "PANEL_COLUMN_COLLAPSE": ": クリックして折りたたむ",
-        "PANEL_COLUMN_EXPAND": ": クリックして展開",
+        "SECTION_COLLAPSE": " : ダブルクリックして折りたたむ",
+        "SECTION_EXPAND": " : ダブルクリックして展開",
+        "PANEL_COLUMN_COLLAPSE": " : クリックして折りたたむ",
+        "PANEL_COLUMN_EXPAND": " : クリックして展開",
         "LAYERS_LIBRARIES": "レイヤーとライブラリ",
         "PROPERTIES": "属性",
         "GRID_MODE": "アイコンとして項目を表示",
@@ -468,7 +475,8 @@
             "RECENT_DOC": "最近使用したドキュメント",
             "MENU_COMMAND": "メニューのコマンド",
             "LIBRARY": "すべてのライブラリ",
-            "FILTER": "検索範囲を限定…"
+            "FILTER": "検索範囲を限定…",
+            "GLOBAL_SHORTCUT": "能_[8555521] Global Shortcuts"
         },
         "CATEGORIES": {
             "CURRENT_DOC": "開いているドキュメント",
@@ -486,7 +494,8 @@
             "LIBRARY": "すべてのライブラリ",
             "GRAPHIC": "グラフィック",
             "LAYERSTYLE": "レイヤースタイル",
-            "CHARACTERSTYLE": "文字スタイル"
+            "CHARACTERSTYLE": "文字スタイル",
+            "GLOBAL_SHORTCUT": "能_[8555522] Global Shortcuts"
         },
         "MODIFIERS": {
             "COMMAND": "Cmd",
@@ -548,7 +557,7 @@
         "BTN_RENAME": "名前を変更",
         "BTN_DELETE": "削除",
         "BTN_LEAVE": "終了",
-        "CLICK_TO_APPLY": "クリックすると、適用されます",
+        "CLICK_TO_APPLY": "クリックして適用",
         "LIBRARY_NAME": "ライブラリ名",
         "INTRO_TITLE": "あなたのコンテンツ。どこでも。",
         "INTRO_BODY": "デスクトップとモバイルの間でアセットの整理、アクセス、共有を行うには、ライブラリを使用します。",

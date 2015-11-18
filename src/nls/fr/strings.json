@@ -4,6 +4,7 @@
         "ADD_FILL": "Ajouter un fond",
         "ADD_VECTOR_MASK": "Ajouter un masque vectoriel",
         "APPLY_LIBRARY_COLOR": "Appliquer la couleur de la bibliothèque",
+        "CREATE_ARTBOARD": "[8555519] é_Create Artboard",
         "SET_STROKE_COLOR": "Définir la couleur du contour",
         "SET_STROKE": "Définir le contour",
         "SET_STROKE_OPACITY": "Définir l'opacité du contour",
@@ -21,6 +22,8 @@
         "SET_RADIUS": "Définir le rayon",
         "ROTATE_LAYERS": "Rotation des calques",
         "DUPLICATE_LAYERS": "Dupliquer les calques",
+        "LOCK_LAYER": "Verrouiller le calque",
+        "UNLOCK_LAYER": "Déverrouiller le calque",
         "SET_LAYER_EFFECTS": "Définir les effets de calque",
         "SET_LAYER_POSITION": "Définir la position",
         "SET_LAYER_SIZE": "Définir la taille",
@@ -28,6 +31,7 @@
         "SWAP_LAYERS": "Permuter les calques",
         "COMBINE_SHAPES": "Associer des formes",
         "PASTE_LAYER_STYLE": "Coller le style de calque",
+        "RENAME_LAYER": "Renommer le calque",
         "SAMPLE_GRAPHICS": "Exemple de graphique",
         "SAMPLE_COLOR": "Couleur d'échantillon",
         "SAMPLE_STROKE": "Contour d'échantillon",
@@ -38,7 +42,9 @@
         "SET_TYPE_LEADING": "Définir l'interligne du texte",
         "SET_TYPE_TRACKING": "Définir l'approche du texte",
         "SET_TYPE_ALIGNMENT": "Définir l'alignement du texte",
+        "GROUP_LAYERS": "Associer les calques",
         "UNGROUP_LAYERS": "Dissocier les calques",
+        "REORDER_LAYERS": "[8555515] é_Reorder Layers",
         "MODIFY_EXPORT_ASSETS": "Configurations d'exportation de fichier mises à jour",
         "APPLY_TEXT_STYLE": "Appliquer le style de texte",
         "APPLY_LAYER_STYLE": "Appliquer le style de calque",
@@ -115,12 +121,12 @@
             "MASKMODE": "Mode Masque"
         },
         "SELECT_TOOL": {
-            "TARGET": "Cibler un groupe imbriqué/des calques",
-            "TARGET_INSTRUCTION": "Double-cliquez dans la zone de travail.",
+            "TARGET": "Cibler groupe imbriqué/calques",
+            "TARGET_INSTRUCTION": "Double-cliquez dans zone de travail",
             "EDIT_PATH": "Modifier le tracé/texte",
             "EDIT_PATH_INSTRUCTION": "Double-cliquez sur l'objet vectoriel/le texte.",
-            "EDIT_SMART": "Modifier/Ouvrir dans l'application définie",
-            "EDIT_SMART_INSTRUCTION": "Double-cliquez sur l'objet dynamique",
+            "EDIT_SMART": "Modif./Ouvrir dans l'app. définie",
+            "EDIT_SMART_INSTRUCTION": "Double-cliquez sur objet dynam.",
             "BACK_OUT": "Sortir de l'arborescence",
             "BACK_OUT_INSTRUCTION": "Echap",
             "HOLD_SELECTION": "Conserver la sélection supérieure dans les calques",
@@ -143,6 +149,7 @@
     },
     "TITLE_TRANSFORM": "Transformation",
     "TOOLS": {
+        "superselectVector": "[8555523] é_A - Select Vector Tool",
         "newSelect": "V - Outil Sélection",
         "rectangle": "R - Outil Rectangle",
         "ellipse": "E - Outil Ellipse",
@@ -468,7 +475,8 @@
             "RECENT_DOC": "Documents récents",
             "MENU_COMMAND": "Commandes de menu",
             "LIBRARY": "Toutes les bibliothèques",
-            "FILTER": "Limiter la recherche à…"
+            "FILTER": "Limiter la recherche à…",
+            "GLOBAL_SHORTCUT": "[8555521] é_Global Shortcuts"
         },
         "CATEGORIES": {
             "CURRENT_DOC": "Documents ouverts",
@@ -486,7 +494,8 @@
             "LIBRARY": "Toutes les bibliothèques",
             "GRAPHIC": "Graphiques",
             "LAYERSTYLE": "Styles de calque",
-            "CHARACTERSTYLE": "Styles de caractères"
+            "CHARACTERSTYLE": "Styles de caractères",
+            "GLOBAL_SHORTCUT": "[8555522] é_Global Shortcuts"
         },
         "MODIFIERS": {
             "COMMAND": "Cmde",
