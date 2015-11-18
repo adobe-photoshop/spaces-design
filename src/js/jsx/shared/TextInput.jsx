@@ -50,10 +50,10 @@ define(function (require, exports, module) {
         mixins: [Focusable, FluxMixin],
 
         /**
-         * Once after focus, mouseup is suppressed to maintain the initial selection.
+         * Once after focus, whether to suppress mouseup to maintain the initial selection.
          *
          * @private
-         * @type {boolean} Whether the mouse up should be suppressed.
+         * @type {boolean}
          */
         _suppressMouseUp: false,
 

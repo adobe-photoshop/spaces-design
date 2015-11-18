@@ -68,14 +68,14 @@ define(function (require, exports, module) {
         /**
          * Keeps track of the marquee rectangle so it can be resized
          *
-         * @type {<SVGElement>}
+         * @type {SVGElement}
          */
         _marqueeRect: null,
 
         /**
          * Owner group for all the overlay svg elements
          *
-         * @type {<SVGElement>}
+         * @type {SVGElement}
          */
         _scrimGroup: null,
 

@@ -32,8 +32,10 @@ define(function (require, exports, module) {
     var synchronization = require("js/util/synchronization");
 
     /**
+     * Input events to block when the component becomes inactive.
+     * 
      * @const
-     * @type {Array.<string>} Input events to block when the component becomes inactive.
+     * @type {Array.<string>}
      */
     var INPUT_EVENTS = [
         "input",

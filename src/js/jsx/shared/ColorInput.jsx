@@ -45,7 +45,7 @@ define(function (require, exports, module) {
      * Keys on which to dismiss the color picker dialog 
      * 
      * @const
-     * @type {Array.<key: {string}, modifiers: {object}>} 
+     * @type {Array.<{key: string, modifiers: object}>} 
      */
     var DISMISS_ON_KEYS = [
         { key: os.eventKeyCode.ESCAPE, modifiers: null },

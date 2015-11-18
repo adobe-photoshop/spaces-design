@@ -352,8 +352,20 @@ define(function (require, exports, module) {
             }
         },
 
-        /** @type {number} Track state of the last known mouse position */
+        /** 
+         * Track state of the last known mouse X position
+         *
+         * @private
+         * @type {number}
+         */
         _currentClientX: null,
+        
+        /** 
+         * Track state of the last known mouse X position
+         *
+         * @private
+         * @type {number}
+         */
         _currentClientY: null,
 
         /**
