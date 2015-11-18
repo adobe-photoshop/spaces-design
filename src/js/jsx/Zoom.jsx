@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         FluxMixin = Fluxxor.FluxMixin(React);
@@ -71,7 +72,7 @@ define(function (require, exports, module) {
          */
         _handleKeyDown: function (event) {
             if (event.key === "Tab") {
-                React.findDOMNode(this.refs.input).blur();
+                ReactDOM.findDOMNode(this.refs.input).blur();
                 event.preventDefault();
             }
         },

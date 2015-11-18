@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        PureRenderMixin = require("react-addons-pure-render-mixin"),
         Immutable = require("immutable"),
         classnames = require("classnames"),
         _ = require("lodash");
@@ -46,7 +47,7 @@ define(function (require, exports, module) {
     };
 
     var CheckBox = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
+        mixins: [PureRenderMixin],
 
         propTypes: {
             checked: React.PropTypes.oneOfType([

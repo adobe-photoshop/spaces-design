@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames"),
@@ -344,7 +345,7 @@ define(function (require, exports, module) {
          */
         _getDropPosition: function (dragPosition) {
             var layer = this.props.layer,
-                bounds = React.findDOMNode(this).getBoundingClientRect(),
+                bounds = ReactDOM.findDOMNode(this).getBoundingClientRect(),
                 dropPosition;
 
             if (layer.isGroup) {

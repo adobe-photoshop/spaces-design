@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -205,7 +206,7 @@ define(function (require, exports, module) {
             }
 
             var currentDocument = this.state.document,
-                svg = d3.select(React.findDOMNode(this));
+                svg = d3.select(ReactDOM.findDOMNode(this));
 
             svg.selectAll(".superselect-bounds").remove();
             svg.selectAll(".superselect-marquee").remove();

@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
@@ -108,7 +109,7 @@ define(function (require, exports, module) {
                 });
             }
 
-            var node = React.findDOMNode(this.refs.input);
+            var node = ReactDOM.findDOMNode(this.refs.input);
             if (window.document.activeElement === node &&
                     node.selectionStart === 0 &&
                     node.selectionEnd === node.value.length) {
@@ -119,7 +120,7 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function () {
-            var node = React.findDOMNode(this.refs.input);
+            var node = ReactDOM.findDOMNode(this.refs.input);
 
             if (this.state.editing) {
                 node.removeAttribute("disabled");
@@ -182,7 +183,7 @@ define(function (require, exports, module) {
                     // otherwise the blur handler will be executed before the edit
                     // state has been updated.
                     if (this.refs.input) {
-                        React.findDOMNode(this.refs.input).blur();
+                        ReactDOM.findDOMNode(this.refs.input).blur();
                     }
                 });
         },
@@ -247,7 +248,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleFocus: function (event) {
-            var node = React.findDOMNode(this.refs.input);
+            var node = ReactDOM.findDOMNode(this.refs.input);
             if (!this.props.neverSelectAll) {
                 node.selectionStart = 0;
                 node.selectionEnd = event.target.value.length;
@@ -300,7 +301,7 @@ define(function (require, exports, module) {
          * Focus the input element and begin editing if necessary.
          */
         focus: function () {
-            var node = React.findDOMNode(this.refs.input);
+            var node = ReactDOM.findDOMNode(this.refs.input);
             if (!node) {
                 return;
             }
@@ -369,7 +370,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleMouseDown: function (event) {
-            if (window.document.activeElement !== React.findDOMNode(this)) {
+            if (window.document.activeElement !== ReactDOM.findDOMNode(this)) {
                 this._suppressMouseUp = true;
             }
 
@@ -470,7 +471,7 @@ define(function (require, exports, module) {
          */
         cursorLocation: function () {
             if (this.refs.input) {
-                var node = React.findDOMNode(this.refs.input);
+                var node = ReactDOM.findDOMNode(this.refs.input);
                 return node.selectionEnd;
             }
             return -1;

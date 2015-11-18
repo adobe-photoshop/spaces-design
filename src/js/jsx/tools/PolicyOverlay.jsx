@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -88,7 +89,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var svg = d3.select(React.findDOMNode(this));
+            var svg = d3.select(ReactDOM.findDOMNode(this));
 
             svg.selectAll(".policy-overlays").remove();
             

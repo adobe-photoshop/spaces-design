@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         _ = require("lodash"),
         Promise = require("bluebird"),
         Fluxxor = require("fluxxor"),
@@ -90,7 +91,7 @@ define(function (require, exports, module) {
                     // Check the existence of the input again, in case it is unmounted after the timeout.
                     if (libraryNameInput) {
                         libraryNameInput.acquireFocus();
-                        React.findDOMNode(libraryNameInput).focus();
+                        ReactDOM.findDOMNode(libraryNameInput).focus();
                     }
                 }.bind(this), 250);
             }

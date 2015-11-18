@@ -25,6 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
+        ReactPerf = require("react-addons-perf"),
         Promise = require("bluebird"),
         adapter = require("adapter");
 
@@ -121,7 +123,7 @@ define(function (require, exports) {
             });
 
         var renderPromise = new Promise(function (resolve) {
-            React.render(new Main(props), window.document.body, function () {
+            ReactDOM.render(new Main(props), window.document.querySelector(".main"), function () {
                 log.debug("Main component mounted: %dms", Date.now() - startTime);
                 resolve();
             });
@@ -163,7 +165,7 @@ define(function (require, exports) {
             throw err;
         });
 
-        React.addons.Perf.start();
+        ReactPerf.start();
 
         /* global _spaces */
         _spaces._debug.enableDebugContextMenu(true, function () {});

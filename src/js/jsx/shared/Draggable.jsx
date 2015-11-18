@@ -50,6 +50,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
@@ -162,13 +163,13 @@ define(function (require, exports, module) {
          */
         _listenToChildClickEvent: function () {
             if (this._childElement) {
-                var nextChildDOM = React.findDOMNode(this);
+                var nextChildDOM = ReactDOM.findDOMNode(this);
                 if (this._childElement === nextChildDOM) {
                     return;
                 }
             }
 
-            this._childElement = React.findDOMNode(this);
+            this._childElement = ReactDOM.findDOMNode(this);
             this._childElement.addEventListener("mousedown", this._handleMouseDown);
         },
         

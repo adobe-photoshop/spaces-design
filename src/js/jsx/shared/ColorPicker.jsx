@@ -51,10 +51,11 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        PureRenderMixin = React.addons.PureRenderMixin,
+        ReactDOM = require("react-dom"),
+        PureRenderMixin = require("react-addons-pure-render-mixin"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        tinycolor = require("tinycolor"),
+        tinycolor = require("tinycolor2"),
         Immutable = require("immutable"),
         classnames = require("classnames"),
         _ = require("lodash");
@@ -266,7 +267,7 @@ define(function (require, exports, module) {
          * @param {number} clientY
          */
         _updatePosition: function (clientX, clientY) {
-            var rect = React.findDOMNode(this).getBoundingClientRect();
+            var rect = ReactDOM.findDOMNode(this).getBoundingClientRect();
 
             var value;
             if (this.props.vertical) {
@@ -383,7 +384,7 @@ define(function (require, exports, module) {
          * @param {number} clientY
          */
         _updatePosition: function (clientX, clientY) {
-            var rect = React.findDOMNode(this).getBoundingClientRect();
+            var rect = ReactDOM.findDOMNode(this).getBoundingClientRect();
             var x = (clientX - rect.left) / rect.width;
             var y = (rect.bottom - clientY) / rect.height;
 
@@ -1023,7 +1024,7 @@ define(function (require, exports, module) {
          * Focuses on the opacity input component
          */
         _focusOpacityInput: function () {
-            React.findDOMNode(this.refs.opacity).focus();
+            ReactDOM.findDOMNode(this.refs.opacity).focus();
         },
 
         /**

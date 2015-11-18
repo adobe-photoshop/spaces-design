@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -96,7 +97,7 @@ define(function (require, exports, module) {
          * @return {Promise}
          */
         _updatePanelSizes: function () {
-            var node = React.findDOMNode(this.refs.panelSet),
+            var node = ReactDOM.findDOMNode(this.refs.panelSet),
                 panelWidth;
 
             if (node) {

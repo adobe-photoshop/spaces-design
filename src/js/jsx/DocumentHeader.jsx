@@ -26,6 +26,7 @@ define(function (require, exports, module) {
 
     var Promise = require("bluebird"),
         React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -91,7 +92,7 @@ define(function (require, exports, module) {
          * @return {Promise}
          */
         _updatePanelSizes: function () {
-            var node = React.findDOMNode(this.refs.tabContainer),
+            var node = ReactDOM.findDOMNode(this.refs.tabContainer),
                 headerHeight;
 
             if (node) {
@@ -116,7 +117,7 @@ define(function (require, exports, module) {
         _updateTabContainerScroll: function () {
             var currentTab = window.document.querySelector(".document-title__current");
             if (currentTab) {
-                var container = React.findDOMNode(this.refs.tabs),
+                var container = ReactDOM.findDOMNode(this.refs.tabs),
                     containerBounds = container.getBoundingClientRect(),
                     bounds = currentTab.getBoundingClientRect();
 
@@ -183,7 +184,7 @@ define(function (require, exports, module) {
          * @param  {function=} callback
          */
         _updateTabSize: function (callback) {
-            var hasEnoughRoomForRegularTab = this.refs.spaceStub.getDOMNode().clientWidth > 0;
+            var hasEnoughRoomForRegularTab = this.refs.spaceStub.clientWidth > 0;
             this.setState({ useSmallTab: !hasEnoughRoomForRegularTab }, callback);
         },
 

@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Promise = require("bluebird");
@@ -78,7 +79,7 @@ define(function (require, exports, module) {
             // Mark the child HTML element with the id of the DropTarget, so that 
             // we can regonize the DropTarget of the element during a mousemove event. 
             // See "draganddrop._findDropTarget" for details.
-            React.findDOMNode(this).dataset.droppablid = this._droppablID;
+            ReactDOM.findDOMNode(this).dataset.droppablid = this._droppablID;
             
             this.getFlux().store("draganddrop").registerDroppable({
                 id: this._droppablID,
@@ -94,8 +95,8 @@ define(function (require, exports, module) {
         componentDidUpdate: function () {
             // The child HTML element may be replaced due to re-rendering. If so, we assign 
             // the id to the new HTML element.
-            if (!React.findDOMNode(this).dataset.droppablid) {
-                React.findDOMNode(this).dataset.droppablid = this._droppablID;
+            if (!ReactDOM.findDOMNode(this).dataset.droppablid) {
+                ReactDOM.findDOMNode(this).dataset.droppablid = this._droppablID;
             }
         },
 

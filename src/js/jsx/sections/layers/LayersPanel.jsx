@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
@@ -127,7 +128,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleContainerClickCapture: function (event) {
-            var containerNode = React.findDOMNode(this.refs.container);
+            var containerNode = ReactDOM.findDOMNode(this.refs.container);
             if (event.target !== containerNode) {
                 this._suppressNextScrollTo = true;
             }
@@ -186,7 +187,7 @@ define(function (require, exports, module) {
             }
 
             var focusLayer = visible.first(),
-                childNode = React.findDOMNode(this.refs[focusLayer.key]);
+                childNode = ReactDOM.findDOMNode(this.refs[focusLayer.key]);
 
             if (childNode) {
                 childNode.scrollIntoViewIfNeeded();
