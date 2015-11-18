@@ -47,9 +47,17 @@ define(function (require, exports, module) {
         },
 
         /**
-         *@private variables for storing inital srub value to determine correct offset.
+         * Variables for storing inital scrub value to determine correct offset.
+         * @private 
+         * @type {number}
          */
         _xScrubbyValue: null,
+        
+        /**
+         * Variables for storing inital scrub value to determine correct offset.
+         * @private 
+         * @type {number}
+         */
         _yScrubbyValue: null,
 
         getDefaultProps: function () {
@@ -143,6 +151,7 @@ define(function (require, exports, module) {
 
             this._yScrubbyValue = value;
         },
+        
         /**
          * Update the current X position of the selected layers.
          *
@@ -163,6 +172,7 @@ define(function (require, exports, module) {
                     positionObj, this.props.referencePoint);
             }
         },
+
         /**
          * Update the current Y position of the selected layers.
          *

@@ -35,7 +35,7 @@ define(function (require, exports, module) {
      * If an array of selected values are provided, derive state
      *
      * @private
-     * @param {boolean || Immutable.Iterable.<boolean>} selected Value or array of values
+     * @param {boolean|Immutable.Iterable.<boolean>} selected Value or array of values
      *
      * @return {boolean}
      */

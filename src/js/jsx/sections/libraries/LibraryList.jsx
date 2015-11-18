@@ -126,7 +126,7 @@ define(function (require, exports, module) {
          *
          * @private
          * @param {Immutable.Map.<string, AdobeLibraryComposite>} libraries
-         * @return {{title: String, id: string, svgType?: string, className?: string}}
+         * @return {{title: String, id: string, svgType: string?, className: string?}}
          */
         _getLibraryList: function (libraries) {
             return libraries
@@ -147,7 +147,7 @@ define(function (require, exports, module) {
          * Return library commands based on currently selected library.
          *
          * @private
-         * @return {{title: String, id: string, type?: string, searchable: boolean }}
+         * @return {{title: String, id: string, type: string?, searchable: boolean }}
          */
         _getLibraryCommandOptions: function () {
             var selectedLibrary = this.props.selected,

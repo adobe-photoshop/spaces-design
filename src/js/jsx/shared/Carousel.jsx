@@ -175,7 +175,7 @@ define(function (require, exports, module) {
         /**
          * Build the previous slide button
          *
-         * @return {<ReactComponent>}
+         * @return {ReactComponent}
          */
         _buildPreviousButton: function () {
             if (this.state.index > 0) {

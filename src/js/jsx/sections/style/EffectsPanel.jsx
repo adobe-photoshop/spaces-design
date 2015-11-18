@@ -50,8 +50,10 @@ define(function (require, exports, module) {
         UnsupportedEffectList = require("jsx!./UnsupportedEffectList");
 
     /**
+     * The maximum allowed number of effects of a given kind per layer
+     * 
      * @const
-     * @type {number} The maximum allowed number of effects of a given kind per layer
+     * @type {number}
      */
     var MAX_EFFECT_COUNT = 10;
 
