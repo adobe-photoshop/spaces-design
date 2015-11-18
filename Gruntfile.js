@@ -26,9 +26,13 @@
 module.exports = function (grunt) {
     "use strict";
     
+    if (grunt.cli.tasks[0] === "dev") {
+        grunt.option("DEV_MODE", true);
+    }
+
     // Matches every root folder in src/nls into a locale name
     // If we are in dev mode, compiles only English
-    var DEV_MODE = !!grunt.option("dev"),
+    var DEV_MODE = grunt.option("DEV_MODE"),
         ALL_LOCALES = DEV_MODE ? ["en"] : grunt.file.expand({
             filter: "isDirectory",
             cwd: "src/nls"
@@ -157,6 +161,16 @@ module.exports = function (grunt) {
             html: { src: "src/index.html", dest: "build/index.html" },
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
+        watch: {
+            scripts: {
+                files: ["src/style/**/*"],
+                tasks: ["less"],
+                options: {
+                    spawn: false,
+                    interrupt: true
+                }
+            }
+        },
         // Build tasks
         less: {
             style: {
@@ -164,17 +178,20 @@ module.exports = function (grunt) {
                     "build/style.css": "src/style/main.less"
                 },
                 options: {
-                    sourceMap: !!grunt.option("dev"),
+                    sourceMap: grunt.option("DEV_MODE"),
                     sourceMapFilename: "build/style.css.map", // Put it in build
                     sourceMapURL: "style.css.map" // But point to it in the same folder
                 }
             }
         },
         webpack: {
-            design: require("./webpack.config.js"),
-            options: {
-                watch: !!grunt.option("watch"),
-                keepalive: !!grunt.option("watch")
+            options: require("./webpack.config.js"),
+            compile: {
+                watch: false
+            },
+            watch: {
+                watch: true,
+                keepalive: true
             }
         },
         uglify: {
@@ -184,7 +201,7 @@ module.exports = function (grunt) {
                         unused: false // This saves us about half an hour, losing 200 KB
                     }
                 },
-                files: !!grunt.option("dev") ? {} : ALL_LOCALES.reduce(function (map, locale) {
+                files: ALL_LOCALES.reduce(function (map, locale) {
                     var target = "build/spaces-design-" + locale + ".js";
 
                     map[target] = [target];
@@ -193,7 +210,13 @@ module.exports = function (grunt) {
             }
         },
         concurrent: {
-            test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
+            test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
+            build: {
+                tasks: ["watch", "webpack:watch"],
+                options: {
+                    logConcurrentOutput: true
+                }
+            }
         }
     });
 
@@ -207,6 +230,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-less");
     grunt.loadNpmTasks("grunt-contrib-uglify");
+    grunt.loadNpmTasks("grunt-contrib-watch");
 
     grunt.loadNpmTasks("grunt-webpack");
 
@@ -217,6 +241,9 @@ module.exports = function (grunt) {
     grunt.registerTask("seqtest", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
     grunt.registerTask("test", ["concurrent:test"]);
     grunt.registerTask("i18n", ["clean:i18n", "concat-json", "merge-json"]);
-    grunt.registerTask("compile", ["test", "clean:build", "i18n", "copy", "less", "webpack", "uglify", "clean:i18n"]);
+    grunt.registerTask("compile",
+        ["test", "clean:build", "i18n", "copy", "less", "webpack:compile", "uglify", "clean:i18n"]
+    );
+    grunt.registerTask("dev", ["test", "clean", "i18n", "copy", "less", "concurrent:build"]);
     grunt.registerTask("default", ["test"]);
 };
