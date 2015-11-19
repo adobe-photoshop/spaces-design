@@ -1119,8 +1119,8 @@ define(function (require, exports) {
         return this.transfer(initActiveDocument);
     };
     beforeStartup.action = {
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC],
+        reads: [],
+        writes: [],
         transfers: [initActiveDocument]
     };
 

@@ -654,25 +654,18 @@ define(function (require, exports) {
         // Enable target path suppression
         var pathPromise = adapterUI.setSuppressTargetPaths(false);
 
-        // Add additional shortcut CMD=, so that CMD+ and CMD= both work for zoom in.
-        var zoomShortcutModifier = system.isMac ? { "command": true } : { "control": true },
-            zoomInShortcutPromise = this.transfer(shortcuts.addShortcut, "=", zoomShortcutModifier, function () {
-                return this.flux.actions.ui.zoomInOut({ "zoomIn": true, "preserveFocus": true });
-            }.bind(this));
-
         // Initialize the reference point from preferences
         var preferences = this.flux.store("preferences"),
             referencePoint = preferences.get(REFERENCE_POINT_PREFS_KEY, DEFAULT_REFERENCE_POINT),
             setReferencePointPromise = this.transfer(setReferencePoint, referencePoint);
 
-        return Promise.join(osPromise, owlPromise, pathPromise, zoomInShortcutPromise,
-                setReferencePointPromise)
+        return Promise.join(osPromise, owlPromise, pathPromise, setReferencePointPromise)
             .return(reset);
     };
     beforeStartup.action = {
         reads: [],
         writes: [locks.PS_APP],
-        transfers: [shortcuts.addShortcut, setReferencePoint],
+        transfers: [setReferencePoint],
         modal: true
     };
 
@@ -683,12 +676,20 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        return this.transfer(updateTransform);
+        // Add additional shortcut CMD=, so that CMD+ and CMD= both work for zoom in.
+        var zoomShortcutModifier = system.isMac ? { "command": true } : { "control": true },
+            zoomInShortcutPromise = this.transfer(shortcuts.addShortcut, "=", zoomShortcutModifier, function () {
+                return this.flux.actions.ui.zoomInOut({ "zoomIn": true, "preserveFocus": true });
+            }.bind(this));
+
+        var updateTransformPromise = this.transfer(updateTransform);
+
+        return Promise.join(zoomInShortcutPromise, updateTransformPromise);
     };
     afterStartup.action = {
         reads: [],
         writes: [],
-        transfers: [updateTransform]
+        transfers: ["shortcuts.addShortcut", updateTransform]
     };
 
     /**
