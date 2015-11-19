@@ -78,7 +78,11 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        var updateRecentFilesPromise = this.transfer(updateRecentFiles),
+        var appStore = this.flux.store("application"),
+            recentFilesInitialized = appStore.getState().recentFilesInitialized,
+            updateRecentFilesPromise = recentFilesInitialized ?
+                Promise.resolve() :
+                this.transfer(updateRecentFiles),
             setRulerUnitsPromise = descriptor.playObject(ruler.setRulerUnits("rulerPixels"));
 
         return Promise.join(setRulerUnitsPromise, updateRecentFilesPromise);

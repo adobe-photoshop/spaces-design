@@ -323,9 +323,12 @@ define(function (require, exports) {
             .then(function (documentIDs) {
                 if (documentIDs.length === 0) {
                     this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
-                    // Updates menu items in cases of no document
-                    this.dispatch(events.menus.UPDATE_MENUS);
-                    return;
+                    return this.transfer("application.updateRecentFiles")
+                        .bind(this)
+                        .then(function () {
+                            // Updates menu items in cases of no document
+                            this.dispatch(events.menus.UPDATE_MENUS);
+                        });
                 }
 
                 var currentRef = documentLib.referenceBy.current;
@@ -369,7 +372,7 @@ define(function (require, exports) {
     initActiveDocument.action = {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC, locks.JS_APP],
-        transfers: [historyActions.queryCurrentHistory, "layers.deselectAll"]
+        transfers: [historyActions.queryCurrentHistory, "layers.deselectAll", "application.updateRecentFiles"]
     };
 
     /**
