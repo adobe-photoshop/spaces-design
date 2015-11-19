@@ -105,9 +105,32 @@ define(function (require, exports, module) {
          */
         _lastScrolledTo: Immutable.List(),
 
+        /**
+         * Used to suppress scrolling into view when the selection is changed
+         * by clicking directly on a layer face.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _suppressNextScrollTo: false,
+
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
             this._mountedLayerIDs = new Set();
+        },
+
+        /**
+         * A capture-phase click handler for the container. Used to suppress
+         * scrolling into view when clicking on the layers panel directly.
+         *
+         * @private
+         * @param {SyntheticEvent} event
+         */
+        _handleContainerClickCapture: function (event) {
+            var containerNode = React.findDOMNode(this.refs.container);
+            if (event.target !== containerNode) {
+                this._suppressNextScrollTo = true;
+            }
         },
 
         componentDidMount: function () {
@@ -139,6 +162,14 @@ define(function (require, exports, module) {
          * @param {LayerStructure} layerStructure
          */
         _scrollToSelection: function (layerStructure) {
+            // This is set when a face is clicked on initially. Suppressing the call
+            // to scrollIntoViewIfNeeded below prevents a forced synchronous layout.
+            if (this._suppressNextScrollTo) {
+                this._suppressNextScrollTo = false;
+                this._lastScrolledTo = Immutable.List();
+                return;
+            }
+
             var selected = layerStructure.selected;
             if (selected.isEmpty()) {
                 return;
@@ -165,6 +196,8 @@ define(function (require, exports, module) {
 
         /**
          * Deselects all layers.
+         *
+         * @private
          */
         _handleContainerClick: function () {
             this.getFlux().actions.layers.deselectAll();
@@ -250,7 +283,8 @@ define(function (require, exports, module) {
                     <div
                         ref="container"
                         className={containerClasses}
-                        onClick={this._handleContainerClick}>
+                        onClick={this._handleContainerClick}
+                        onClickCapture={this._handleContainerClickCapture}>
                         {childComponents}
                     </div>
                 </section>
