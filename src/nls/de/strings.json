@@ -4,6 +4,7 @@
         "ADD_FILL": "Füllung hinzufügen",
         "ADD_VECTOR_MASK": "Vektormaske hinzufügen",
         "APPLY_LIBRARY_COLOR": "Bibliotheksfarbe anwenden",
+        "CREATE_ARTBOARD": "[8555519] ü_Create Artboard",
         "SET_STROKE_COLOR": "Konturfarbe festlegen",
         "SET_STROKE": "Kontur festlegen",
         "SET_STROKE_OPACITY": "Strichdeckkraft festlegen",
@@ -21,6 +22,8 @@
         "SET_RADIUS": "Radius festlegen",
         "ROTATE_LAYERS": "Ebenen drehen",
         "DUPLICATE_LAYERS": "Ebenen duplizieren",
+        "LOCK_LAYER": "Ebene sperren",
+        "UNLOCK_LAYER": "Ebene lösen",
         "SET_LAYER_EFFECTS": "Ebeneneffekte festlegen",
         "SET_LAYER_POSITION": "Position festlegen",
         "SET_LAYER_SIZE": "Größe festlegen",
@@ -28,6 +31,7 @@
         "SWAP_LAYERS": "Ebenen tauschen",
         "COMBINE_SHAPES": "Formen kombinieren",
         "PASTE_LAYER_STYLE": "Ebenenstil einfügen",
+        "RENAME_LAYER": "Ebene umbenennen",
         "SAMPLE_GRAPHICS": "Beispielgrafiken",
         "SAMPLE_COLOR": "Farbe aufnehmen",
         "SAMPLE_STROKE": "Beispielkontur",
@@ -38,7 +42,9 @@
         "SET_TYPE_LEADING": "Zeilenabstand für Schrift festlegen",
         "SET_TYPE_TRACKING": "Schriftlaufweite festlegen",
         "SET_TYPE_ALIGNMENT": "Schriftausrichtung festlegen",
-        "UNGROUP_LAYERS": "Gruppierung von Ebenen aufheben",
+        "GROUP_LAYERS": "Ebenen gruppieren",
+        "UNGROUP_LAYERS": "Ebenengruppierung aufheben",
+        "REORDER_LAYERS": "[8555515] ü_Reorder Layers",
         "MODIFY_EXPORT_ASSETS": "Aktualisierte Export-Asset-Konfigurationen",
         "APPLY_TEXT_STYLE": "Textformat anwenden",
         "APPLY_LAYER_STYLE": "Ebenenstil anwenden",
@@ -53,7 +59,7 @@
                 "TITLE": "Start",
                 "HEADLINE": "Willkommen beim Design-Bereich",
                 "SUBHEAD": "",
-                "BODY_FIRST": "„Design-Bereich“ (derzeit eine Vorschau) ist die optimale Ergänzung zu Photoshop für Web- und Anwendungsdesigner.",
+                "BODY_FIRST": "Der Design-Bereich (derzeit eine Vorschau) ist eine Companion-App zu Photoshop für Web- und App-Designer.",
                 "BODY_SECOND": "Wir arbeiten in HTML und JavaScript, um neue Interaktionen zu schaffen, die auf Ihre Arbeitsabläufe zugeschnitten sind. Dies ist eine Vorschauversion, für die wir Ihr Feedback benötigen – teilen Sie uns mit, was Sie denken."
             },
             {
@@ -67,8 +73,8 @@
             },
             {
                 "TITLE": "Farbaufnahme",
-                "HEADLINE_FIRST": "Nehmen Sie Farben und Effekte nur per Klick oder Umschalt+Klick auf.",
-                "HEADLINE_SECOND": "Nehmen Sie auch alles andere auf, sogar Grafiken mit der Leertaste."
+                "HEADLINE_FIRST": "Nehmen Sie Farben und Effekte ganz einfach per Klick oder Umschalt-Klick auf.",
+                "HEADLINE_SECOND": "Nehmen Sie alles andere, sogar Grafiken, mit der Leertaste auf."
             },
             {
                 "TITLE": "Zeichenflächen",
@@ -143,6 +149,7 @@
     },
     "TITLE_TRANSFORM": "Transformieren",
     "TOOLS": {
+        "superselectVector": "[8555523] ü_A - Select Vector Tool",
         "newSelect": "V – Auswahlwerkzeug",
         "rectangle": "R – Rechteck-Werkzeug",
         "ellipse": "E – Ellipse-Werkzeug",
@@ -215,7 +222,7 @@
         "SET_DROP_SHADOW_PROPS": "Maße für Schlagschatten festlegen",
         "SET_DROP_SHADOW_X_POSITION": "X-Position für Schlagschatten festlegen",
         "SET_DROP_SHADOW_Y_POSITION": "Y-Position für Schlagschatten festlegen",
-        "SET_DROP_SHADOW_BLUR": "Weichzeichnen für Schlagschatten festlegen",
+        "SET_DROP_SHADOW_BLUR": "Weichzeichnung für Schlagschatten festlegen",
         "SET_DROP_SHADOW_SPREAD": "Ausbreitung des Schlagschattens festlegen",
         "SET_COLOR_PICKER_FORMAT": "Farbwähler-Format festlegen",
         "SET_COLOR_PICKER_MODE": "Farbwähler-Modus festlegen",
@@ -223,7 +230,7 @@
         "TOGGLE_COLOR_OVERLAY": "Farbüberlagerung ein/aus",
         "DELETE_COLOR_OVERLAY": "Farbüberlagerung löschen",
         "SET_STROKE_EFFECT_COLOR": "Konturfarbe festlegen",
-        "SET_STROKE_EFFECT_SIZE": "Strichstärke festlegen",
+        "SET_STROKE_EFFECT_SIZE": "Konturstärke festlegen",
         "TOGGLE_STROKE_EFFECT": "Kontur ein/aus",
         "DELETE_STROKE_EFFECT": "Kontur löschen",
         "TOGGLE_INNER_SHADOW": "Schatten nach innen ein/aus",
@@ -393,7 +400,7 @@
         "STROKE_EFFECT": {
             "TITLE": "Konturen",
             "TITLE_SINGLE": "Kontur",
-            "SIZE": "Größe",
+            "SIZE": "Stärke",
             "MIXED": "Gemischte Darstellung"
         },
         "UNSUPPORTED_EFFECTS": {
@@ -468,7 +475,8 @@
             "RECENT_DOC": "Zuletzt verwendete Dokumente",
             "MENU_COMMAND": "Menübefehle",
             "LIBRARY": "Alle Bibliotheken",
-            "FILTER": "Suche beschränken auf…"
+            "FILTER": "Suche beschränken auf…",
+            "GLOBAL_SHORTCUT": "[8555521] ü_Global Shortcuts"
         },
         "CATEGORIES": {
             "CURRENT_DOC": "Geöffnete Dokumente",
@@ -486,7 +494,8 @@
             "LIBRARY": "Alle Bibliotheken",
             "GRAPHIC": "Grafiken",
             "LAYERSTYLE": "Ebenenstile",
-            "CHARACTERSTYLE": "Zeichenformate"
+            "CHARACTERSTYLE": "Zeichenformate",
+            "GLOBAL_SHORTCUT": "[8555522] ü_Global Shortcuts"
         },
         "MODIFIERS": {
             "COMMAND": "Bfhl",
