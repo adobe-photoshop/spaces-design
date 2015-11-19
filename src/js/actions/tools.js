@@ -863,6 +863,7 @@ define(function (require, exports) {
                         throttledResetBorderPolicies();
                     }
                 } else {
+                    throttledResetBorderPolicies();
                     documentLayerBounds = null;
                 }
             }.bind(this);
