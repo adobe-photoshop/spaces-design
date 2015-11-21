@@ -231,7 +231,7 @@ define(function (require, exports) {
             currentDocument = documentStore.getCurrentDocument(),
             layers = currentDocument.layers.allSelected,
             typeLayers = layers.filter(function (layer) {
-                return layer.kind === layer.layerKinds.TEXT;
+                return layer.isText;
             });
 
         if (typeLayers.isEmpty()) {

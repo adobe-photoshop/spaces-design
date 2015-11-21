@@ -78,7 +78,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var vectorLayers = this.props.document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.VECTOR;
+                    return layer.isVector;
                 }),
                 vectorMaskLayers = this.props.document.layers.selected.filter(function (layer) {
                     return layer.vectorMaskEnabled;

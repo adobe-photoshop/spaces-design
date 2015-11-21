@@ -24,8 +24,9 @@
 define(function (require, exports) {
     "use strict";
 
-    var _ = require("lodash"),
-        layerLib = require("adapter").lib.layer;
+    var _ = require("lodash");
+        
+    var Layer = require("js/models/layer");
    
     /**
      * Get the class name for the layer face icon for the given layer
@@ -38,9 +39,9 @@ define(function (require, exports) {
         var iconID = "layer-";
         if (layer.isArtboard) {
             iconID += "artboard";
-        } else if (layer.kind === layer.layerKinds.BACKGROUND) {
-            iconID += layer.layerKinds.PIXEL;
-        } else if (layer.kind === layer.layerKinds.SMARTOBJECT && layer.isLinked) {
+        } else if (layer.isBackground) {
+            iconID += Layer.KINDS.PIXEL;
+        } else if (layer.isSmartObject && layer.isLinked) {
             if (layer.isCloudLinkedSmartObject()) {
                 iconID += "cloud-linked";
             } else {
@@ -54,19 +55,19 @@ define(function (require, exports) {
             iconID += layer.kind;
         }
 
-        if (layer.kind === layer.layerKinds.GROUP && !layer.expanded) {
+        if (layer.isGroup && !layer.expanded) {
             iconID += "-collapsed";
         }
 
-        if (layer.kind === layer.layerKinds.TEXT && layer.textWarningLevel !== 0) {
+        if (layer.isText && layer.textWarningLevel !== 0) {
             iconID += "-missing";
         }
 
-        if (layer.vectorMaskEnabled && layer.kind !== layer.layerKinds.VECTOR) {
+        if (layer.vectorMaskEnabled && !layer.isVector) {
             iconID += "-mask";
         }
 
-        return iconID;
+        return iconID.toLowerCase();
     };
 
     /**
@@ -90,17 +91,17 @@ define(function (require, exports) {
         
         _.forEach(categories, function (kind) {
             if (kind === "ARTBOARD") {
-                iconID += "artboard";
-            } else if (kind === "BACKGROUND") {
-                iconID += layerLib.layerKinds.PIXEL;
-            } else if (kind === "SMARTOBJECT" && isLinked) {
-                iconID += layerLib.layerKinds.SMARTOBJECT + "-linked";
+                iconID += "ARTBOARD";
+            } else if (kind === Layer.KINDS.BACKGROUND) {
+                iconID += Layer.KINDS.PIXEL;
+            } else if (kind === Layer.KINDS.SMARTOBJECT && isLinked) {
+                iconID += Layer.KINDS.SMARTOBJECT + "-linked";
             } else if (kind.indexOf("LAYER") === -1) { // check if kind is "ALL_LAYER" or "CURRENT_LAYER"
-                iconID += layerLib.layerKinds[kind.toUpperCase().replace(" ", "")];
+                iconID += kind;
             }
         });
 
-        return iconID;
+        return iconID.toLowerCase();
     };
 
     exports.getSVGClassFromLayer = getSVGClassFromLayer;

@@ -34,7 +34,7 @@ define(function (require, exports, module) {
     var Vector = React.createClass({
         render: function () {
             var vectorLayers = this.props.document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.VECTOR;
+                    return layer.isVector;
                 });
 
             if (vectorLayers.isEmpty()) {

@@ -157,7 +157,7 @@ define(function (require, exports, module) {
          * @return {Object} 
          */
         getTypeObjectFromLayer: function (layer) {
-            if (layer.kind !== layer.layerKinds.TEXT) {
+            if (!layer.isText) {
                 throw new Error("Trying to build a type style from a non-text layer!");
             }
 

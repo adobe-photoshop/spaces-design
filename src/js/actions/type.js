@@ -760,7 +760,7 @@ define(function (require, exports) {
                     .map(function (document) {
                         var layers = document.layers.all,
                             typeLayers = layers.filter(function (layer) {
-                                return layer.isTextLayer();
+                                return layer.isText;
                             });
 
                         // Fully update selected layers; only update non-lazy properties for unselected layers.

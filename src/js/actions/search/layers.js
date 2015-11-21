@@ -25,12 +25,12 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable"),
-        _ = require("lodash");
+        Immutable = require("immutable");
 
     var events = require("js/events"),
         mathUtil = require("js/util/math"),
-        svgUtil = require("js/util/svg");
+        svgUtil = require("js/util/svg"),
+        Layer = require("js/models/layer");
     
     /**
      * Get the layer type and if it is linked or an artboard, as an array of strings.
@@ -44,15 +44,10 @@ define(function (require, exports) {
     var _getLayerCategory = function (layer, type) {
         var layerType = [type + "_LAYER"];
 
-        if (layer.kind === layer.layerKinds.GROUP && layer.isArtboard) {
+        if (layer.isGroup && layer.isArtboard) {
             layerType.push("ARTBOARD");
         } else {
-            // Find string associated with layer.kind, which is a number
-            _.forEach(Object.keys(layer.layerKinds), function (type) {
-                if (layer.kind === layer.layerKinds[type]) {
-                    layerType.push(type);
-                }
-            });
+            layerType.push(layer.kind);
         }
 
         if (layer.isLinked) {
@@ -195,7 +190,14 @@ define(function (require, exports) {
     var _registerLayerSearch = function (searchAllDocuments) {
         var type = searchAllDocuments ? "ALL" : "CURRENT",
             filters = Immutable.List.of(
-                (type + "_LAYER"), "PIXEL", "TEXT", "ARTBOARD", "ADJUSTMENT", "SMARTOBJECT", "GROUP", "VECTOR"
+                (type + "_LAYER"),
+                "ARTBOARD",
+                Layer.KINDS.PIXEL,
+                Layer.KINDS.TEXT,
+                Layer.KINDS.ADJUSTMENT,
+                Layer.KINDS.SMARTOBJECT,
+                Layer.KINDS.GROUP,
+                Layer.KINDS.VECTOR
             ),
             options = searchAllDocuments ? _getAllLayerSearchOptions.bind(this) : _getLayerSearchOptions.bind(this);
 

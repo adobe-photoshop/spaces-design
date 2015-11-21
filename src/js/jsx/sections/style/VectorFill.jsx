@@ -62,7 +62,7 @@ define(function (require, exports, module) {
             var document = props.document,
                 // We only care about vector layers.  If at least one exists, then this component should render
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.VECTOR;
+                    return layer.isVector;
                 }),
                 fills = collection.pluck(layers, "fill"),
                 downsample = this._downsampleFills(fills);

@@ -209,7 +209,7 @@ define(function (require, exports, module) {
                     }, this);
 
             var bottomLayer = doc.layers.byIndex(1);
-            if (bottomLayer.kind === bottomLayer.layerKinds.GROUPEND) {
+            if (bottomLayer.isGroupEnd) {
                 layerComponents = layerComponents.push(
                     <DummyLayerFace key="dummy" document={doc}/>
                 );

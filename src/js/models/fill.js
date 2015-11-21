@@ -27,7 +27,6 @@ define(function (require, exports, module) {
     var Immutable = require("immutable");
 
     var Color = require("./color"),
-        layerLib = require("adapter").lib.layer,
         contentLayerLib = require("adapter").lib.contentLayer,
         objUtil = require("js/util/object"),
         log = require("js/util/log");
@@ -75,10 +74,12 @@ define(function (require, exports, module) {
      * @return {Immutable.List.<Fill>}
      */
     Fill.fromLayerDescriptor = function (layerDescriptor) {
-        var adjustment = layerDescriptor.adjustment && layerDescriptor.adjustment[0];
+        var Layer = require("./layer"),
+            adjustment = layerDescriptor.adjustment && layerDescriptor.adjustment[0],
+            layerKind = Layer.KIND_TO_NAME[layerDescriptor.layerKind];
 
         // Build a Fill for vector layers with an adjustment property
-        if ((layerDescriptor.layerKind === layerLib.layerKinds.VECTOR) && adjustment) {
+        if ((layerKind === Layer.KINDS.VECTOR) && adjustment) {
             try {
                 var model = {},
                     color = objUtil.getPath(adjustment, "color"),

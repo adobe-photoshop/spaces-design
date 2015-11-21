@@ -179,7 +179,7 @@ define(function (require, exports, module) {
         _setPostScript: function (postScriptName) {
             var document = this.props.document,
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
+                    return layer.isText;
                 }),
                 family = this._getPostScriptFontFamily(postScriptName),
                 style = this._getPostScriptFontStyle(postScriptName),
@@ -199,7 +199,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
+                    return layer.isText;
                 });
 
             flux.actions.type.setSizeThrottled(document, layers, size);
@@ -216,7 +216,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
+                    return layer.isText;
                 }),
                 options = {
                     coalesce: coalesce,
@@ -237,7 +237,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
+                    return layer.isText;
                 }),
                 options = {
                     coalesce: coalesce,
@@ -258,7 +258,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
+                    return layer.isText;
                 });
 
             if (this.state.opaque) {
@@ -279,7 +279,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
+                    return layer.isText;
                 });
 
             flux.actions.type.setTrackingThrottled(document, layers, tracking);
@@ -296,7 +296,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
+                    return layer.isText;
                 });
 
             if (leading === nls.localize("strings.STYLE.TYPE.AUTO_LEADING")) {
@@ -316,7 +316,7 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 flux = this.getFlux(),
                 layers = document.layers.selected.filter(function (layer) {
-                    return layer.kind === layer.layerKinds.TEXT;
+                    return layer.isText;
                 });
 
             flux.actions.type.setAlignmentThrottled(document, layers, alignment);

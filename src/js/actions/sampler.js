@@ -35,6 +35,7 @@ define(function (require, exports) {
         adapterOS = require("adapter").os;
 
     var Color = require("js/models/color"),
+        Layer = require("js/models/layer"),
         uiUtil = require("js/util/ui"),
         events = require("../events"),
         locks = require("js/locks"),
@@ -67,15 +68,14 @@ define(function (require, exports) {
         }
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
-            layerKinds = sourceLayer.layerKinds,
             color;
 
         switch (sourceLayer.kind) {
-            case layerKinds.VECTOR:
+            case Layer.KINDS.VECTOR:
                 color = sourceLayer.fill && sourceLayer.fill.color;
                 
                 return Promise.resolve(color);
-            case layerKinds.TEXT:
+            case Layer.KINDS.TEXT:
                 color = sourceLayer.text.firstCharacterStyle.color;
                 color = color && color.setOpacity(sourceLayer.opacity);
 
@@ -117,7 +117,7 @@ define(function (require, exports) {
                 });
                 
                 // Stroke shows up only if the source is a shape layer
-                if (source.kind === source.layerKinds.VECTOR) {
+                if (source.isVector) {
                     result.push({
                         type: "stroke",
                         value: source.stroke
@@ -126,10 +126,10 @@ define(function (require, exports) {
 
                 // If source is text and all targets are text, this button will be enabled
                 var allTextLayers = selectedLayers.every(function (layer) {
-                    return layer.isTextLayer();
+                    return layer.isText;
                 });
 
-                if (source.isTextLayer() && allTextLayers) {
+                if (source.isText && allTextLayers) {
                     var fontStore = this.flux.store("font");
 
                     typeStyle = fontStore.getTypeObjectFromLayer(source);
@@ -149,10 +149,10 @@ define(function (require, exports) {
                 // If source is a smart object, and all targets are smart object
                 // graphic sampling will be available
                 var allSmartObjectLayers = selectedLayers.every(function (layer) {
-                    return layer.kind === layer.layerKinds.SMARTOBJECT;
+                    return layer.isSmartObject;
                 });
 
-                if (source.kind === source.layerKinds.SMARTOBJECT && allSmartObjectLayers) {
+                if (source.isSmartObject && allSmartObjectLayers) {
                     graphic = source;
                 }
 
@@ -226,9 +226,9 @@ define(function (require, exports) {
             };
 
         targetLayers.forEach(function (layer) {
-            if (layer.kind === layer.layerKinds.VECTOR) {
+            if (layer.isVector) {
                 shapeLayers = shapeLayers.push(layer);
-            } else if (layer.kind === layer.layerKinds.TEXT) {
+            } else if (layer.isText) {
                 textLayers = textLayers.push(layer);
             }
         });
@@ -282,9 +282,9 @@ define(function (require, exports) {
             };
 
         targetLayers.forEach(function (layer) {
-            if (layer.kind === layer.layerKinds.VECTOR) {
+            if (layer.isVector) {
                 shapeLayers = shapeLayers.push(layer);
-            } else if (layer.kind === layer.layerKinds.TEXT) {
+            } else if (layer.isText) {
                 textLayers = textLayers.push(layer);
             }
         });
@@ -498,14 +498,14 @@ define(function (require, exports) {
         };
 
         switch (source.kind) {
-        case source.layerKinds.VECTOR:
+        case Layer.KINDS.VECTOR:
             style.fillColor = source.fill && source.fill.color;
             style.stroke = source.stroke;
             style.blendMode = source.blendMode;
             style.radii = source.radii && source.radii.scalar;
 
             break;
-        case source.layerKinds.TEXT:
+        case Layer.KINDS.TEXT:
             var fontStore = this.flux.store("font"),
                 textColor = source.text.firstCharacterStyle.color;
 
@@ -585,13 +585,13 @@ define(function (require, exports) {
             };
 
         targetLayers.forEach(function (layer) {
-            if (layer.kind === layer.layerKinds.VECTOR) {
+            if (layer.isVector) {
                 shapeLayers = shapeLayers.push(layer);
-            } else if (layer.kind === layer.layerKinds.TEXT) {
+            } else if (layer.isText) {
                 textLayers = textLayers.push(layer);
             }
 
-            if (layer.kind !== layer.layerKinds.TEXT) {
+            if (!layer.isText) {
                 nonTextLayers = nonTextLayers.push(layer);
             }
         });

@@ -26,8 +26,6 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable");
 
-    var layerLib = require("adapter").lib.layer;
-
     /**
      * A node in the layer tree structure.
      * 
@@ -79,16 +77,14 @@ define(function (require, exports, module) {
                 node,
                 layer,
                 layerID,
-                layerKind,
                 children,
                 previousSize;
 
             while (index >= 0) {
                 layer = layers.get(index--);
                 layerID = layer.id;
-                layerKind = layer.kind;
 
-                if (layerKind === layerLib.layerKinds.GROUP) {
+                if (layer.isGroup) {
                     previousSize = nodes.size;
                     children = makeLayerNodes(layerID, index, depth + 1);
                     index -= (nodes.size - previousSize);
@@ -106,7 +102,7 @@ define(function (require, exports, module) {
                 nodes.set(layerID, node);
                 roots.push(node);
 
-                if (layerKind === layerLib.layerKinds.GROUPEND) {
+                if (layer.isGroupEnd) {
                     break;
                 }
             }

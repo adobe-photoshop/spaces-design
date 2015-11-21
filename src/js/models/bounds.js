@@ -26,8 +26,8 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable");
 
-    var layerLib = require("adapter").lib.layer,
-        objUtil = require("js/util/object");
+    var objUtil = require("js/util/object"),
+        Layer = require("./layer");
 
     /**
      * Model document bounds or layer bounds without effects.
@@ -141,6 +141,7 @@ define(function (require, exports, module) {
      *
      * @param {object} descriptor
      * @param {number} descriptor.layerKind
+     * @param {LayerKind} descriptor.layerKindName
      * @param {?boolean} descriptor.artboardEnabled If set, will parse artboard value
      * @param {?object} descriptor.artboard Contains the artboard bounds descriptor
      * @param {?object} descriptor.pathBounds If available, will be parsed as shape layer
@@ -150,24 +151,25 @@ define(function (require, exports, module) {
      * @return {?{top: number, left: number, bottom: number, right: number}}
      */
     Bounds.parseLayerDescriptor = function (descriptor) {
-        var boundsObject;
+        var boundsObject,
+            layerKind = descriptor.layerKindName || Layer.KIND_TO_NAME[descriptor.layerKind];
 
         // artboards are also groups. so we handle them separately 
         if (descriptor.artboardEnabled) {
             boundsObject = objUtil.getPath(descriptor, "artboard.artboardRect");
-        } else if (descriptor.layerKind === layerLib.layerKinds.VECTOR &&
+        } else if (layerKind === Layer.KINDS.VECTOR &&
                 descriptor.hasOwnProperty("pathBounds")) {
             boundsObject = objUtil.getPath(descriptor, "pathBounds.pathBounds");
         } else {
-            switch (descriptor.layerKind) {
+            switch (layerKind) {
                 // Photoshop's group bounds are not useful, so ignore them.
-                case layerLib.layerKinds.GROUP:
-                case layerLib.layerKinds.GROUPEND:
+                case Layer.KINDS.GROUP:
+                case Layer.KINDS.GROUPEND:
                     return null;
-                case layerLib.layerKinds.TEXT:
+                case Layer.KINDS.TEXT:
                     boundsObject = descriptor.boundingBox;
                     break;
-                case layerLib.layerKinds.VECTOR:
+                case Layer.KINDS.VECTOR:
                     boundsObject = descriptor.boundsNoEffects;
                     break;
                 default:

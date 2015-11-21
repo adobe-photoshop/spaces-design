@@ -77,7 +77,7 @@ define(function (require, exports, module) {
             // when there is a bottom group layer. Drop position is fixed.
 
             var bottomLayer = this.props.document.layers.top.last(),
-                isGroup = bottomLayer.kind === bottomLayer.layerKinds.GROUP,
+                isGroup = bottomLayer.isGroup,
                 isDropTarget = !isGroup || !draggedLayers.contains(bottomLayer);
 
             this.setState({ isDropTarget: isDropTarget });

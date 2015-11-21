@@ -243,7 +243,7 @@ define(function (require, exports) {
         
         // However, if the layer is a smart object, and is owned by some other app, we need to change representation
         // we do this by matching extensions
-        if (currentLayers.size === 1 && firstLayer.isSmartObject()) {
+        if (currentLayers.size === 1 && firstLayer.isSmartObject) {
             var layerFileName = firstLayer.smartObject.fileReference;
 
             // layerFileName will be undefined if CC Libraries is uploading the same layer.
@@ -348,7 +348,7 @@ define(function (require, exports) {
 
         if (!currentLibrary ||
             currentLayers.size !== 1 ||
-            !currentLayer || !currentLayer.isTextLayer()) {
+            !currentLayer || !currentLayer.isText) {
             return Promise.resolve();
         }
 
@@ -976,7 +976,7 @@ define(function (require, exports) {
         var appStore = this.flux.store("application"),
             currentDocument = appStore.getCurrentDocument(),
             selectedLayers = currentDocument ? currentDocument.layers.selected : Immutable.List(),
-            textLayers = selectedLayers.filter(function (l) { return l.isTextLayer() && !l.locked; });
+            textLayers = selectedLayers.filter(function (l) { return l.isText && !l.locked; });
 
         if (textLayers.isEmpty()) {
             return Promise.resolve();
@@ -1032,8 +1032,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var textLayers = selectedLayers.filter(function (l) { return l.isTextLayer(); }),
-            vectorLayers = selectedLayers.filter(function (l) { return l.isVector(); }),
+        var textLayers = selectedLayers.filter(function (l) { return l.isText; }),
+            vectorLayers = selectedLayers.filter(function (l) { return l.isVector; }),
             transactionOpts = {
                 historyStateInfo: {
                     name: nls.localize("strings.ACTIONS.APPLY_LIBRARY_COLOR"),
