@@ -718,7 +718,7 @@ define(function (require, exports, module) {
                             <Label
                                 size="column-2"
                                 disabled={locked}
-                                title={nls.localize("strings.TOOLTIPS.SET_LETTERSPACING")}>
+                                title={nls.localize("strings.TOOLTIPS.SET_LETTER_SPACING")}>
                                 <SVGIcon CSSID="text-tracking" />
                             </Label>
                             <NumberInput
@@ -734,7 +734,7 @@ define(function (require, exports, module) {
                             <Label
                                 size="column-2"
                                 disabled={locked}
-                                title={nls.localize("strings.TOOLTIPS.SET_LINESPACING")}>
+                                title={nls.localize("strings.TOOLTIPS.SET_LINE_SPACING")}>
                                 <SVGIcon CSSID="text-leading" />
                             </Label>
                             <NumberInput
