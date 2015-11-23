@@ -36,7 +36,8 @@
     "mathjs": "~2.2.0",
     "react": "~0.13.3",
     "spaces-adapter": "https://github.com/adobe-photoshop/spaces-adapter.git#^0.30.0",
-    "tinycolor": "~1.2.1"
+    "tinycolor": "~1.2.1",
+    "scriptjs": "~2.5.8"
   },
   "devDependencies": {
     "qunit": "~1.19.0",

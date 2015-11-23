@@ -26,8 +26,7 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         Immutable = require("immutable"),
-        _ = require("lodash"),
-        CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
+        _ = require("lodash");
 
     var events = require("../events"),
         log = require("js/util/log"),
@@ -46,6 +45,11 @@ define(function (require, exports, module) {
      * Components can use this to cleanly reload or refresh their state on undo/redo.
      */
     var LibraryStore = Fluxxor.createStore({
+
+        /**
+         * @type {Object}
+         */
+        _librariesAPI: null,
 
         /**
          * @type {AdobeLibraryCollection}
@@ -106,6 +110,7 @@ define(function (require, exports, module) {
 
         initialize: function () {
             this.bindActions(
+                events.libraries.LIBRARIES_API_LOADED, this._handleLibraryAPIsLoaded,
                 events.libraries.LIBRARIES_LOADED, this._handleLibrariesLoaded,
                 events.libraries.LIBRARIES_UNLOADED, this._handleLibrariesUnloaded,
                 
@@ -183,6 +188,17 @@ define(function (require, exports, module) {
             this._handleReset();
 
             this.emit("change");
+        },
+
+        /**
+         * Once we load CCLibraries API from file://shared
+         * We make them available here
+         *
+         * @private
+         * @param {Object} ccLibraries 
+         */
+        _handleLibraryAPIsLoaded: function (ccLibraries) {
+            this._librariesAPI = ccLibraries;
         },
 
         /**
@@ -508,7 +524,11 @@ define(function (require, exports, module) {
          * @return {?AdobeLibraryElement}
          */
         getElementByReference: function (elementReference) {
-            return CCLibraries.resolveElementReference(elementReference);
+            if (!this._librariesAPI) {
+                throw new Error("Libraries API is not loaded yet!");
+            }
+
+            return this._librariesAPI.resolveElementReference(elementReference);
         },
 
         /**
@@ -545,6 +565,15 @@ define(function (require, exports, module) {
          */
         generateTempFilename: function (element) {
             return element.name.replace(_TRIM_FILE_NAME_REGEXP, "") + "@" + element.id + ".psd";
+        },
+
+        /**
+         * Returns the loaded libraries API
+         *
+         * @return {Object} CCLibraries API global object
+         */
+        getLibrariesAPI: function () {
+            return this._librariesAPI;
         }
     });
 
