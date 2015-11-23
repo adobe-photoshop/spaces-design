@@ -35,8 +35,7 @@ define(function (require, exports, module) {
     var os = require("adapter").os;
 
     var TitleHeader = require("js/jsx/shared/TitleHeader"),
-        LayerFace = require("./LayerFace"),
-        DummyLayerFace = require("./DummyLayerFace"),
+        LayersList = require("./LayersList"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         synchronization = require("js/util/synchronization");
@@ -216,7 +215,7 @@ define(function (require, exports, module) {
                 this._getLayerPathsRecursively([], node, targetIDs, result);
             }, this);
             
-            // Convert paths to zipped values for better performance in "LayerPanel#_renderLayerList".
+            // Convert paths to zipped values for better performance in "LayerPanel#_renderLayersList".
             // From
             //   [[1,2,3], [1,4,6], [1,7]]
             // To
@@ -313,71 +312,19 @@ define(function (require, exports, module) {
         _handleScroll: function () {
             this._setTooltipThrottled("");
         },
-        
-        /**
-         * Return the layer list component of the given layer node.
-         * 
-         * @param  {LayerNode} layerNode
-         * @param  {Array.<Set.<number>>} changedLayerIDPaths
-         * @param  {number} depth - depth of "layerNode"
-         * @return {?ReactComponent}
-         */
-        _renderLayerList: function (layerNode, changedLayerIDPaths, depth) {
-            depth = depth || 0;
-
-            var doc = this.props.document,
-                layer = doc.layers.byID(layerNode.id);
-
-            if (layer.isGroupEnd) {
-                return null;
-            }
-
-            var childComponents = [];
-            if (layerNode.children && (layer.expanded || this._expandedLayerIDs.has(layer.id))) {
-                this._expandedLayerIDs.add(layer.id);
-
-                layerNode.children.forEach(function (childNode) {
-                    childComponents.push(this._renderLayerList(childNode, changedLayerIDPaths, depth + 1));
-                }, this);
-            }
-            
-            var childrenList = childComponents.length !== 0 && (<ul className="layer-list">{childComponents}</ul>),
-                isLayerChanged = !!changedLayerIDPaths[depth] && changedLayerIDPaths[depth].has(layer.id);
-
-            return (
-                <LayerFace
-                    key={layer.key}
-                    disabled={this.props.disabled}
-                    document={this.props.document}
-                    depth={depth}
-                    layer={layer}
-                    isLayerChanged={isLayerChanged}>
-                    {childrenList}
-                </LayerFace>
-            );
-        },
 
         render: function () {
-            var doc = this.props.document;
-
-            var changedLayerIDPaths = this._getLayerPaths(this._changedLayerIDs),
-                layerComponents = doc.layers.roots.map(function (rootNode) {
-                    return this._renderLayerList(rootNode, changedLayerIDPaths);
-                }, this);
-
-            var bottomLayer = doc.layers.byIndex(1);
-
-            if (bottomLayer.isGroupEnd) {
-                layerComponents.push(
-                    <DummyLayerFace key="dummy" document={doc}/>
+            var doc = this.props.document,
+                changedLayerIDPaths = this._getLayerPaths(this._changedLayerIDs),
+                childComponents = (
+                    <LayersList
+                        isRoot={true}
+                        disabled={this.props.disabled}
+                        document={doc}
+                        layerNodes={doc.layers.roots}
+                        changedLayerIDPaths={changedLayerIDPaths}
+                        />
                 );
-            }
-
-            var childComponents = (
-                <ul ref="parent" className="layer-list">
-                    {layerComponents}
-                </ul>
-            );
 
             var containerClasses = classnames({
                 "section-container": true,

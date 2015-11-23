@@ -56,6 +56,8 @@ define(function (require, exports, module) {
          * @type {boolean}
          */
         _isDragEventTarget: false,
+        
+        _isExpanded: false,
 
         getInitialState: function () {
             return {
@@ -67,7 +69,12 @@ define(function (require, exports, module) {
         },
         
         shouldComponentUpdate: function (nextProps, nextState) {
-            if (nextProps.isLayerChanged) {
+            var depth = nextProps.depth,
+                layer = nextProps.layer,
+                isLayerChanged = !!nextProps.changedLayerIDPaths[depth] && 
+                    nextProps.changedLayerIDPaths[depth].has(layer.id);
+
+            if (isLayerChanged) {
                 return true;
             }
             
@@ -489,15 +496,15 @@ define(function (require, exports, module) {
                 isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
-                isGroup = this.props.children;
+                hasChildren = this.props.childNodes;
             
             var layerClasses = classnames({
                 "layer": true,
                 "layer__select": layer.selected,
-                "layer-group": isGroup,
-                "layer-group__selected": isGroup && layer.selected,
-                "layer-group__collapsed": isGroup && !layer.expanded,
-                "layer-group__not-visible": isGroup && !layer.visible,
+                "layer-group": hasChildren,
+                "layer-group__selected": hasChildren && layer.selected,
+                "layer-group__collapsed": hasChildren && !layer.expanded,
+                "layer-group__not-visible": hasChildren && !layer.visible,
                 "layer-group__drag-target": isDragging
             });
 
@@ -550,6 +557,24 @@ define(function (require, exports, module) {
                 if (layer.textWarningLevel === 2) {
                     iconClassModifier = "face__kind__alert";
                 }
+            }
+
+            var layerList;
+
+            if (this.props.childNodes && (layer.expanded || this._isExpanded)) {
+                this._isExpanded = true;
+                
+                var LayersList = require("jsx!./LayersList");
+
+                layerList = (
+                    <LayersList
+                        disabled={this.props.disabled}
+                        document={this.props.document}
+                        rootLayer={layer}
+                        layerNodes={this.props.childNodes}
+                        depth={this.props.depth + 1}
+                        changedLayerIDPaths={this.props.changedLayerIDPaths}/>
+                );
             }
             
             return (
@@ -607,7 +632,7 @@ define(function (require, exports, module) {
                                     onClick={this._handleLockToggle}>
                                 </ToggleButton>
                             </div>
-                            {this.props.children}
+                            {layerList}
                         </li>
                     </Droppable>
                 </Draggable>
