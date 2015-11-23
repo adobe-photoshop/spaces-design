@@ -933,7 +933,7 @@ define(function (require, exports) {
                 representation.getContentPath(done);
             })
             .bind(this)
-            .then(function () {
+            .tap(function () {
                 return this.transfer(historyActions.newHistoryState, currentDocument.id,
                     nls.localize("strings.ACTIONS.APPLY_LAYER_STYLE"));
             })
