@@ -2657,6 +2657,23 @@ define(function (require, exports) {
         }.bind(this);
         descriptor.addListener("delete", _deleteHandler);
 
+        return Promise.resolve();
+    };
+    beforeStartup.action = {
+        reads: [],
+        writes: []
+    };
+
+    /**
+     * Send info about layers to search store
+     *
+     * @private
+     * @return {Promise}
+     */
+    var afterStartup = function () {
+        searchActions.registerAllLayerSearch.call(this);
+        searchActions.registerCurrentLayerSearch.call(this);
+
         var deleteFn = function () {
             // Note: shortcuts are executed iff some CEF element does not have focus.
             // In particular, this means that if is no active element but there _is_
@@ -2672,31 +2689,25 @@ define(function (require, exports) {
             }
         }.bind(this);
 
-        var backspacePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.BACKSPACE, {}, deleteFn),
-            deletePromise = this.transfer(shortcuts.addShortcut, OS.eventKeyCode.DELETE, {}, deleteFn);
+        var shortcutSpecs = [
+            {
+                key: OS.eventKeyCode.BACKSPACE,
+                modifiers: {},
+                fn: deleteFn
+            },
+            {
+                key: OS.eventKeyCode.DELETE,
+                modifiers: {},
+                fn: deleteFn
+            }
+        ];
 
-        return Promise.join(backspacePromise, deletePromise);
-    };
-    beforeStartup.action = {
-        reads: [],
-        writes: [locks.JS_SHORTCUT, locks.JS_POLICY, locks.PS_APP],
-        transfers: [shortcuts.addShortcut]
-    };
-
-    /**
-     * Send info about layers to search store
-     *
-     * @private
-     * @return {Promise}
-     */
-    var afterStartup = function () {
-        searchActions.registerAllLayerSearch.call(this);
-        searchActions.registerCurrentLayerSearch.call(this);
-        return Promise.resolve();
+        return this.transfer(shortcuts.addShortcuts, shortcutSpecs);
     };
     afterStartup.action = {
         reads: [],
-        writes: []
+        writes: [],
+        transfers: [shortcuts.addShortcuts]
     };
 
     /**

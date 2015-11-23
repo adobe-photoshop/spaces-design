@@ -34,7 +34,6 @@ define(function (require, exports) {
         documentLib = require("adapter").lib.document,
         adapterOS = require("adapter").os,
         adapterUI = require("adapter").ps.ui,
-        adapterPS = require("adapter").ps,
         UI = require("adapter").ps.ui,
         OS = require("adapter").os,
         vectorMaskLib = require("adapter").lib.vectorMask;
@@ -420,58 +419,61 @@ define(function (require, exports) {
     var selectTool = function (nextTool) {
         var toolStore = this.flux.store("tool");
 
-        // Set the appropriate Photoshop tool and tool options
-        return adapterPS.endModalToolState(true)
+        // Remove the border policy if it's been set at some point
+        var removeTransformPolicyPromise;
+        if (_currentTransformPolicyID) {
+            var policyID = _currentTransformPolicyID;
+            _currentTransformPolicyID = null;
+            removeTransformPolicyPromise = this.transfer(policy.removePointerPolicies, policyID, true);
+        } else {
+            removeTransformPolicyPromise = Promise.resolve();
+        }
+
+        var currentTool = toolStore.getCurrentTool(),
+            deselectHandlerPromise;
+
+        if (currentTool && currentTool.deselectHandler) {
+            // Calls the deselect handler of last tool
+            deselectHandlerPromise = this.transfer(currentTool.deselectHandler, currentTool);
+        } else {
+            deselectHandlerPromise = Promise.resolve();
+        }
+
+        return Promise.join(removeTransformPolicyPromise, deselectHandlerPromise)
             .bind(this)
-            // Remove the border policy if it's been set at some point
             .then(function () {
-                if (_currentTransformPolicyID) {
-                    var policyID = _currentTransformPolicyID;
-                    _currentTransformPolicyID = null;
-                    return this.transfer(policy.removePointerPolicies, policyID, true);
-                }
-            })
-            .then(function () {
-                var currentTool = toolStore.getCurrentTool();
-
-                if (!currentTool || !currentTool.deselectHandler) {
-                    return;
-                }
-                // Calls the deselect handler of last tool
-                return this.transfer(currentTool.deselectHandler, currentTool);
-            })
-            .then(function () {
-                var psToolName = nextTool.nativeToolName.call(this),
-                    setToolPlayObject = toolLib.setTool(psToolName);
-
                 // Set the new native tool
-                return descriptor.playObject(setToolPlayObject);
-            })
-            .then(function () {
-                if (!nextTool.handleVectorMaskMode) {
-                    return this.dispatch(events.tool.VECTOR_MASK_MODE_CHANGE, false);
-                }
-                return Promise.resolve();
-            })
-            .then(function () {
-                var selectHandler = nextTool.selectHandler;
+                var psToolName = nextTool.nativeToolName.call(this),
+                    setToolPlayObject = toolLib.setTool(psToolName),
+                    nativeToolPromise = descriptor.playObject(setToolPlayObject);
 
-                if (!selectHandler) {
-                    return;
+                var disableVectorMaskModePromise;
+                if (!nextTool.handleVectorMaskMode) {
+                    disableVectorMaskModePromise = this.dispatch(events.tool.VECTOR_MASK_MODE_CHANGE, false);
+                } else {
+                    disableVectorMaskModePromise = null;
                 }
+
+                return Promise.join(nativeToolPromise, disableVectorMaskModePromise);
+            })
+            .then(function () {
+                var selectHandler = nextTool.selectHandler,
+                    selectHandlerPromise;
 
                 // Calls the select handler of new tool
-                return this.transfer(selectHandler, nextTool);
-            })
-            .then(function () {
-                return adapterOS.resetCursor();
-            })
-            .then(function () {
-                return this.transfer(swapPolicies, nextTool);
-            })
-            .then(function (result) {
-                // After setting everything, dispatch to stores
-                this.dispatch(events.tool.SELECT_TOOL, result);
+                if (selectHandler) {
+                    selectHandlerPromise = this.transfer(selectHandler, nextTool);
+                } else {
+                    selectHandlerPromise = null;
+                }
+
+                var resetCursorPromise = adapterOS.resetCursor(),
+                    swapPoliciesPromise = this.transfer(swapPolicies, nextTool);
+
+                return Promise.join(swapPoliciesPromise, selectHandlerPromise, resetCursorPromise,
+                    function (result) {
+                        this.dispatch(events.tool.SELECT_TOOL, result);
+                    }.bind(this));
             });
     };
     selectTool.action = {
@@ -486,8 +488,7 @@ define(function (require, exports) {
             "toolRectangle.select",
             "toolSampler.select", "toolSampler.deselect",
             "toolType.select", "toolType.deselect"
-        ],
-        modal: true
+        ]
     };
 
     /**
@@ -512,14 +513,6 @@ define(function (require, exports) {
                 }
                 
                 return this.transfer(selectTool, tool);
-            })
-            .catch(function (err) {
-                var defaultTool = toolStore.getDefaultTool();
-                if (tool === defaultTool) {
-                    throw err;
-                }
-
-                return this.transfer(selectTool, defaultTool);
             });
     };
     initTool.action = {
@@ -842,17 +835,15 @@ define(function (require, exports) {
         _vectorSelectMaskHandler;
 
     /**
-     * Register event listeners for native tool selection change events, register
-     * tool keyboard shortcuts, and initialize the currently selected tool.
+     * Register event listeners for native tool selection change events and
+     * initialize the currently selected tool.
      * 
      * @return {Promise}
      */
     var beforeStartup = function () {
         var flux = this.flux,
             appStore = flux.store("application"),
-            toolStore = this.flux.store("tool"),
             uiStore = this.flux.store("ui"),
-            tools = toolStore.getAllTools(),
             documentLayerBounds,
             uiTransformMatrix;
 
@@ -883,6 +874,25 @@ define(function (require, exports) {
         // Listen for modal tool state entry/exit events
         _toolModalStateChangedHandler = this.flux.actions.tools.handleToolModalStateChanged.bind(this);
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
+
+        return this.transfer(initTool); // Initialize the current tool
+    };
+    beforeStartup.action = {
+        modal: true,
+        reads: [],
+        writes: [],
+        transfers: [initTool]
+    };
+
+    /**
+     * Register tool-activation shortcuts.
+     *
+     * @return {Promise}
+     */
+    var afterStartup = function () {
+        var flux = this.flux,
+            toolStore = this.flux.store("tool"),
+            tools = toolStore.getAllTools();
 
         // Setup tool activation keyboard shortcuts
         var shortcutSpecs = tools.reduce(function (specs, tool) {
@@ -948,16 +958,13 @@ define(function (require, exports) {
             name: "Super Select Vector"
         });
 
-        var shortcutsPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),
-            initToolPromise = this.transfer(initTool); // Initialize the current tool
-
-        return Promise.join(initToolPromise, shortcutsPromise);
+        return this.transfer(shortcuts.addShortcuts, shortcutSpecs);
     };
-    beforeStartup.action = {
+    afterStartup.action = {
         modal: true,
-        reads: [locks.JS_APP, locks.JS_TOOL],
-        writes: [locks.PS_TOOL],
-        transfers: [shortcuts.addShortcuts, initTool, changeVectorMaskMode]
+        reads: [locks.JS_TOOL],
+        writes: [],
+        transfers: [shortcuts.addShortcuts]
     };
 
     /**
@@ -993,6 +1000,7 @@ define(function (require, exports) {
     exports.enterPathModalState = enterPathModalState;
 
     exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 
     exports._priority = 0;
