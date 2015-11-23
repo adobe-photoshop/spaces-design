@@ -32,7 +32,7 @@ module.exports = function (grunt) {
 
     // Matches every root folder in src/nls into a locale name
     // If we are in dev mode, compiles only English
-    var DEV_MODE = grunt.option("DEV_MODE"),
+    var DEV_MODE = grunt.option("DEV_MODE") !== undefined,
         ALL_LOCALES = DEV_MODE ? ["en"] : grunt.file.expand({
             filter: "isDirectory",
             cwd: "src/nls"
@@ -158,7 +158,8 @@ module.exports = function (grunt) {
             i18n: ["./src/nls/*.json"]
         },
         copy: {
-            html: { src: "src/index.html", dest: "build/index.html" },
+            htmlRelease: { src: "src/index.html", dest: "build/index.html" },
+            htmlDebug: { src: "src/index-debug.html", dest: "build/index.html" },
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
         watch: {
@@ -241,9 +242,9 @@ module.exports = function (grunt) {
     grunt.registerTask("seqtest", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
     grunt.registerTask("test", ["concurrent:test"]);
     grunt.registerTask("i18n", ["clean:i18n", "concat-json", "merge-json"]);
-    grunt.registerTask("compile",
-        ["test", "clean:build", "i18n", "copy", "less", "webpack:compile", "uglify", "clean:i18n"]
+    grunt.registerTask("compile", ["test", "clean:build", "i18n", "copy:img",
+        "copy:htmlRelease", "less", "webpack:compile", "uglify", "clean:i18n"]
     );
-    grunt.registerTask("dev", ["test", "clean", "i18n", "copy", "less", "concurrent:build"]);
+    grunt.registerTask("dev", ["test", "clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]);
     grunt.registerTask("default", ["test"]);
 };

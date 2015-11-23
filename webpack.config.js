@@ -31,7 +31,7 @@ var path = require("path"),
 require("es6-promise").polyfill(); // Required for css loading
 
 // In dev mode, we only compile English and build sourcemaps
-var devMode = !!process.env.SPACES_DEV_MODE,
+var devMode = process.env.SPACES_DEV_MODE === "true",
     // If grunt didn't pass us locales, we go with only English
     locales = process.env.SPACES_LOCALES,
     languages = locales ? locales.split(",") : ["en"];
@@ -43,7 +43,9 @@ if (!locales) {
 
 var buildConfigs = languages.map(function (lang) {
     var options = {
-        entry: ["./src/js/init.js"],
+        entry: {
+            app: "./src/js/init.js"
+        },
         output: {
             path: "./build/",
             filename: "spaces-design-" + lang + ".js"
@@ -127,6 +129,10 @@ var buildConfigs = languages.map(function (lang) {
     if (devMode) {
         options.devtool = "source-map";
         options.debug = "true";
+        // These lines break the build into two chunks, one for our code, and one for all our dependencies
+        // This allows for a faster rebuild time
+        options.plugins.push(new webpack.optimize.CommonsChunkPlugin("vendor", "externalDeps.js"));
+        options.entry.vendor = ["react", "lodash", "bluebird", "mathjs", "immutable", "fluxxor", "d3"];
     }
 
     return options;
