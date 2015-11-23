@@ -191,16 +191,22 @@ define(function (require, exports) {
      * Get an array of guide descriptors for the given document descriptor.
      *
      * @private
-     * @param {object} doc Document descriptor
+     * @param {object|number} docSpec Document descriptor or document ID
      * @return {Promise.<Array.<object>>}
      */
-    var _getGuidesForDocument = function (doc) {
-        var docRef = documentLib.referenceBy.id(doc.documentID),
-            numberOfGuides = doc.numberOfGuides;
+    var _getGuidesForDocument = function (docSpec) {
+        var documentID;
+        if (typeof docSpec === "object") {
+            if (docSpec.numberOfGuides === 0) {
+                return Promise.resolve();
+            }
 
-        if (numberOfGuides === 0) {
-            return Promise.resolve([]);
+            documentID = docSpec.documentID;
+        } else {
+            documentID = docSpec;
         }
+
+        var docRef = documentLib.referenceBy.id(documentID);
 
         return guideActions._getGuidesForDocumentRef(docRef);
     };
@@ -331,15 +337,19 @@ define(function (require, exports) {
                         });
                 }
 
-                var currentRef = documentLib.referenceBy.current;
-                return _getDocumentByRef(currentRef)
+                var currentRef = documentLib.referenceBy.current,
+                    documentPromise = _getDocumentByRef(currentRef),
+                    deselectPromise = descriptor.playObject(selectionLib.deselectAll());
+
+                return documentPromise
                     .bind(this)
                     .then(function (currentDoc) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
                             historyPromise = this.transfer(historyActions.queryCurrentHistory,
                                 currentDoc.documentID, true),
-                            guidesPromise = _getGuidesForDocument(currentDoc),
-                            deselectPromise = descriptor.playObject(selectionLib.deselectAll());
+                            // Load guides lazily if they're not currently visible
+                            guidesVisible = currentDoc.guidesVisibility,
+                            guidesPromise = guidesVisible ? _getGuidesForDocument(currentDoc) : Promise.resolve();
 
                         return Promise.join(currentDocLayersPromise,
                             historyPromise,
@@ -348,7 +358,7 @@ define(function (require, exports) {
                             function (payload, historyPayload, guidesPayload) {
                                 payload.current = true;
                                 payload.history = historyPayload;
-                                payload.guides = guidesPayload;
+                                payload.guides = guidesPayload || (guidesVisible && []);
                                 this.dispatch(events.document.DOCUMENT_UPDATED, payload);
                                 this.dispatch(events.application.INITIALIZED, { item: "activeDocument" });
                             }.bind(this))
@@ -402,13 +412,15 @@ define(function (require, exports) {
                     historyPromise = current ?
                         this.transfer(historyActions.queryCurrentHistory, doc.documentID, true) :
                         Promise.resolve(null),
-                    guidesPromise = current ? _getGuidesForDocument(doc) : Promise.resolve();
+                    // Load guides lazily if they're not currently visible
+                    guidesVisible = current && doc.guidesVisibility,
+                    guidesPromise = guidesVisible ? _getGuidesForDocument(doc) : Promise.resolve();
 
                 return Promise.join(layersPromise, historyPromise, guidesPromise,
                     function (payload, historyPayload, guidesPayload) {
                         payload.current = current;
                         payload.history = historyPayload;
-                        payload.guides = guidesPayload;
+                        payload.guides = guidesPayload || (guidesVisible && []);
                         return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
                     }.bind(this));
             });
@@ -866,8 +878,23 @@ define(function (require, exports) {
         }
 
         var newVisibility = !document.guidesVisible,
-            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
-                { documentID: document.id, guidesVisible: newVisibility });
+            guideInitPromise;
+
+        if (newVisibility && !document.guides) {
+            guideInitPromise = _getGuidesForDocument(document.id);
+        } else {
+            guideInitPromise = Promise.resolve();
+        }
+
+        var dispatchPromise = guideInitPromise
+            .bind(this)
+            .then(function (guides) {
+                this.dispatch(events.document.GUIDES_VISIBILITY_CHANGED, {
+                    documentID: document.id,
+                    guidesVisible: newVisibility,
+                    guides: guides
+                });
+            });
 
         var playObject = documentLib.setGuidesVisibility(newVisibility),
             playPromise = descriptor.playObject(playObject);

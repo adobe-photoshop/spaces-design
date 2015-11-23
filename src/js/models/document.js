@@ -151,8 +151,10 @@ define(function (require, exports, module) {
         model.smartGuidesVisible = documentDescriptor.smartGuidesVisibility;
         model.bounds = Bounds.fromDocumentDescriptor(documentDescriptor);
         model.layers = layerDescriptors && LayerStructure.fromDescriptors(documentDescriptor, layerDescriptors);
-        model.guides = guideDescriptors ? Guide.fromDescriptors(documentDescriptor, guideDescriptors) :
-            Immutable.List();
+
+        if (guideDescriptors) {
+            model.guides = Guide.fromDescriptors(documentDescriptor, guideDescriptors);
+        }
 
         if (documentDescriptor.format) {
             model.format = documentDescriptor.format;
