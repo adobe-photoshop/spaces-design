@@ -25,8 +25,7 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        Immutable = require("immutable"),
-        CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
+        Immutable = require("immutable");
 
     var descriptor = require("adapter").ps.descriptor,
         layerLib = require("adapter").lib.layer,
@@ -696,7 +695,8 @@ define(function (require, exports) {
      *                                         ready to pass into layerActionsUtil.playLayerActions
      */
     var _getGraphicSampleActions = function (document, source, targets, sourcePath) {
-        var soTypes = source.smartObjectTypes,
+        var librariesAPI = this.flux.store("library").getLibrariesAPI(),
+            soTypes = source.smartObjectTypes,
             sourceType = source.smartObjectType(),
             postActionObj = null,
             resultActions = [];
@@ -747,7 +747,7 @@ define(function (require, exports) {
             targets.forEach(function (target) {
                 var targetType = target.smartObjectType(),
                     reference = source.smartObject.link.elementReference,
-                    element = CCLibraries.resolveElementReference(reference),
+                    element = librariesAPI.resolveElementReference(reference),
                     playObjects = [];
 
                 // PS does not allow CLSO to link to another CLSO, so we embed it first as a work around
@@ -780,7 +780,8 @@ define(function (require, exports) {
      * @return {Promise.<string>} [description]
      */
     var _getSourcePath = function (document, source) {
-        var sourceType = source.smartObjectType();
+        var librariesAPI = this.flux.store("library").getLibrariesAPI(),
+            sourceType = source.smartObjectType();
 
         switch (sourceType) {
         case source.smartObjectTypes.EMBEDDED:
@@ -794,7 +795,7 @@ define(function (require, exports) {
             return Promise.resolve(source.smartObject.link._path);
         case source.smartObjectTypes.CLOUD_LINKED:
             var reference = source.smartObject.link.elementReference,
-                element = CCLibraries.resolveElementReference(reference),
+                element = librariesAPI.resolveElementReference(reference),
                 representation = element.getPrimaryRepresentation();
 
             return Promise.fromNode(function (cb) {
@@ -827,7 +828,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return _getSourcePath(document, source)
+        return _getSourcePath.call(this, document, source)
             .bind(this)
             .tap(function () {
                 return this.transfer(historyActions.newHistoryState, document.id,
@@ -847,7 +848,7 @@ define(function (require, exports) {
                             suppressHistoryStateNotification: false
                         }
                     },
-                    replaceActions = _getGraphicSampleActions(document, source, targets, path);
+                    replaceActions = _getGraphicSampleActions.call(this, document, source, targets, path);
 
                 return layerActionsUtil.playLayerActions(document, replaceActions, true, options);
             })

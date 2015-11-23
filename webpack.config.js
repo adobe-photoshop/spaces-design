@@ -101,16 +101,14 @@ var buildConfigs = languages.map(function (lang) {
             alias: {
                 // Until spaces-adapter is better built and points to it's main.js in it's package.json
                 "adapter": path.join(__dirname, "/bower_components/spaces-adapter/src/main.js"),
+                "scriptjs": path.join(__dirname, "/bower_components/scriptjs/dist/script.js"),
                 // Eventually clean all this up and use "events" that node provides to webpack
                 // But that requires some code changes too (emitEvent => emit)
                 "eventEmitter": path.join(__dirname, "/node_modules/wolfy87-eventemitter/EventEmitter.js"),
                 // TODO: Look into externalizing React, or see if React 0.14 is plausible
                 "react": path.join(__dirname, "/bower_components/react/react-with-addons.js"),
                 // We alias the localization here (@/src/js/util/nls.js)
-                "nls/dictionary.json": path.join(__dirname, "/src/nls/" + lang + ".json"),
-                // Since there is no dynamic loading of these external files
-                // they need to be copied to src/vendor
-                "file://shared": path.join(__dirname, "/src/vendor")
+                "nls/dictionary.json": path.join(__dirname, "/src/nls/" + lang + ".json")
             },
             extensions: ["", ".js", ".jsx", ".json", ".less"]
         },

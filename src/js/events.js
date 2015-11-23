@@ -163,6 +163,7 @@ define(function (require, exports, module) {
             DELETE_DOCUMENT_HISTORY: "deleteDocumentHistory"
         },
         libraries: {
+            LIBRARIES_API_LOADED: "librariesAPILoaded",
             LIBRARIES_LOADED: "librariesLoaded",
             LIBRARIES_UNLOADED: "librariesUnloaded",
             ASSET_CREATED: "libraryAssetCreated",
