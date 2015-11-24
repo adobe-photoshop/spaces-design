@@ -388,11 +388,12 @@ define(function (require, exports, module) {
         _handleBeforeDragStart: function () {
             // Photoshop logic is, if we drag a selected layers, all selected layers are being reordered
             // If we drag an unselected layer, only that layer will be reordered
-            var layer = this.state.layer,
+            var document = this._getDocument(),
+                layer = document.layers.byID(this.props.layerID),
                 draggedLayers = Immutable.List([layer]);
 
             if (layer.selected) {
-                draggedLayers = this._getDocument().layers.selected.filter(function (layer) {
+                draggedLayers = document.layers.selected.filter(function (layer) {
                     // For now, we only check for background layer, but we might prevent locked layers dragging later
                     return !layer.isBackground;
                 }, this);
