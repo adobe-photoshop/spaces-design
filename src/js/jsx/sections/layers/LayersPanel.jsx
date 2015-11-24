@@ -83,21 +83,6 @@ define(function (require, exports, module) {
         _setTooltipThrottled: null,
 
         /**
-         * Set of layer IDs that is or was expanded. Used to avoid
-         * rendering child faces until they are first visible.
-         *
-         * @private
-         * @type {Set.<number>}
-         */
-        _expandedLayerIDs: new Set(),
-        
-        /**
-         * Set of layer IDs that are changed in the last document model update. This is updated when LayerPanel 
-         * receives a new "document" prop. See "LayerPanel#_layerDiff" for details.
-         */
-        _changedLayerIDs: new Set(),
-
-        /**
          * The last layer element scrolled to. Used by _scrollToSelection
          * when determining whether to scroll.
          *
@@ -142,19 +127,9 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps) {
-            if (this.props.disabled !== nextProps.disabled ||
-                this.props.active !== nextProps.active) {
-                return true;
-            }
-
-            if (this.props.visible !== nextProps.visible ||
-                this.props.active !== nextProps.active) {
-                return true;
-            }
-            
-            this._changedLayerIDs = this._layerDiff(this.props.document, nextProps.document);
-            
-            return this._changedLayerIDs.size !== 0;
+            return this.props.disabled !== nextProps.disabled ||
+                this.props.visible !== nextProps.visible ||
+                this.props.active !== nextProps.active;
         },
         
         /**
@@ -314,17 +289,12 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var doc = this.props.document,
-                changedLayerIDPaths = this._getLayerPaths(this._changedLayerIDs),
-                childComponents = (
-                    <LayersList
-                        isRoot={true}
-                        disabled={this.props.disabled}
-                        document={doc}
-                        layerNodes={doc.layers.roots}
-                        changedLayerIDPaths={changedLayerIDPaths}
-                        />
-                );
+            var layersListComponent = (
+                <LayersList
+                    isRoot={true}
+                    disabled={this.props.disabled}
+                    documentID={this.props.document.id}/>
+            );
 
             var containerClasses = classnames({
                 "section-container": true,
@@ -353,7 +323,7 @@ define(function (require, exports, module) {
                         className={containerClasses}
                         onClick={this._handleContainerClick}
                         onClickCapture={this._handleContainerClickCapture}>
-                        {childComponents}
+                        {layersListComponent}
                     </div>
                 </section>
             );

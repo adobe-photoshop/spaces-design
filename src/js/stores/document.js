@@ -27,6 +27,8 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         Immutable = require("immutable"),
         _ = require("lodash");
+        
+    var collection = require("js/util/collection");
 
     var Document = require("../models/document"),
         Guide = require("../models/guide"),
@@ -38,6 +40,11 @@ define(function (require, exports, module) {
          * @type {Object.<number, Document>}
          */
         _openDocuments: null,
+        
+        // TODO
+        _oldDocuments: null,
+        _layerDiffs: null,
+        _layerListeners: null,
 
         initialize: function () {
             this.bindActions(
@@ -106,6 +113,9 @@ define(function (require, exports, module) {
          */
         _handleReset: function () {
             this._openDocuments = {};
+            this._layerDiffs = {};
+            this._layerListeners = {};
+            this._oldDocuments = {};
         },
 
         /**
@@ -125,6 +135,11 @@ define(function (require, exports, module) {
          */
         getDocument: function (id) {
             return this._openDocuments[id] || null;
+        },
+        
+        /** @ignore */
+        getDocumentDiff: function (id) {
+            return this._layerDiffs[id] || null;
         },
 
         /**
@@ -161,6 +176,10 @@ define(function (require, exports, module) {
             }
 
             this._openDocuments[nextDocument.id] = nextDocument;
+            
+            if (!this._oldDocuments[nextDocument.id]) {
+                this._oldDocuments[nextDocument.id] = oldDocument;
+            }
 
             if (suppressChange) {
                 return;
@@ -174,6 +193,22 @@ define(function (require, exports, module) {
                 });
 
             if (initialized) {
+                this._layerDiffs[nextDocument.id] = _layerDiff(this._oldDocuments[nextDocument.id], nextDocument);
+                this._oldDocuments[nextDocument.id] = null;
+                
+                var diff = this._layerDiffs[nextDocument.id];
+                if (diff.repositioned.size !== 0) {
+                    var layerPaths = _getLayerPaths(diff.repositioned, nextDocument);
+                    this.emit("layer-tree-change-" + nextDocument.id, layerPaths);
+                }
+
+                diff.updated.forEach(function (layerID) {
+                    var eventName = ["layer-face-change", nextDocument.id, layerID].join("-"),
+                        nextLayer = nextDocument.layers.byID(layerID);
+
+                    this.emit(eventName, nextLayer);
+                }, this);
+                
                 this.emit("change");
             }
         },
@@ -1175,8 +1210,172 @@ define(function (require, exports, module) {
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
+        },
+
+        /** @ignore */
+        addLayerTreeListener: function (documentID, callback) {
+            this.on("layer-tree-change-" + documentID, callback);
+        },
+
+        /** @ignore */
+        removeLayerTreeListener: function (documentID, callback) {
+            this.removeListener("layer-tree-change-" + documentID, callback);
+        },
+
+        /** @ignore */
+        addLayerFaceListener: function (documentID, layerID, callback) {
+            var eventName = ["layer-face-change", documentID, layerID].join("-");
+
+            this.on(eventName, callback);
+        },
+
+        /** @ignore */
+        removeLayerFaceListener: function (documentID, layerID, callback) {
+            var eventName = ["layer-face-change", documentID, layerID].join("-");
+
+            this.removeListener(eventName, callback);
         }
     });
+    
+    
+    /**
+     * Get the layer faces that correspond to the current document. Used for
+     * fast, coarse invalidation.
+     *
+     * @private
+     * @param {Document} document
+     * @return {Map.<number, object>}
+     */
+    var _getLayerAttrs = function (document) {
+        var faces = collection.pluck(document.layers.allVisible, "face");
+
+        return faces.reduce(function (facesMap, face, index) {
+            var layerID = face.get("id"),
+                children = document.layers.nodes.get(layerID).children;
+            
+            facesMap[layerID] = {
+                id: layerID,
+                face: face,
+                index: index,
+                childrenCount: children ? children.size : 0,
+                depth: document.layers.depth(document.layers.byID(layerID))
+            };
+            
+            return facesMap;
+        }, {});
+    };
+    
+    /**
+     * Return IDs of the layers that are changed between two document models. Changes include:
+     * - creation
+     * - deletion
+     * - update (e.g. select, expand, reorder, rename)
+     *
+     * @private
+     * @param  {Document} document
+     * @param  {Document} nextDocument
+     * @return {Set.<number>}
+     */
+    var _layerDiff = function (document, nextDocument) {
+        var diff = {
+            updated: new Set(),
+            repositioned: new Set()
+        };
+            
+        if (!document || !document.layers) {
+            return diff;
+        }
+        
+        var faces = _getLayerAttrs(document),
+            nextFaces = _getLayerAttrs(nextDocument);
+
+        _.forEach(faces, function (face) {
+            var nextFace = nextFaces[face.id];
+            
+            if (nextFace && !Immutable.is(face.face, nextFace.face)) {
+                diff.updated.add(face.id);
+            }
+            
+            // layer is removed or updated
+            if (!nextFace ||
+                face.index !== nextFace.index ||
+                face.depth !== nextFace.depth ||
+                face.childrenCount !== nextFace.childrenCount) {
+                diff.repositioned.add(face.id);
+            }
+        });
+
+        _.forEach(nextFaces, function (nextFace) {
+            // new layer
+            if (!faces[nextFace.id]) {
+                diff.repositioned.add(nextFace.id);
+            }
+        });
+
+        return diff;
+    };
+    
+    /**
+     * Return the paths of the given layer IDs in the layer tree. 
+     * For example:
+     *   given: [10]
+     *   returns: [[1, 6, 8, 10]]
+     *   where 1 is the root, 6 and 8 are the parents
+     *
+     * @private
+     * @param  {Set.<number>} layerIDs
+     * @return {Array.<Set.<number>>}
+     */
+    var _getLayerPaths = function (layerIDs, document) {
+        var result = [],
+            targetIDs = new Set(layerIDs.keys());
+
+        document.layers.roots.forEach(function (node) {
+            _getLayerPathsRecursively([], node, targetIDs, result);
+        });
+        
+        // Convert paths to zipped values for better performance in "LayerPanel#_renderLayersList".
+        // From
+        //   [[1,2,3], [1,4,6], [1,7]]
+        // To
+        //   [Set[1], Set[2,4,7], Set[3,6]]
+        var zippedResult = _.zip.apply(null, result)
+                .map(function (ids) {
+                    return _.reduce(ids, function (set, id) {
+                        return set.add(id);
+                    }, new Set());
+                });
+        
+        return zippedResult;
+    };
+    
+    /**
+     * Used by "LayerPanel#_getLayerPaths" for searching layer path in the tree.
+     * 
+     * @private
+     * @param  {Array.<number>} path - the current path to the "node"
+     * @param  {LayerNode} node
+     * @param  {Set.<number>} targetIDs - the remaining target layer IDs
+     * @param {Array.<Array<number>>} results
+     */
+    var _getLayerPathsRecursively = function (path, node, targetIDs, results) {
+        if (targetIDs.size === 0) {
+            return;
+        }
+        
+        path.push(node.id);
+        
+        if (targetIDs.has(node.id)) {
+            results.push(_.clone(path));
+            targetIDs.delete(node.id);
+        }
+
+        (node.children || []).forEach(function (childNode) {
+            _getLayerPathsRecursively(path, childNode, targetIDs, results);
+        }, this);
+        
+        path.pop();
+    };
 
     module.exports = DocumentStore;
 });

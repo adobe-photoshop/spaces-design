@@ -33,41 +33,71 @@ define(function (require, exports, module) {
 
     var LayersList = React.createClass({
         mixins: [FluxMixin],
-
+        
+        
         getDefaultProps: function () {
             return {
                 depth: 0,
-                rootLayer: null
+                isRoot: false
             };
+        },
+        
+        getInitialState: function () {
+            return {
+                changedLayerIDPaths: []
+            };
+        },
+        
+        componentWillMount: function () {
+            if (this.props.isRoot) {
+                this.getFlux().stores.document.addLayerTreeListener(this.props.documentID, this._handleLayerTreeChange);
+            }
+        },
+        
+        componentWillUnmount: function () {
+            if (this.props.isRoot) {
+                this.getFlux().stores.document.removeLayerTreeListener(this.props.documentID);
+            }
+        },
+
+        /** @ignore */
+        _handleLayerTreeChange: function (changedLayerIDPaths) {
+            this.setState({
+                changedLayerIDPaths: changedLayerIDPaths
+            });
         },
 
         render: function () {
-            var layerFaces = this.props.layerNodes.reduce(function (results, layerNode) {
-                var layer = this.props.document.layers.byID(layerNode.id);
-                
-                if (!layer.isGroupEnd) {
-                    results.push(
-                        <LayerFace
-                            key={layer.key}
-                            disabled={this.props.disabled}
-                            document={this.props.document}
-                            depth={this.props.depth}
-                            layer={layer}
-                            childNodes={layerNode.children}
-                            changedLayerIDPaths={this.props.changedLayerIDPaths}/>
-                    );
-                }
-                
-                return results;
-            }.bind(this), []);
-            
-            // This is the top layer list
-            if (!this.props.rootLayer) {
-                var bottomLayer = this.props.document.layers.byIndex(1);
-                
+            var document = this.getFlux().stores.document.getDocument(this.props.documentID),
+                layerNodes = this.props.isRoot ? document.layers.roots : this.props.layerNodes,
+                layerFaces = layerNodes.reduce(function (results, layerNode) {
+                    var layer = document.layers.byID(layerNode.id);
+
+                    if (!layer.isGroupEnd) {
+                        var changedLayerIDPaths = this.props.isRoot ?
+                                this.state.changedLayerIDPaths : this.props.changedLayerIDPaths;
+
+                        results.push(
+                            <LayerFace
+                                key={layer.key}
+                                disabled={this.props.disabled}
+                                depth={this.props.depth}
+                                documentID={this.props.documentID}
+                                layerID={layer.id}
+                                layerNodes={layerNode.children}
+                                changedLayerIDPaths={changedLayerIDPaths}/>
+                        );
+                    }
+                    
+                    return results;
+                }.bind(this), []);
+
+            if (this.props.isRoot) {
+                var bottomLayer = document.layers.byIndex(1);
+
                 if (bottomLayer.isGroupEnd) {
                     layerFaces.push(
-                        <DummyLayerFace key="dummy" document={this.props.document}/>
+                        <DummyLayerFace key="dummy" document={document}/>
                     );
                 }
             }
