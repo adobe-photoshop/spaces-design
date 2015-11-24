@@ -105,6 +105,8 @@ define(function (require, exports, module) {
         this._actionQueue = new AsyncDependencyQueue(CORES);
         this._initActionNames();
         this._initActionLocks();
+        this._synchronizedActions = new Map();
+        this._idleTasks = new Set();
 
         var actions = this._synchronizeAllModules(actionIndex),
             stores = storeIndex.create(),
@@ -179,12 +181,28 @@ define(function (require, exports, module) {
     FluxController.prototype._actionReceivers = null;
 
     /**
+     * Map from unsynchronized to synchronized actions.
+     *
+     * @private
+     * @type {Map.<Action, ActionReceiver>}
+     */
+    FluxController.prototype._synchronizedActions = null;
+
+    /**
      * Indicates whether or not the UI is currently locked.
      *
      * @private
      * @type {boolean}
      */
     FluxController.prototype._uiLocked = false;
+
+    /**
+     * The set of pending idle task promises.
+     *
+     * @private
+     * @type {Set.<Promise>}
+     */
+    FluxController.prototype._idleTasks = null;
 
     Object.defineProperties(FluxController.prototype, {
         "flux": {
@@ -390,7 +408,8 @@ define(function (require, exports, module) {
                 "All locks will be required for execution.");
         }
 
-        var transferQueue = new AsyncDependencyQueue(CORES),
+        var actionQueue = this._actionQueue,
+            transferQueue = new AsyncDependencyQueue(CORES),
             currentTransfers = new Set(actionObject.transfers || []),
             self = this,
             resolvedPromise;
@@ -510,6 +529,122 @@ define(function (require, exports, module) {
                     return resolvedPromise.then(function () {
                         this.dispatch(event, payload);
                     });
+                }
+            },
+
+            /**
+             * Enqueue an action for execution. Calling this.enqueue(foo.bar, baz, quux)
+             * is equivalent to calling this.flux.actions.foo.bar(baz, quux).
+             *
+             * @param {string|Action} nextAction
+             * @return {Promise}
+             */
+            enqueue: {
+                value: function (nextAction) {
+                    var nextActionName;
+
+                    if (typeof nextAction === "string") {
+                        nextActionName = nextAction;
+                        nextAction = self._actionsByName.get(nextActionName);
+                    } else {
+                        nextActionName = self._actionNames.get(nextAction);
+                    }
+
+                    if (!nextAction || (typeof nextAction !== "function")) {
+                        throw new Error("Exec passed an undefined action");
+                    }
+
+                    var params = Array.prototype.slice.call(arguments, 1),
+                        synchronizedAction = self._synchronizedActions.get(nextAction);
+
+                    return synchronizedAction.apply(null, params);
+                }
+            },
+
+            /**
+             * When the action queue and the JavaScript engine are idle, enqueue an action for execution.
+             *
+             * @param {string|Action} nextAction
+             * @return {Promise}
+             */
+            whenIdle: {
+                value: function () {
+                    var params = Array.prototype.slice.call(arguments, 0);
+
+                    var idleTaskPromise = new Promise(function (resolve, reject, onCancel) {
+                        var timer,
+                            idle;
+
+                        // When the queue becomes active, clear the timers and wait for it
+                        // to become idle again.
+                        var handleActive = function () {
+                            if (timer) {
+                                window.clearTimeout(timer);
+                                timer = null;
+                            }
+
+                            if (idle) {
+                                window.cancelIdleCallback(idle);
+                                idle = null;
+                            }
+
+                            // Wait for the queue to become idle again
+                            actionQueue.once("idle", handleIdle);
+                        };
+
+                        // When the queue become idle, wait for one second to ensure that it
+                        // stays idle, and then wait for the JavaScript engine to become idle
+                        // before finally enqueing the action and removing the queue-
+                        // activation listener.
+                        var handleIdle = function () {
+                            // Wait for the queue to quiesce for one second.
+                            timer = window.setTimeout(function () {
+                                // Wait for the JavaScript engine to become idle.
+                                idle = window.requestIdleCallback(function () {
+                                    // Clean up the queue-activation handler
+                                    actionQueue.off("active", handleActive);
+                                    timer = null;
+                                    idle = null;
+
+                                    // Enqueue the task
+                                    this.enqueue.apply(this, params)
+                                        .then(resolve, reject);
+                                }.bind(this));
+                            }.bind(this), 1000);
+
+                            // Start over if the queue becomes active.
+                            actionQueue.once("active", handleActive);
+                        }.bind(this);
+
+                        // Directly handle either the idle or active case depending on the
+                        // current queue state.
+                        if (actionQueue.isIdle()) {
+                            handleIdle();
+                        } else {
+                            handleActive();
+                        }
+
+                        // If the controller is reset before the task has been executed, the
+                        // promise will be canceled, and we should clean up any dangling timers
+                        // or event handlers.
+                        onCancel(function () {
+                            window.clearTimeout(timer);
+                            window.cancelIdleCallback(idle);
+                            actionQueue.off("idle", handleIdle);
+                            actionQueue.off("active", handleActive);
+                        });
+                    }.bind(this));
+
+                    // Add to the current set of idle tasks so that it can be canceled if the
+                    // controller is reset.
+                    self._idleTasks.add(idleTaskPromise);
+
+                    // Otherwise, remove it from the set of idle tasks once resolved.
+                    idleTaskPromise.finally(function () {
+                        self._idleTasks.delete(idleTaskPromise);
+                    });
+
+                    return idleTaskPromise;
                 }
             }
         });
@@ -742,6 +877,8 @@ define(function (require, exports, module) {
             exports[throttledName] = throttledAction;
             exports[debouncedName] = debouncedAction;
 
+            this._synchronizedActions.set(module[name], synchronizedAction);
+
             return exports;
         }.bind(this), {});
     };
@@ -887,6 +1024,12 @@ define(function (require, exports, module) {
 
         // Dispatch an event that all stores should listen to to clear their state
         flux.dispatch.call(flux, events.RESET);
+
+        // Cancel and clear any pending idle tasks
+        this._idleTasks.forEach(function (taskPromise) {
+            taskPromise.cancel();
+        });
+        this._idleTasks.clear();
 
         return ps.endModalToolState(true)
             .bind(this)

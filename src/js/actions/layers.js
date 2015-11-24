@@ -482,7 +482,9 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var layersPromise;
+        var docRef = documentLib.referenceBy.id(document.id),
+            layersPromise;
+
         if (lazy) {
             var selectedLayerRefs = layers
                 .filter(function (layer) {
@@ -490,7 +492,7 @@ define(function (require, exports) {
                 })
                 .map(function (layer) {
                     return [
-                        documentLib.referenceBy.id(document.id),
+                        docRef,
                         layerLib.referenceBy.id(layer.id)
                     ];
                 })
@@ -503,7 +505,7 @@ define(function (require, exports) {
                 })
                 .map(function (layer) {
                     return [
-                        documentLib.referenceBy.id(document.id),
+                        docRef,
                         layerLib.referenceBy.id(layer.id)
                     ];
                 })
@@ -528,7 +530,7 @@ define(function (require, exports) {
         } else {
             var layerRefs = layers.map(function (layer) {
                 return [
-                    documentLib.referenceBy.id(document.id),
+                    docRef,
                     layerLib.referenceBy.id(layer.id)
                 ];
             }).toArray();
@@ -770,6 +772,44 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [resetLayers],
+        modal: true
+    };
+
+    /**
+     * Initialize layers in blocks of 50. This should be run as an idle task.
+     *
+     * @param {Document} document
+     * @return {Promise} Resolves either when all layers are initialized, or if
+     *  the document is closed.
+     */
+    var initializeLayersBackground = function (document) {
+        var flux = this.flux,
+            documentStore = flux.store("document");
+
+        document = documentStore.getDocument(document.id);
+        if (!document) {
+            return Promise.resolve();
+        }
+
+        var uninitializedLayers = document.layers.uninitialized;
+        if (uninitializedLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var firstUninitializedLayers = uninitializedLayers.take(50);
+
+        return this.transfer(initializeLayers, document, firstUninitializedLayers)
+            .bind(this)
+            .then(function () {
+                if (firstUninitializedLayers.size === 50) {
+                    this.whenIdle(initializeLayersBackground, document);
+                }
+            });
+    };
+    initializeLayersBackground.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: [initializeLayers],
         modal: true
     };
 
@@ -2767,6 +2807,7 @@ define(function (require, exports) {
     exports.addLayers = addLayers;
     exports.resetSelection = resetSelection;
     exports.initializeLayers = initializeLayers;
+    exports.initializeLayersBackground = initializeLayersBackground;
     exports.resetLayers = resetLayers;
     exports.resetLayersByIndex = resetLayersByIndex;
     exports.resetLayerVisibility = resetLayerVisibility;

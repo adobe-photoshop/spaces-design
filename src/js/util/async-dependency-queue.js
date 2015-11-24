@@ -140,6 +140,10 @@ define(function (require, exports, module) {
 
         this._pending.push(job);
 
+        if (!this.isIdle()) {
+            this.emit("active");
+        }
+
         this._processNext();
 
         return job.deferred.promise;
@@ -150,11 +154,17 @@ define(function (require, exports, module) {
      * executing operation.
      */
     AsyncDependencyQueue.prototype.removeAll = function () {
+        var wasIdle = this.isIdle();
+
         this._pending.forEach(function (job) {
             job.deferred.reject(new Error("Job canceled before execution"));
         });
 
         this._pending.length = 0;
+
+        if (!wasIdle) {
+            this.emit("idle");
+        }
     };
 
     /**
@@ -299,6 +309,10 @@ define(function (require, exports, module) {
             .finally(function () {
                 delete this._current[job.id];
 
+                if (this.isIdle()) {
+                    this.emit("idle");
+                }
+
                 if (!this._isPaused) {
                     this._processNext();
                 }
@@ -355,6 +369,16 @@ define(function (require, exports, module) {
      */
     AsyncDependencyQueue.prototype.active = function () {
         return Object.keys(this._current).length;
+    };
+
+    /**
+     * Indicates whether or not there are currently any jobs executing or
+     * waiting to execute.
+     *
+     * @return {boolean}
+     */
+    AsyncDependencyQueue.prototype.isIdle = function () {
+        return this.active() === 0 && this.pending() === 0;
     };
 
     module.exports = AsyncDependencyQueue;

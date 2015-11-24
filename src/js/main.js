@@ -149,7 +149,8 @@ define(function (require, exports) {
     // warnings. When that improves, we should enable this and then fix the
     // sources of the warnings.
     Promise.config({
-        warnings: false
+        warnings: false,
+        cancellation: true
     });
 
     if (global.debug) {

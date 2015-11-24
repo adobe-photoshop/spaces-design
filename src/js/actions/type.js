@@ -798,7 +798,7 @@ define(function (require, exports) {
                 initialized = fontState.initialized;
 
             if (initialized) {
-                return this.flux.actions.type.initFontList(true);
+                return this.whenIdle("type.initFontList", true);
             } else {
                 return Promise.resolve();
             }
@@ -809,6 +809,22 @@ define(function (require, exports) {
         return Promise.resolve();
     };
     beforeStartup.action = {
+        reads: [],
+        writes: [],
+        modal: []
+    };
+
+    /**
+     * Initialize the font list when idle.
+     *
+     * @return {Promise}
+     */
+    var afterStartup = function () {
+        this.whenIdle("type.initFontList");
+
+        return Promise.resolve();
+    };
+    afterStartup.action = {
         reads: [],
         writes: [],
         modal: []
@@ -851,5 +867,6 @@ define(function (require, exports) {
     exports.applyTextStyle = applyTextStyle;
 
     exports.beforeStartup = beforeStartup;
+    exports.afterStartup = afterStartup;
     exports.onReset = onReset;
 });
