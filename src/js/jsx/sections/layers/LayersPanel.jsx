@@ -83,13 +83,13 @@ define(function (require, exports, module) {
         _setTooltipThrottled: null,
 
         /**
-         * The last layer element scrolled to. Used by _scrollToSelection
+         * The list of layers last scrolled to. Used by _scrollToSelection
          * when determining whether to scroll.
          *
          * @private
-         * @type {HTMLElement}
+         * @type {Immutable.List.<Layer>}
          */
-        _lastScrolledTo: null,
+        _lastScrolledTo: Immutable.List(),
 
         /**
          * Used to suppress scrolling into view when the selection is changed
@@ -119,11 +119,11 @@ define(function (require, exports, module) {
         },
 
         componentDidMount: function () {
-            this._scrollToSelection();
+            this._scrollToSelection(this.props.document.layers);
         },
 
         componentDidUpdate: function () {
-            this._scrollToSelection();
+            this._scrollToSelection(this.props.document.layers);
         },
 
         shouldComponentUpdate: function (nextProps) {
@@ -236,38 +236,38 @@ define(function (require, exports, module) {
         /**
          * Scrolls the layers panel to make (newly) selected layers visible.
          */
-         _scrollToSelection: function (layerStructure) {
-             // This is set when a face is clicked on initially. Suppressing the call
-             // to scrollIntoViewIfNeeded below prevents a forced synchronous layout.
-             if (this._suppressNextScrollTo) {
-                 this._suppressNextScrollTo = false;
-                 this._lastScrolledTo = Immutable.List();
-                 return;
-             }
+        _scrollToSelection: function (layerStructure) {
+            // This is set when a face is clicked on initially. Suppressing the call
+            // to scrollIntoViewIfNeeded below prevents a forced synchronous layout.
+            if (this._suppressNextScrollTo) {
+                this._suppressNextScrollTo = false;
+                this._lastScrolledTo = Immutable.List();
+                return;
+            }
 
-             var selected = layerStructure.selected;
-             if (selected.isEmpty()) {
-                 return;
-             }
+            var selected = layerStructure.selected;
+            if (selected.isEmpty()) {
+                return;
+            }
 
-             var previous = this._lastScrolledTo,
-                 next = collection.difference(selected, previous),
-                 visible = next.filterNot(function (layer) {
-                     return layerStructure.hasCollapsedAncestor(layer);
-                 });
+            var previous = this._lastScrolledTo,
+                next = collection.difference(selected, previous),
+                visible = next.filterNot(function (layer) {
+                    return layerStructure.hasCollapsedAncestor(layer);
+                });
 
-             if (visible.isEmpty()) {
-                 return;
-             }
+            if (visible.isEmpty()) {
+                return;
+            }
 
-             var focusLayer = visible.first(),
-                 childNode = ReactDOM.findDOMNode(this.refs[focusLayer.key]);
+            var focusLayer = visible.first(),
+                childNode = ReactDOM.findDOMNode(this.refs[focusLayer.key]);
 
-             if (childNode) {
-                 childNode.scrollIntoViewIfNeeded();
-                 this._lastScrolledTo = next;
-             }
-         },
+            if (childNode) {
+                childNode.scrollIntoViewIfNeeded();
+                this._lastScrolledTo = next;
+            }
+        },
 
         /**
          * Deselects all layers.

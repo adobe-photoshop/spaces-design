@@ -89,8 +89,8 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps, nextState) {
             var depth = nextProps.depth,
-                isLayerChanged = !!nextProps.changedLayerIDPaths[depth] &&
-                    nextProps.changedLayerIDPaths[depth].has(nextProps.layerID);
+                isLayerChanged = !!nextProps.changedLayerPaths[depth] &&
+                    nextProps.changedLayerPaths[depth].has(nextProps.layerID);
 
             if (isLayerChanged) {
                 return true;
@@ -154,7 +154,10 @@ define(function (require, exports, module) {
             }
         },
         
-        /** @ignore */
+        /**
+         * @private
+         * @return {Document}
+         */
         _getDocument: function () {
             return this.getFlux().stores.document.getDocument(this.props.documentID);
         },
@@ -171,7 +174,12 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
         
-        /** @ignore */
+        /**
+         * Handle layer face change.
+         * 
+         * @private
+         * @type {Document~LayerFaceListener}
+         */
         _handleLayerFaceChange: function (nextLayer) {
             this.setState({
                 layer: nextLayer
@@ -595,7 +603,7 @@ define(function (require, exports, module) {
             if (hasChildren && (layer.expanded || this._isExpanded)) {
                 this._isExpanded = true;
                 
-                var LayersList = require("jsx!./LayersList");
+                var LayersList = require("./LayersList");
 
                 layerList = (
                     <LayersList
@@ -603,7 +611,7 @@ define(function (require, exports, module) {
                         documentID={this.props.documentID}
                         layerNodes={this.props.layerNodes}
                         depth={this.props.depth + 1}
-                        changedLayerIDPaths={this.props.changedLayerIDPaths}/>
+                        changedLayerPaths={this.props.changedLayerPaths}/>
                 );
             }
             

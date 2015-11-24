@@ -26,10 +26,11 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        _ = require("lodash");
 
-    var DummyLayerFace = require("jsx!./DummyLayerFace"),
-        LayerFace = require("jsx!./LayerFace");
+    var DummyLayerFace = require("./DummyLayerFace"),
+        LayerFace = require("./LayerFace");
 
     var LayersList = React.createClass({
         mixins: [FluxMixin],
@@ -44,7 +45,7 @@ define(function (require, exports, module) {
         
         getInitialState: function () {
             return {
-                changedLayerIDPaths: []
+                changedLayerPaths: []
             };
         },
         
@@ -59,11 +60,20 @@ define(function (require, exports, module) {
                 this.getFlux().stores.document.removeLayerTreeListener(this.props.documentID);
             }
         },
+        
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return !_.isEqual(this.props.changedLayerPaths, nextProps.changedLayerPaths) ||
+                !_.isEqual(this.state.changedLayerPaths, nextState.changedLayerPaths);
+        },
 
-        /** @ignore */
-        _handleLayerTreeChange: function (changedLayerIDPaths) {
+        /**
+         * Re-render layer list if its layer tree changed.
+         * 
+         * @type {Document~LayerTreeListener}
+         */
+        _handleLayerTreeChange: function (changedLayerPaths) {
             this.setState({
-                changedLayerIDPaths: changedLayerIDPaths
+                changedLayerPaths: changedLayerPaths
             });
         },
 
@@ -74,8 +84,8 @@ define(function (require, exports, module) {
                     var layer = document.layers.byID(layerNode.id);
 
                     if (!layer.isGroupEnd) {
-                        var changedLayerIDPaths = this.props.isRoot ?
-                                this.state.changedLayerIDPaths : this.props.changedLayerIDPaths;
+                        var changedLayerPaths = this.props.isRoot ?
+                                this.state.changedLayerPaths : this.props.changedLayerPaths;
 
                         results.push(
                             <LayerFace
@@ -85,7 +95,7 @@ define(function (require, exports, module) {
                                 documentID={this.props.documentID}
                                 layerID={layer.id}
                                 layerNodes={layerNode.children}
-                                changedLayerIDPaths={changedLayerIDPaths}/>
+                                changedLayerPaths={changedLayerPaths}/>
                         );
                     }
                     

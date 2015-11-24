@@ -137,7 +137,7 @@ define(function (require, exports, module) {
             hasNextActiveDocumentID = typeof nextActiveDocumentID === "number";
 
         if (hasOpenDocuments !== hasNextActiveDocumentID) {
-            throw new Error("There must be a next active document ID if there are open documents");
+            throw new Error("There must be a next active document ID iff there are open documents");
         }
 
         var nextActiveDocumentIndex;
