@@ -135,6 +135,14 @@ define(function (require, exports) {
         .concat(_optionalLayerProperties);
 
     /**
+     * Namespace for extension metadata.
+     * 
+     * @const
+     * @type {string}
+     */
+    var METADATA_NAMESPACE = global.EXTENSION_DATA_NAMESPACE;
+
+    /**
      * Get layer descriptors for the given layer references. Only the
      * properties listed in the arrays above will be included for performance
      * reasons. NOTE: All layer references must reference the same document.
@@ -151,15 +159,20 @@ define(function (require, exports) {
             optionalPropertiesPromise = descriptor.batchMultiGetProperties(references, optionalProperties,
                 { continueOnError: true });
 
-        var nameSpace = global.EXTENSION_DATA_NAMESPACE,
-            extensionPlayObjects = references.map(function (ref) {
-                return layerLib.getExtensionData(ref[0], ref[1], nameSpace);
-            }),
+        var extensionPromise;
+        if (lazy) {
+            extensionPromise = Promise.resolve();
+        } else {
+            var extensionPlayObjects = references.map(function (ref) {
+                    return layerLib.getExtensionData(ref[0], ref[1], METADATA_NAMESPACE);
+                });
+
             extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
                 .map(function (extensionData) {
-                    var extensionDataRoot = extensionData[nameSpace];
+                    var extensionDataRoot = extensionData[METADATA_NAMESPACE];
                     return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
                 });
+        }
 
         return Promise.join(layerPropertiesPromise, optionalPropertiesPromise, extensionPromise,
             function (required, optional, extension) {
@@ -197,7 +210,7 @@ define(function (require, exports) {
         var targetLayers = doc.targetLayers || [],
             targetRefs = targetLayers.map(function (target) {
                 return [
-                    documentLib.referenceBy.id(documentID),
+                    docRef,
                     layerLib.referenceBy.index(startIndex + target._index)
                 ];
             });
@@ -206,50 +219,46 @@ define(function (require, exports) {
             continueOnError: true
         });
 
-        // Fetch extension data by a range of layer indexes.
-        // Always start with index 1 because when a document consists only of a background layer (index 0), 
-        // the photoshop action will fail.
-        // And it is safe to ignore ALL bg layers because we don't use extension data on them
-        var nameSpace = global.EXTENSION_DATA_NAMESPACE,
-            numberOfLayers = doc.hasBackgroundLayer ? doc.numberOfLayers + 1 : doc.numberOfLayers,
-            indexRange = _.range(1, startIndex + numberOfLayers),
-            extensionPlayObjects = indexRange.map(function (i) {
-                var layerRef = layerLib.referenceBy.index(i);
-                return layerLib.getExtensionData(docRef, layerRef, nameSpace);
-            }),
+        var extensionPromise;
+        if (doc.hasBackgroundLayer && doc.numberOfLayers === 0 && targetLayers.length === 1) {
+            // Special case for background-only documents, which can't contain metadata
+            extensionPromise = Promise.resolve([{}]);
+        } else {
+            var extensionPlayObjects = targetRefs.map(function (refObj) {
+                var layerRef = refObj[1];
+                return layerLib.getExtensionData(docRef, layerRef, METADATA_NAMESPACE);
+            });
+
             extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
                 .map(function (extensionData) {
-                    var extensionDataRoot = extensionData[nameSpace];
+                    var extensionDataRoot = extensionData[METADATA_NAMESPACE];
                     return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
-                })
-                .then(function (extensionDataArray) {
-                    // add an empty object associated with the background layer (see note above)
-                    if (startIndex === 0) {
-                        extensionDataArray.unshift({});
-                    }
-                    return extensionDataArray;
                 });
+        }
 
-        return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise, extensionPromise,
-            function (required, optional, extension) {
-                return _.chain(required)
-                    .zipWith(optional, _.merge)
-                    .zipWith(extension, _.merge)
-                    .reverse()
-                    .value();
+        return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise,
+            function (required, optional) {
+                return _.zipWith(required, optional, _.merge);
             })
             .tap(function (properties) {
                 var propertiesByID = _.indexBy(properties, "layerID");
-                return lazyPropertiesPromise.each(function (lazyProperties) {
-                    if (!lazyProperties) {
-                        // A background will not have a layer ID
-                        return;
-                    }
-                    
-                    var lazyLayerID = lazyProperties.layerID;
 
-                    _.merge(propertiesByID[lazyLayerID], lazyProperties);
+                return extensionPromise.then(function (allData) {
+                    return lazyPropertiesPromise.each(function (lazyProperties, index) {
+                        if (!lazyProperties) {
+                            // A background will not have a layer ID
+                            return;
+                        }
+
+                        var lazyLayerID = lazyProperties.layerID,
+                            extensionData = allData[index];
+
+                        _.merge(propertiesByID[lazyLayerID], lazyProperties, extensionData);
+                    });
                 });
+            })
+            .then(function (properties) {
+                return properties.reverse();
             });
     };
 

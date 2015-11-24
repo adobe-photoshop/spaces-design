@@ -29,7 +29,8 @@ define(function (require, exports, module) {
         _ = require("lodash");
 
     var DocumentExports = require("js/models/documentexports"),
-        events = require("../events");
+        events = require("../events"),
+        collection = require("js/util/collection");
 
     /**
      * ID of the Export dialog.
@@ -95,7 +96,8 @@ define(function (require, exports, module) {
                 events.export.SET_AS_REQUESTED, this._setAssetsRequested,
                 events.export.SERVICE_STATUS_CHANGED, this._setState,
                 events.export.SET_STATE_PROPERTY, this._setState,
-                events.document.DOCUMENT_UPDATED, this._documentUpdated
+                events.document.DOCUMENT_UPDATED, this._documentUpdated,
+                events.document.history.RESET_LAYERS, this._handleResetLayers
             );
         },
 
@@ -181,6 +183,23 @@ define(function (require, exports, module) {
                 documentExports = DocumentExports.fromDescriptors(payload);
 
             this._documentExportsMap = this._documentExportsMap.set(documentID, documentExports);
+            this.emit("change");
+        },
+
+        /**
+         * Update the documente export map with the given layer descriptors.
+         *
+         * @private
+         * @param {{documentID: number, layers: Immutable.List.<{layerID: number, descriptor: object}>}} payload
+         */
+        _handleResetLayers: function (payload) {
+            var documentID = payload.documentID,
+                documentExports = this._documentExportsMap.get(documentID),
+                layers = collection.pluck(payload.layers, "descriptor"),
+                nextDocumentExports = documentExports.resetLayers(layers);
+
+            this._documentExportsMap = this._documentExportsMap.set(documentID, nextDocumentExports);
+            this.emit("change");
         },
 
         /**

@@ -67,6 +67,44 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Generate List of ExportAssets based on an array of simple props objects
+     *
+     * @private
+     * @param {Array.<object>=} propsArray
+     * @return {Immutable.List.<ExportAsset>}
+     */
+    var _toListOfAssets = function (propsArray) {
+        if (!propsArray || !_.isArray(propsArray)) {
+            return new Immutable.List();
+        }
+        return Immutable.List(propsArray.map(function (props) {
+            if (!props.quality && props.format && props.format !== "png") {
+                // hack for support of "old" assets prior to quality
+                // for non PNG, force a better default than 32
+                props.quality = 100;
+            }
+            return new ExportAsset(props);
+        }));
+    };
+
+    /**
+     * Make a layerExportsMap for the given layer descriptor iterable.
+     *
+     * @private
+     * @param {Array.<object>|Immutable.List.<object>} layers
+     * @return {Immutable.Map.<number, ExportAsset>}
+     */
+    var _makeLayerAssetMap = function (layers) {
+        return Immutable.Map(layers.map(function (layer) {
+            var assetProps = layer.artboardEnabled && layer.exportAssets === undefined ?
+                [{}] :
+                layer.exportAssets,
+            exportList = _toListOfAssets(assetProps);
+            return [layer.layerID, exportList];
+        }));
+    };
+
+    /**
      * Given an array of layer descriptors, populate both the rootExports and layerExportsMap
      * with lists of ExportAssets derived from the photoshop extension data
      *
@@ -79,35 +117,26 @@ define(function (require, exports, module) {
         var layers = payload.layers || [],
             document = payload.document;
 
-        // generate List of ExportAssets based on an array of simple props objects
-        var _toListOfAssets = function (propsArray) {
-            if (!propsArray || !_.isArray(propsArray)) {
-                return new Immutable.List();
-            }
-            return Immutable.List(propsArray.map(function (props) {
-                if (!props.quality && props.format && props.format !== "png") {
-                    // hack for support of "old" assets prior to quality
-                    // for non PNG, force a better default than 32
-                    props.quality = 100;
-                }
-                return new ExportAsset(props);
-            }));
-        };
-
-        var rootExports = _toListOfAssets(document.exportAssets);
-
-        var layerExportsMap = Immutable.Map(layers.map(function (layer) {
-            var assetProps = layer.artboardEnabled && layer.exportAssets === undefined ?
-                [{}] :
-                layer.exportAssets,
-            exportList = _toListOfAssets(assetProps);
-            return [layer.layerID, exportList];
-        }));
+        var rootExports = _toListOfAssets(document.exportAssets),
+            layerExportsMap = _makeLayerAssetMap(layers);
         
         return new DocumentExports({
             layerExportsMap: layerExportsMap,
             rootExports: rootExports
         });
+    };
+
+    /**
+     * Given an array of layer descriptors, replace or insert the given exports
+     * in the layerExportsMap.
+     *
+     * @param {Immutable.List.<object>} layers
+     * @return {DocumentExports}
+     */
+    DocumentExports.prototype.resetLayers = function (layers) {
+        var updatedLayerExports = _makeLayerAssetMap(layers);
+
+        return this.mergeIn(["layerExportsMap"], updatedLayerExports);
     };
 
     /**
