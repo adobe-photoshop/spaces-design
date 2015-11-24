@@ -797,7 +797,7 @@ define(function (require, exports) {
                 element = CCLibraries.resolveElementReference(reference),
                 representation = element.getPrimaryRepresentation();
 
-            return Promise.fromNode(function (cb) {
+            return Promise.fromCallback(function (cb) {
                 representation.getContentPath(cb);
             }).then(function (path) {
                 return path;
