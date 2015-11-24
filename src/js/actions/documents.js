@@ -532,13 +532,16 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var allocateDocument = function (documentID) {
-        var updatePromise = this.transfer(updateDocument, documentID),
-            selectedDocumentPromise = _getSelectedDocumentID();
+        return _getSelectedDocumentID()
+            .bind(this)
+            .tap(function (currentDocumentID) {
+                // if this document is current, call updateDocument with an undefined documentID argument
+                // so that it will interpreted as an update of the current document
+                var updateDocId = currentDocumentID === documentID ? undefined : documentID;
 
-        return Promise.join(
-            selectedDocumentPromise,
-            updatePromise,
-            function (currentDocumentID) {
+                return this.transfer(updateDocument, updateDocId);
+            })
+            .then(function (currentDocumentID) {
                 if (currentDocumentID === documentID) {
                     var payload = {
                         selectedDocumentID: currentDocumentID
@@ -550,7 +553,7 @@ define(function (require, exports) {
                         this.transfer(historyActions.queryCurrentHistory, documentID, false),
                         this.transfer(ui.updateTransform));
                 }
-            }.bind(this));
+            });
     };
     allocateDocument.action = {
         reads: [locks.PS_APP],
