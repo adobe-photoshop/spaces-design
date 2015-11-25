@@ -296,6 +296,8 @@ define(function (require, exports) {
             return;
         }
 
+        descriptor = descriptor.toObject();
+
         var action = _resolveAction.call(this, descriptor.$action),
             $payload = descriptor.$payload,
             $dontLog = descriptor.$dontLog || false,
@@ -442,7 +444,10 @@ define(function (require, exports) {
 
             if (appMenu !== null) {
                 var menuDescriptor = appMenu.getMenuDescriptor();
-                ui.installMenu(menuDescriptor);
+                ui.installMenu(menuDescriptor)
+                    .catch(function (err) {
+                        log.warn("Failed to install menu: ", err, menuDescriptor);
+                    });
             }
         }.bind(this);
 
