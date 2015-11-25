@@ -220,7 +220,7 @@ define(function (require, exports, module) {
 
             return (
                 <div className={strokesClasses}>
-                    <div className="formline formline__no-padding">
+                    <div className="formline formline__no-padding formline__space-between">
                         <div className="control-group control-group__vertical">
                             <ColorInput
                                 id={colorInputID}

@@ -47,6 +47,8 @@
  * THE SOFTWARE.
  */
 
+@slider-radius: 1.2rem;
+
 .color-picker {
     // HACK: remove this before integration
     top: 0;
@@ -90,7 +92,7 @@
 .color-picker {
     left: 0rem;
     width: 30.2rem;
-    height: 30.4rem;
+    height: 28.4rem;
     max-height: 36rem;
     display: flex;
     flex-direction: column;
@@ -137,10 +139,10 @@
 
 .color-picker-map {
     position: absolute;
-    top: 5.6rem;
-    left: 5.6rem;
-    height: 17rem;
-    width: 16.2rem;
+    top: 6.8rem;
+    left: 6.8rem;
+    height: 14.6rem;
+    width: 13.8rem;
     -webkit-user-select: none;
 
     &.color-picker-map__dark .color-picker-map__pointer {
@@ -153,11 +155,11 @@
 
     .color-picker-map__pointer {
         position: absolute;
-        margin-left: -0.8rem;
-        margin-bottom: -0.8rem;
+        margin-left: -1rem;
+        margin-bottom: -1rem;
         
-        width: 1.6rem;
-        height: 1.6rem;
+        width: 2rem;
+        height: 2rem;
         
         background: none;
         border-radius: 100%;
@@ -169,7 +171,9 @@
         position: absolute;
         height: 17rem;
         width: 16.2rem;
-        border-radius: 0.4rem;
+        top: -1.2rem;
+        left: -1.2rem;
+        border-radius: @slider-radius;
     }
 
     .color-picker-map__background:before,
@@ -181,18 +185,19 @@
         left: 0;
         bottom: 0;
         right: 0;
+        position: absolute;
         height: 17rem;
         width: 16.2rem;
-        border-radius: 0.4rem;
+        border-radius: @slider-radius;
         box-shadow:0 0 0 @hairline @bg-border;
     }
 
     .color-picker-map__background:after {
-        background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,1) 100%);
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 5%,rgba(0,0,0,1) 95%);
     }
 
     .color-picker-map__background:before {
-        background: linear-gradient(to right, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 100%);
+        background: linear-gradient(to right, rgba(255,255,255,1) 5%,rgba(255,255,255,0) 95%);
     }
 }
 
@@ -249,8 +254,8 @@
         width: 2.4rem;
         height: 2.4rem;
         background: @item;
-        border-radius: 0.4rem;
-        
+        border-radius: 0.2rem;
+        .background-checkerboard(24);
         &.empty {
             background: url(../img/ico-color-picker-no-color.svg) no-repeat;
         }
@@ -272,6 +277,7 @@
 
 .color-picker__colortype__thumb__overlay {
     border-radius: 0.2rem;
+    box-shadow: 0 0 0 0.1rem @bg-border;;
 }
 
 // Color Sliders
@@ -282,13 +288,14 @@
     -webkit-backface-visibility: hidden;
 
     &.color-picker-slider__vertical {
+        top: 1.4rem;
         width: 2.4rem;
-        height: 17rem;
+        height: 14.6rem;
         
         .color-picker-slider__track,
         .color-picker-slider__track-overlay {
             position: absolute;
-            top: 0;
+            top: -1.4rem;
             bottom: 0;
             left: 0;
             width: 2.4rem;
@@ -297,29 +304,29 @@
         }
         .color-picker-slider__pointer {
             bottom: 50%;
-            left: .4rem;
+            left: .2rem;
             margin-bottom: -0.8rem
         }
     }
 
     &.color-picker-slider__horizontal {
-        left: 0;
+        left: 1rem;
         right: 0;
         height: 2.4rem;
-        width: 26.8rem;
+        width: 17.8rem;
         
         .color-picker-slider__track,
         .color-picker-slider__track-overlay {
             position: absolute;
-            left: 0;
+            left: -1rem;
             right: 0;
             top: 0;
             height: 2.4rem;
-            width: 26.8rem;
+            width: 20.2rem;
             margin-top: 0rem;
         }
         .color-picker-slider__pointer {
-            top: .4rem;
+            top: .2rem;
             left: 50%;
             margin-left: -0.8rem;
         }
@@ -327,7 +334,7 @@
 
     .color-picker-slider__track,
     .color-picker-slider__track-overlay {    
-        border-radius: 0.4rem;
+        border-radius: @slider-radius;
         box-shadow:0 0 0 @hairline @bg-border;
         &:before {
             content: "";
@@ -338,14 +345,14 @@
             height: 100%;
             background-color: white;
             z-index: -1;
-            border-radius: .5rem;
+            border-radius: @slider-radius;
         }
     }
 
     .color-picker-slider__pointer {
         position: absolute;
-        width: 1.6rem;
-        height: 1.6rem;
+        width: 2rem;
+        height: 2rem;
         background: none;
         margin: 0;
         border-radius: 100%;
@@ -357,16 +364,18 @@
 // Label for Color picker opacity slider 
 .color-picker .slider_label {
     position: absolute;
-    top: 23.7rem;
-    left: 1.6rem;
-    width: 26.8rem;
+    top: 24.3rem;
+    right: 0;
+    width: 7rem;
     display: flex;
-    justify-content: space-between;
+    padding: 0 .2rem;
     label {
         font-size: @text-medium;
         display: inline-block;
         vertical-align: baseline;
         line-height: 1.8rem;
+        text-align: right;
+        width: 1rem;
     }
     input[type='text'] {
         font-size: @text-medium;
@@ -391,33 +400,33 @@
 
     .color-picker-slider__horizontal > .color-picker-slider__track {
         background: linear-gradient(to bottom,
-            #FF0000 0%,
-            #FF0099 10%,
-            #CD00FF 20%,
-            #3200FF 30%,
-            #0066FF 40%,
+            #FF0000 5%,
+            #FF0099 14%,
+            #CD00FF 23%,
+            #3200FF 32%,
+            #0066FF 41%,
             #00FFFD 50%,
-            #00FF66 60%,
-            #35FF00 70%,
-            #CDFF00 80%,
-            #FF9900 90%,
-            #FF0000 100%
+            #00FF66 59%,
+            #35FF00 68%,
+            #CDFF00 77%,
+            #FF9900 86%,
+            #FF0000 95%
         );
     }
 
     .color-picker-slider__vertical > .color-picker-slider__track {
         background: linear-gradient(to bottom,
-            #FF0000 0%,
-            #FF0099 10%,
-            #CD00FF 20%,
-            #3200FF 30%,
-            #0066FF 40%,
+            #FF0000 5%,
+            #FF0099 14%,
+            #CD00FF 23%,
+            #3200FF 32%,
+            #0066FF 41%,
             #00FFFD 50%,
-            #00FF66 60%,
-            #35FF00 70%,
-            #CDFF00 80%,
-            #FF9900 90%,
-            #FF0000 100%
+            #00FF66 59%,
+            #35FF00 68%,
+            #CDFF00 77%,
+            #FF9900 86%,
+            #FF0000 95%
         );
     }
 }
@@ -426,12 +435,13 @@
     position: absolute;
     left: 1.6rem;
     right: 1.6rem;
-    top: 26.4rem;
+    top: 24.2rem;
     height: 2.4rem;
-    width: 26.8rem;
-    border-radius: .4rem;
+    width: 20.2rem;
+    border-radius: calc(@slider-radius + 0.2rem);
     .color-picker-slider__horizontal > .color-picker-slider__track,
     .color-picker-slider__vertical > .color-picker-slider__track {
         .background-checkerboard(16);
+        box-shadow: 0 0 .2rem @bg-border;
     }
 }

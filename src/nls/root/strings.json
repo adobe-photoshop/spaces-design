@@ -313,7 +313,7 @@
             "GRADIENT": "Gradient",
             "PATTERN": "Pattern"
         },
-        "OPACITY": "Opacity"
+        "OPACITY": "A"
     },
     "TRANSFORM": {
         "X": "X",

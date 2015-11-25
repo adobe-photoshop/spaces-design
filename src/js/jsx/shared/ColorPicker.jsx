@@ -328,7 +328,7 @@ define(function (require, exports, module) {
             if (this.props.hasOwnProperty("color")) {
                 // this is an alpha slider
                 var bgColor = tinycolor(this.props.color.toJS()).toHexString(),
-                    bgGradient = "linear-gradient(to right, rgba(1, 1, 1, 0) 0%, " + bgColor + " 100%)";
+                    bgGradient = "linear-gradient(to right, rgba(1, 1, 1, 0) 5%, " + bgColor + " 95%)";
 
                 overlay = (
                     <div className="color-picker-slider__track-overlay" style={{
@@ -634,7 +634,7 @@ define(function (require, exports, module) {
                     backgroundColor: colortiny ? colortiny.toRgbString() : "transparent"
                 },
                 label = this._computeLabel(colortiny);
-                
+
             return (
                 <div
                     className="color-picker__colortype">

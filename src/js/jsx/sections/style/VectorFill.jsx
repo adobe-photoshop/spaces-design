@@ -130,7 +130,7 @@ define(function (require, exports, module) {
                     fill={this.state.fill} />);
             
             return (
-                <div className="formline">
+                <div className="formline formline__space-between">
                     <div className="control-group__vertical vector-fill">
                         <FillColor
                             disabled={!this.props.uniformLayerKind}
