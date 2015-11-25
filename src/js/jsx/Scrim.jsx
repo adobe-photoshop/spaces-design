@@ -211,8 +211,8 @@ define(function (require, exports, module) {
             if (!nextState.activeDocumentInitialized || !nextState.recentFilesInitialized) {
                 return false;
             }
-            
-            if (this.state.isDropTarget === nextState.isDropTarget && 
+
+            if (this.state.isDropTarget === nextState.isDropTarget &&
                 this.state.vectorMaskMode === nextState.vectorMaskMode &&
                 this.state.current === nextState.current) {
                 return false;

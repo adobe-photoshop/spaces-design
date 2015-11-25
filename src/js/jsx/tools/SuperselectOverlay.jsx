@@ -394,13 +394,13 @@ define(function (require, exports, module) {
                         .attr("y", bounds.top + boundsAB.top + offset)
                         .attr("width", bounds.width)
                         .attr("height", bounds.height)
-                        .attr("fill", "rgb(127, 127, 127)");
+                        .attr("fill", "black");
 
                     mask.append("circle")
                         .attr("cx", bounds.left + boundsAB.left + bounds.width / 2 + offset)
                         .attr("cy", bounds.top + boundsAB.top + bounds.height / 2 + offset)
                         .attr("r", oval / 2)
-                        .attr("fill", "black");
+                        .attr("fill", "rgb(127, 127, 127)");
 
                     svg.select("g#maskPreview").append("rect")
                         .attr("x", bounds.left + boundsAB.left + offset)
@@ -842,7 +842,6 @@ define(function (require, exports, module) {
          * Draws the clickable icons on the vector Mask HUD
          *
          * @private
-         * @param {number} size Icon size
          */
         _drawVectorMaskHUDObjects: function () {
             var uiStore = this.getFlux().store("ui"),
@@ -855,19 +854,39 @@ define(function (require, exports, module) {
                 remToPx = this.getFlux().store("ui").remToPx,
                 numIcons = 3;
 
-            var sampleSize = remToPx(2.4),
-                iconSize = Math.round(sampleSize * 1),
-                iconOffset = Math.round(sampleSize / 1.5),
-                rectWidth = (sampleSize * numIcons) + (iconOffset * 5),
-                rectHeight = sampleSize + iconOffset * 2,
-                left = (cloakRect.left + cloakRect.right) / 2 - (rectWidth / 2),
-                top = (cloakRect.top + cloakRect.bottom) / 2 - (rectHeight / 2),
-                iconLeft = left + iconOffset,
+            var sampleSize = remToPx(2.5),
+                iconSize = Math.round(sampleSize * 0.58333333333333),
+                iconOffset = Math.round(iconSize / 1.5),
+                iconOffset = Math.round(sampleSize / 3),
+                left, top,
+                rectWidth = (iconSize * numIcons) + (iconOffset * 5),
+                rectHeight = iconSize + iconOffset * 2;
+                
+            var bounds = layerTree.relativeChildBounds(layerTree.selected.first());
+            
+            var layerLT = uiStore.transformCanvasToWindow(bounds.left, bounds.top),
+                layerRB = uiStore.transformCanvasToWindow(bounds.right, bounds.bottom);
+            
+            var layerCenterLR = layerLT.x + ((layerRB.x - layerLT.x) / 2),
+                layerCenterTB = layerLT.y + ((layerRB.y - layerLT.y) / 2);
+                                
+            if (layerCenterLR > cloakRect.left && layerCenterLR < cloakRect.right &&
+            layerCenterTB > cloakRect.top && layerCenterTB < cloakRect.bottom) {
+                left = layerCenterLR - (rectWidth / 2);
+                top = layerCenterTB - (rectHeight / 2);
+            } else {
+                left = (cloakRect.left + cloakRect.right) / 2 - (rectWidth / 2);
+                top = (cloakRect.top + cloakRect.bottom) / 2 - (rectHeight / 2);
+            }
+
+            var iconLeft = left + iconOffset,
                 iconTop = top + iconOffset,
-                rectRound = remToPx(1);
+                rectRound = sampleSize / 6;
 
             var rectTLX = Math.round(left),
                 rectTLY = Math.round(top);
+            
+            this.drawMaskPreview(this._hudGroup, layerTree, false);
             
             // Draw the frame
             // A rounded rectangle
@@ -910,7 +929,7 @@ define(function (require, exports, module) {
                     d3.event.stopPropagation();
                 }.bind(this));
             
-            iconLeft = iconLeft + iconOffset * 1.5 + sampleSize;
+            iconLeft = iconLeft + iconOffset * 1.5 + iconSize;
 
             // rect
             this._hudGroup
@@ -937,7 +956,7 @@ define(function (require, exports, module) {
                     d3.event.stopPropagation();
                 }.bind(this));
 
-            iconLeft = iconLeft + iconOffset * 1.5 + sampleSize;
+            iconLeft = iconLeft + iconOffset * 1.5 + iconSize;
 
             // pen
             this._hudGroup
