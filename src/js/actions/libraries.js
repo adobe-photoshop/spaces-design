@@ -283,7 +283,7 @@ define(function (require, exports) {
                 currentLibrary.beginOperation();
                 newElement = currentLibrary.createElement(firstLayer.name, ELEMENT_GRAPHIC_TYPE);
 
-                return Promise.fromNode(function (done) {
+                return Promise.fromCallback(function (done) {
                     var representation = newElement.createRepresentation(representationType, "primary");
 
                     representation.updateContentFromPath(paths.exportedLayerPath, false, done);
@@ -292,7 +292,7 @@ define(function (require, exports) {
                 }).finally(function () {
                     currentLibrary.endOperation();
                 }).then(function () {
-                    return Promise.fromNode(function (done) {
+                    return Promise.fromCallback(function (done) {
                         newElement.getPrimaryRepresentation().getContentPath(done);
                     });
                 });
@@ -393,7 +393,7 @@ define(function (require, exports) {
                 representation.setValue("characterstyle", "data", typeData);
                     
                 return Promise
-                    .fromNode(function (done) {
+                    .fromCallback(function (done) {
                         imageRepresentation.updateContentFromPath(tempPreviewPath, false, done);
                     })
                     .then(function () {
@@ -457,12 +457,12 @@ define(function (require, exports) {
 
                 newElement = currentLibrary.createElement(currentLayer.name, ELEMENT_LAYERSTYLE_TYPE);
 
-                return Promise.fromNode(function (done) {
+                return Promise.fromCallback(function (done) {
                         var representation = newElement.createRepresentation(REP_LAYERSTYLE_TYPE, "primary");
                         representation.updateContentFromPath(stylePath, false, done);
                     })
                     .then(function () {
-                        return Promise.fromNode(function (done) {
+                        return Promise.fromCallback(function (done) {
                             var rendition = newElement.createRepresentation(REP_PNG_TYPE, "rendition");
                             rendition.updateContentFromPath(tempPreviewPath, false, done);
                         });
@@ -597,7 +597,7 @@ define(function (require, exports) {
                         tempFilePath = paths.tempBasePath + pathUtil.sep + tempFilename;
                         tempPreviewPath = tempFilePath.replace(".psd", "p.png");
 
-                        return Promise.fromNode(function (done) {
+                        return Promise.fromCallback(function (done) {
                             element.getPrimaryRepresentation().getContentPath(done);
                         });
                     })
@@ -696,7 +696,7 @@ define(function (require, exports) {
             this.dispatch(events.libraries.UPDATING_GRAPHIC_CONTENT, { documentID: documentID, element: element });
 
             updateGraphicPromise = Promise
-                .fromNode(function (done) {
+                .fromCallback(function (done) {
                     library.beginOperation();
 
                     // If the element we're editing was deleted, we recreate it as a new element, so the changes
@@ -823,7 +823,7 @@ define(function (require, exports) {
         location.y = uiStore.zoomWindowToCanvas(location.y) / pixelRatio;
 
         return Promise
-            .fromNode(function (done) {
+            .fromCallback(function (done) {
                 var representation = _findPlacableGraphicRepresentation(element);
 
                 representation.getContentPath(done);
@@ -929,7 +929,7 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return Promise.fromNode(function (done) {
+        return Promise.fromCallback(function (done) {
                 representation.getContentPath(done);
             })
             .bind(this)
@@ -1127,7 +1127,7 @@ define(function (require, exports) {
             id: library.id
         };
 
-        return Promise.fromNode(function (done) {
+        return Promise.fromCallback(function (done) {
                 libraryCollection.removeLibrary(library, done);
             })
             .bind(this)
