@@ -174,7 +174,7 @@ define(function (require, exports, module) {
                 nextDocumentIndex = 0;
             }
 
-            return this._documentIDs.get(nextDocumentIndex);
+            return this.openDocumentIDs.get(nextDocumentIndex);
         },
 
         /**
@@ -192,7 +192,7 @@ define(function (require, exports, module) {
                 nextDocumentIndex = this.openDocumentIDs.size - 1;
             }
 
-            return this._documentIDs.get(nextDocumentIndex);
+            return this.openDocumentIDs.get(nextDocumentIndex);
         }
     }));
 
