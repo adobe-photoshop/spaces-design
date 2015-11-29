@@ -92,6 +92,7 @@ define(function (require, exports) {
         } else {
             selectVectorMask = descriptor.playObject(vectorMaskLib.dropPathSelection());
         }
+
         return Promise.join(setPromise, selectVectorMask, disableSuppressionPromise,
             backspacePromise, deletePromise);
     };
