@@ -107,9 +107,11 @@ define(function (require, exports, module) {
                 }
             });
 
-            if (found > 0) {
-                this._shortcuts.splice(found, 1);
+            if (found < 0) {
+                throw new Error("Failed to remove shortcut: unknown ID " + id);
             }
+
+            this._shortcuts.splice(found, 1);
         },
 
         /**
