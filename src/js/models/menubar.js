@@ -28,11 +28,13 @@ define(function (require, exports, module) {
         Immutable = require("immutable");
 
     var MenuItem = require("./menuitem"),
+        MenuShortcut = require("./menushortcut"),
         keyutil = require("js/util/key"),
         global = require("js/util/global"),
         pathUtil = require("js/util/path"),
-        system = require("js/util/system");
-    
+        system = require("js/util/system"),
+        object = require("js/util/object");
+
     /**
      * A model for the menu bar application currently shows
      *
@@ -65,15 +67,22 @@ define(function (require, exports, module) {
          *
          * @type {Immutable.Map.<string, object>}
          */
-        actions: null,
+        actions: null
+    });
 
+    Object.defineProperties(MenuBar.prototype, object.cachedGetSpecs({
         /**
          * Map from ID to root menus
          *
          * @type {Immutable.Map.<string, MenuItem>}
          */
-        rootMap: null
-    });
+        rootMap: function () {
+            return Immutable.Map(this.roots
+                .map(function (entry) {
+                    return [entry.itemID, entry];
+                }));
+        }
+    }));
 
     /**
      * Process the raw action descriptor into enablement rules
@@ -113,7 +122,7 @@ define(function (require, exports, module) {
                 if (descriptor.hasOwnProperty("$payload")) {
                     action.$payload = descriptor.$payload;
                 }
-                actionMap.set(id, action);
+                actionMap.set(id, Immutable.Map(action));
             } else {
                 if (prop !== "$enable-rule") {
                     _processMenuActions(descriptor, actionMap, enablerMap, id);
@@ -379,12 +388,9 @@ define(function (require, exports, module) {
         _artboardFromTemplates(menuObj, menuActionsObj, templates);
 
         var menuID = menuObj.id,
-            rootMap = new Map(),
             // Process each root submenu into roots
             roots = Immutable.List(menuObj.menu.map(function (rawMenu) {
-                var rootItem = MenuItem.fromDescriptor(rawMenu);
-                rootMap.set(rootItem.id, rootItem);
-                return rootItem;
+                return MenuItem.fromDescriptor(rawMenu);
             })),
             actions = new Map(),
             enablers = new Map();
@@ -396,8 +402,7 @@ define(function (require, exports, module) {
             id: menuID,
             roots: roots,
             enablers: Immutable.Map(enablers),
-            actions: Immutable.Map(actions),
-            rootMap: Immutable.Map(rootMap)
+            actions: Immutable.Map(actions)
         });
     };
 
@@ -420,22 +425,18 @@ define(function (require, exports, module) {
         var rules = _buildRuleResults(openDocuments, document,
                 hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled,
                 vectorMaskMode),
-            newRootMap = new Map(),
             newRoots;
 
-        if (this.roots && this.roots.size > 0) {
+        if (this.roots) {
             newRoots = this.roots.map(function (rootItem) {
-                var newItem = rootItem._update(this.enablers, rules);
-                newRootMap.set(newItem.id, newItem);
-                return newItem;
+                return rootItem._update(this.enablers, rules);
             }, this);
         } else {
             newRoots = Immutable.List();
         }
 
         return this.merge({
-            roots: newRoots,
-            rootMap: newRootMap
+            roots: newRoots
         });
     };
 
@@ -448,8 +449,8 @@ define(function (require, exports, module) {
      */
     MenuBar.prototype.updateViewMenuItems = function (document) {
         return this.updateSubmenuItems("VIEW", {
-            "TOGGLE_GUIDES": { "checked": (document && document.guidesVisible ? 1 : 0) },
-            "TOGGLE_SMART_GUIDES": { "checked": (document && document.smartGuidesVisible ? 1 : 0) }
+            "TOGGLE_GUIDES": { "checked": !!(document && document.guidesVisible) },
+            "TOGGLE_SMART_GUIDES": { "checked": !!(document && document.smartGuidesVisible) }
         });
     };
     
@@ -462,15 +463,15 @@ define(function (require, exports, module) {
      */
     MenuBar.prototype.updatePreferenceBasedMenuItems = function (preferences) {
         var updatedMenu = this.updateSubmenuItems("WINDOW", {
-            "TOGGLE_TOOLBAR": { "checked": (preferences.get("toolbarPinned", true) ? 1 : 0) },
-            "TOGGLE_SINGLE_COLUMN_MODE": { "checked": (preferences.get("singleColumnModeEnabled", false) ? 1 : 0) }
+            "TOGGLE_TOOLBAR": { "checked": preferences.get("toolbarPinned", true) },
+            "TOGGLE_SINGLE_COLUMN_MODE": { "checked": preferences.get("singleColumnModeEnabled", false) }
         });
 
         if (global.debug) {
             return updatedMenu.updateSubmenuItems("HELP", {
-                "TOGGLE_POLICY_FRAMES": { "checked": (preferences.get("policyFramesEnabled", false) ? 1 : 0) },
-                "TOGGLE_POSTCONDITIONS": { "checked": (preferences.get("postConditionsEnabled", false) ? 1 : 0) },
-                "TOGGLE_ACTION_TRANSFER_LOGGING": { "checked": (preferences.get("logActionTransfers", false) ? 1 : 0) }
+                "TOGGLE_POLICY_FRAMES": { "checked": preferences.get("policyFramesEnabled", false) },
+                "TOGGLE_POSTCONDITIONS": { "checked": preferences.get("postConditionsEnabled", false) },
+                "TOGGLE_ACTION_TRANSFER_LOGGING": { "checked": preferences.get("logActionTransfers", false) }
             });
         } else {
             return updatedMenu;
@@ -486,15 +487,14 @@ define(function (require, exports, module) {
      */
     MenuBar.prototype.updateSubmenuItems = function (menuID, subMenuProps) {
         var menu = this.getMenuItem(menuID),
-            menuIndex = this.roots.indexOf(menu); // TODO why do we have to maintain a separate list?
+            menuIndex = this.roots.indexOf(menu);
 
         menu = _.reduce(subMenuProps, function (menu, properties, key) {
             return menu.updateSubmenuProps(key, properties);
         }, menu);
 
         return this.merge({
-            roots: this.roots.set(menuIndex, menu),
-            rootMap: this.rootMap.set(menuID, menu)
+            roots: this.roots.set(menuIndex, menu)
         });
     };
 
@@ -524,11 +524,11 @@ define(function (require, exports, module) {
                         "command": id
                     };
                 newEnablers = newEnablers.set(id, Immutable.List.of("always"));
-                newActions = newActions.set(id, {
+                newActions = newActions.set(id, Immutable.Map({
                     "$action": "documents.open",
                     "$payload": filePath,
                     "$dontLog": true
-                });
+                }));
                 return new MenuItem(itemDescriptor);
             }),
             // Update FILE.RECENT to have the recent files as it's submenu
@@ -542,24 +542,20 @@ define(function (require, exports, module) {
                     recentIndex = submenu.findIndex(function (item) {
                         return item.id === recentFileMenuID;
                     }),
-                    newsubmenu = submenu.set(recentIndex, newRecentFilesMenu),
-                    newsubmenuMap = menu.submenuMap.set(recentFileMenuID, newRecentFilesMenu);
+                    newsubmenu = submenu.set(recentIndex, newRecentFilesMenu);
 
                 return menu.merge({
-                    submenu: newsubmenu,
-                    submenuMap: newsubmenuMap
+                    submenu: newsubmenu
                 });
             }),
-            // Update roots/rootMap to point to new File menu
+            // Update roots to point to new File menu
             fileMenuIndex = this.roots.findIndex(function (root) {
                 return root.id === "FILE";
             }),
-            newRoots = this.roots.set(fileMenuIndex, newFileMenu),
-            newRootMap = this.rootMap.set("FILE", newFileMenu);
+            newRoots = this.roots.set(fileMenuIndex, newFileMenu);
 
         return this.merge({
             roots: newRoots,
-            rootMap: newRootMap,
             actions: newActions,
             enablers: newEnablers
         });
@@ -606,20 +602,20 @@ define(function (require, exports, module) {
                     "label": label,
                     "command": id,
                     "enabled": !appIsModal,
-                    "checked": Immutable.is(document, currentDocument) ? "on" : "off",
-                    "shortcut": (index < 9) ? {
+                    "checked": document.id === currentDocument.id,
+                    "shortcut": (index < 9) ? new MenuShortcut({
                         "keyChar": (index + 1).toString(),
                         "modifiers": shortcutModifierBits
-                    } : null
+                    }) : null
                 };
 
             newEnablers = newEnablers.set(id, Immutable.List.of("always"));
 
-            newActions = newActions.set(id, {
+            newActions = newActions.set(id, Immutable.Map({
                 "$action": "documents.selectDocument",
-                "$payload": document,
+                "$payload": document.id,
                 "$dontLog": true
-            });
+            }));
             return new MenuItem(itemDescriptor);
         });
 
@@ -635,16 +631,14 @@ define(function (require, exports, module) {
                     submenu: newsubmenu
                 });
             }),
-            // Update roots/rootMap to point to new File menu
+            // Update roots to point to new File menu
             windowMenuIndex = this.roots.findIndex(function (root) {
                 return root.id === "WINDOW";
             }),
-            newRoots = this.roots.set(windowMenuIndex, newWindowMenu),
-            newRootMap = this.rootMap.set("WINDOW", newWindowMenu);
+            newRoots = this.roots.set(windowMenuIndex, newWindowMenu);
 
         return this.merge({
             roots: newRoots,
-            rootMap: newRootMap,
             actions: newActions,
             enablers: newEnablers
         });
@@ -655,7 +649,7 @@ define(function (require, exports, module) {
      *
      * @param {string} menuID dot delimited string
      *
-     * @return {{$action:function(), $payload:object}} [description]
+     * @return {Immutable.Map.<string, object>} A menu action descriptor
      */
     MenuBar.prototype.getMenuAction = function (menuID) {
         return this.actions.get(menuID);
@@ -668,9 +662,11 @@ define(function (require, exports, module) {
     MenuBar.prototype.getMenuDescriptor = function () {
         return {
             id: this.id,
-            menu: this.roots.map(function (item) {
-                return item.exportDescriptor();
-            }).toArray()
+            menu: this.roots
+                .map(function (item) {
+                    return item.exportDescriptor();
+                })
+                .toArray()
         };
     };
 
@@ -689,7 +685,7 @@ define(function (require, exports, module) {
 
         idSegments.forEach(function (id) {
             if (result !== null) {
-                result = result.submenuMap.get(id, null);
+                result = result.byID(id);
             }
         });
 

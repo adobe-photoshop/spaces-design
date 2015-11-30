@@ -745,11 +745,13 @@ define(function (require, exports) {
     /**
      * Activate the given already-open document
      *
-     * @param {Document} document
+     * @param {Document|number} documentSpec
      * @return {Promise}
      */
-    var selectDocument = function (document) {
-        var documentID = document.id,
+    var selectDocument = function (documentSpec) {
+        var flux = this.flux,
+            documentID = typeof documentSpec === "number" ? documentSpec : documentSpec.id,
+            document = flux.stores.document.getDocument(documentID),
             documentRef = documentLib.referenceBy.id(documentID);
 
         this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
@@ -773,7 +775,7 @@ define(function (require, exports) {
                 return this.transfer(toolActions.changeVectorMaskMode, false);
             })
             .then(function () {
-                var toolStore = this.flux.store("tool");
+                var toolStore = flux.store("tool");
 
                 if (toolStore.getCurrentTool() === toolStore.getToolByID("superselectVector")) {
                     return this.transfer(toolActions.select, toolStore.getToolByID("newSelect"));

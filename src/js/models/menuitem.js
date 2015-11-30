@@ -30,10 +30,12 @@ define(function (require, exports, module) {
 
     var UI = require("adapter").ps.ui;
 
-    var nls = require("js/util/nls"),
+    var MenuShortcut = require("./menushortcut"),
+        object = require("js/util/object"),
+        nls = require("js/util/nls"),
         keyutil = require("js/util/key"),
         global = require("js/util/global");
-    
+
     /**
      * A model of a menu item
      *
@@ -70,12 +72,6 @@ define(function (require, exports, module) {
         submenu: null,
 
         /**
-         * Maps from itemID to submenus, sans separators
-         * @type {Immutable.Map.<string, MenuItem>} 
-         */
-        submenuMap: null,
-
-        /**
          * @type {string}
          */
         command: null,
@@ -86,20 +82,57 @@ define(function (require, exports, module) {
         commandKind: null,
 
         /**
-         * @type {{modifiers: number=, keyCode: number}}
+         * @type {?MenuShortcut}
          */
         shortcut: null,
 
         /**
          * @type {boolean}
          */
-        enabled: null,
+        enabled: true,
 
         /**
-         * @type {number}
+         * @type {boolean}
          */
-        checked: null
+        checked: false
     });
+
+    Object.defineProperties(MenuItem.prototype, object.cachedGetSpecs({
+        /**
+         * Maps from submenu itemID to index, excluding separators.
+         * @type {Immutable.Map.<string, number>}
+         */
+        submenuMap: function () {
+            var submenu = this.submenu;
+            if (!submenu) {
+                return null;
+            }
+
+            return Immutable.Map(submenu.reduce(function (map, entry, index) {
+                if (entry.type === "separator") {
+                    return map;
+                } else {
+                    return map.set(entry.itemID, index);
+                }
+            }, new Map()));
+        }
+    }));
+
+    /**
+     * Get a sub-menu item by its ID.
+     *
+     * @param {string} menuID
+     * @return {?MenuItem}
+     */
+    MenuItem.prototype.byID = function (menuID) {
+        var index = this.submenuMap.get(menuID, -1);
+
+        if (index < 0) {
+            return null;
+        }
+
+        return this.submenu.get(index);
+    };
 
     /**
      * Get a localized label for the given menu entry ID
@@ -174,8 +207,7 @@ define(function (require, exports, module) {
         if (rawMenu.hasOwnProperty("submenu")) {
             processedMenu.label = _getLabelForSubmenu(id);
 
-            var submenuMap = new Map(),
-                rawSubMenu = rawMenu.submenu;
+            var rawSubMenu = rawMenu.submenu;
 
             // Filter out debug-only menu entries in non-debug mode
             if (!global.debug) {
@@ -185,17 +217,9 @@ define(function (require, exports, module) {
             }
 
             rawSubMenu = rawSubMenu.map(function (rawSubMenu) {
-                var menuItem = MenuItem.fromDescriptor(rawSubMenu, id, shortcutTable);
-
-                // Add all non separator sub menu items to the map
-                if (menuItem.type !== "separator") {
-                    submenuMap.set(menuItem.itemID, menuItem);
-                }
-
-                return menuItem;
+                return MenuItem.fromDescriptor(rawSubMenu, id, shortcutTable);
             }, this);
 
-            processedMenu.submenuMap = Immutable.Map(submenuMap);
             processedMenu.submenu = Immutable.List(rawSubMenu);
         } else {
             processedMenu.label = _getLabelForEntry(id);
@@ -211,25 +235,24 @@ define(function (require, exports, module) {
                 rawKeyCode = rawMenu.shortcut.keyCode,
                 rawModifiers = rawMenu.shortcut.modifiers || {},
                 rawModifierBits = keyutil.modifiersToBits(rawModifiers),
+                rawShortcut = {
+                    modifiers: rawModifierBits
+                },
                 shortcutTableKey;
-
-            processedMenu.shortcut = {
-                modifiers: rawModifierBits
-            };
 
             if (rawKeyChar && rawKeyCode) {
                 throw new Error("Menu entry specifies both key char and code");
             }
 
             if (rawKeyChar) {
-                processedMenu.shortcut.keyChar = rawKeyChar;
+                rawShortcut.keyChar = rawKeyChar;
                 shortcutTableKey = "char-" + rawKeyChar;
             } else if (rawKeyCode) {
                 if (!os.eventKeyCode.hasOwnProperty(rawKeyCode)) {
                     throw new Error("Menu entry specifies unknown key code: " + rawKeyCode);
                 }
 
-                processedMenu.shortcut.keyCode = os.eventKeyCode[rawKeyCode];
+                rawShortcut.keyCode = os.eventKeyCode[rawKeyCode];
                 shortcutTableKey = "code-" + rawKeyCode;
             } else {
                 throw new Error("Menu entry does not specify a key for its shortcut");
@@ -245,6 +268,8 @@ define(function (require, exports, module) {
             } else {
                 shortcutTable[shortcutTableKey][rawModifierBits] = true;
             }
+
+            processedMenu.shortcut = new MenuShortcut(rawShortcut);
         }
 
         return new MenuItem(processedMenu);
@@ -257,19 +282,46 @@ define(function (require, exports, module) {
      * @return {object}
      */
     MenuItem.prototype.exportDescriptor = function () {
-        var itemObj = _.omit(this.toObject(), _.isNull);
+        var itemObj = _.omit(this.toObject(), _.isNull),
+            shortcutDescriptor = this.shortcut && this.shortcut.exportDescriptor();
+
+        if (itemObj.shortcut) {
+            itemObj.shortcut = shortcutDescriptor;
+        } else {
+            delete itemObj.shortcut;
+        }
 
         delete itemObj.submenuMap;
+        delete itemObj.itemID;
+        delete itemObj.id;
 
-        if (this.submenu !== null) {
+        if (itemObj.checked) {
+            itemObj.checked = "on";
+        } else {
+            delete itemObj.checked;
+        }
+
+        if (!itemObj.type) {
+            delete itemObj.type;
+        }
+
+        if (!itemObj.commandKind) {
+            delete itemObj.commandKind;
+        }
+
+        if (this.submenu) {
             // Disable submenus with no items in them
             if (this.submenu.isEmpty()) {
                 itemObj.enabled = false;
             }
 
-            itemObj.submenu = this.submenu.map(function (submenuItem) {
-                return submenuItem.exportDescriptor();
-            }).toArray();
+            itemObj.submenu = this.submenu
+                .map(function (submenuItem) {
+                    return submenuItem.exportDescriptor();
+                })
+                .toArray();
+        } else {
+            delete itemObj.submenu;
         }
 
         return itemObj;
@@ -283,16 +335,17 @@ define(function (require, exports, module) {
      * @return {MenuItem}
      */
     MenuItem.prototype.updateSubmenuProps = function (submenuID, props) {
-        var menuItem = this.submenuMap.get(submenuID),
-            menuIndex = this.submenu.indexOf(menuItem);
-     
-        menuItem = menuItem.merge(props);
+        var menuItem = this.byID(submenuID);
+        if (!menuItem) {
+            throw new Error("Unable to find submenu with ID " + submenuID);
+        }
 
-        // Immutable.List.merge does not play well with sparse arrays, so there did not seem to be a way to 
-        // use a single merge command with a POJSO
-        return this
-            .setIn(["submenu", menuIndex], menuItem)
-            .setIn(["submenuMap", submenuID], menuItem);
+        var menuIndex = this.submenuMap.get(submenuID),
+            nextMenuItem = menuItem.merge(props);
+
+        // Immutable.List.merge does not play well with sparse arrays, so there
+        // did not seem to be a way to use a single merge command with a POJSO
+        return this.setIn(["submenu", menuIndex], nextMenuItem);
     };
 
     /**
@@ -305,14 +358,11 @@ define(function (require, exports, module) {
      * @return {MenuItem}
      */
     MenuItem.prototype._update = function (enablers, rules) {
-        var newSubmenu = null,
-            newSubmenuMap = new Map();
+        var newSubmenu = null;
             
-        if (this.submenu !== null) {
+        if (this.submenu) {
             newSubmenu = this.submenu.map(function (subMenuItem) {
-                var newItem = subMenuItem._update(enablers, rules);
-                newSubmenuMap.set(newItem.itemID, newItem);
-                return newItem;
+                return subMenuItem._update(enablers, rules);
             });
         }
 
@@ -329,8 +379,7 @@ define(function (require, exports, module) {
         
         return this.merge({
             enabled: newEnabled,
-            submenu: newSubmenu,
-            submenuMap: newSubmenuMap
+            submenu: newSubmenu
         });
     };
 
