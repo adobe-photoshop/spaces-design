@@ -162,9 +162,10 @@ define(function (require, exports, module) {
             boundsObject = objUtil.getPath(descriptor, "pathBounds.pathBounds");
         } else {
             switch (layerKind) {
-                // Photoshop's group bounds are not useful, so ignore them.
+                // Photoshop's group / adjustment bounds are not useful, so ignore them.
                 case Layer.KINDS.GROUP:
                 case Layer.KINDS.GROUPEND:
+                case Layer.KINDS.ADJUSTMENT:
                     return null;
                 case Layer.KINDS.TEXT:
                     boundsObject = descriptor.boundingBox;
