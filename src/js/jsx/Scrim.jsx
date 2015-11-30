@@ -210,7 +210,8 @@ define(function (require, exports, module) {
                 return false;
             }
             
-            if (this.state.isDropTarget === nextState.isDropTarget) {
+            // Only skip if it's currently a dropTarget and will continue to be
+            if (this.state.isDropTarget && nextState.isDropTarget) {
                 return false;
             }
 
