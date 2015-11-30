@@ -106,7 +106,8 @@ define(function (require, exports, module) {
             }
         },
         tool: {
-            SELECT_TOOL: "selectTool",
+            SELECT_TOOL_START: "selectToolStart",
+            SELECT_TOOL_END: "selectToolEnd",
             MODAL_STATE_CHANGE: "modalStateChange",
             VECTOR_MASK_MODE_CHANGE: "vectorMaskModeChange",
             VECTOR_MASK_POLICY_CHANGE: "vectorMaskPolicyChange"

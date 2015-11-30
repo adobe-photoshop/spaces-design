@@ -439,6 +439,11 @@ define(function (require, exports) {
             deselectHandlerPromise = Promise.resolve();
         }
 
+        // Dispatch partial event ASAP so that the toolbar can redraw immediately
+        var dispatchPromise = this.dispatchAsync(events.tool.SELECT_TOOL_START, {
+            tool: nextTool
+        });
+
         return Promise.join(removeTransformPolicyPromise, deselectHandlerPromise)
             .bind(this)
             .then(function () {
@@ -470,9 +475,9 @@ define(function (require, exports) {
                 var resetCursorPromise = adapterOS.resetCursor(),
                     swapPoliciesPromise = this.transfer(swapPolicies, nextTool);
 
-                return Promise.join(swapPoliciesPromise, selectHandlerPromise, resetCursorPromise,
+                return Promise.join(swapPoliciesPromise, selectHandlerPromise, resetCursorPromise, dispatchPromise,
                     function (result) {
-                        this.dispatch(events.tool.SELECT_TOOL, result);
+                        this.dispatch(events.tool.SELECT_TOOL_END, result);
                     }.bind(this));
             });
     };

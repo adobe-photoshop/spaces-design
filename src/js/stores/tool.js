@@ -112,7 +112,8 @@ define(function (require, exports, module) {
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
-                events.tool.SELECT_TOOL, this._handleSelectTool,
+                events.tool.SELECT_TOOL_START, this._handleSelectTool,
+                events.tool.SELECT_TOOL_END, this._handleSelectTool,
                 events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange,
                 events.tool.VECTOR_MASK_MODE_CHANGE, this._handleVectorMaskModeChange,
                 events.tool.VECTOR_MASK_POLICY_CHANGE, this._handleVectorMaskPolicyChange
@@ -202,15 +203,21 @@ define(function (require, exports, module) {
 
         /**
          * @private
-         * @param {{tool: Tool, keyboardPolicyListID: number, pointerPolicyListID: number}} payload
+         * @param {{tool: Tool, keyboardPolicyListID: number=, pointerPolicyListID: number=}} payload
          */
         _handleSelectTool: function (payload) {
             var tool = payload.tool;
 
             this._previousTool = this._currentTool;
             this._currentTool = tool;
-            this._currentKeyboardPolicyID = payload.keyboardPolicyListID;
-            this._currentPointerPolicyID = payload.pointerPolicyListID;
+
+            if (payload.keyboardPolicyListID) {
+                this._currentKeyboardPolicyID = payload.keyboardPolicyListID;
+            }
+
+            if (payload.pointerPolicyListID) {
+                this._currentPointerPolicyID = payload.pointerPolicyListID;
+            }
 
             this.emit("change");
         },
