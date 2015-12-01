@@ -211,11 +211,11 @@ define(function (require, exports, module) {
             this._previousTool = this._currentTool;
             this._currentTool = tool;
 
-            if (payload.keyboardPolicyListID) {
+            if (payload.hasOwnProperty("keyboardPolicyListID")) {
                 this._currentKeyboardPolicyID = payload.keyboardPolicyListID;
             }
 
-            if (payload.pointerPolicyListID) {
+            if (payload.hasOwnProperty("pointerPolicyListID")) {
                 this._currentPointerPolicyID = payload.pointerPolicyListID;
             }
 
