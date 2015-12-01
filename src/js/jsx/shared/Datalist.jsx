@@ -724,9 +724,7 @@ define(function (require, exports, module) {
                     <TextInput
                         ref="textInput"
                         disabled={this.props.disabled}
-                        editable={!this.props.disabled}
                         size={size}
-                        live={true}
                         continuous={true}
                         value={title}
                         placeholderText={this.props.placeholderText}

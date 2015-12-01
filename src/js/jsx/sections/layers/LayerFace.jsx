@@ -653,10 +653,9 @@ define(function (require, exports, module) {
                                         title={layer.name + tooltipPadding}
                                         className="face__name"
                                         ref="layerName"
-                                        type="text"
+                                        doubleClickToEdit={true}
                                         value={layer.name}
-                                        editable={!this.props.disabled && nameEditable}
-                                        preventHorizontalScrolling={true}
+                                        disabled={this.props.disabled || !nameEditable}
                                         onKeyDown={this._skipToNextLayerName}
                                         onChange={this._handleLayerNameChange}>
                                     </TextInput>

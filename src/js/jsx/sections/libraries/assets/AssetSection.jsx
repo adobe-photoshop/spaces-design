@@ -195,10 +195,9 @@ define(function (require, exports, module) {
                         <div className="libraries__asset__title">
                             <TextInput
                                 ref="input"
-                                editable={true}
+                                doubleClickToEdit={true}
                                 title={title}
                                 value={this.props.displayName}
-                                preventHorizontalScrolling={true}
                                 onClick={this._handleTitleClicked}
                                 onDoubleClick={this._handleStartEditingTitle}
                                 onChange={this._handleRename}
@@ -224,10 +223,9 @@ define(function (require, exports, module) {
                     <div className="libraries__asset__title">
                         <TextInput
                             ref="input"
-                            editable={true}
+                            doubleClickToEdit={true}
                             title={title}
                             value={this.props.displayName}
-                            preventHorizontalScrolling={true}
                             onClick={this._handleTitleClicked}
                             onDoubleClick={this._handleStartEditingTitle}
                             onChange={this._handleRename}

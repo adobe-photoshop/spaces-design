@@ -33,19 +33,6 @@ define(function (require, exports, module) {
 
     var Focusable = require("../mixin/Focusable");
 
-    var _typeToClass = {
-        simple: "column-4",
-        percent: "column-3",
-        degree: "column-3",
-        color: "column-11",
-        shadow: "column-9",
-        radii: "column-3",
-        size: "column-2",
-        combo: "column-16 button-combo",
-        smallCombo: "column-12 button-combo",
-        mediumCombo: "column-14 button-combo"
-    };
-
     var TextInput = React.createClass({
         mixins: [Focusable, FluxMixin],
 
@@ -58,16 +45,26 @@ define(function (require, exports, module) {
         _suppressMouseUp: false,
 
         propTypes: {
+            // Value for the input
             value: React.PropTypes.string.isRequired,
+            // Event handler for changed value of the input. 
+            // If props.continuous is true, TextInput will call props.onChange for every native change event
+            // If props.continuous is false, props.onChange will only be called when value is committed
             onChange: React.PropTypes.func.isRequired,
+            // Event handler for changed value of input, called regardless of continuous being true or not
             onDOMChange: React.PropTypes.func,
+            // Event handler for when input receives focus
             onFocus: React.PropTypes.func,
-            editable: React.PropTypes.bool,
+            // Disable editing and selection of the input
+            disabled: React.PropTypes.bool,
+            // Placeholder text for the input
             placeholderText: React.PropTypes.string,
-            
+            // Disallow the element from being immediately (single click) focusable 
+            doubleClickToEdit: React.PropTypes.bool,
+            // On every DOM change event, fire the TextInput onChange handler
+            continuous: React.PropTypes.bool,
             // prevent the text input from scrolling horizontally when it is not editable.
             preventHorizontalScrolling: React.PropTypes.bool,
-            
             // never highlight text, regardless of this.state.selectDisabled
             neverSelectAll: React.PropTypes.bool
         },
@@ -78,11 +75,12 @@ define(function (require, exports, module) {
                 onChange: _.identity,
                 onDOMChange: _.identity,
                 onFocus: _.identity,
-                editable: false,
-                live: false,
+                disabled: false,
+                doubleClickToEdit: false,
                 continuous: false,
                 placeholderText: "",
-                neverSelectAll: false
+                neverSelectAll: false,
+                preventHorizontalScrolling: true
             };
         },
 
@@ -123,7 +121,6 @@ define(function (require, exports, module) {
             var node = React.findDOMNode(this.refs.input);
 
             if (this.state.editing) {
-                node.removeAttribute("readOnly");
                 node.removeAttribute("disabled");
                 node.focus();
             }
@@ -162,10 +159,10 @@ define(function (require, exports, module) {
                 selectDisabled: true
             });
 
-            if (this.state.editing && this.props.live && this.props.continuous) {
+            if (this.state.editing && !this.props.doubleClickToEdit && this.props.continuous) {
                 this.props.onChange(event, nextValue);
             }
-
+            // Only used by Datalist
             this.props.onDOMChange(event);
         },
 
@@ -189,6 +186,7 @@ define(function (require, exports, module) {
 
         /**
          * Finish editing the text in put and release focus.
+         * Finish is only ever called from _reset or from datalist
          */
         finish: function () {
             this.setState({
@@ -316,7 +314,7 @@ define(function (require, exports, module) {
          * @private
          */
         _beginEdit: function () {
-            if (!this.props.editable) {
+            if (this.props.disabled) {
                 return;
             }
 
@@ -336,7 +334,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleDoubleClick: function (event) {
-            if (!this.props.singleClick) {
+            if (this.props.doubleClickToEdit) {
                 this._beginEdit();
             }
 
@@ -351,7 +349,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleClick: function (event) {
-            if (this.props.singleClick) {
+            if (!this.props.doubleClickToEdit) {
                 this._beginEdit();
             }
 
@@ -389,7 +387,7 @@ define(function (require, exports, module) {
         },
         
         /**
-         * When TextInput is not editable, prevent it from scrolling horizontally 
+         * When TextInput is disabled, prevent it from scrolling horizontally 
          * by preventing the default wheel action if there is a non-zero deltaX 
          * and instead firing a new wheel action with deltaX set to 0.
          *
@@ -397,34 +395,33 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleWheel: function (event) {
-            if (this.props.preventHorizontalScrolling) {
-                if (event.deltaX) {
-                    var nativeEvent = event.nativeEvent,
-                        domEvent = new window.WheelEvent(event.type, {
-                            deltaX: 0.0,
-                            deltaY: nativeEvent.deltaY
-                        });
+            if (this.props.preventHorizontalScrolling && event.deltaX) {
+                var nativeEvent = event.nativeEvent,
+                    domEvent = new window.WheelEvent(event.type, {
+                        deltaX: 0.0,
+                        deltaY: nativeEvent.deltaY
+                    });
 
-                    event.preventDefault();
-                    event.target.dispatchEvent(domEvent);
-                }
+                event.preventDefault();
+                event.target.dispatchEvent(domEvent);
             }
         },
 
         render: function () {
-            var className = classnames(_typeToClass[this.props.valueType], this.props.className, this.props.size);
+            var className = classnames(this.props.className, this.props.size);
 
-            if (this.state.editing || this.props.live) {
+            if (this.state.editing || !this.props.doubleClickToEdit) {
                 return (
                     <input
-                        {...this.props}
                         type="text"
                         ref="input"
-                        readOnly={false}
                         spellCheck="false"
                         value={this.state.value}
+                        title={this.props.title}
                         className={className}
+                        disabled={this.props.disabled}
                         placeholder={this.props.placeholderText}
+                        onClick={this.props.onClick}
                         onChange={this._handleChange}
                         onKeyDown={this._handleKeyDown}
                         onFocus={this._handleFocus}
@@ -435,17 +432,16 @@ define(function (require, exports, module) {
                         onMouseDown={this._handleMouseDown}>
                     </input>
                 );
-            } else {
+            } else { // Used for cases like Libary assets and Layerfaces
                 return (
                     <input
-                        {...this.props}
                         type="text"
                         tabIndex="-1"
                         ref="input"
                         spellCheck="false"
+                        title={this.props.title}
                         value={this.state.value}
                         disabled="disabled"
-                        readOnly={true}
                         className={className}
                         onDoubleClick={this._handleDoubleClick}
                         onClick={this._handleClick}
@@ -461,7 +457,7 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         isEditing: function () {
-            return this.state.editing || this.props.live;
+            return this.state.editing || !this.props.doubleClickToEdit;
         },
 
         /**
