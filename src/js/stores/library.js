@@ -47,7 +47,7 @@ define(function (require, exports, module) {
     var LibraryStore = Fluxxor.createStore({
 
         /**
-         * @type {Object}
+         * @type {?object}
          */
         _librariesAPI: null,
 
@@ -570,7 +570,7 @@ define(function (require, exports, module) {
         /**
          * Returns the loaded libraries API
          *
-         * @return {Object} CCLibraries API global object
+         * @return {?object} CCLibraries API global object
          */
         getLibrariesAPI: function () {
             return this._librariesAPI;

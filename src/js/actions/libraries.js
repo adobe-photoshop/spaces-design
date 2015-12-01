@@ -1247,7 +1247,8 @@ define(function (require, exports) {
     var _toolModalStateChangedHandler;
 
     var beforeStartup = function () {
-        apiLoadPromise.bind(this)
+        apiLoadPromise
+            .bind(this)
             .then(function () {
                 /* global ccLibraries */
                 // There is now a ccLibraries object in this scope

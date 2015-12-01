@@ -50,6 +50,13 @@ define(function (require, exports) {
         rawMenuObj = system.isMac ? macMenuJSON : winMenuJSON,
         rawMenuShortcuts = rawShortcuts.MENU;
         
+    // On debug builds, we always enable cut/copy/paste so they work in dev tools
+    if (__PG_DEBUG__) {
+        rawMenuActions.EDIT.CUT["$enable-rule"] = "always";
+        rawMenuActions.EDIT.COPY["$enable-rule"] = "always";
+        rawMenuActions.EDIT.PASTE["$enable-rule"] = "always";
+    }
+
     /**
      * List of place command menu IDs.
      *

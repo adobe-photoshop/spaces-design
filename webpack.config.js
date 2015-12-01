@@ -82,13 +82,6 @@ var buildConfigs = languages.map(function (lang) {
                     query: {
                         name: "[name].[ext]" // This keeps the file name intact
                     }
-                },
-                // These are in src/vendor, our file://shared files. There doesn't 
-                // seem to be a good way to skip bundling these files in a way that
-                // will be loadable at run time
-                {
-                    test: /\.otf$/,
-                    loader: "url"
                 }
             ]
         },
@@ -108,7 +101,7 @@ var buildConfigs = languages.map(function (lang) {
                 // TODO: Look into externalizing React, or see if React 0.14 is plausible
                 "react": path.join(__dirname, "/bower_components/react/react-with-addons.js"),
                 // We alias the localization here (@/src/js/util/nls.js)
-                "nls/dictionary.json": path.join(__dirname, "/src/nls/" + lang + ".json")
+                "nls/dictionary.json": path.join(__dirname, "/build/nls/" + lang + ".json")
             },
             extensions: ["", ".js", ".jsx", ".json", ".less"]
         },

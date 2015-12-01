@@ -3,5 +3,4 @@ build/
 *.~
 bower_components
 node_modules
-src/vendor
 docs/jsdoc

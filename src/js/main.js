@@ -31,6 +31,7 @@ define(function (require, exports) {
     var MainCl = require("js/jsx/Main"),
         FluxController = require("./fluxcontroller"),
         log = require("js/util/log"),
+        performanceUtil = require("js/util/performance"),
         nls = require("js/util/nls"),
         global = require("js/util/global");
 
@@ -167,14 +168,12 @@ define(function (require, exports) {
         /* global _spaces */
         _spaces._debug.enableDebugContextMenu(true, function () {});
 
-        /* global __PG_DEBUG__ */
         if (__PG_DEBUG__) {
             // Expose these for snippet usage, only available in debug builds
-            window.__ADAPTER_DESCRIPTOR__ = adapter.ps.descriptor;
-            window.__ADAPTER_OS__ = adapter.os;
-            window.__ADAPTER_UI__ = adapter.ps.ui;
+            window.__PS_ADAPTER__ = adapter;
             window.__FLUX_CONTROLLER__ = _controller;
             window.__LOG_UTIL__ = log;
+            window.__PERF_UTIL = performanceUtil;
         }
     }
 

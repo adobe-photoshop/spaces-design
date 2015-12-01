@@ -20,7 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
-/* global __PG_DEBUG__ */
+
 define(function (require, exports) {
     "use strict";
 

@@ -26,7 +26,8 @@
 module.exports = function (grunt) {
     "use strict";
     
-    if (grunt.cli.tasks[0] === "dev") {
+    // If main task is debug, this flag gets set at the beginning
+    if (grunt.cli.tasks[0] === "debug") {
         grunt.option("DEV_MODE", true);
     }
 
@@ -52,8 +53,7 @@ module.exports = function (grunt) {
                 "src/**/*.js",
                 "src/**/*.jsx",
                 "test/**/*.js",
-                "test/**/*.jsx",
-                "!src/vendor/**/*"
+                "test/**/*.jsx"
             ]
         },
         jscs: {
@@ -62,8 +62,7 @@ module.exports = function (grunt) {
                     "*.js",
                     "*.json",
                     "src/**/*.js",
-                    "src/**/*.jsx",
-                    "!src/vendor/**/*"
+                    "src/**/*.jsx"
                 ],
                 options: {
                     config: ".jscsrc"
@@ -93,8 +92,7 @@ module.exports = function (grunt) {
             src: [
                 "*.json",
                 "src/**/*.json",
-                "test/**/*.json",
-                "!src/vendor/**/*"
+                "test/**/*.json"
             ]
         },
         lintspaces: {
@@ -105,9 +103,7 @@ module.exports = function (grunt) {
                 "src/**/*.js",
                 "src/**/*.svg",
                 "src/**/*.less",
-                "!src/**/*.gif",
-                "!src/vendor/**/*",
-                "!src/nls/*.json"
+                "!src/**/*.gif"
             ],
             options: {
                 newline: true,
@@ -121,7 +117,7 @@ module.exports = function (grunt) {
             i18n: {
                 files: ALL_LOCALES.map(function (locale) {
                     return {
-                        dest: "src/nls/" + locale + ".json",
+                        dest: "build/nls/" + locale + ".json",
                         src: "*.json",
                         cwd: "src/nls/" + locale
                     };
@@ -141,10 +137,10 @@ module.exports = function (grunt) {
                         return map;
                     }
 
-                    var source = "src/nls/" + locale + ".json",
-                        target = "src/nls/" + locale + ".json";
+                    var source = "build/nls/" + locale + ".json",
+                        target = "build/nls/" + locale + ".json";
 
-                    map[target] = ["src/nls/en.json", source];
+                    map[target] = ["build/nls/en.json", source];
                     return map;
                 }, {})
             },
@@ -155,7 +151,7 @@ module.exports = function (grunt) {
         // Utility tasks
         clean: {
             build: ["./build"],
-            i18n: ["./src/nls/*.json"]
+            i18n: ["./build/nls"]
         },
         copy: {
             htmlRelease: { src: "src/index.html", dest: "build/index.html" },
@@ -245,6 +241,6 @@ module.exports = function (grunt) {
     grunt.registerTask("compile", ["test", "clean:build", "i18n", "copy:img",
         "copy:htmlRelease", "less", "webpack:compile", "uglify", "clean:i18n"]
     );
-    grunt.registerTask("dev", ["test", "clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]);
+    grunt.registerTask("debug", ["clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]);
     grunt.registerTask("default", ["test"]);
 };
