@@ -419,14 +419,10 @@ define(function (require, exports) {
         var toolStore = this.flux.store("tool"),
             currentTool = toolStore.getCurrentTool();
 
-        // If same tool is being selected, make this a no-op
-        if (currentTool === nextTool) {
-            return Promise.resolve();
-        }
-
         // Remove the border policy if it's been set at some point
+        // But not if we're resetting the same tool
         var removeTransformPolicyPromise;
-        if (_currentTransformPolicyID) {
+        if (_currentTransformPolicyID && currentTool !== nextTool) {
             var policyID = _currentTransformPolicyID;
             _currentTransformPolicyID = null;
             removeTransformPolicyPromise = this.transfer(policy.removePointerPolicies, policyID, true);
@@ -879,8 +875,8 @@ define(function (require, exports) {
                         newTool = toolStore.getCurrentTool();
                     
                     if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds) ||
-                        !_.isEqual(uiTransformMatrix, newxUiTransformMatrix ||
-                        activeTool !== newTool) {
+                            !_.isEqual(uiTransformMatrix, newxUiTransformMatrix) ||
+                            activeTool !== newTool) {
                         documentLayerBounds = nextDocumentLayerBounds;
                         uiTransformMatrix = newxUiTransformMatrix;
                         activeTool = newTool;
