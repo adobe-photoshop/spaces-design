@@ -862,7 +862,7 @@ define(function (require, exports) {
                         newxUiTransformMatrix = uiStore.getCurrentTransformMatrix();
                     
                     if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds) ||
-                        uiTransformMatrix !== newxUiTransformMatrix) {
+                        !_.isEqual(uiTransformMatrix, newxUiTransformMatrix)) {
                         documentLayerBounds = nextDocumentLayerBounds;
                         uiTransformMatrix = newxUiTransformMatrix;
                         throttledResetBorderPolicies();
