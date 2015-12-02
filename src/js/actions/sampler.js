@@ -414,12 +414,17 @@ define(function (require, exports) {
         return uiUtil.hitTestLayers(doc.id, coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {
-                var hitLayerMap = new Set(hitLayerIDs.toJS()),
-                    clickedLeafLayers = layerTree.leaves.filter(function (layer) {
-                        return hitLayerMap.has(layer.id);
-                    }),
-                    topLayer = clickedLeafLayers.last(),
+                var topLayer,
                     selected = layerTree.selected;
+                
+                hitLayerIDs.forEach(function (layerID) {
+                    var layer = layerTree.byID(layerID);
+                    
+                    if (!layer.isArtboard) {
+                        topLayer = layer;
+                        return false;
+                    }
+                });
 
                 // If we're trying to sample the only selected layer, surely it's a no-op
                 if (!topLayer || selected.size === 1 && selected.first() === topLayer) {
