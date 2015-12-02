@@ -144,10 +144,16 @@
         },
         "UNDO": {
             "$action": "edit.undo",
+            "$payload": {
+                "preserveFocus": true
+            },
             "$enable-rule": "have-document,earlier-history"
         },
         "REDO": {
             "$action": "edit.redo",
+            "$payload": {
+                "preserveFocus": true
+            },
             "$enable-rule": "have-document,later-history"
         },
         "SELECT_ALL": {
