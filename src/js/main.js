@@ -80,8 +80,10 @@ define(function (require, exports) {
 
     /**
      * Start up the application.
+     *
+     * @param {string} stop The initial UI color stop.
      */
-    var startup = function () {
+    var startup = function (stop) {
         var startTime = Date.now(),
             version = adapter.version;
 
@@ -108,7 +110,8 @@ define(function (require, exports) {
 
         var props = {
             controller: _controller,
-            flux: _controller.flux
+            flux: _controller.flux,
+            initialColorStop: stop
         };
 
         var startupPromises = _controller.start()

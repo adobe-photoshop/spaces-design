@@ -78,11 +78,27 @@ define(function (require, exports, module) {
          */
         rootMap: function () {
             return Immutable.Map(this.roots
-                .map(function (entry) {
-                    return [entry.itemID, entry];
+                .map(function (entry, index) {
+                    return [entry.itemID, index];
                 }));
         }
     }));
+
+    /**
+     * Get a root menu item by its ID.
+     *
+     * @param {string} menuID
+     * @return {?MenuItem}
+     */
+    MenuBar.prototype.byID = function (menuID) {
+        var index = this.rootMap.get(menuID, -1);
+
+        if (index < 0) {
+            return null;
+        }
+
+        return this.roots.get(index);
+    };
 
     /**
      * Process the raw action descriptor into enablement rules
@@ -453,6 +469,27 @@ define(function (require, exports, module) {
             "TOGGLE_SMART_GUIDES": { "checked": !!(document && document.smartGuidesVisible) }
         });
     };
+
+    /**
+     * Update the color theme menu items based on the given color stop.
+     * 
+     * @param {string} colorStop
+     * @return {MenuBar}
+     */
+    MenuBar.prototype.updateColorThemeItems = function (colorStop) {
+        var menuItem = this.byID("WINDOW"),
+            menuItemIndex = this.rootMap.get("WINDOW"),
+            submenuItem = menuItem.byID("COLOR_THEME"),
+            submenuItemIndex = menuItem.submenuMap.get("COLOR_THEME"),
+            nextSubmenuItem = submenuItem
+                .updateSubmenuProps("ORIGINAL", { "checked": colorStop === "ORIGINAL" })
+                .updateSubmenuProps("LIGHT", { "checked": colorStop === "LIGHT" })
+                .updateSubmenuProps("MEDIUM", { "checked": colorStop === "MEDIUM" })
+                .updateSubmenuProps("DARK", { "checked": colorStop === "DARK" }),
+            nextMenuItem = menuItem.setIn(["submenu", submenuItemIndex], nextSubmenuItem);
+
+        return this.setIn(["roots", menuItemIndex], nextMenuItem);
+    };
     
     /**
      * Given a boolean for the pinned state of the toolbar, update the Window Menu
@@ -680,7 +717,7 @@ define(function (require, exports, module) {
     MenuBar.prototype.getMenuItem = function (menuID) {
         var idSegments = menuID.split("."),
             rootID = idSegments.shift(),
-            rootItem = this.rootMap.get(rootID, null),
+            rootItem = this.byID(rootID),
             result = rootItem;
 
         idSegments.forEach(function (id) {

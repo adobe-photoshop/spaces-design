@@ -156,6 +156,14 @@ define(function (require, exports, module) {
         _referencePoint: null,
 
         /**
+         * UI color stop. Must be one of "ORIGINAL", "LIGHT", "MEDIUM" or "DARK".
+         *
+         * @private
+         * @type {string}
+         */
+        _colorStop: null,
+
+        /**
          * The coordinates of the current mouse position if it's being tracked; otherwise null.
          *
          * @private
@@ -171,6 +179,7 @@ define(function (require, exports, module) {
                 events.ui.SUPERSELECT_MARQUEE, this._handleMarqueeStart,
                 events.ui.TOGGLE_OVERLAYS, this._handleOverlayToggle,
                 events.ui.REFERENCE_POINT_CHANGED, this._handleReferencePointChanged,
+                events.ui.COLOR_STOP_CHANGED, this._handleColorStopChanged,
                 events.ui.DISPLAY_CHANGED, this._handleDisplayChanged,
                 events.ui.MOUSE_POSITION_CHANGED, this._handleMousePositionChanged,
                 events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
@@ -202,6 +211,7 @@ define(function (require, exports, module) {
             this._transformMatrix = null;
             this._inverseTransformMatrix = null;
             this._referencePoint = "lt";
+            this._colorStop = null;
             this._currentMousePosition = null;
         },
         
@@ -555,6 +565,17 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Set the UI color stop.
+         *
+         * @private
+         * @param {{stop: string}} payload
+         */
+        _handleColorStopChanged: function (payload) {
+            this._colorStop = payload.stop;
+            this.emit("change");
+        },
+
+        /**
          * Re-set the root font size when the display changes.
          *
          * @private
@@ -590,6 +611,15 @@ define(function (require, exports, module) {
          */
         getCurrentTransformMatrix: function () {
             return this._transformMatrix;
+        },
+
+        /**
+         * Get the current UI color stop.
+         *
+         * @return {?string} An element of the enum appLib.colorStops
+         */
+        getColorStop: function () {
+            return this._colorStop;
         }
     });
 

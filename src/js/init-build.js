@@ -29,21 +29,17 @@ define(function (require) {
     var ui = require("./util/ui"),
         main = require("./main");
 
-    var windowReady = new Promise(function (resolve) {
-        if (window.document.readyState === "complete") {
-            resolve();
-        } else {
-            window.addEventListener("load", resolve);
-        }
-    });
-
-    var stylesReady = ui.getPSColorStop()
-        .then(function (stop) {
-            window.document.body.classList.add("color-stop__" + stop);
+    var stylesReady = ui.getPSColorStop(),
+        windowReady = new Promise(function (resolve) {
+            if (window.document.readyState === "complete") {
+                resolve();
+            } else {
+                window.addEventListener("load", resolve);
+            }
         });
 
-    Promise.join(windowReady, stylesReady, function () {
-        main.startup();
+    Promise.join(stylesReady, windowReady, function (stop) {
+        main.startup(stop);
         window.addEventListener("beforeunload", main.shutdown.bind(main));
     });
 });

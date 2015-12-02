@@ -616,6 +616,23 @@
                     "separator": true
                 },
                 {
+                    "id": "COLOR_THEME",
+                    "submenu": [
+                        {
+                            "id": "ORIGINAL"
+                        },
+                        {
+                            "id": "LIGHT"
+                        },
+                        {
+                            "id": "MEDIUM"
+                        },
+                        {
+                            "id": "DARK"
+                        }
+                    ]
+                },
+                {
                     "id": "TOGGLE_TOOLBAR"
                 },
                 {
