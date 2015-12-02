@@ -81,7 +81,7 @@ define(function (require, exports, module) {
      *
      * @type {Imutable.List.<number>}
      */
-    var SCALES = Immutable.List([1, 2, 3, 4, 5, 0.5, 0.75, 1.5]);
+    var SCALES = Immutable.List([1, 2, 3, 4, 5, 0.5, 0.75, 1.5, 0.3333, 0.6667]);
 
     /**
      * @constructor
@@ -238,6 +238,18 @@ define(function (require, exports, module) {
             { scale: 3 },
             { scale: 1, suffix: "", format: "svg", quality: 100 }
         ],
+        IOS2: [
+            { scale: 0.5, suffix: "" },
+            { scale: 1, suffix: "@2x" },
+            { scale: 1.5, suffix: "@3x" },
+            { scale: 1, suffix: "", format: "svg", quality: 100 }
+        ],
+        IOS3: [
+            { scale: 0.3333, suffix: "" },
+            { scale: 0.6667, suffix: "@2x" },
+            { scale: 1, suffix: "@3x" },
+            { scale: 1, suffix: "", format: "svg", quality: 100 }
+        ],
         HDPI: [
             { scale: 0.75, suffix: "ldpi" },
             { scale: 1, suffix: "mdpi" },
@@ -248,6 +260,31 @@ define(function (require, exports, module) {
             { scale: 1, suffix: "", format: "svg", quality: 100 }
         ]
     };
-
+    
+    /**
+     * Predefined artboard size variations
+     *
+     * @type {Map.<string, Array.<object>>}
+     */
+    ExportAsset.PRESET_ARTBOARD_IOS2X = {Immutable.List([
+        "750,1334",  // iphone6
+        "1334,750",                  
+        "640,1136",  // iphone5       
+        "1136,640",
+        "768,1024",  // ipad mini
+        "1024,768",
+        "1536,2048", // ipad retina
+        "2048,1536",
+        "2048,2732", // ipad pro
+        "2732,2048",
+        "272,340",   // apple watch 38
+        "340,272",
+        "312,390",   // apple watch 42
+        "390,312"
+    ]};
+    ExportAsset.PRESET_ARTBOARD_IOS3X = {Immutable.List([
+        "1242,2208",  // iphone6+
+        "2208,1242"
+    ]};
     module.exports = ExportAsset;
 });

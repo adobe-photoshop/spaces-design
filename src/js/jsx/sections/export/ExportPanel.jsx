@@ -131,6 +131,20 @@ define(function (require, exports, module) {
                 props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
             
             this._forceVisible();
+            
+            var artboardPresetDimension = "750,1334";
+            
+            if(typeof preset === "string" && props === "IOS" ){
+                if (ExportAsset.PRESET_ARTBOARD_IOS2X.indexOf(artboardPresetDimension)) {
+                    props = "IOS2"
+                } else if (ExportAsset.PRESET_ARTBOARD_IOS3X.indexOf(artboardPresetDimension)) {
+                    props = "IOS3"
+                }
+            } else if(typeof preset === "string" && props === "HDPI" ){
+                
+            }
+
+            
             this.getFlux().actions.export.addAssetThrottled(document, documentExports, selectedLayers, props);
             
             if (typeof preset === "string") {
