@@ -35,6 +35,7 @@ define(function (require, exports, module) {
 
     var PolicyOverlay = require("jsx!js/jsx/tools/PolicyOverlay"),
         GuidesOverlay = require("jsx!js/jsx/tools/GuidesOverlay"),
+        ArtboardOverlay = require("jsx!js/jsx/tools/ArtboardOverlay"),
         Droppable = require("jsx!js/jsx/shared/Droppable");
     
     var Scrim = React.createClass({
@@ -235,6 +236,27 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Renders the artboard overlay if it's available
+         * @private
+         */
+        _renderArtboardOverlay: function () {
+            var document = this.state.document,
+                disabled = document && document.unsupported,
+                overlays = !disabled && this.state.overlaysEnabled &&
+                    !this.state.isDropTarget && !this.state.isAssetDragOver,
+                transform = this.state.transform,
+                transformString = this._getTransformString(transform);
+                
+            if (!overlays || !transform) {
+                return null;
+            }
+
+            return (
+                <ArtboardOverlay transformString={transformString} ref="artboardOverlay"/>
+            );
+        },
+
+        /**
          * Renders the current tool overlay if there is one
          * @private
          */
@@ -245,13 +267,11 @@ define(function (require, exports, module) {
                 transform = this.state.transform,
                 transformString = this._getTransformString(transform),
                 isDropTarget = this.state.isDropTarget,
+                isAssetDragOver = this.state.isAssetDragOver,
                 tool = this.state.current;
                 
-            if (!overlays || !transform || isDropTarget) {
-                return null;
-            }
-
-            if (!tool || !tool.toolOverlay || this.state.isAssetDragOver) {
+            if (!overlays || !transform || isDropTarget ||
+                !tool || !tool.toolOverlay || isAssetDragOver) {
                 return null;
             }
             
@@ -321,7 +341,8 @@ define(function (require, exports, module) {
                 disabled = this.state.appIsModal || document && document.unsupported,
                 toolOverlay = this._renderToolOverlay(),
                 policyOverlay = this.state.policyFrames ? (<PolicyOverlay/>) : null,
-                guidesOverlay = !disabled ? (<GuidesOverlay/>) : null;
+                guidesOverlay = !disabled ? (<GuidesOverlay/>) : null,
+                artboardOverlay = this._renderArtboardOverlay();
 
             var classNames = classnames({
                 "scrim": true,
@@ -347,6 +368,7 @@ define(function (require, exports, module) {
                              <g id="overlay" width="100%" height="100%">
                                  {policyOverlay}
                                  {toolOverlay}
+                                 {artboardOverlay}
                                  {guidesOverlay}
                             </g>
                         </svg>
