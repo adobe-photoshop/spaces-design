@@ -128,12 +128,31 @@ define(function (require, exports, module) {
             var document = this.props.document,
                 selectedLayers = document && document.layers.selected,
                 documentExports = this.state.documentExports,
-                props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
+                props = preset ? ExportAsset.PRESET_ASSETS[preset] : null,
+                artboardPresetDimension = "";
             
             this._forceVisible();
             
-            var artboardPresetDimension = "750,1334";
+            selectedLayers.forEach(function (layer) {
+                 console.log(layer.bounds);
+                /*// if the parent is an artboard, check the artboard's size
+                if(layer.first().isArtboard) {
+                    // get bounds of layer.first()
+                    artboardPresetDimension = layer.bounds
+                    console
+                // if the layer is an artboard
+                } else if (layer.isArtboard) {
+                    // get bounds of artboard
+                    
+                }*/
+                
+                
+                
+            });
             
+            
+            //artboardPresetDimension = "750,1334";
+            /*
             if(typeof preset === "string" && props === "IOS" ){
                 if (ExportAsset.PRESET_ARTBOARD_IOS2X.indexOf(artboardPresetDimension)) {
                     props = "IOS2"
@@ -142,7 +161,7 @@ define(function (require, exports, module) {
                 }
             } else if(typeof preset === "string" && props === "HDPI" ){
                 
-            }
+            }*/
 
             
             this.getFlux().actions.export.addAssetThrottled(document, documentExports, selectedLayers, props);
