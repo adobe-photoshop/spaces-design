@@ -126,44 +126,42 @@ define(function (require, exports, module) {
          */
         _addAssetClickHandler: function (preset) {
             var document = this.props.document,
+                layerTree = document.layers,
                 selectedLayers = document && document.layers.selected,
                 documentExports = this.state.documentExports,
                 props = preset ? ExportAsset.PRESET_ASSETS[preset] : null,
-                artboardPresetDimension = "";
+                abPresetDimension = false;
             
             this._forceVisible();
             
             selectedLayers.forEach(function (layer) {
-                 console.log(layer.bounds);
-                /*// if the parent is an artboard, check the artboard's size
-                if(layer.first().isArtboard) {
-                    // get bounds of layer.first()
-                    artboardPresetDimension = layer.bounds
-                    console
+                var topLayer = layerTree.topAncestor(layer);
+                // if the parent is an artboard, check the artboard's size
+                if (layer.isArtboard) {
+                    // get bounds of the artboard
+                    abPresetDimension = layer.bounds.width + "," + layer.bounds.height;
                 // if the layer is an artboard
-                } else if (layer.isArtboard) {
+                } else if (topLayer.isArtboard) {
                     // get bounds of artboard
-                    
-                }*/
-                
-                
-                
-            });
-            
-            
-            //artboardPresetDimension = "750,1334";
-            /*
-            if(typeof preset === "string" && props === "IOS" ){
-                if (ExportAsset.PRESET_ARTBOARD_IOS2X.indexOf(artboardPresetDimension)) {
-                    props = "IOS2"
-                } else if (ExportAsset.PRESET_ARTBOARD_IOS3X.indexOf(artboardPresetDimension)) {
-                    props = "IOS3"
+                    abPresetDimension = topLayer.bounds.width + "," + topLayer.bounds.height;
                 }
-            } else if(typeof preset === "string" && props === "HDPI" ){
-                
-            }*/
-
+            }, this);
             
+            if (typeof preset === "string" && preset === "IOS") {
+                if (ExportAsset.PRESET_ARTBOARD_IOS2X.indexOf(abPresetDimension) >= 0) {
+                    preset = "IOS2";
+                } else if (ExportAsset.PRESET_ARTBOARD_IOS3X.indexOf(abPresetDimension) >= 0) {
+                    preset = "IOS3";
+                } else {
+                    preset = "IOS";
+                }
+                props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
+            } else if (typeof preset === "string" && preset === "HDPI") {
+                props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
+            } else {
+                props = preset ? ExportAsset.PRESET_ASSETS[preset] : null;
+            }
+
             this.getFlux().actions.export.addAssetThrottled(document, documentExports, selectedLayers, props);
             
             if (typeof preset === "string") {

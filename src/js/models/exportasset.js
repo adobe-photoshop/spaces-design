@@ -262,29 +262,36 @@ define(function (require, exports, module) {
     };
     
     /**
-     * Predefined artboard size variations
+     * Predefined artboard size variations for iOS 2x
      *
      * @type {Map.<string, Array.<object>>}
      */
-    ExportAsset.PRESET_ARTBOARD_IOS2X = {Immutable.List([
-        "750,1334",  // iphone6
-        "1334,750",                  
-        "640,1136",  // iphone5       
+    ExportAsset.PRESET_ARTBOARD_IOS2X = [
+        "750,1334",
+        "1334,750",
+        "640,1136",
         "1136,640",
-        "768,1024",  // ipad mini
+        "768,1024",
         "1024,768",
-        "1536,2048", // ipad retina
+        "1536,2048",
         "2048,1536",
-        "2048,2732", // ipad pro
+        "2048,2732",
         "2732,2048",
-        "272,340",   // apple watch 38
+        "272,340",
         "340,272",
-        "312,390",   // apple watch 42
+        "312,390",
         "390,312"
-    ]};
-    ExportAsset.PRESET_ARTBOARD_IOS3X = {Immutable.List([
-        "1242,2208",  // iphone6+
+    ];
+    
+    /**
+     * Predefined artboard size variations for iOS 3x
+     *
+     * @type {Map.<string, Array.<object>>}
+     */
+    ExportAsset.PRESET_ARTBOARD_IOS3X = [
+        "1242,2208",
         "2208,1242"
-    ]};
+    ];
+    
     module.exports = ExportAsset;
 });
