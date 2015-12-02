@@ -81,7 +81,8 @@ define(function (require, exports) {
     /**
      * Helper function to load a state from history store based on a count offset
      * and then to fix it up with the latest selection state, visibility state, and
-     * then reset border policies
+     * then reset border policies.  Selected layers are also initialized in case the current
+     * selection contains layers that were not initialized at the time of the previous history state
      *
      * @private
      * @param {number} documentID
@@ -92,7 +93,7 @@ define(function (require, exports) {
         return descriptor.getProperty(documentLib.referenceBy.id(documentID), "targetLayers")
             .bind(this)
             .catch(function () {
-                // no targetLayers property means no document is open
+                // no targetLayers property means no layer selected
                 return [];
             })
             .then(function (targetLayers) {
@@ -104,10 +105,13 @@ define(function (require, exports) {
                 });
             })
             .then(function () {
-                var currentDocument = this.flux.store("application").getCurrentDocument();
+                var document = this.flux.store("application").getCurrentDocument(),
+                    selected = document.layers.selected,
+                    initializeLayersPromise = this.transfer("layers.initializeLayers", document, selected),
+                    visibilityPromise = this.transfer("layers.resetLayerVisibility", document),
+                    guidesPromise = this.transfer("guides.resetGuidePolicies");
                 
-                return Promise.join(this.transfer(layerActions.resetLayerVisibility, currentDocument),
-                    this.transfer("guides.resetGuidePolicies"));
+                return Promise.join(initializeLayersPromise, visibilityPromise, guidesPromise);
             });
     };
 
@@ -204,7 +208,8 @@ define(function (require, exports) {
     incrementHistory.action = {
         reads: [locks.JS_DOC, locks.JS_APP],
         writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC],
-        transfers: ["layers.resetLayerVisibility", "documents.updateDocument", "guides.resetGuidePolicies"],
+        transfers: ["layers.initializeLayers", "layers.resetLayerVisibility",
+            "documents.updateDocument", "guides.resetGuidePolicies"],
         modal: true
     };
 
@@ -232,7 +237,8 @@ define(function (require, exports) {
     decrementHistory.action = {
         reads: [locks.JS_DOC, locks.JS_APP],
         writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC],
-        transfers: ["layers.resetLayerVisibility", "documents.updateDocument", "guides.resetGuidePolicies"],
+        transfers: ["layers.initializeLayers", "layers.resetLayerVisibility",
+            "documents.updateDocument", "guides.resetGuidePolicies"],
         modal: true
     };
 
