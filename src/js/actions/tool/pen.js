@@ -90,7 +90,13 @@ define(function (require, exports) {
         if (vectorMode) {
             selectVectorMask = descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
         } else {
-            selectVectorMask = descriptor.playObject(vectorMaskLib.dropPathSelection());
+            var applicationStore = this.flux.store("application"),
+                currentDocument = applicationStore.getCurrentDocument();
+            if (currentDocument) {
+                selectVectorMask = descriptor.playObject(vectorMaskLib.dropPathSelection());
+            } else {
+                selectVectorMask = Promise.resolve();
+            }
         }
 
         return Promise.join(setPromise, selectVectorMask, disableSuppressionPromise,
