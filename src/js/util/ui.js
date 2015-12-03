@@ -167,7 +167,7 @@ define(function (require, exports) {
     /**
      * Asynchronously fetch the current PS color stop.
      *
-     * @return {Promise.<string>} Currently resolves to one of "original", "light", "medium" or "dark".
+     * @return {Promise.<string>} Currently resolves to one of "ORIGINAL", "LIGHT", "MEDIUM" or "DARK".
      */
     var getPSColorStop = function () {
         return descriptor.getProperty("application", "kuiBrightnessLevel")
@@ -176,19 +176,19 @@ define(function (require, exports) {
                 var stop;
                 switch (psColorStop) {
                 case "kPanelBrightnessOriginal":
-                    stop = "original";
+                    stop = "ORIGINAL";
                     break;
                 case "kPanelBrightnessLightGray":
-                    stop = "light";
+                    stop = "LIGHT";
                     break;
                 case "kPanelBrightnessMediumGray":
-                    stop = "medium";
+                    stop = "MEDIUM";
                     break;
                 case "kPanelBrightnessDarkGray":
-                    stop = "dark";
+                    stop = "DARK";
                     break;
                 default:
-                    stop = "dark";
+                    stop = "MEDIUM";
                 }
 
                 return stop;

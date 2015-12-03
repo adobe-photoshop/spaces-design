@@ -53,7 +53,11 @@ define(function (require, exports, module) {
         PROPERTIES_COL = "propertiesVisible";
 
     var Main = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("preferences")],
+        mixins: [FluxMixin, StoreWatchMixin("preferences", "ui")],
+
+        propTypes: {
+            initialColorStop: React.PropTypes.string.isRequired
+        },
 
         getInitialState: function () {
             return {
@@ -63,14 +67,17 @@ define(function (require, exports, module) {
         },
 
         getStateFromFlux: function () {
-            var preferences = this.getFlux().store("preferences").getState(),
+            var flux = this.getFlux(),
+                preferences = flux.store("preferences").getState(),
                 propertiesCol = preferences.get(PROPERTIES_COL, true) ? 1 : 0,
                 layersCol = preferences.get(LAYERS_LIBRARY_COL, true) ? 1 : 0,
-                numPanels = propertiesCol + layersCol;
+                numPanels = propertiesCol + layersCol,
+                colorStop = flux.store("ui").getColorStop() || this.props.initialColorStop;
 
             return {
                 numberOfPanels: numPanels,
-                singleColumnModeEnabled: preferences.get("singleColumnModeEnabled", false)
+                singleColumnModeEnabled: preferences.get("singleColumnModeEnabled", false),
+                colorStop: colorStop
             };
         },
 
@@ -78,7 +85,8 @@ define(function (require, exports, module) {
             return this.state.ready !== nextState.ready ||
                 this.state.active !== nextState.active ||
                 this.state.numberOfPanels !== nextState.numberOfPanels ||
-                this.state.singleColumnModeEnabled !== nextState.singleColumnModeEnabled;
+                this.state.singleColumnModeEnabled !== nextState.singleColumnModeEnabled ||
+                this.state.colorStop !== nextState.colorStop;
         },
 
         /**
@@ -149,7 +157,9 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var hasDocument = this.getFlux().store("application").getCurrentDocument();
+            var hasDocument = this.getFlux().store("application").getCurrentDocument(),
+                colorStop = this.state.colorStop || this.props.initialColorStop,
+                stopClass = "color-stop__" + colorStop.toLowerCase();
 
             var className = classnames({
                 main: true,
@@ -159,7 +169,8 @@ define(function (require, exports, module) {
                     !hasDocument || this.state.numberOfPanels === 1 || this.state.singleColumnModeEnabled,
                 "main__both-panel":
                     hasDocument && this.state.numberOfPanels === 2 && !this.state.singleColumnModeEnabled
-            });
+            }, stopClass);
+
             return (
                 <div className={className}>
                     <Guard

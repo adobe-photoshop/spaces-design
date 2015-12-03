@@ -117,6 +117,7 @@ define(function (require, exports, module) {
                 events.tool.VECTOR_MASK_MODE_CHANGE, this._updateMenuItems,
 
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
+                events.ui.COLOR_STOP_CHANGED, this._updateColorStop,
                 events.preferences.SET_PREFERENCE, this._updatePreferencesBasedMenuItems
             );
 
@@ -273,6 +274,23 @@ define(function (require, exports, module) {
             }.bind(this));
         },
         
+        /**
+         * Updates the color theme menu items.
+         * @private
+         */
+        _updateColorStop: function () {
+            this.waitFor(["ui"], function (uiStore) {
+                var colorStop = uiStore.getColorStop(),
+                    oldMenu = this._applicationMenu;
+
+                this._applicationMenu = this._applicationMenu.updateColorThemeItems(colorStop);
+
+                if (!Immutable.is(oldMenu, this._applicationMenu)) {
+                    this.emit("change");
+                }
+            }.bind(this));
+        },
+
         /**
          * Updates the entries reliant on preferences
          * @private

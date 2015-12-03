@@ -22,7 +22,6 @@
  */
 
 @import "./reset.less";
-
 @import "./shared/colors-shared.less";
 
 html {
@@ -51,38 +50,38 @@ input {
 }
 
 @font-face {
-  font-family: 'Adobe Clean';
-  src: url('file://shared/font/AdobeClean-Regular.otf');
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'Adobe Clean';
+    src: url('file://shared/font/AdobeClean-Regular.otf');
+    font-weight: normal;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: 'Adobe Clean';
-  src: url('file://shared/font/AdobeClean-It.otf');
-  font-weight: normal;
-  font-style: italic;
+    font-family: 'Adobe Clean';
+    src: url('file://shared/font/AdobeClean-It.otf');
+    font-weight: normal;
+    font-style: italic;
 }
 
 @font-face {
-  font-family: 'Adobe Clean';
-  src: url('file://shared/font/AdobeClean-Light.otf');
-  font-weight: 200;
-  font-style: normal;
+    font-family: 'Adobe Clean';
+    src: url('file://shared/font/AdobeClean-Light.otf');
+    font-weight: 200;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: 'Adobe Clean';
-  src: url('file://shared/font/AdobeClean-LightIt.otf');
-  font-weight: 200;
-  font-style: italic;
+    font-family: 'Adobe Clean';
+    src: url('file://shared/font/AdobeClean-LightIt.otf');
+    font-weight: 200;
+    font-style: italic;
 }
 
 @font-face {
-  font-family: 'Adobe Clean';
-  src: url('file://shared/font/AdobeClean-BoldSemiCn.otf');
-  font-weight: 500;
-  font-style: normal;
+    font-family: 'Adobe Clean';
+    src: url('file://shared/font/AdobeClean-BoldSemiCn.otf');
+    font-weight: 500;
+    font-style: normal;
 }
 
 @hairline: 1px;
@@ -99,84 +98,93 @@ input {
 
 // Standard def displays
 @media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 801px) and (max-device-width: 1280px) {
-
-  html { font-size: @base-8; }
-
+    html { font-size: @base-8; }
 }
 
 @media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 1281px) and (max-device-width: 1440px) {
-
-  html { font-size: @base-8; }
-
+    html { font-size: @base-8; }
 }
 
 @media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 1441px) and (max-device-width: 1680px) {
-
-  html { font-size: @base-10; }
+    html { font-size: @base-10; }
 }
 
 @media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 1681px) {
-
-  html { font-size: @base-10; }
-
+    html { font-size: @base-10; }
 }
 
 // Retina displays
-
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 801px) and (max-device-width: 1280px) {
-
-  html { font-size: @base-8; }
-
+    html { font-size: @base-8; }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1281px) and (max-device-width: 1440px) {
-
-  html { font-size: @base-8; }
-
+    html { font-size: @base-8; }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1441px) and (max-device-width: 1680px) {
-
-  html { font-size: @base-9; }
+    html { font-size: @base-9; }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 1681px) and (max-device-width: 2560px) {
-
-  html { font-size: @base-10; }
-
+    html { font-size: @base-10; }
 }
 
 @media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) {
-
-  html { font-size: @base-11; }
-
+    html { font-size: @base-11; }
 }
 
-/* Setup Color Stops */
-.color-stop__light {
-    @import (multiple) "./shared/colors-light.less";
-    @import (multiple) "./component-styles.less";
+/* -- MASTER CONTAINER -- */
 
-    color: @item-active;
+.fade-in-mixin {
+    &.main__ready .section-container,
+    &.main__ready .section-container__no-collapse {
+        opacity: 1;
+        transition: all 200ms ease;
+    }
 }
 
-.color-stop__dark {
-    @import (multiple) "./shared/colors-dark.less";
-    @import (multiple) "./component-styles.less";
+.main {
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    position: absolute;
+    display: flex;
+    cursor: default;
+    overflow: hidden;
 
-    color: @item-active;
-}
+    /* Setup Color Stops */
+    &.color-stop__light {
+        @import (multiple) "./shared/colors-light.less";
+        @import (multiple) "./component-styles.less";
 
-.color-stop__medium {
-    @import (multiple) "./shared/colors-medium.less";
-    @import (multiple) "./component-styles.less";
+        color: @item-active;
+        .fade-in-mixin();
+    }
 
-    color: @item-active;
-}
+    &.color-stop__dark {
+        @import (multiple) "./shared/colors-dark.less";
+        @import (multiple) "./component-styles.less";
 
-.color-stop__original {
-    @import (multiple) "./shared/colors-original.less";
-    @import (multiple) "./component-styles.less";
+        color: @item-active;
+        .fade-in-mixin();
+    }
 
-    color: @item-active;
+    &.main.color-stop__medium {
+        @import (multiple) "./shared/colors-medium.less";
+        @import (multiple) "./component-styles.less";
+
+        color: @item-active;
+        .fade-in-mixin();
+    }
+
+    &.main.color-stop__original {
+        @import (multiple) "./shared/colors-original.less";
+        @import (multiple) "./component-styles.less";
+
+        color: @item-active;
+
+        .fade-in-mixin();
+    }
 }

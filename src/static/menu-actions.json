@@ -414,6 +414,37 @@
             "$action": "ui.togglePinnedToolbar",
             "$enable-rule": "always-except-modal"
         },
+        "COLOR_THEME": {
+            "$enable-rule": "always-except-modal",
+            "ORIGINAL": {
+                "$action": "ui.setColorStop",
+                "$enable-rule": "always-except-modal",
+                "$payload": {
+                    "stop": "ORIGINAL"
+                }
+            },
+            "LIGHT": {
+                "$action": "ui.setColorStop",
+                "$enable-rule": "always-except-modal",
+                "$payload": {
+                    "stop": "LIGHT"
+                }
+            },
+            "MEDIUM": {
+                "$action": "ui.setColorStop",
+                "$enable-rule": "always-except-modal",
+                "$payload": {
+                    "stop": "MEDIUM"
+                }
+            },
+            "DARK": {
+                "$action": "ui.setColorStop",
+                "$enable-rule": "always-except-modal",
+                "$payload": {
+                    "stop": "DARK"
+                }
+            }
+        },
         "TOGGLE_SINGLE_COLUMN_MODE": {
             "$action": "ui.toggleSingleColumnMode",
             "$enable-rule": "always-except-modal"

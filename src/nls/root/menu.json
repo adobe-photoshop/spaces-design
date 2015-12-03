@@ -211,6 +211,13 @@
         "NEXT_DOCUMENT": "Next Document",
         "TOGGLE_TOOLBAR": "Pin Toolbar",
         "TOGGLE_SINGLE_COLUMN_MODE": "Single-Column Mode",
+        "COLOR_THEME": {
+            "$MENU": "Color Theme",
+            "ORIGINAL": "Original",
+            "LIGHT": "Light",
+            "MEDIUM": "Medium",
+            "DARK": "Dark"
+        },
         "PREVIOUS_DOCUMENT": "Previous Document",
         "RETURN_TO_STANDARD": "Return to Standard Photoshop",
         "OPEN_DOCUMENT": "Open Document",

@@ -31,7 +31,8 @@ define(function (require, exports) {
         descriptor = require("adapter").ps.descriptor,
         documentLib = require("adapter").lib.document,
         adapterUI = require("adapter").ps.ui,
-        adapterOS = require("adapter").os;
+        adapterOS = require("adapter").os,
+        appLib = require("adapter").lib.application;
 
     var Bounds = require("js/models/bounds"),
         events = require("js/events"),
@@ -40,7 +41,8 @@ define(function (require, exports) {
         preferences = require("./preferences"),
         synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
-        headlights = require("js/util/headlights");
+        headlights = require("js/util/headlights"),
+        uiUtil = require("js/util/ui");
 
     /**
      * Tooltip property key that determines the delay until tooltips are shown.
@@ -591,6 +593,29 @@ define(function (require, exports) {
     };
 
     /**
+     * Set the UI color stop.
+     *
+     * @param {{stop: string}} payload
+     * @return {Promise}
+     */
+    var setColorStop = function (payload) {
+        var stop = payload.stop,
+            psStop = appLib.colorStops[stop],
+            setColorStop = appLib.setColorStop(psStop),
+            setColorStopPromise = descriptor.playObject(setColorStop),
+            dispatchPromise = this.dispatchAsync(events.ui.COLOR_STOP_CHANGED, {
+                stop: stop
+            });
+
+        return Promise.join(dispatchPromise, setColorStopPromise);
+    };
+    setColorStop.action = {
+        reads: [],
+        writes: [locks.PS_APP, locks.JS_UI],
+        transfers: []
+    };
+
+    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
@@ -656,12 +681,21 @@ define(function (require, exports) {
             referencePoint = preferences.get(REFERENCE_POINT_PREFS_KEY, DEFAULT_REFERENCE_POINT),
             setReferencePointPromise = this.transfer(setReferencePoint, referencePoint);
 
-        return Promise.join(osPromise, owlPromise, pathPromise, setReferencePointPromise)
+        // Initialize the UI color stop
+        const colorStopPromise = uiUtil.getPSColorStop()
+            .bind(this)
+            .then(function (stop) {
+                this.dispatch(events.ui.COLOR_STOP_CHANGED, {
+                    stop: stop
+                });
+            });
+
+        return Promise.join(osPromise, owlPromise, pathPromise, setReferencePointPromise, colorStopPromise)
             .return(reset);
     };
     beforeStartup.action = {
         reads: [],
-        writes: [locks.PS_APP],
+        writes: [locks.PS_APP, locks.JS_UI],
         transfers: [setReferencePoint],
         modal: true
     };
@@ -724,6 +758,7 @@ define(function (require, exports) {
     exports.zoomInOut = zoomInOut;
     exports.zoom = zoom;
     exports.setReferencePoint = setReferencePoint;
+    exports.setColorStop = setColorStop;
     exports.handleDisplayConfigurationChanged = handleDisplayConfigurationChanged;
 
     exports.beforeStartup = beforeStartup;
