@@ -153,15 +153,17 @@ define(function (require, exports, module) {
          */
         _handleChange: function (event) {
             var nextValue = event.target.value;
+
             this.setState({
                 value: nextValue,
                 editing: true,
                 selectDisabled: true
             });
 
-            if (this.state.editing && !this.props.doubleClickToEdit && this.props.continuous) {
+            if (!this.props.doubleClickToEdit && this.props.continuous) {
                 this.props.onChange(event, nextValue);
             }
+
             // Only used by Datalist
             this.props.onDOMChange(event);
         },
