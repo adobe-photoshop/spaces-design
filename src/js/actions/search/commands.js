@@ -50,18 +50,22 @@ define(function (require, exports) {
             menuTree;
 
         parts.forEach(function (part) {
-            nlsPath = nlsPath + "." + part;
-            menuTree = nls.localize(nlsPath);
+            if (!_.isNumber(parseInt(part, 10))) {
+                nlsPath = nlsPath + "." + part;
+                menuTree = nls.localize(nlsPath);
 
-            if (menuTree === undefined) {
-                resultPath = null;
-                return false;
-            }
+                if (menuTree === undefined) {
+                    resultPath = null;
+                    return false;
+                }
 
-            if (menuTree.$MENU) {
-                resultPath += menuTree.$MENU + ">";
+                if (menuTree.$MENU) {
+                    resultPath += menuTree.$MENU + ">";
+                } else {
+                    resultPath += menuTree.part;
+                }
             } else {
-                resultPath += menuTree.part;
+                resultPath += part;
             }
         });
 
