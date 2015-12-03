@@ -299,6 +299,16 @@ define(function (require, exports, module) {
         },
 
         /**
+         * The subset of Layer models that have not yet been fully initialized.
+         * @type {Immutable.List.<Layer>}
+         */
+        "uninitialized": function () {
+            return this.all.filterNot(function (layer) {
+                return layer.initialized;
+            }, this);
+        },
+
+        /**
          * Child-encompassing bounds objects for all the selected layers.
          * @type {Immutable.List.<Bounds>}
          */

@@ -349,7 +349,8 @@ define(function (require, exports) {
                                 currentDoc.documentID, true),
                             // Load guides lazily if they're not currently visible
                             guidesVisible = currentDoc.guidesVisibility,
-                            guidesPromise = guidesVisible ? _getGuidesForDocument(currentDoc) : Promise.resolve();
+                            guidesPromise = guidesVisible ? _getGuidesForDocument(currentDoc) : Promise.resolve(),
+                            flux = this.flux;
 
                         return Promise.join(currentDocLayersPromise,
                             historyPromise,
@@ -364,7 +365,7 @@ define(function (require, exports) {
                             }.bind(this))
                             .bind(this)
                             .then(function () {
-                                var currentDoc = this.flux.stores.application.getCurrentDocument();
+                                var currentDoc = flux.stores.application.getCurrentDocument();
                                 
                                 if (currentDoc.unsupported) {
                                     return this.transfer(layerActions.deselectAll, currentDoc);
@@ -375,6 +376,10 @@ define(function (require, exports) {
                                     activeDocumentID: currentDoc.documentID,
                                     openDocumentIDs: documentIDs
                                 };
+                            })
+                            .tap(function () {
+                                var document = flux.stores.document.getDocument(currentDoc.documentID);
+                                this.whenIdle("layers.initializeLayersBackground", document);
                             });
                     });
             });
@@ -421,12 +426,19 @@ define(function (require, exports) {
                         payload.current = current;
                         payload.history = historyPayload;
                         payload.guides = guidesPayload || (guidesVisible && []);
-                        return this.dispatchAsync(events.document.DOCUMENT_UPDATED, payload);
+                        
+                        this.dispatch(events.document.DOCUMENT_UPDATED, payload);
                     }.bind(this));
+            })
+            .tap(function () {
+                if (current) {
+                    var document = this.flux.stores.application.getCurrentDocument();
+                    this.whenIdle("layers.initializeLayersBackground", document);
+                }
             });
     };
     updateDocument.action = {
-        reads: [locks.PS_DOC],
+        reads: [locks.PS_DOC, locks.PS_APP],
         writes: [locks.JS_DOC],
         transfers: [historyActions.queryCurrentHistory],
         lockUI: true
