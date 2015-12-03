@@ -1302,7 +1302,11 @@ define(function (require, exports) {
                 // a somewhat more optimistic copy routine, instead of addLayers
                 // which doesn't know that the layers being added are copies of
                 // existing layers.
-                return this.flux.actions.layers.addLayers(currentDoc, toIDs, true, false);
+                return this.flux.actions.layers.addLayers(currentDoc, toIDs, true, false)
+                    .bind(this)
+                    .then(function () {
+                        return this.flux.actions.ui.updateTransform();
+                    });
             } else {
                 return debouncedMoveHandler();
             }
