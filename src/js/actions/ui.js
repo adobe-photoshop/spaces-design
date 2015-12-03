@@ -260,11 +260,8 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setTransform = function (transformObject) {
-        return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false })
+        return descriptor.getProperty("document", "zoom")
             .bind(this)
-            .then(function () {
-                return descriptor.getProperty("document", "zoom");
-            })
             .get("_value")
             .catch(function () {
                 return null;
