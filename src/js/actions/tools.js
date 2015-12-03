@@ -853,8 +853,12 @@ define(function (require, exports) {
             uiTransformMatrix;
 
         var throttledResetBorderPolicies =
-            synchronization.throttle(this.flux.actions.tools.resetBorderPolicies, this, 100),
-            _borderPolicyChangeHandler = function () {
+            synchronization.throttle(this.flux.actions.tools.resetBorderPolicies, this, 100);
+            
+        _borderPolicyChangeHandler = function () {
+                if (!this.controller.active) {
+                    return;
+                }
                 var currentDocument = appStore.getCurrentDocument();
 
                 if (currentDocument) {
