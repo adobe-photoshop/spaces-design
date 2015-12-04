@@ -30,8 +30,8 @@ define(function (require, exports, module) {
 
     var os = require("adapter").os;
 
-    var Dialog = require("jsx!js/jsx/shared/Dialog"),
-        ExportAllPanel = require("jsx!./ExportAllPanel");
+    var Dialog = require("js/jsx/shared/Dialog"),
+        ExportAllPanel = require("./ExportAllPanel");
 
     var ExportsModal = React.createClass({
         mixins: [FluxMixin],

@@ -24,38 +24,17 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Photoshop Design Space (optimized build)</title>
-    <link rel="stylesheet" type="text/css" href="style/main.css" />
-    <script src="js/require.js"></script>
-    <script>
-        var locale = window.navigator.language,
-            parts = locale.match(/\w+/),
-            language = parts.length > 0 && parts[0];
+    <title>Photoshop Design Space (development build)</title>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script type ="text/javascript" src="./externalDeps.js"></script>
+    <script type="text/javascript">
+      var locale = window.navigator.language,
+          js = document.createElement("script");
 
-        switch (language) {
-        case "en":
-        case "de":
-        case "fr":
-        case "ja":
-            break;
-        default:
-            language = "en"
-        }
+      js.src = "./spaces-design-" + locale + ".js";
+      js.type = "text/javascript";
 
-        var localeModuleName = "js/init-build-" + language;
-
-        require.config({
-            paths: {
-                "js/init-build": localeModuleName
-            },
-            config: {
-                i18n: {
-                    locale: language
-                }
-            }
-        });
-
-        require(["js/init-build"]);
+      document.head.appendChild(js);
     </script>
 </head>
 <body>

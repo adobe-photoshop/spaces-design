@@ -34,11 +34,11 @@ define(function (require, exports, module) {
         ui = require("js/util/ui"),
         librariesAction = require("js/actions/libraries");
 
-    var Graphic = require("jsx!./assets/Graphic"),
-        Color = require("jsx!./assets/Color"),
-        CharacterStyle = require("jsx!./assets/CharacterStyle"),
-        LayerStyle = require("jsx!./assets/LayerStyle"),
-        ColorTheme = require("jsx!./assets/ColorTheme");
+    var Graphic = require("./assets/Graphic"),
+        Color = require("./assets/Color"),
+        CharacterStyle = require("./assets/CharacterStyle"),
+        LayerStyle = require("./assets/LayerStyle"),
+        ColorTheme = require("./assets/ColorTheme");
 
     /**
      * List of asset types in the CC libraries packge.

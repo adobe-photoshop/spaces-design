@@ -26,10 +26,10 @@ define(function (require, exports, module) {
 
     var React = require("react");
 
-    var Gutter = require("jsx!js/jsx/shared/Gutter"),
+    var Gutter = require("js/jsx/shared/Gutter"),
         nls = require("js/util/nls"),
-        Combine = require("jsx!./Combine"),
-        Radius = require("jsx!./Radius");
+        Combine = require("./Combine"),
+        Radius = require("./Radius");
 
     var Vector = React.createClass({
         render: function () {

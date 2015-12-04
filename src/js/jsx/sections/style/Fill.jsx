@@ -30,8 +30,8 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         _ = require("lodash");
 
-    var ColorInput = require("jsx!js/jsx/shared/ColorInput"),
-        ToggleButton = require("jsx!js/jsx/shared/ToggleButton"),
+    var ColorInput = require("js/jsx/shared/ColorInput"),
+        ToggleButton = require("js/jsx/shared/ToggleButton"),
         nls = require("js/util/nls"),
         headlights = require("js/util/headlights"),
         collection = require("js/util/collection");

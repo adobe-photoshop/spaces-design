@@ -745,7 +745,7 @@ define(function (require, exports, module) {
             .bind(this)
             .then(function () {
                 var actionPromise = action.apply(actionReceiver, params);
-                if (!(actionPromise instanceof Promise)) {
+                if (!(actionPromise && typeof actionPromise.then === "function")) {
                     var valueError = new Error("Action " + actionName + " did not return a promise");
                     valueError.returnValue = actionPromise;
 

@@ -31,9 +31,9 @@ define(function (require, exports, module) {
 
     var collection = require("js/util/collection");
 
-    var NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+    var NumberInput = require("js/jsx/shared/NumberInput"),
+        Label = require("js/jsx/shared/Label"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
         nls = require("js/util/nls");
 
     var Rotate = React.createClass({

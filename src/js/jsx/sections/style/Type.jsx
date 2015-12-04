@@ -33,14 +33,14 @@ define(function (require, exports, module) {
 
     var textLayer = require("adapter").lib.textLayer;
 
-    var Label = require("jsx!js/jsx/shared/Label"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
-        LayerBlendMode = require("jsx!./LayerBlendMode"),
-        Opacity = require("jsx!./Opacity"),
-        Datalist = require("jsx!js/jsx/shared/Datalist"),
-        ColorInput = require("jsx!js/jsx/shared/ColorInput"),
+    var Label = require("js/jsx/shared/Label"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
+        NumberInput = require("js/jsx/shared/NumberInput"),
+        SplitButton = require("js/jsx/shared/SplitButton"),
+        LayerBlendMode = require("./LayerBlendMode"),
+        Opacity = require("./Opacity"),
+        Datalist = require("js/jsx/shared/Datalist"),
+        ColorInput = require("js/jsx/shared/ColorInput"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem,
         nls = require("js/util/nls"),

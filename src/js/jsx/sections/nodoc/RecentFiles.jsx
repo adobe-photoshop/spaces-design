@@ -31,7 +31,7 @@ define(function (require, exports, module) {
 
     var nls = require("js/util/nls"),
         pathUtil = require("js/util/path"),
-        TitleHeader = require("jsx!js/jsx/shared/TitleHeader");
+        TitleHeader = require("js/jsx/shared/TitleHeader");
 
     /**
      * Maximum number of recent files to display

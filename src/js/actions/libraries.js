@@ -27,7 +27,7 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable"),
         _ = require("lodash"),
-        CCLibraries = require("file://shared/libs/cc-libraries-api.min.js");
+        $S = require("scriptjs");
 
     var descriptor = require("adapter").ps.descriptor,
         docAdapter = require("adapter").lib.document,
@@ -57,6 +57,13 @@ define(function (require, exports) {
         preferencesActions = require("./preferences"),
         LibrarySyncStatus = require("js/models/library_sync_status");
 
+    /**
+     * The external CC Libraries API is loaded here asynchronously, used in beforeStartup
+     *
+     * @type {Promise}
+     */
+    var apiLoadPromise = Promise.promisify($S)("file://shared/libs/cc-libraries-api.min.js");
+        
     /**
      * For image elements, their extensions signify their representation type
      *
@@ -1187,7 +1194,8 @@ define(function (require, exports) {
      * @private
      */
     var handleLibrariesLoaded = function () {
-        var libraryCollection = (CCLibraries.getLoadedCollections() || [])[0];
+        var ccLibraries = this.flux.store("library").getLibrariesAPI(),
+            libraryCollection = (ccLibraries.getLoadedCollections() || [])[0];
 
         if (!libraryCollection) {
             searchActions.registerLibrarySearch.call(this, []);
@@ -1239,59 +1247,70 @@ define(function (require, exports) {
     var _toolModalStateChangedHandler;
 
     var beforeStartup = function () {
-        var dependencies = {
-            // Photoshop on startup will grab the port of the CC Library process and expose it to us
-            vulcanCall: function (requestType, requestPayload, responseType, callback) {
-                descriptor.getProperty("application", "designSpaceLibrariesInfo")
-                    .then(function (imsInfo) {
-                        var port = imsInfo.port;
+        apiLoadPromise
+            .bind(this)
+            .then(function () {
+                /* global ccLibraries */
+                // There is now a ccLibraries object in this scope
+                // So we emit that to the store
+                this.dispatch(events.libraries.LIBRARIES_API_LOADED, ccLibraries);
 
-                        callback(JSON.stringify({ port: port }));
-                    });
-            },
-            // Enable and log CC Libraries analytic events
-            // https://git.corp.adobe.com/pages/ProjectCentral/cc-libraries-api-js/tutorial-analytics_example.html
-            analytics: {
-                reportEvent: function (event, properties) {
-                    // elementType: color, characterstyle, layerstyle, graphic
-                    // ("image" type is replaced with "graphic" to keep naming consistency)
-                    var elementType = properties.elementType === "image" ? "graphic" : properties.elementType;
-                    
-                    switch (event) {
-                        case "createLibrary":
-                            headlights.logEvent("libraries", "library", "create");
-                            break;
-                        case "deleteLibrary":
-                            headlights.logEvent("libraries", "library", "delete");
-                            break;
-                        case "createElement":
-                            headlights.logEvent("libraries", "element", ["create", elementType].join("-"));
-                            break;
-                        case "deleteElement":
-                            headlights.logEvent("libraries", "element", ["delete", elementType].join("-"));
-                            break;
-                        case "updateElement":
-                            // updateType: info (rename), representation (update content)
-                            headlights.logEvent("libraries", "element",
-                                ["update", elementType, properties.updateType].join("-"));
-                            break;
+                var dependencies = {
+                    // Photoshop on startup will grab the port of the CC Library process and expose it to us
+                    vulcanCall: function (requestType, requestPayload, responseType, callback) {
+                        descriptor.getProperty("application", "designSpaceLibrariesInfo")
+                            .then(function (imsInfo) {
+                                var port = imsInfo.port;
+
+                                callback(JSON.stringify({ port: port }));
+                            });
+                    },
+                    // Enable and log CC Libraries analytic events
+                    // jscs:disable
+                    // https://git.corp.adobe.com/pages/ProjectCentral/cc-libraries-api-js/tutorial-analytics_example.html
+                    // jscs:enable
+                    analytics: {
+                        reportEvent: function (event, properties) {
+                            // elementType: color, characterstyle, layerstyle, graphic
+                            // ("image" type is replaced with "graphic" to keep naming consistency)
+                            var elementType = properties.elementType === "image" ? "graphic" : properties.elementType;
+                            
+                            switch (event) {
+                                case "createLibrary":
+                                    headlights.logEvent("libraries", "library", "create");
+                                    break;
+                                case "deleteLibrary":
+                                    headlights.logEvent("libraries", "library", "delete");
+                                    break;
+                                case "createElement":
+                                    headlights.logEvent("libraries", "element", ["create", elementType].join("-"));
+                                    break;
+                                case "deleteElement":
+                                    headlights.logEvent("libraries", "element", ["delete", elementType].join("-"));
+                                    break;
+                                case "updateElement":
+                                    // updateType: info (rename), representation (update content)
+                                    headlights.logEvent("libraries", "element",
+                                        ["update", elementType, properties.updateType].join("-"));
+                                    break;
+                            }
+                        }
                     }
-                }
-            }
-        };
+                };
 
-        // SHARED_LOCAL_STORAGE flag forces websocket use
-        CCLibraries.configure(dependencies, {
-            SHARED_LOCAL_STORAGE: true,
-            ELEMENT_TYPE_FILTERS: [
-                ELEMENT_COLOR_TYPE,
-                ELEMENT_GRAPHIC_TYPE,
-                ELEMENT_CHARACTERSTYLE_TYPE,
-                ELEMENT_LAYERSTYLE_TYPE,
-                ELEMENT_BRUSH_TYPE,
-                ELEMENT_COLORTHEME_TYPE
-            ]
-        });
+                // SHARED_LOCAL_STORAGE flag forces websocket use
+                ccLibraries.configure(dependencies, {
+                    SHARED_LOCAL_STORAGE: true,
+                    ELEMENT_TYPE_FILTERS: [
+                        ELEMENT_COLOR_TYPE,
+                        ELEMENT_GRAPHIC_TYPE,
+                        ELEMENT_CHARACTERSTYLE_TYPE,
+                        ELEMENT_LAYERSTYLE_TYPE,
+                        ELEMENT_BRUSH_TYPE,
+                        ELEMENT_COLORTHEME_TYPE
+                    ]
+                });
+            });
 
         _toolModalStateChangedHandler = function (event) {
             var isPlacingGraphic = this.flux.store("library").getState().isPlacingGraphic,
@@ -1303,7 +1322,7 @@ define(function (require, exports) {
         }.bind(this);
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
-        return Promise.resolve();
+        return apiLoadPromise;
     };
     beforeStartup.action = {
         reads: [locks.JS_PREF],
@@ -1316,10 +1335,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
+        var ccLibraries = this.flux.store("library").getLibrariesAPI();
+
         // Listen to the load event of CC Libraries. The event has two scenarios:
         //     loaded: Libraries data is ready for use. Fired after user sign in creative cloud.
         //     unloaded: Libraries data is cleared. Fired after user sign out creative cloud.
-        CCLibraries.addLoadedCollectionsListener(handleLibrariesLoaded.bind(this));
+        ccLibraries.addLoadedCollectionsListener(handleLibrariesLoaded.bind(this));
         
         // Triger the load event callback manually for initial start up.
         return (handleLibrariesLoaded.bind(this))();

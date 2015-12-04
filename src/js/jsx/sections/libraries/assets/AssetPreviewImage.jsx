@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         
     var librariesAction = require("js/actions/libraries");
     
-    var SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+    var SVGIcon = require("js/jsx/shared/SVGIcon");
 
     var AssetPreviewImage = React.createClass({
         mixins: [FluxMixin],

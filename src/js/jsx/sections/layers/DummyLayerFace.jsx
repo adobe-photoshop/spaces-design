@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         
     var collection = require("js/util/collection");
 
-    var Droppable = require("jsx!js/jsx/shared/Droppable");
+    var Droppable = require("js/jsx/shared/Droppable");
 
     var DummyLayerFace = React.createClass({
         mixins: [FluxMixin],

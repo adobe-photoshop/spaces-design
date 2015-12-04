@@ -29,8 +29,8 @@ define(function (require, exports, module) {
 
     var system = require("js/util/system"),
         nls = require("js/util/nls"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon");
+        Button = require("js/jsx/shared/Button"),
+        SVGIcon = require("js/jsx/shared/SVGIcon");
         
     var KeyboardShortcuts = React.createClass({
 

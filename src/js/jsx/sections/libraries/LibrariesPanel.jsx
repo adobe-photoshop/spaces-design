@@ -35,11 +35,11 @@ define(function (require, exports, module) {
     var headlights = require("js/util/headlights"),
         nls = require("js/util/nls");
 
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        LibraryList = require("jsx!./LibraryList"),
-        LibraryBar = require("jsx!./LibraryBar"),
-        Library = require("jsx!./Library"),
-        Droppable = require("jsx!js/jsx/shared/Droppable");
+    var TitleHeader = require("js/jsx/shared/TitleHeader"),
+        LibraryList = require("./LibraryList"),
+        LibraryBar = require("./LibraryBar"),
+        Library = require("./Library"),
+        Droppable = require("js/jsx/shared/Droppable");
 
     var LibrariesPanel = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("library")],

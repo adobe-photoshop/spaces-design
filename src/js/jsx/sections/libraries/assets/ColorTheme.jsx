@@ -33,7 +33,7 @@ define(function (require, exports, module) {
     var ColorModel = require("js/models/color"),
         headlights = require("js/util/headlights");
 
-    var AssetSection = require("jsx!./AssetSection");
+    var AssetSection = require("./AssetSection");
 
     var ColorTheme = React.createClass({
         mixins: [FluxMixin],

@@ -30,19 +30,14 @@
     "eventEmitter": "~4.2.11",
     "fluxxor": "~1.7.1",
     "generator-connection": "https://github.com/adobe-photoshop/generator-connection.git#^2.4",
-    "i18n": "requirejs-i18n#~2.0.6",
     "immutable": "~3.7.5",
-    "jsx-requirejs-plugin": "~0.6.0",
-    "less": "~2.5.0",
     "lodash": "~3.10.1",
     "loglevel": "~1.4.0",
     "mathjs": "~2.2.0",
     "react": "~0.13.3",
-    "requirejs": "~2.1.20",
-    "requirejs-i18n": "~2.0.6",
-    "requirejs-text": "~2.0.14",
     "spaces-adapter": "https://github.com/adobe-photoshop/spaces-adapter.git#^0.30.0",
-    "tinycolor": "~1.2.1"
+    "tinycolor": "~1.2.1",
+    "scriptjs": "~2.5.8"
   },
   "devDependencies": {
     "qunit": "~1.19.0",

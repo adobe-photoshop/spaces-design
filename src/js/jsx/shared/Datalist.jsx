@@ -29,10 +29,10 @@ define(function (require, exports, module) {
         classnames = require("classnames"),
         _ = require("lodash");
 
-    var TextInput = require("jsx!js/jsx/shared/TextInput"),
-        Select = require("jsx!js/jsx/shared/Select"),
-        Dialog = require("jsx!js/jsx/shared/Dialog"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+    var TextInput = require("js/jsx/shared/TextInput"),
+        Select = require("js/jsx/shared/Select"),
+        Dialog = require("js/jsx/shared/Dialog"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
         collection = require("js/util/collection");
 
     /**

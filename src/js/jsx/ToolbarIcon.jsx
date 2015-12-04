@@ -29,8 +29,8 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
 
-    var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+    var Button = require("js/jsx/shared/Button"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
         nls = require("js/util/nls");
     
     var ToolbarIcon = React.createClass({

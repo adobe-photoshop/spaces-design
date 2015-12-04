@@ -30,11 +30,8 @@ define(function (require) {
         events = require("js/events"),
         Document = require("js/models/document");
 
-    var documentDescriptorJSON = require("text!../static/document.json"),
-        layersDescriptorJSON = require("text!../static/layers.json");
-
-    var documentDescriptor = JSON.parse(documentDescriptorJSON),
-        layersDescriptor = JSON.parse(layersDescriptorJSON);
+    var documentDescriptor = require("../static/document.json"),
+        layersDescriptor = require("../static/layers.json");
 
     module("stores/document", {
         setup: fluxxorTestHelper.setup

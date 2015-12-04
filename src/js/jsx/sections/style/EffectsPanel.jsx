@@ -34,20 +34,20 @@ define(function (require, exports, module) {
 
     var os = require("adapter").os;
 
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        Dialog = require("jsx!js/jsx/shared/Dialog"),
-        DropShadowList = require("jsx!./ShadowList").DropShadowList,
-        InnerShadowList = require("jsx!./ShadowList").InnerShadowList,
-        ColorOverlayList = require("jsx!./ColorOverlayList"),
-        StrokeList = require("jsx!./StrokeList"),
+    var TitleHeader = require("js/jsx/shared/TitleHeader"),
+        Button = require("js/jsx/shared/Button"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
+        Dialog = require("js/jsx/shared/Dialog"),
+        DropShadowList = require("./ShadowList").DropShadowList,
+        InnerShadowList = require("./ShadowList").InnerShadowList,
+        ColorOverlayList = require("./ColorOverlayList"),
+        StrokeList = require("./StrokeList"),
         LayerEffect = require("js/models/effects/layereffect"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
         synchronization = require("js/util/synchronization"),
-        UnsupportedEffectList = require("jsx!./UnsupportedEffectList");
+        UnsupportedEffectList = require("./UnsupportedEffectList");
 
     /**
      * The maximum allowed number of effects of a given kind per layer

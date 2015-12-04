@@ -29,11 +29,11 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
 
-    var Label = require("jsx!js/jsx/shared/Label"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        Datalist = require("jsx!js/jsx/shared/Datalist"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
+    var Label = require("js/jsx/shared/Label"),
+        Button = require("js/jsx/shared/Button"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
+        Datalist = require("js/jsx/shared/Datalist"),
+        TextInput = require("js/jsx/shared/TextInput"),
         ExportAsset = require("js/models/exportasset");
 
     var mathUtil = require("js/util/math"),

@@ -62,10 +62,10 @@ define(function (require, exports, module) {
     var Color = require("js/models/color"),
         Coalesce = require("js/jsx/mixin/Coalesce"),
         math = require("js/util/math"),
-        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
-        Label = require("jsx!js/jsx/shared/Label"),
-        Gutter = require("jsx!js/jsx/shared/Gutter"),
+        NumberInput = require("js/jsx/shared/NumberInput"),
+        TextInput = require("js/jsx/shared/TextInput"),
+        Label = require("js/jsx/shared/Label"),
+        Gutter = require("js/jsx/shared/Gutter"),
         headlights = require("js/util/headlights");
     
     var nls = require("js/util/nls");

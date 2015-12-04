@@ -41,7 +41,8 @@ define(function (require, exports, module) {
         mixins: [Focusable, FluxMixin],
 
         /**
-         * Once after focus, whether to suppress mouseup to maintain the initial selection.
+         * Once after focus, whether to suppress mouseup 
+         * to maintain the initial selection.
          * 
          * @private
          * @type {boolean}

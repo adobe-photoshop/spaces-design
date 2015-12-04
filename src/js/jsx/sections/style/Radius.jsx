@@ -29,9 +29,9 @@ define(function (require, exports, module) {
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable");
         
-    var Label = require("jsx!js/jsx/shared/Label"),
-        NumberInput = require("jsx!js/jsx/shared/NumberInput"),
-        Range = require("jsx!js/jsx/shared/Range"),
+    var Label = require("js/jsx/shared/Label"),
+        NumberInput = require("js/jsx/shared/NumberInput"),
+        Range = require("js/jsx/shared/Range"),
         Coalesce = require("js/jsx/mixin/Coalesce"),
         math = require("js/util/math"),
         nls = require("js/util/nls"),

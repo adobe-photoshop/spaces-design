@@ -66,5 +66,5 @@
     "white"         : true,
 
     "predef"        : ["define"],
-    "globals"       : { "window": true }
+    "globals"       : { "window": true, "__PG_DEBUG__": true }
 }

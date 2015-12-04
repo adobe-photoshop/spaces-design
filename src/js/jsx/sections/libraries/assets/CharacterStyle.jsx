@@ -32,8 +32,8 @@ define(function (require, exports, module) {
         librariesUtil = require("js/util/libraries"),
         headlights = require("js/util/headlights");
 
-    var AssetSection = require("jsx!./AssetSection"),
-        AssetPreviewImage = require("jsx!./AssetPreviewImage");
+    var AssetSection = require("./AssetSection"),
+        AssetPreviewImage = require("./AssetPreviewImage");
 
     var CharacterStyle = React.createClass({
         mixins: [FluxMixin],

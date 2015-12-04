@@ -31,8 +31,8 @@ define(function (require, exports, module) {
 
     var os = require("adapter").os;
 
-    var Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
+    var Button = require("js/jsx/shared/Button"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
         nls = require("js/util/nls"),
         headlights = require("js/util/headlights"),
         synchronization = require("js/util/synchronization");

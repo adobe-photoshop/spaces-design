@@ -33,10 +33,10 @@ define(function (require, exports, module) {
     var nls = require("js/util/nls"),
         headlights = require("js/util/headlights");
 
-    var Datalist = require("jsx!js/jsx/shared/Datalist"),
-        TextInput = require("jsx!js/jsx/shared/TextInput"),
-        LibraryDialog = require("jsx!./LibraryDialog"),
-        SplitButton = require("jsx!js/jsx/shared/SplitButton"),
+    var Datalist = require("js/jsx/shared/Datalist"),
+        TextInput = require("js/jsx/shared/TextInput"),
+        LibraryDialog = require("./LibraryDialog"),
+        SplitButton = require("js/jsx/shared/SplitButton"),
         SplitButtonList = SplitButton.SplitButtonList,
         SplitButtonItem = SplitButton.SplitButtonItem;
 
@@ -147,7 +147,7 @@ define(function (require, exports, module) {
          * Return library commands based on currently selected library.
          *
          * @private
-         * @return {{title: String, id: string, type: string?, searchable: boolean }}
+         * @return {{title: String, id: string, type: string?, searchable: boolean}}
          */
         _getLibraryCommandOptions: function () {
             var selectedLibrary = this.props.selected,

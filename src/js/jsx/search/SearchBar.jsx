@@ -35,9 +35,9 @@ define(function (require, exports, module) {
 
     var collection = require("js/util/collection"),
         nls = require("js/util/nls"),
-        Datalist = require("jsx!js/jsx/shared/Datalist"),
+        Datalist = require("js/jsx/shared/Datalist"),
         headlights = require("js/util/headlights"),
-        Button = require("jsx!js/jsx/shared/Button");
+        Button = require("js/jsx/shared/Button");
 
     /**
      * The ID of the option display when there are no other valid results

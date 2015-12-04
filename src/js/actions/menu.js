@@ -42,17 +42,20 @@ define(function (require, exports) {
         preferencesActions = require("./preferences"),
         searchActions = require("./search/commands");
 
-    var macMenuJSON = require("text!static/menu-mac.json"),
-        winMenuJSON = require("text!static/menu-win.json"),
+    var macMenuJSON = require("static/menu-mac.json"),
+        winMenuJSON = require("static/menu-win.json"),
         rawShortcuts = require("js/util/shortcuts"),
-        menuActionsJSON = require("text!static/menu-actions.json"),
-        templatesJSON = require("text!static/templates.json");
-
-    var rawMenuJSON = system.isMac ? macMenuJSON : winMenuJSON,
-        rawMenuShortcuts = rawShortcuts.MENU,
-        rawMenuObj = JSON.parse(rawMenuJSON),
-        rawMenuActions = JSON.parse(menuActionsJSON),
-        rawTemplates = JSON.parse(templatesJSON);
+        rawMenuActions = require("static/menu-actions.json"),
+        rawTemplates = require("static/templates.json"),
+        rawMenuObj = system.isMac ? macMenuJSON : winMenuJSON,
+        rawMenuShortcuts = rawShortcuts.MENU;
+        
+    // On debug builds, we always enable cut/copy/paste so they work in dev tools
+    if (__PG_DEBUG__) {
+        rawMenuActions.EDIT.CUT["$enable-rule"] = "always";
+        rawMenuActions.EDIT.COPY["$enable-rule"] = "always";
+        rawMenuActions.EDIT.PASTE["$enable-rule"] = "always";
+    }
 
     /**
      * List of place command menu IDs.

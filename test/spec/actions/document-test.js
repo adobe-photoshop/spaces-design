@@ -32,10 +32,8 @@ define(function (require) {
         Document = require("js/models/document"),
         _ = require("lodash");
 
-    var staticDocumentJSON = require("text!../static/document.json"),
-        staticDocument = JSON.parse(staticDocumentJSON),
-        staticLayersJSON = require("text!../static/layers.json"),
-        staticLayers = JSON.parse(staticLayersJSON);
+    var staticDocument = require("../static/document.json"),
+        staticLayers = require("../static/layers.json");
 
     module("actions/document", {
         setup: function () {

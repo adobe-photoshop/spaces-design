@@ -26,36 +26,22 @@
 module.exports = function (grunt) {
     "use strict";
     
-    /**
-     * Get options for r.js parametrized by locale.
-     *
-     * @param {string} locale
-     * @return {object}
-     */
-    var getRequireOptions = function (locale) {
-        return {
-            options: {
-                baseUrl: "src/",
-                mainConfigFile: "src/js/config.js",
-                name: "js/init-build",
-                out: "build/js/init-build-" + locale + ".js",
-                // optimize: "none",
-                paths: {
-                    "react": "../bower_components/react/react-with-addons.min",
-                    "JSXTransformer": "../bower_components/jsx-requirejs-plugin/js/JSXTransformer"
-                },
-                stubModules: ["jsx"],
-                exclude: ["JSXTransformer"],
-                useStrict: true,
-                config: {
-                    i18n: {
-                        locale: locale
-                    }
-                }
-            }
-        };
-    };
+    // If main task is debug, this flag gets set at the beginning
+    if (grunt.cli.tasks[0] === "debug") {
+        grunt.option("DEV_MODE", true);
+    }
 
+    // Matches every root folder in src/nls into a locale name
+    // If we are in dev mode, compiles only English
+    var DEV_MODE = grunt.option("DEV_MODE") !== undefined,
+        ALL_LOCALES = DEV_MODE ? ["en"] : grunt.file.expand({
+            filter: "isDirectory",
+            cwd: "src/nls"
+        }, "*");
+
+    process.env.SPACES_LOCALES = ALL_LOCALES;
+    process.env.SPACES_DEV_MODE = DEV_MODE;
+    
     grunt.initConfig({
         jshint: {
             options: {
@@ -124,29 +110,110 @@ module.exports = function (grunt) {
                 newlineMaximum: 1
             }
         },
+        // Preparation tasks
+        // Concatenates the multiple dictionary files
+        // into a single json file per locale
+        "concat-json": {
+            i18n: {
+                files: ALL_LOCALES.map(function (locale) {
+                    return {
+                        dest: "build/nls/" + locale + ".json",
+                        src: "*.json",
+                        cwd: "src/nls/" + locale
+                    };
+                })
+            },
+            options: {
+                space: " "
+            }
+        },
+        // Merges the non-en locale dictionaries with English so any missing string
+        // is replaced by the English one
+        "merge-json": {
+            i18n: {
+                files: ALL_LOCALES.reduce(function (map, locale) {
+                    // No need to merge English
+                    if (locale === "en") {
+                        return map;
+                    }
 
-        clean: ["./build"],
+                    var source = "build/nls/" + locale + ".json",
+                        target = "build/nls/" + locale + ".json";
+
+                    map[target] = ["build/nls/en.json", source];
+                    return map;
+                }, {})
+            },
+            options: {
+                space: " "
+            }
+        },
+        // Utility tasks
+        clean: {
+            build: ["./build"],
+            i18n: ["./build/nls"]
+        },
         copy: {
-            requirejs: { src: "bower_components/requirejs/require.js", dest: "build/js/require.js" },
-            html: { src: "src/index-build.html", dest: "build/index.html" },
+            htmlRelease: { src: "src/index.html", dest: "build/index.html" },
+            htmlDebug: { src: "src/index-debug.html", dest: "build/index.html" },
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
-        requirejs: {
-            en: getRequireOptions("en"),
-            de: getRequireOptions("de"),
-            fr: getRequireOptions("fr"),
-            ja: getRequireOptions("ja")
+        watch: {
+            scripts: {
+                files: ["src/style/**/*"],
+                tasks: ["less"],
+                options: {
+                    spawn: false,
+                    interrupt: true
+                }
+            }
         },
+        // Build tasks
         less: {
             style: {
                 files: {
-                    "build/style/main.css": "src/style/main.less"
+                    "build/style.css": "src/style/main.less"
+                },
+                options: {
+                    sourceMap: grunt.option("DEV_MODE"),
+                    sourceMapFilename: "build/style.css.map", // Put it in build
+                    sourceMapURL: "style.css.map" // But point to it in the same folder
                 }
+            }
+        },
+        webpack: {
+            options: require("./webpack.config.js"),
+            compile: {
+                watch: false
+            },
+            watch: {
+                watch: true,
+                keepalive: true
+            }
+        },
+        uglify: {
+            design: {
+                options: {
+                    compress: {
+                        unused: false // This saves us about half an hour, losing 200 KB
+                    }
+                },
+                files: ALL_LOCALES.reduce(function (map, locale) {
+                    var target = "build/spaces-design-" + locale + ".js";
+
+                    map[target] = [target];
+                    return map;
+                }, {})
             }
         },
         concurrent: {
             test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
-            requirejs: ["requirejs:en", "requirejs:de", "requirejs:fr", "requirejs:ja"]
+            build: {
+                tasks: ["watch", "webpack:watch"],
+                options: {
+                    logConcurrentOutput: true
+                }
+            }
         }
     });
 
@@ -158,16 +225,31 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
-    grunt.loadNpmTasks("grunt-contrib-requirejs");
     grunt.loadNpmTasks("grunt-contrib-less");
+    grunt.loadNpmTasks("grunt-contrib-uglify");
+    grunt.loadNpmTasks("grunt-contrib-watch");
+
+    grunt.loadNpmTasks("grunt-webpack");
 
     grunt.loadNpmTasks("grunt-concurrent");
+    grunt.loadNpmTasks("grunt-concat-json");
+    grunt.loadNpmTasks("grunt-merge-json");
 
-    grunt.registerTask("seqtest", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
-    grunt.registerTask("test", ["concurrent:test"]);
-    grunt.registerTask("seqcompile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs"]);
-    grunt.registerTask("compile", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "concurrent:requirejs"]);
-    grunt.registerTask("compile:en", ["clean", "copy:requirejs", "copy:html", "copy:img", "less", "requirejs:en"]);
-    grunt.registerTask("build", ["test", "compile"]);
-    grunt.registerTask("default", ["test"]);
+    grunt.registerTask("seqtest", "Runs the linter tests sequentially",
+        ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
+    );
+    grunt.registerTask("test", "Runs linter tests",
+        ["concurrent:test"]
+    );
+    grunt.registerTask("i18n", "Prepares the localization dictionaries",
+        ["clean:i18n", "concat-json", "merge-json"]
+    );
+    grunt.registerTask("compile", "Bundles Design Space in Release mode, for all locales",
+        ["test", "clean:build", "i18n", "copy:img", "copy:htmlRelease",
+         "less", "webpack:compile", "uglify", "clean:i18n"]
+    );
+    grunt.registerTask("debug", "Bundles Design Space in Debug mode, for English only",
+        ["clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]
+    );
+    grunt.registerTask("default", "Runs linter tests", ["test"]);
 };

@@ -1,5 +1,5 @@
 {
-    "start_url": "./src/index.html",
+    "start_url": "./build/index.html",
     "name": "Adobe Photoshop Design Space",
     "short_name": "Design Space"
 }

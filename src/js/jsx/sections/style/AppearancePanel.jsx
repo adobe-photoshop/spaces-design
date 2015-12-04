@@ -34,12 +34,12 @@ define(function (require, exports, module) {
     var os = require("adapter").os,
         Layer = require("js/models/layer");
 
-    var TitleHeader = require("jsx!js/jsx/shared/TitleHeader"),
-        Button = require("jsx!js/jsx/shared/Button"),
-        SVGIcon = require("jsx!js/jsx/shared/SVGIcon"),
-        VectorFill = require("jsx!./VectorFill"),
-        Type = require("jsx!./Type"),
-        VectorAppearance = require("jsx!./VectorAppearance"),
+    var TitleHeader = require("js/jsx/shared/TitleHeader"),
+        Button = require("js/jsx/shared/Button"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
+        VectorFill = require("./VectorFill"),
+        Type = require("./Type"),
+        VectorAppearance = require("./VectorAppearance"),
         nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),

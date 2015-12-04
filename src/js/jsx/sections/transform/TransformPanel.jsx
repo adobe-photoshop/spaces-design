@@ -30,12 +30,12 @@ define(function (require, exports, module) {
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
         classnames = require("classnames");
 
-    var AlignDistribute = require("jsx!./AlignDistribute"),
-        Size = require("jsx!./Size"),
-        Position = require("jsx!./Position"),
-        Rotate = require("jsx!./Rotate"),
-        Combine = require("jsx!./Combine"),
-        Flip = require("jsx!./Flip"),
+    var AlignDistribute = require("./AlignDistribute"),
+        Size = require("./Size"),
+        Position = require("./Position"),
+        Rotate = require("./Rotate"),
+        Combine = require("./Combine"),
+        Flip = require("./Flip"),
         nls = require("js/util/nls");
 
     var TransformPanel = React.createClass({
