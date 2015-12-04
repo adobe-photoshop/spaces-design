@@ -231,7 +231,8 @@ define(function (require, exports, module) {
          * @param {string} id
          */
         _setSelected: function (id) {
-            if (this.props.onChange(id) !== false) {
+            if (this._lastSelected !== id && this.props.onChange(id) !== false) {
+                this._lastSelected = id;
                 this.setState({
                     selected: id
                 });

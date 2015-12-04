@@ -403,7 +403,8 @@ define(function (require, exports, module) {
         /**
          * Perform action based on ID
          *
-         * @param {string} id
+         * @private
+         * @type {Datalist~onInputChange}
          */
         _handleChange: function (id) {
             if (id === null) {
@@ -428,6 +429,9 @@ define(function (require, exports, module) {
             if (id !== PLACEHOLDER_ID) {
                 if (_.contains(this.state.filterIDs, id)) {
                     this._updateFilter(id);
+                    
+                    // Keep the Datalist dialog option.
+                    return { dontCloseDialog: true };
                 } else {
                     this.props.executeOption(id);
                     headlights.logEvent("search", filtersString, _.kebabCase(category));
@@ -438,7 +442,8 @@ define(function (require, exports, module) {
         /**
          * Handle input change. 
          *
-         * @param {string} value
+         * @private
+         * @type {Datalist~onInputChange}
          */
         _handleInputChange: function (value) {
             var nextHasInputValue = value.length !== 0;
@@ -448,27 +453,32 @@ define(function (require, exports, module) {
             }
         },
 
-        /** @ignore */
-        _handleKeyDown: function (event) {
+        /**
+         * @private
+         * @type {Datalist~onKeyDown}
+         */
+        _handleKeyDown: function (event, selectedID) {
             switch (event.key) {
                 case "Return":
                 case "Enter":
-                case "Tab": {
-                    var id = this.refs.datalist.getSelected();
-
-                    if (id === PLACEHOLDER_ID) {
+                    if (selectedID === PLACEHOLDER_ID) {
                         this._handleDialogClick(event);
-                    } else if (_.contains(this.state.filterIDs, id)) {
-                        this._updateFilter(id);
+                    } else if (_.contains(this.state.filterIDs, selectedID)) {
+                        this._updateFilter(selectedID);
+
+                        // Keep the list open for the new filtered results
+                        return { preventListDefault: true };
                     }
                     break;
-                }
+                case "Tab":
+                    event.preventDefault();
+                    return { preventListDefault: true };
                 case "Escape":
-                    if (this.refs.datalist.getSelected() === PLACEHOLDER_ID) {
+                    if (selectedID === PLACEHOLDER_ID) {
                         headlights.logEvent("tools", "search", "failed-search");
                     }
                     this.props.dismissDialog();
-                    return;
+                    break;
                 case "Backspace": {
                     if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
                         // Clear filter and icon
@@ -527,7 +537,6 @@ define(function (require, exports, module) {
                     onClick={this._handleDialogClick}>
                    <Datalist
                         ref="datalist"
-                        live={false}
                         disabled={!this.state.ready}
                         className="dialog-search-bar"
                         options={this.state.options}
@@ -536,13 +545,11 @@ define(function (require, exports, module) {
                         placeholderOption={noMatchesOption}
                         filterIcon={this.state.icon}
                         filterOptions={this._filterSearchOptions}
-                        dontCloseDialogIDs={this.state.filterIDs}
                         useAutofill={true}
                         neverSelectAllInput={true}
                         changeOnBlur={false}
                         onChange={this._handleChange}
                         onInputChange={this._handleInputChange}
-                        onClick={this._handleDialogClick}
                         onKeyDown={this._handleKeyDown} />
                     {clearInputBtn}
                 </div>

@@ -146,7 +146,7 @@ define(function (require, exports, module) {
          * Set the type face of the selected text layers from a font's ID.
          * 
          * @private
-         * @param {string} typefaceID
+         * @type {Datalist~onHighlightedChange}
          */
         _handleTypefaceChange: function (typefaceID) {
             var typefaceIndex = mathUtil.parseNumber(typefaceID), // typefaceID is equivalent to index in typefaces
@@ -159,12 +159,12 @@ define(function (require, exports, module) {
 
             this._setPostScript(postScriptName);
         },
-        
+
         /**
-         * Handle change of type weight.
+         * Handle change of type weight. 
          *
          * @private
-         * @param {string} postScriptName
+         * @type {Datalist~onHighlightedChange}
          */
         _handleTypeWeightChange: function (postScriptName) {
             this._setPostScript(postScriptName);
@@ -651,11 +651,11 @@ define(function (require, exports, module) {
                             disabled={locked}
                             list={typefaceListID}
                             value={familyName}
-                            defaultSelected={selectedTypefaceID}
+                            selected={selectedTypefaceID}
                             placeholderText={placeholderText}
                             options={this.state.typefaces}
-                            onChange={this._handleTypefaceChange}
-                            size="column-full" />
+                            size="column-full"
+                            onHighlightedChange={this._handleTypefaceChange}/>
                     </div>
                     <div className="formline formline__space-between">
                         <div className={"control-group control-group__vertical column-4"}>
@@ -675,10 +675,10 @@ define(function (require, exports, module) {
                                 list={weightListID}
                                 disabled={locked || !styleTitle}
                                 value={styleTitle}
-                                defaultSelected={postScriptFamilyName}
+                                selected={postScriptFamilyName}
                                 options={familyFontOptions}
-                                onChange={this._handleTypeWeightChange}
-                                size="column-22" />
+                                size="column-22"
+                                onHighlightedChange={this._handleTypeWeightChange}/>
                         </div>
                     </div>
                     <div className="formline formline__space-between">

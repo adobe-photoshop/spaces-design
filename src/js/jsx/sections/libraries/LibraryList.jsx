@@ -101,8 +101,7 @@ define(function (require, exports, module) {
          * Handles the list item selection. 
          *
          * @private
-         * @param {string} itemID - either libraryID or one of _LIBRARY_COMMANDS.
-         * @return {boolean}
+         * @type {Datalist~onChange}
          */
         _handleSelectListItem: function (itemID) {
             if (_LIBRARY_COMMANDS.indexOf(itemID) === -1) {
@@ -116,9 +115,6 @@ define(function (require, exports, module) {
             if (itemID === _CREATE_LIBRARY && this.props.onCreateLibrary) {
                 this.props.onCreateLibrary(true);
             }
-
-            // Return false to cancel the current selection.
-            return false;
         },
 
         /**
@@ -347,11 +343,9 @@ define(function (require, exports, module) {
                     className="dialog-libraries"
                     options={listOptions}
                     value={selectedLibraryName}
-                    live={false}
-                    autoSelect={false}
                     onChange={this._handleSelectListItem}
                     releaseOnBlur={true}
-                    defaultSelected={selectedLibraryID}
+                    selected={selectedLibraryID}
                     disabled={this.props.disabled} />
                 <SplitButtonList className="libraries__split-button-list">
                     <SplitButtonItem
