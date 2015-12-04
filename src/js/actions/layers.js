@@ -481,6 +481,13 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
+        var storedDocument = this.flux.store("document").getDocument(document.id);
+
+        if (!storedDocument) {
+            log.debug("Ignoring this resetLayers call, the document does not exist");
+            return Promise.resolve();
+        }
+
         var docRef = documentLib.referenceBy.id(document.id),
             layersPromise;
 
@@ -542,7 +549,7 @@ define(function (require, exports) {
             .then(function (descriptors) {
                 var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
                     payload = {
-                        documentID: document.id,
+                        documentID: storedDocument.id,
                         suppressDirty: suppressDirty,
                         lazy: lazy
                     };
