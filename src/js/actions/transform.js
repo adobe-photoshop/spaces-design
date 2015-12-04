@@ -535,7 +535,7 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
-                descriptor.endTransaction(transaction);
+                return descriptor.endTransaction(transaction);
             })
             .then(function () {
                 return this.transfer(layerActions.resetIndex, document);
