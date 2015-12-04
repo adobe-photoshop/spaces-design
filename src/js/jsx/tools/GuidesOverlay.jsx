@@ -186,45 +186,50 @@ define(function (require, exports, module) {
                 canvasHeight = canvasBounds.bottom - canvasBounds.top,
                 edgeThickness = 20; // How wide/tall the guide creation edges are
 
-            // Top edge
-            this._scrimGroup
-                .append("rect")
-                .attr("x", canvasBounds.left)
-                .attr("y", canvasBounds.top)
-                .attr("width", canvasWidth)
-                .attr("height", edgeThickness)
-                .attr("orientation", "horizontal")
-                .classed("guide-edges", true);
+            if (canvasWidth > 0) {
+                // Top edge
+                this._scrimGroup
+                    .append("rect")
+                    .attr("x", canvasBounds.left)
+                    .attr("y", canvasBounds.top)
+                    .attr("width", canvasWidth)
+                    .attr("height", edgeThickness)
+                    .attr("orientation", "horizontal")
+                    .classed("guide-edges", true);
 
-            // Left edge
-            this._scrimGroup
-                .append("rect")
-                .attr("x", canvasBounds.left)
-                .attr("y", canvasBounds.top)
-                .attr("width", edgeThickness)
-                .attr("height", canvasHeight)
-                .attr("orientation", "vertical")
-                .classed("guide-edges", true);
+                // Bottom edge
+                this._scrimGroup
+                    .append("rect")
+                    .attr("x", canvasBounds.left)
+                    .attr("y", canvasBounds.bottom - edgeThickness)
+                    .attr("width", canvasWidth)
+                    .attr("height", edgeThickness)
+                    .attr("orientation", "horizontal")
+                    .classed("guide-edges", true);
+            }
 
-            // Bottom edge
-            this._scrimGroup
-                .append("rect")
-                .attr("x", canvasBounds.left)
-                .attr("y", canvasBounds.bottom - edgeThickness)
-                .attr("width", canvasWidth)
-                .attr("height", edgeThickness)
-                .attr("orientation", "horizontal")
-                .classed("guide-edges", true);
+            if (canvasHeight > 0) {
+                // Left edge
+                this._scrimGroup
+                    .append("rect")
+                    .attr("x", canvasBounds.left)
+                    .attr("y", canvasBounds.top)
+                    .attr("width", edgeThickness)
+                    .attr("height", canvasHeight)
+                    .attr("orientation", "vertical")
+                    .classed("guide-edges", true);
 
-            // Right edge
-            this._scrimGroup
-                .append("rect")
-                .attr("x", canvasBounds.right - edgeThickness)
-                .attr("y", canvasBounds.top)
-                .attr("width", edgeThickness)
-                .attr("height", canvasHeight)
-                .attr("orientation", "vertical")
-                .classed("guide-edges", true);
+        
+                // Right edge
+                this._scrimGroup
+                    .append("rect")
+                    .attr("x", canvasBounds.right - edgeThickness)
+                    .attr("y", canvasBounds.top)
+                    .attr("width", edgeThickness)
+                    .attr("height", canvasHeight)
+                    .attr("orientation", "vertical")
+                    .classed("guide-edges", true);
+            }
         },
 
         /**

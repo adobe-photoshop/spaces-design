@@ -142,16 +142,21 @@ define(function (require, exports, module) {
                 return;
             }
 
-            this._scrimGroup
-                .append("rect")
-                .attr("x", canvasBounds.left)
-                .attr("y", canvasBounds.top)
-                .attr("width", canvasBounds.right - canvasBounds.left)
-                .attr("height", canvasBounds.bottom - canvasBounds.top)
-                .style("fill-opacity", "0.0")
-                .style("stroke", "hotpink")
-                .style("stroke-width", "4px")
-                .style("stroke-opacity", "1.0");
+            var canvasWidth = canvasBounds.right - canvasBounds.left,
+                canvasHeight = canvasBounds.bottom - canvasBounds.top;
+
+            if (canvasWidth > 0 && canvasHeight > 0) {
+                this._scrimGroup
+                    .append("rect")
+                    .attr("x", canvasBounds.left)
+                    .attr("y", canvasBounds.top)
+                    .attr("width", canvasWidth)
+                    .attr("height", canvasHeight)
+                    .style("fill-opacity", "0.0")
+                    .style("stroke", "hotpink")
+                    .style("stroke-width", "4px")
+                    .style("stroke-opacity", "1.0");
+            }
         },
 
         render: function () {
