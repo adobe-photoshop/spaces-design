@@ -137,6 +137,7 @@ define(function (require, exports) {
     var shutdown = function () {
         _controller.off("error", _handleControllerError);
         _controller.stop();
+        React.unmountComponentAtNode(window.document.body);
     };
 
     /**

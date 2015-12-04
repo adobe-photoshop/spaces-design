@@ -40,6 +40,21 @@ define(function (require) {
 
     Promise.join(stylesReady, windowReady, function (stop) {
         main.startup(stop);
+        var appRunning = false;
         window.addEventListener("beforeunload", main.shutdown.bind(main));
+
+        window.onhashchange = function (info) {
+            var url = info.newURL,
+                hashIndex = url.lastIndexOf("#"),
+                hash = url.substring(hashIndex + 1, url.length);
+
+            if (appRunning && hash === "stop") {
+                main.shutdown();
+                appRunning = !appRunning;
+            } else if (!appRunning && hash === "start") {
+                main.startup(stop);
+                appRunning = !appRunning;
+            }
+        };
     });
 });
