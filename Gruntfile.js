@@ -235,12 +235,21 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-concat-json");
     grunt.loadNpmTasks("grunt-merge-json");
 
-    grunt.registerTask("seqtest", ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]);
-    grunt.registerTask("test", ["concurrent:test"]);
-    grunt.registerTask("i18n", ["clean:i18n", "concat-json", "merge-json"]);
-    grunt.registerTask("compile", ["test", "clean:build", "i18n", "copy:img",
-        "copy:htmlRelease", "less", "webpack:compile", "uglify", "clean:i18n"]
+    grunt.registerTask("seqtest", "Runs the linter tests sequentially",
+        ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
     );
-    grunt.registerTask("debug", ["clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]);
-    grunt.registerTask("default", ["test"]);
+    grunt.registerTask("test", "Runs linter tests",
+        ["concurrent:test"]
+    );
+    grunt.registerTask("i18n", "Prepares the localization dictionaries",
+        ["clean:i18n", "concat-json", "merge-json"]
+    );
+    grunt.registerTask("compile", "Bundles Design Space in Release mode, for all locales",
+        ["test", "clean:build", "i18n", "copy:img", "copy:htmlRelease",
+         "less", "webpack:compile", "uglify", "clean:i18n"]
+    );
+    grunt.registerTask("debug", "Bundles Design Space in Debug mode, for English only",
+        ["clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]
+    );
+    grunt.registerTask("default", "Runs linter tests", ["test"]);
 };
