@@ -40,9 +40,10 @@ define(function (require) {
 
     Promise.join(stylesReady, windowReady, function (stop) {
         main.startup(stop);
-        var appRunning = false;
+
         window.addEventListener("beforeunload", main.shutdown.bind(main));
 
+        var appRunning = true;
         window.onhashchange = function (info) {
             var url = info.newURL,
                 hashIndex = url.lastIndexOf("#"),

@@ -983,7 +983,7 @@ define(function (require, exports, module) {
         this._running = false;
         this._lockUI();
 
-        return this._invokeActionMethods("onShutdown");
+        return this._invokeActionMethods("onReset");
     };
 
     /**
