@@ -484,14 +484,6 @@ define(function (require, exports) {
                 
         var dispatchPromise = this.dispatchAsync(events.document.history.REPOSITION_LAYERS, payload);
 
-        // Make sure to show this action as one history state
-        var options = {
-            historyStateInfo: {
-                name: nls.localize("strings.ACTIONS.SWAP_LAYERS"),
-                target: documentRef
-            }
-        };
-
         var autoExpandEnabled = false;
 
         var hasArtboard = layers.some(function (layer) {
@@ -503,6 +495,17 @@ define(function (require, exports) {
         } else {
             headlights.logEvent("edit", "layers", "swap-non-artboard");
         }
+
+        var options = {
+                historyStateInfo: {
+                    name: nls.localize("strings.ACTIONS.SWAP_LAYERS"),
+                    target: documentRef
+                }
+            },
+            transaction = descriptor.beginTransaction(options),
+            actionOpts = {
+                transaction: transaction
+            };
 
         var swapPromise = descriptor.getProperty(documentRef, "artboards")
             .bind(this)
@@ -520,7 +523,7 @@ define(function (require, exports) {
                 }
             })
             .then(function () {
-                return layerActionsUtil.playLayerActions(document, translateActions, true, options);
+                return layerActionsUtil.playLayerActions(document, translateActions, true, actionOpts);
             })
             .then(function () {
                 if (autoExpandEnabled) {
@@ -530,6 +533,9 @@ define(function (require, exports) {
 
                     return descriptor.playObject(setObj);
                 }
+            })
+            .then(function () {
+                descriptor.endTransaction(transaction);
             })
             .then(function () {
                 return this.transfer(layerActions.resetIndex, document);
@@ -577,6 +583,7 @@ define(function (require, exports) {
                     target: documentLib.referenceBy.id(document.id)
                 }
             };
+
         // Document
         var dispatchPromise,
             sizePromise;
@@ -602,6 +609,11 @@ define(function (require, exports) {
 
             dispatchPromise = this.dispatchAsync(events.document.history.RESIZE_LAYERS, payload);
 
+            var transaction = descriptor.beginTransaction(options),
+                actionOpts = {
+                    transaction: transaction
+                };
+
             sizePromise = descriptor.getProperty(documentRef, "artboards")
                 .bind(this)
                 .then(function (artboardInfo) {
@@ -618,7 +630,7 @@ define(function (require, exports) {
                     }
                 })
                 .then(function () {
-                    return layerActionsUtil.playLayerActions(document, resizeLayerActions, true, options);
+                    return layerActionsUtil.playLayerActions(document, resizeLayerActions, true, actionOpts);
                 })
                 .then(function () {
                     if (autoExpandEnabled) {
@@ -628,6 +640,9 @@ define(function (require, exports) {
 
                         return descriptor.playObject(setObj);
                     }
+                })
+                .then(function () {
+                    return descriptor.endTransaction(transaction);
                 });
         }
 
