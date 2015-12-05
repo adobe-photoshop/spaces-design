@@ -637,7 +637,7 @@ define(function (require, exports) {
         }
         
         if (dontDeselect) {
-            return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
+            return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
         } else {
             var uiStore = this.flux.store("ui"),
                 canvasCoords = uiStore.transformWindowToCanvas(x, y),
@@ -645,7 +645,7 @@ define(function (require, exports) {
 
             if (coveredLayers.isEmpty()) {
                 // This general bounds check on JS prevents a PS call and starts marquee faster
-                return this.dispatchAsync(events.ui.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
+                return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
             } else {
                 // Hide transform controls
                 return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
@@ -675,8 +675,8 @@ define(function (require, exports) {
         }
     };
     drag.action = {
-        reads: [locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_UI],
+        reads: [locks.JS_DOC, locks.JS_UI],
+        writes: [locks.PS_DOC, locks.JS_PANEL],
         transfers: [click]
     };
 
@@ -692,7 +692,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var marqueeSelect = function (doc, runMarquee, ids, add) {
-        this.dispatch(events.ui.SUPERSELECT_MARQUEE, { enabled: false });
+        this.dispatch(events.panel.SUPERSELECT_MARQUEE, { enabled: false });
 
         if (!runMarquee || !ids) {
             return Promise.resolve();
@@ -713,7 +713,7 @@ define(function (require, exports) {
     };
     marqueeSelect.action = {
         reads: [locks.JS_DOC],
-        writes: [locks.JS_UI],
+        writes: [locks.JS_PANEL],
         transfers: [layerActions.deselectAll, layerActions.select]
     };
 

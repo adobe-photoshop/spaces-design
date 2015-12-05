@@ -345,8 +345,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var click = function (doc, x, y, secondary) {
-        var uiStore = this.flux.store("ui"),
-            docStore = this.flux.store("document"),
+        var flux = this.flux,
+            uiStore = flux.store("ui"),
+            docStore = flux.store("document"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
         
@@ -405,8 +406,9 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var showHUD = function (doc, x, y) {
-        var uiStore = this.flux.store("ui"),
-            docStore = this.flux.store("document"),
+        var flux = this.flux,
+            uiStore = flux.store("ui"),
+            docStore = flux.store("document"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
 

@@ -39,14 +39,14 @@ define(function (require, exports, module) {
         nls = require("js/util/nls");
 
     var TransformPanel = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("ui")],
+        mixins: [FluxMixin, StoreWatchMixin("panel")],
 
         getStateFromFlux: function () {
-            var uiStore = this.getFlux().store("ui"),
-                uiState = uiStore.getState();
+            var panelStore = this.getFlux().store("panel"),
+                panelState = panelStore.getState();
 
             return {
-                referencePoint: uiState.referencePoint
+                referencePoint: panelState.referencePoint
             };
         },
 

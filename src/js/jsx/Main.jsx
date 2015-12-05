@@ -53,7 +53,7 @@ define(function (require, exports, module) {
         PROPERTIES_COL = "propertiesVisible";
 
     var Main = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("preferences", "ui")],
+        mixins: [FluxMixin, StoreWatchMixin("preferences", "panel")],
 
         propTypes: {
             initialColorStop: React.PropTypes.string.isRequired
@@ -72,7 +72,7 @@ define(function (require, exports, module) {
                 propertiesCol = preferences.get(PROPERTIES_COL, true) ? 1 : 0,
                 layersCol = preferences.get(LAYERS_LIBRARY_COL, true) ? 1 : 0,
                 numPanels = propertiesCol + layersCol,
-                colorStop = flux.store("ui").getColorStop() || this.props.initialColorStop;
+                colorStop = flux.store("panel").getColorStop() || this.props.initialColorStop;
 
             return {
                 numberOfPanels: numPanels,

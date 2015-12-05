@@ -82,9 +82,9 @@ define(function (require, exports, module) {
                 preferences = preferencesStore.getState();
                 
             // Grab preferences for each UI panel
-            var uiStore = flux.store("ui");
-            _.forOwn(uiStore.components, function (uiComponent) {
-                fluxState[uiComponent] = preferences.get(uiComponent, true);
+            var panelStore = flux.store("panel");
+            _.forOwn(panelStore.components, function (panelComponent) {
+                fluxState[panelComponent] = preferences.get(panelComponent, true);
             });
       
             return fluxState;
@@ -109,12 +109,12 @@ define(function (require, exports, module) {
             var columnCount = 0;
             if (this.state.activeDocument && this.state.activeDocumentInitialized &&
                 this.state.documentIDs.size > 0 && !this.props.singleColumnModeEnabled) {
-                var uiStore = this.getFlux().store("ui");
-                if (this.state[uiStore.components.LAYERS_LIBRARY_COL]) {
+                var panelStore = this.getFlux().store("panel");
+                if (this.state[panelStore.components.LAYERS_LIBRARY_COL]) {
                     columnCount++;
                 }
 
-                if (this.state[uiStore.components.PROPERTIES_COL]) {
+                if (this.state[panelStore.components.PROPERTIES_COL]) {
                     columnCount++;
                 }
             } else {
@@ -148,8 +148,8 @@ define(function (require, exports, module) {
                 return !!state.activeDocument;
             };
 
-            var uiStore = this.getFlux().store("ui"),
-                components = uiStore.components;
+            var panelStore = this.getFlux().store("panel"),
+                components = panelStore.components;
 
             // NOTE: Special case of going from No Doc state requires update to panel sizes
             if (prevState.activeDocumentInitialized !== this.state.activeDocumentInitialized ||
@@ -180,14 +180,14 @@ define(function (require, exports, module) {
                 return false;
             }
 
-            var uiStore = this.getFlux().store("ui"),
-                uiVisibilityChanged = _.some(uiStore.components, function (uiComponent) {
-                    if (this.state[uiComponent] !== nextState[uiComponent]) {
+            var panelStore = this.getFlux().store("panel"),
+                panelVisibilityChanged = _.some(panelStore.components, function (panelComponent) {
+                    if (this.state[panelComponent] !== nextState[panelComponent]) {
                         return true;
                     }
                 }, this);
 
-            return uiVisibilityChanged ||
+            return panelVisibilityChanged ||
                 this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
                 this.state.recentFilesInitialized !== nextState.recentFilesInitialized ||
                 (nextState.documentIDs.size === 0 && !Immutable.is(this.state.recentFiles, nextState.recentFiles)) ||
@@ -197,9 +197,9 @@ define(function (require, exports, module) {
         /** @ignore */
         _handleColumnVisibilityToggle: function (columnName) {
             var flux = this.getFlux(),
-                uiStore = flux.store("ui"),
+                panelStore = flux.store("panel"),
                 modifierStore = flux.store("modifier"),
-                components = uiStore.components,
+                components = panelStore.components,
                 modifierState = modifierStore.getState(),
                 swapModifier = system.isMac ? modifierState.command : modifierState.control,
                 currentlyVisible,
@@ -261,8 +261,8 @@ define(function (require, exports, module) {
                 activeDocument = this.state.activeDocument;
 
             if (activeDocument && this.state.activeDocumentInitialized && documentIDs.size > 0) {
-                var uiStore = this.getFlux().store("ui"),
-                    components = uiStore.components,
+                var panelStore = this.getFlux().store("panel"),
+                    components = panelStore.components,
                     documentProperties = {
                         transformPanels: [],
                         appearancePanels: [],

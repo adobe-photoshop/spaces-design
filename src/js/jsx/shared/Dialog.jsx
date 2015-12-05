@@ -248,7 +248,7 @@ define(function (require, exports, module) {
                 dialogBounds = dialogEl.getBoundingClientRect();
 
                 var dialogElLeft = null,
-                    cloakingRect = this.getFlux().store("ui").getCloakRect(),
+                    cloakingRect = this.getFlux().store("panel").getCloakRect(),
                     cloakingRectWidth = cloakingRect.right - cloakingRect.left;
 
                 if (dialogBounds.width < cloakingRectWidth) {

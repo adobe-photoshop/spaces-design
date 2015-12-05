@@ -87,7 +87,7 @@ define(function (require, exports, module) {
         _handleWidthChange: function (event, newWidth) {
             var document = this.props.document,
                 flux = this.getFlux(),
-                referencePoint = flux.store("ui").getState().referencePoint;
+                referencePoint = flux.store("panel").getState().referencePoint;
 
             flux.actions.transform
                 .setSizeThrottled(document, document.layers.selected, { w: newWidth }, referencePoint);
@@ -103,7 +103,7 @@ define(function (require, exports, module) {
         _handleHeightChange: function (event, newHeight) {
             var document = this.props.document,
                 flux = this.getFlux(),
-                referencePoint = flux.store("ui").getState().referencePoint;
+                referencePoint = flux.store("panel").getState().referencePoint;
             
             this.getFlux().actions.transform
                 .setSizeThrottled(document, document.layers.selected, { h: newHeight }, referencePoint);

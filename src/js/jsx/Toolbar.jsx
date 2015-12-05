@@ -254,7 +254,9 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 newWidth = this.getToolbarWidth();
 
-            return flux.actions.ui.updateToolbarWidth(newWidth);
+            return flux.actions.ui.updatePanelSizes({
+                toolbarWidth: newWidth
+            });
         },
 
         /**

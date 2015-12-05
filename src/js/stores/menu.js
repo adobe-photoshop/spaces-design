@@ -117,7 +117,7 @@ define(function (require, exports, module) {
                 events.tool.VECTOR_MASK_MODE_CHANGE, this._updateMenuItems,
 
                 events.document.GUIDES_VISIBILITY_CHANGED, this._updateViewMenu,
-                events.ui.COLOR_STOP_CHANGED, this._updateColorStop,
+                events.panel.COLOR_STOP_CHANGED, this._updateColorStop,
                 events.preferences.SET_PREFERENCE, this._updatePreferencesBasedMenuItems
             );
 
@@ -279,8 +279,8 @@ define(function (require, exports, module) {
          * @private
          */
         _updateColorStop: function () {
-            this.waitFor(["ui"], function (uiStore) {
-                var colorStop = uiStore.getColorStop(),
+            this.waitFor(["panel"], function (panelStore) {
+                var colorStop = panelStore.getColorStop(),
                     oldMenu = this._applicationMenu;
 
                 this._applicationMenu = this._applicationMenu.updateColorThemeItems(colorStop);

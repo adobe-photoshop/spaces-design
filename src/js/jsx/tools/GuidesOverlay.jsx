@@ -38,7 +38,7 @@ define(function (require, exports, module) {
     var mathUtil = require("js/util/math");
 
     var GuidesOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("dialog", "document", "tool", "application", "ui")],
+        mixins: [FluxMixin, StoreWatchMixin("dialog", "document", "tool", "application", "panel")],
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
@@ -63,9 +63,9 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
                 toolStore = flux.store("tool"),
-                uiStore = flux.store("ui"),
+                panelStore = flux.store("panel"),
                 modalState = toolStore.getModalToolState(),
-                uiState = uiStore.getState(),
+                panelState = panelStore.getState(),
                 currentTool = toolStore.getCurrentTool(),
                 currentDocument = applicationStore.getCurrentDocument(),
                 appIsModal = flux.store("dialog").getState().appIsModal;
@@ -74,12 +74,12 @@ define(function (require, exports, module) {
                 document: currentDocument,
                 tool: currentTool,
                 modalState: modalState || appIsModal,
-                uiState: uiState
+                overlaysEnabled: panelState.overlaysEnabled
             };
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            return !_.isEqual(this.state.uiState, nextState.uiState) ||
+            return !_.isEqual(this.state.overlaysEnabled, nextState.overlaysEnabled) ||
                 !Immutable.is(this.state.document, nextState.document) ||
                 this.state.tool !== nextState.tool ||
                 this.state.modalState !== nextState.modalState;
@@ -160,7 +160,7 @@ define(function (require, exports, module) {
             svg.selectAll(".guide-edges-group").remove();
 
             if (!currentDocument || this.state.modalState ||
-                !this.state.uiState.overlaysEnabled ||
+                !this.state.overlaysEnabled ||
                 !currentDocument.guidesVisible ||
                 !currentTool || currentTool.id !== "newSelect") {
                 return null;
@@ -176,8 +176,8 @@ define(function (require, exports, module) {
          * Draws the guide edge areas
          */
         drawGuideEdges: function () {
-            var uiStore = this.getFlux().store("ui"),
-                canvasBounds = uiStore.getCloakRect();
+            var panelStore = this.getFlux().store("panel"),
+                canvasBounds = panelStore.getCloakRect();
                 
             if (!canvasBounds) {
                 return;

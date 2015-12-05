@@ -670,7 +670,7 @@ define(function (require, exports) {
         return this.transfer(ui.setOverlayOffsetsForFirstDocument)
             .bind(this)
             .then(function () {
-                this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+                this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
 
                 if (!filePath) {
                     // An "open" event will be triggered
@@ -705,7 +705,7 @@ define(function (require, exports) {
     };
     open.action = {
         reads: [],
-        writes: [locks.PS_APP, locks.JS_UI],
+        writes: [locks.PS_APP, locks.JS_PANEL],
         transfers: [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
             ui.setOverlayOffsetsForFirstDocument, menu.native, toolActions.changeVectorMaskMode],
         lockUI: true,
@@ -725,7 +725,7 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
         }
 
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+        this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
 
         var closeObj = documentLib.close(document.id),
             playOptions = {
@@ -747,7 +747,7 @@ define(function (require, exports) {
     };
     close.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [locks.JS_UI, locks.PS_APP, locks.PS_DOC],
+        writes: [locks.JS_PANEL, locks.PS_APP, locks.PS_DOC],
         transfers: [ui.cloak, disposeDocument],
         lockUI: true,
         post: [_verifyActiveDocument, _verifyOpenDocuments]
@@ -765,7 +765,7 @@ define(function (require, exports) {
             document = flux.stores.document.getDocument(documentID),
             documentRef = documentLib.referenceBy.id(documentID);
 
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+        this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
 
         return this.transfer(ui.cloak)
             .bind(this)
@@ -810,7 +810,7 @@ define(function (require, exports) {
     };
     selectDocument.action = {
         reads: [locks.JS_TOOL],
-        writes: [locks.JS_APP],
+        writes: [locks.JS_APP, locks.JS_PANEL],
         transfers: ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
             ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides,
             toolActions.changeVectorMaskMode, updateDocument],

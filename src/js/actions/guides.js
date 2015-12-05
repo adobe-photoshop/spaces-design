@@ -103,9 +103,11 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var resetGuidePolicies = function () {
-        var toolStore = this.flux.store("tool"),
-            appStore = this.flux.store("application"),
-            uiStore = this.flux.store("ui"),
+        var flux = this.flux,
+            toolStore = flux.store("tool"),
+            appStore = flux.store("application"),
+            uiStore = flux.store("ui"),
+            panelStore = flux.store("panel"),
             currentDocument = appStore.getCurrentDocument(),
             currentPolicy = _currentGuidePolicyID,
             currentTool = toolStore.getCurrentTool(),
@@ -125,7 +127,7 @@ define(function (require, exports) {
         // How thick the policy line should be while defined as an area around the guide
         var policyThickness = 2,
             guides = currentDocument.guides,
-            canvasBounds = uiStore.getCloakRect(),
+            canvasBounds = panelStore.getCloakRect(),
             topAncestors = currentDocument.layers.selectedTopAncestors,
             topAncestorIDs = collection.pluck(topAncestors, "id"),
             visibleGuides = guides.filter(function (guide) {
@@ -180,7 +182,7 @@ define(function (require, exports) {
             });
     };
     resetGuidePolicies.action = {
-        reads: [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI],
+        reads: [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI, locks.JS_PANEL],
         writes: [],
         transfers: [policy.removePointerPolicies, policy.addPointerPolicies],
         modal: true
@@ -236,8 +238,10 @@ define(function (require, exports) {
      * @return {boolean} True if guide is within the canvas bounds
      */
     var _guideWithinVisibleCanvas = function (orientation, position) {
-        var uiStore = this.flux.store("ui"),
-            cloakRect = uiStore.getCloakRect(),
+        var flux = this.flux,
+            uiStore = flux.store("ui"),
+            panelStore = flux.store("panel"),
+            cloakRect = panelStore.getCloakRect(),
             horizontal = orientation === "horizontal",
             x = horizontal ? 0 : position,
             y = horizontal ? position : 0,
@@ -331,7 +335,7 @@ define(function (require, exports) {
             });
     };
     setGuide.action = {
-        reads: [],
+        reads: [locks.JS_UI, locks.JS_PANEL],
         writes: [locks.JS_DOC],
         transfers: [resetGuidePolicies, deleteGuide]
     };
