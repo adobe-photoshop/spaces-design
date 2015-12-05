@@ -25,10 +25,11 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        PureRenderMixin = require("react-addons-pure-render-mixin"),
         classnames = require("classnames");
 
     var Button = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
+        mixins: [PureRenderMixin],
 
         /**
          * Handle a single click

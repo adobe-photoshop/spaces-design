@@ -25,7 +25,7 @@
 define(function (require, exports) {
     "use strict";
     
-    var tinycolor = require("tinycolor"),
+    var tinycolor = require("tinycolor2"),
         _ = require("lodash");
         
     var nls = require("js/util/nls"),

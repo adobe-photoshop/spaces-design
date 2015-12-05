@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -154,7 +155,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var elt = React.findDOMNode(this);
+            var elt = ReactDOM.findDOMNode(this);
             if (!elt) {
                 return;
             }
@@ -341,7 +342,7 @@ define(function (require, exports, module) {
         },
 
         componentDidUpdate: function (prevProps, prevState) {
-            var dialogEl = React.findDOMNode(this);
+            var dialogEl = ReactDOM.findDOMNode(this);
 
             if (this.state.open && !prevState.open) {
                 // Dialog opening

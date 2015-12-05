@@ -26,6 +26,7 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable"),
         React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -154,7 +155,7 @@ define(function (require, exports, module) {
 
             var currentDocument = this.state.document,
                 currentTool = this.state.tool,
-                svg = d3.select(React.findDOMNode(this));
+                svg = d3.select(ReactDOM.findDOMNode(this));
 
             svg.selectAll(".guide-edges-group").remove();
 

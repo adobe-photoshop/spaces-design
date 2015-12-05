@@ -58,7 +58,7 @@ var buildConfigs = languages.map(function (lang) {
                 // For es6 support, we need this fixed
                 {
                     test: /\.(jsx)$/,
-                    exclude: /(node_modules|bower_components)/,
+                    exclude: /(node_modules)/,
                     loader: "babel",
                     query: {
                         cacheDirectory: true,
@@ -68,7 +68,7 @@ var buildConfigs = languages.map(function (lang) {
                 // JSON files are parsed and directly loaded into the bundle
                 {
                     test: /\.json$/,
-                    exclude: /(node_modules|bower_components)/,
+                    exclude: /(node_modules)/,
                     loader: "json"
                 },
                 // SVG files get loaded to memory if they are smaller than 100 KB
@@ -77,7 +77,7 @@ var buildConfigs = languages.map(function (lang) {
                 // using require.context
                 {
                     test: /\.svg$/,
-                    exclude: /(node_modules|bower_components)/,
+                    exclude: /(node_modules)/,
                     loader: "url",
                     query: {
                         name: "[name].[ext]" // This keeps the file name intact
@@ -87,29 +87,22 @@ var buildConfigs = languages.map(function (lang) {
         },
         resolve: {
             root: [
-                path.join(__dirname, "src"),
-                // TODO: Move us to npm at some point so we don't have any bower deps
-                path.join(__dirname, "bower_components")
+                path.join(__dirname, "src")
             ],
             alias: {
                 // Until spaces-adapter is better built and points to it's main.js in it's package.json
-                "adapter": path.join(__dirname, "/bower_components/spaces-adapter/src/main.js"),
-                "scriptjs": path.join(__dirname, "/bower_components/scriptjs/dist/script.js"),
+                "adapter": path.join(__dirname, "/node_modules/spaces-adapter/src/main.js"),
+                // "scriptjs": path.join(__dirname, "/node_modules/scriptjs/dist/script.js"),
+                "generator-connection": path.join(__dirname, "/node_modules/generator-connection/main.js"),
                 // Eventually clean all this up and use "events" that node provides to webpack
                 // But that requires some code changes too (emitEvent => emit)
                 "eventEmitter": path.join(__dirname, "/node_modules/wolfy87-eventemitter/EventEmitter.js"),
-                // TODO: Look into externalizing React, or see if React 0.14 is plausible
-                "react": path.join(__dirname, "/bower_components/react/react-with-addons.js"),
                 // We alias the localization here (@/src/js/util/nls.js)
                 "nls/dictionary.json": path.join(__dirname, "/build/nls/" + lang + ".json")
             },
             extensions: ["", ".js", ".jsx", ".json", ".less"]
         },
         plugins: [
-            // This tells webpack to read bower.json file for finding dependencies
-            new webpack.ResolverPlugin(
-                new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin("bower.json", ["main"])
-            ),
             // This passes __PG_DEBUG__ variable to the bundle
             new webpack.DefinePlugin({
                 __PG_DEBUG__: devMode

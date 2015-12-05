@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
@@ -206,7 +207,7 @@ define(function (require, exports, module) {
                     this.getFlux().actions.tools.select(tool);
                     
                     // HACK: These lines are to eliminate the blink that occurs when the toolbar changes state
-                    var node = React.findDOMNode(this),
+                    var node = ReactDOM.findDOMNode(this),
                         selectedNode = node.querySelector(".tool-selected");
 
                     if (selectedNode) {
@@ -239,7 +240,7 @@ define(function (require, exports, module) {
                 return 0;
             }
 
-            var toolbarNode = React.findDOMNode(this);
+            var toolbarNode = ReactDOM.findDOMNode(this);
             return toolbarNode ? toolbarNode.getBoundingClientRect().width : 0;
         },
 

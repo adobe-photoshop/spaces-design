@@ -29,7 +29,8 @@ define(function (require) {
     "use strict";
 
     var React = require("react"),
-        TestUtils = React.addons.TestUtils,
+        ReactDOM = require("react-dom"),
+        TestUtils = require("react-addons-test-utils"),
         _ = require("lodash");
 
     var SplitButton = require("js/jsx/shared/SplitButton"),
@@ -69,7 +70,7 @@ define(function (require) {
         );
 
         // Grab the necessary DOM nodes
-        var domNode = React.findDOMNode(splitButtonListComponent),
+        var domNode = ReactDOM.findDOMNode(splitButtonListComponent),
             items = domNode.childNodes;
         
         // validate that some styles were created correctly based on list size, and disabled-ness

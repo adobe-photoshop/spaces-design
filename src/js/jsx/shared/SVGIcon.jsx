@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var React = require("react"),
+        ReactDOM = require("react-dom");
 
     var SVGIcon = React.createClass({
 
@@ -62,7 +63,7 @@ define(function (require, exports, module) {
         },
         
         componentDidMount: function () {
-            var component = React.findDOMNode(this),
+            var component = ReactDOM.findDOMNode(this),
                 useNode = window.document.createElementNS("http://www.w3.org/2000/svg", "use");
 
             this._setLinkAttribute(useNode);
@@ -71,7 +72,7 @@ define(function (require, exports, module) {
         },
         
         componentDidUpdate: function () {
-            var useNode = React.findDOMNode(this).querySelector("use");
+            var useNode = ReactDOM.findDOMNode(this).querySelector("use");
 
             this._setLinkAttribute(useNode);
         },

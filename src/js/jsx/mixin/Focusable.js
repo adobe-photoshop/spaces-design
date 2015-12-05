@@ -24,7 +24,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var React = require("react");
+    var ReactDOM = require("react-dom");
 
     var OS = require("adapter").os;
 
@@ -51,10 +51,10 @@ define(function (require, exports, module) {
                 });
         },
         componentDidMount: function () {
-            React.findDOMNode(this).addEventListener("mousedown", this.acquireFocus);
+            ReactDOM.findDOMNode(this).addEventListener("mousedown", this.acquireFocus);
         },
         componentWillUnmount: function () {
-            React.findDOMNode(this).removeEventListener("mousedown", this.acquireFocus);
+            ReactDOM.findDOMNode(this).removeEventListener("mousedown", this.acquireFocus);
         }
     };
 });

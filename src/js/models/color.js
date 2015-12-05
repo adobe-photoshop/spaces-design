@@ -26,7 +26,7 @@ define(function (require, exports, module) {
 
     var Immutable = require("immutable"),
         mathjs = require("mathjs"),
-        tinycolor = require("tinycolor");
+        tinycolor = require("tinycolor2");
 
     var objUtil = require("js/util/object"),
         mathUtil = require("js/util/math");

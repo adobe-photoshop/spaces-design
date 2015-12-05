@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
@@ -92,7 +93,7 @@ define(function (require, exports, module) {
         componentWillReceiveProps: function (nextProps) {
             var rawValue = this._formatValue(nextProps.value);
 
-            var node = React.findDOMNode(this.refs.input),
+            var node = ReactDOM.findDOMNode(this.refs.input),
                 select = window.document.activeElement === node &&
                     node.selectionStart === 0 &&
                     node.selectionEnd === node.value.length;
@@ -113,7 +114,7 @@ define(function (require, exports, module) {
         componentDidUpdate: function () {
             if (this.state.select) {
                 // If the component updated and there is selection state, restore it
-                var node = React.findDOMNode(this.refs.input);
+                var node = ReactDOM.findDOMNode(this.refs.input);
                 if (window.document.activeElement === node) {
                     node.setSelectionRange(0, node.value.length);
                 }
@@ -206,7 +207,7 @@ define(function (require, exports, module) {
          */
         _releaseFocus: function () {
             this.releaseFocus();
-            React.findDOMNode(this.refs.input).blur();
+            ReactDOM.findDOMNode(this.refs.input).blur();
         },
 
         /**
@@ -346,7 +347,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleFocus: function (event) {
-            var node = React.findDOMNode(this.refs.input);
+            var node = ReactDOM.findDOMNode(this.refs.input);
 
             node.selectionStart = 0;
             node.selectionEnd = event.target.value.length;
@@ -386,7 +387,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleMouseDown: function () {
-            if (window.document.activeElement !== React.findDOMNode(this)) {
+            if (window.document.activeElement !== ReactDOM.findDOMNode(this)) {
                 this._suppressMouseUp = true;
             }
         },

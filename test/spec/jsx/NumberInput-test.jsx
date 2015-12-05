@@ -27,7 +27,8 @@ define(function (require) {
     "use strict";
 
     var React = require("react"),
-        TestUtils = React.addons.TestUtils;
+        ReactDOM = require("react-dom"),
+        TestUtils = require("react-addons-test-utils");
 
     var NumberInput = require("js/jsx/shared/NumberInput");
 
@@ -55,7 +56,7 @@ define(function (require) {
         );
 
         // Events are simulated on the underlying DOM node
-        var numberInputDOMNode = React.findDOMNode(numberInput);
+        var numberInputDOMNode = ReactDOM.findDOMNode(numberInput);
 
         // Simulate a change event by giving the DOM node a new raw value that
         // corresponds to a true value

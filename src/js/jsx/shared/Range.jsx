@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Immutable = require("immutable");
 
     var collection = require("js/util/collection"),
@@ -61,7 +62,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleMouseUp: function (event) {
-            React.findDOMNode(this.refs.range).blur();
+            ReactDOM.findDOMNode(this.refs.range).blur();
 
             if (this.props.onMouseUp) {
                 this.props.onMouseUp(event);
@@ -100,7 +101,7 @@ define(function (require, exports, module) {
             // and reattach it. Simulated clicks don't seem to work, so we opt
             // for latter here.
             if (this.props.max !== prevProps.max) {
-                var rangeEl = React.findDOMNode(this.refs.range),
+                var rangeEl = ReactDOM.findDOMNode(this.refs.range),
                     siblingEl = rangeEl.nextSibling,
                     parentEl = rangeEl.parentNode;
 

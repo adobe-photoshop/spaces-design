@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Immutable = require("immutable"),
         classnames = require("classnames"),
         _ = require("lodash");
@@ -475,8 +476,8 @@ define(function (require, exports, module) {
          */
         _updateAutofillPosition: function () {
             // Base position and width off of hidden element width
-            var hiddenInput = React.findDOMNode(this.refs.hiddenTextInput),
-                textInput = React.findDOMNode(this.refs.textInput);
+            var hiddenInput = ReactDOM.findDOMNode(this.refs.hiddenTextInput),
+                textInput = ReactDOM.findDOMNode(this.refs.textInput);
             if (hiddenInput) {
                 // Find width for hidden text input
                 var hiddenElRect = hiddenInput.getBoundingClientRect(),
@@ -489,7 +490,7 @@ define(function (require, exports, module) {
                     var suggestionWidth = textInput.getBoundingClientRect().width - hiddenElRect.width;
 
                     if (this.refs.autocomplete) {
-                        var style = React.findDOMNode(this.refs.autocomplete).style;
+                        var style = ReactDOM.findDOMNode(this.refs.autocomplete).style;
                         if (suggestionWidth > 0) {
                             style.left = hiddenWidth + "px";
                             style.width = suggestionWidth + "px";

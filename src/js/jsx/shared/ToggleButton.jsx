@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        PureRenderMixin = require("react-addons-pure-render-mixin"),
         Immutable = require("immutable"),
         classnames = require("classnames");
 
@@ -45,7 +46,7 @@ define(function (require, exports, module) {
     };
 
     var ToggleButton = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
+        mixins: [PureRenderMixin],
 
         propTypes: {
             selected: React.PropTypes.oneOfType([

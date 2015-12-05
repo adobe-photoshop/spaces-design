@@ -25,11 +25,12 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        PureRenderMixin = require("react-addons-pure-render-mixin"),
         nls = require("js/util/nls"),
         classnames = require("classnames");
 
     var TitleHeader = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
+        mixins: [PureRenderMixin],
         propTypes: {
             title: React.PropTypes.string.isRequired,
             visible: React.PropTypes.bool,

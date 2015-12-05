@@ -152,27 +152,8 @@
         "checkRedundantReturns": true,
         "requireReturnTypes": true,
         "enforceExistence": {
-            "allExcept": ["exports"]
-        },
-        "enforceExistenceExcept": [
-            "get",
-            "setup",
-            "value",
-            "beforeStartup",
-            "initialize",
-            "render",
-            "getState",
-            "getInitialState",
-            "getDefaultProps",
-            "getStateFromFlux",
-            "componentWillReceiveProps",
-            "componentWillMount",
-            "componentWillUnmount",
-            "componentDidMount",
-            "shouldComponentUpdate",
-            "componentWillUpdate",
-            "componentDidUpdate"
-        ]
+            "allExcept": ["exports", "expressions"]
+        }
     },
     "validateLineBreaks": "LF",
     "validateParameterSeparator": ", ",

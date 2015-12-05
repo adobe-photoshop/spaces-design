@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        PureRenderMixin = require("react-addons-pure-render-mixin"),
         classnames = require("classnames");
 
     var SVGIcon = require("js/jsx/shared/SVGIcon");
@@ -33,7 +34,7 @@ define(function (require, exports, module) {
      * A Component which represents an individual button within a SplitButtonList
      */
     var SplitButtonItem = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
+        mixins: [PureRenderMixin],
 
         propTypes: {
             id: React.PropTypes.string,
@@ -72,7 +73,7 @@ define(function (require, exports, module) {
      * A Component which wraps a list of SplitButtonItems
      */
     var SplitButtonList = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
+        mixins: [PureRenderMixin],
 
         render: function () {
             var buttonWrapperClasses;

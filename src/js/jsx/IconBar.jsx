@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames");
@@ -52,7 +53,7 @@ define(function (require, exports, module) {
             if (unmounting) {
                 iconBarWidth = 0;
             } else {
-                var node = React.findDOMNode(this);
+                var node = ReactDOM.findDOMNode(this);
                 if (node) {
                     iconBarWidth = node.getBoundingClientRect().width;
                 } else {

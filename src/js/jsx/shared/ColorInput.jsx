@@ -25,11 +25,12 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
         classnames = require("classnames"),
-        tinycolor = require("tinycolor"),
+        tinycolor = require("tinycolor2"),
         _ = require("lodash");
 
     var os = require("adapter").os;
@@ -92,7 +93,7 @@ define(function (require, exports, module) {
                     this.releaseFocus()
                         .bind(this)
                         .then(function () {
-                            React.findDOMNode(this).blur();
+                            ReactDOM.findDOMNode(this).blur();
                         });
                     break;
             }
@@ -129,7 +130,7 @@ define(function (require, exports, module) {
             this.acquireFocus()
                 .bind(this)
                 .then(function () {
-                    React.findDOMNode(this).focus();
+                    ReactDOM.findDOMNode(this).focus();
                 });
         }
     });

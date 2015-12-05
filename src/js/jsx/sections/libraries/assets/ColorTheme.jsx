@@ -27,7 +27,7 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        tinycolor = require("tinycolor"),
+        tinycolor = require("tinycolor2"),
         _ = require("lodash");
 
     var ColorModel = require("js/models/color"),

@@ -25,10 +25,11 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        PureRenderMixin = require("react-addons-pure-render-mixin"),
         classnames = require("classnames");
 
     var Gutter = React.createClass({
-        mixins: [React.addons.PureRenderMixin],
+        mixins: [PureRenderMixin],
 
         render: function () {
             var size = this.props.size || "column-1",

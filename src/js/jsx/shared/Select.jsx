@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Immutable = require("immutable"),
         classnames = require("classnames");
 
@@ -553,7 +554,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var selectedEl = React.findDOMNode(selectedComponent),
+            var selectedEl = ReactDOM.findDOMNode(selectedComponent),
                 selectedRect = selectedEl.getBoundingClientRect(),
                 selectedTop = selectedRect.top,
                 selectedBottom = selectedRect.bottom;
@@ -595,7 +596,7 @@ define(function (require, exports, module) {
             // offsetTop - (parent.offsetHeight / 2) is the distance to the top
             // of the selected element; add offsetHeight/2 to reach the middle
             // of the selected element.
-            var selectedEl = React.findDOMNode(selectedComponent);
+            var selectedEl = ReactDOM.findDOMNode(selectedComponent);
             selectedEl.offsetParent.scrollTop =
                 selectedEl.offsetTop -
                 (selectedEl.offsetParent.offsetHeight / 2) +
