@@ -123,7 +123,7 @@ define(function (require, exports) {
             });
 
         var renderPromise = new Promise(function (resolve) {
-            ReactDOM.render(new Main(props), window.document.querySelector(".main"), function () {
+            ReactDOM.render(new Main(props), window.document.querySelector(".app"), function () {
                 log.debug("Main component mounted: %dms", Date.now() - startTime);
                 resolve();
             });
