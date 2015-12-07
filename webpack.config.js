@@ -50,7 +50,6 @@ var buildConfigs = languages.map(function (lang) {
             path: "./build/",
             filename: "spaces-design-" + lang + ".js"
         },
-        bail: true, // Abort after first error
         module: {
             loaders: [
                 // Transpiling React code to js
