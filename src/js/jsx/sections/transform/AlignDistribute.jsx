@@ -50,15 +50,8 @@ define(function (require, exports, module) {
         componentWillReceiveProps: function (nextProps) {
             var document = nextProps.document,
                 layers = document.layers.selected,
-                alignDisabled = layers.size < 2,
-                distributeDisabled = layers.size < 3;
-
-            if (!alignDisabled || !distributeDisabled) {
-                var disabled = this._disabled(document, layers);
-
-                alignDisabled = alignDisabled || disabled;
-                distributeDisabled = distributeDisabled || disabled;
-            }
+                alignDisabled = this._alignDisabled(document, layers),
+                distributeDisabled = this._distributeDisabled(document, layers);
 
             if (this.state.alignDisabled !== alignDisabled ||
                 this.state.distributeDisabled !== distributeDisabled) {
@@ -171,7 +164,37 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Determine if Align/Distribute operations should be disabled for a given set of layers.
+         * Determine if Align operations should be disabled for a given set of layers.
+         * TRUE If layers is empty
+         * or if either a background or adjustment layer is included
+         * (note that adjustment layers are kind of OK, but seem to have subtle issues with bounds afterwards)
+         * or if any layers have ancestors which are also selected that are not artboards
+         * or if ALL layers are empty groups
+         *
+         * @private
+         * @param {Document} document
+         * @param {Immutable.List.<Layer>} layers
+         * @return {boolean}
+         */
+        _alignDisabled: function (document, layers) {
+            return document.unsupported ||
+                layers.size < 2 ||
+                layers.some(function (layer) {
+                    var ancestors = document.layers.strictAncestors(layer);
+
+                    return layer.isBackground ||
+                        layer.isAdjustment ||
+                        ancestors.some(function (ancestor) {
+                            return ancestor.selected && !ancestor.isArtboard;
+                        });
+                }) ||
+                layers.every(function (layer) {
+                    return document.layers.isEmptyGroup(layer);
+                });
+        },
+
+        /**
+         * Determine if distribute operations should be disabled for a given set of layers.
          * TRUE If layers is empty
          * or if either a background or adjustment layer is included
          * (note that adjustment layers are kind of OK, but seem to have subtle issues with bounds afterwards)
@@ -183,9 +206,9 @@ define(function (require, exports, module) {
          * @param {Immutable.List.<Layer>} layers
          * @return {boolean}
          */
-        _disabled: function (document, layers) {
+        _distributeDisabled: function (document, layers) {
             return document.unsupported ||
-                layers.isEmpty() ||
+                layers.size < 3 ||
                 layers.some(function (layer) {
                     return layer.isBackground ||
                         layer.isAdjustment ||

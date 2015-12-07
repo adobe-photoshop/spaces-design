@@ -282,41 +282,41 @@
             "$enable-rule": "layer-selected"
         },
         "DISTRIBUTE": {
-            "$enable-rule": "layers-selected-3+,no-background,no-nesting",
+            "$enable-rule": "layers-selected-normalized-3+,no-background,no-nesting",
             "DISTRIBUTE_HORIZONTAL": {
                 "$action": "transform.distributeX",
-                "$enable-rule": "layers-selected-3+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-normalized-3+,no-background,no-nesting"
             },
             "DISTRIBUTE_VERTICAL": {
                 "$action": "transform.distributeY",
-                "$enable-rule": "layers-selected-3+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-normalized-3+,no-background,no-nesting"
             }
         },
         "ALIGN": {
-            "$enable-rule": "layers-selected-2+,no-background,no-nesting",
+            "$enable-rule": "layers-selected-2+,no-background,no-nesting-except-artboards",
             "ALIGN_LEFT": {
                 "$action": "transform.alignLeft",
-                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting-except-artboards"
             },
             "ALIGN_CENTER": {
                 "$action": "transform.alignHCenter",
-                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting-except-artboards"
             },
             "ALIGN_RIGHT": {
                 "$action": "transform.alignRight",
-                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting-except-artboards"
             },
             "ALIGN_TOP": {
                 "$action": "transform.alignTop",
-                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting-except-artboards"
             },
             "ALIGN_MIDDLE": {
                 "$action": "transform.alignVCenter",
-                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting-except-artboards"
             },
             "ALIGN_BOTTOM": {
                 "$action": "transform.alignBottom",
-                "$enable-rule": "layers-selected-2+,no-background,no-nesting"
+                "$enable-rule": "layers-selected-2+,no-background,no-nesting-except-artboards"
             }
         },
         "BRING_TO_FRONT": {

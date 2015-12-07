@@ -520,6 +520,26 @@ define(function (require, exports, module) {
             }, this);
         },
 
+        "selectedHasNesting": function () {
+            var selectedSet = this.selected.toSet();
+
+            return this.selected.some(function (layer) {
+                return this.strictAncestors(layer).some(function (ancestor) {
+                    return selectedSet.contains(ancestor);
+                });
+            }, this);
+        },
+
+        "selectedHasNestingExceptArtboards": function () {
+            var selectedSet = this.selected.toSet();
+
+            return this.selected.some(function (layer) {
+                return this.strictAncestors(layer).some(function (ancestor) {
+                    return !ancestor.isArtboard && selectedSet.contains(ancestor);
+                });
+            }, this);
+        },
+
         /**
          * Determine if selected layers are "locked"
          * Currently true for any of the following:
