@@ -219,7 +219,6 @@ define(function (require, exports, module) {
                     .attr("height", canvasHeight)
                     .attr("orientation", "vertical")
                     .classed("guide-edges", true);
-
         
                 // Right edge
                 this._scrimGroup
