@@ -238,7 +238,7 @@ define(function (require, exports, module) {
          * Renders the current tool overlay if there is one
          * @private
          */
-        _renderToolOverlay: function () {
+        _renderToolOverlays: function () {
             var document = this.state.document,
                 disabled = document && document.unsupported,
                 overlays = !disabled && this.state.overlaysEnabled,
@@ -257,9 +257,10 @@ define(function (require, exports, module) {
             
             var toolOverlays = tool.toolOverlays;
 
-            return toolOverlays.map(function (ToolOverlay) {
+            return toolOverlays.map(function (ToolOverlay, index) {
+                var key = "toolOverlay" + index.toString();
                 return (
-                    <ToolOverlay transformString={transformString}/>
+                    <ToolOverlay transformString={transformString} key={key} />
                 );
             });
         },
@@ -321,7 +322,7 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.state.document,
                 disabled = this.state.appIsModal || document && document.unsupported,
-                toolOverlay = this._renderToolOverlay(),
+                toolOverlay = this._renderToolOverlays(),
                 policyOverlay = this.state.policyFrames ? (<PolicyOverlay/>) : null,
                 guidesOverlay = !disabled ? (<GuidesOverlay/>) : null;
 

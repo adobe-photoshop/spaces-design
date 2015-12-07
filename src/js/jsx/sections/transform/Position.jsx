@@ -130,7 +130,6 @@ define(function (require, exports, module) {
                         x: (uiStore.zoomCanvasToWindow(newX * resolution) / resolution) + this._xScrubbyValue,
                         relative: true
                     };
-
                     
                 this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected,
                     positionObj, this.props.referencePoint);
