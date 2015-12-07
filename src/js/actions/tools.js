@@ -416,11 +416,13 @@ define(function (require, exports) {
      * @return {Promise} Resolves to tool change
      */
     var selectTool = function (nextTool) {
-        var toolStore = this.flux.store("tool");
+        var toolStore = this.flux.store("tool"),
+            currentTool = toolStore.getCurrentTool();
 
         // Remove the border policy if it's been set at some point
+        // But not if we're resetting the same tool
         var removeTransformPolicyPromise;
-        if (_currentTransformPolicyID) {
+        if (_currentTransformPolicyID && currentTool !== nextTool) {
             var policyID = _currentTransformPolicyID;
             _currentTransformPolicyID = null;
             removeTransformPolicyPromise = this.transfer(policy.removePointerPolicies, policyID, true);
@@ -428,8 +430,7 @@ define(function (require, exports) {
             removeTransformPolicyPromise = Promise.resolve();
         }
 
-        var currentTool = toolStore.getCurrentTool(),
-            deselectHandlerPromise;
+        var deselectHandlerPromise;
 
         if (currentTool && currentTool.deselectHandler) {
             // Calls the deselect handler of last tool
@@ -854,7 +855,9 @@ define(function (require, exports) {
         var flux = this.flux,
             appStore = flux.store("application"),
             uiStore = this.flux.store("ui"),
+            toolStore = this.flux.store("tool"),
             documentLayerBounds,
+            activeTool,
             uiTransformMatrix;
 
         var throttledResetBorderPolicies =
@@ -868,12 +871,15 @@ define(function (require, exports) {
 
                 if (currentDocument) {
                     var nextDocumentLayerBounds = currentDocument.layers.selectedChildBounds,
-                        newxUiTransformMatrix = uiStore.getCurrentTransformMatrix();
+                        newxUiTransformMatrix = uiStore.getCurrentTransformMatrix(),
+                        newTool = toolStore.getCurrentTool();
                     
                     if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds) ||
-                        !_.isEqual(uiTransformMatrix, newxUiTransformMatrix)) {
+                            !_.isEqual(uiTransformMatrix, newxUiTransformMatrix) ||
+                            activeTool !== newTool) {
                         documentLayerBounds = nextDocumentLayerBounds;
                         uiTransformMatrix = newxUiTransformMatrix;
+                        activeTool = newTool;
                         throttledResetBorderPolicies();
                     }
                 } else {
