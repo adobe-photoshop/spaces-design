@@ -32,6 +32,7 @@ define(function (require, exports, module) {
         edit: require("./edit"),
         example: require("./example"),
         export: require("./export"),
+        groups: require("./groups"),
         guides: require("./guides"),
         help: require("./help"),
         history: require("./history"),

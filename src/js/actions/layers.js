@@ -29,18 +29,15 @@ define(function (require, exports) {
         _ = require("lodash");
         
     var photoshopEvent = require("adapter").lib.photoshopEvent,
-        artboardLib = require("adapter").lib.artboard,
         descriptor = require("adapter").ps.descriptor,
         documentLib = require("adapter").lib.document,
         layerLib = require("adapter").lib.layer,
-        vectorMaskLib = require("adapter").lib.vectorMask,
         OS = require("adapter").os;
 
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
         documentActions = require("./documents"),
         historyActions = require("./history"),
-        exportActions = require("./export"),
         log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
@@ -51,12 +48,7 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         headlights = require("js/util/headlights"),
         nls = require("js/util/nls"),
-        global = require("js/util/global"),
-        Bounds = require("js/models/bounds");
-
-    var templates = require("static/templates.json");
-
-    var PS_MAX_NEST_DEPTH = 9;
+        global = require("js/util/global");
 
     /**
      * Properties to be included when requesting layer
@@ -819,119 +811,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Expand or collapse the given group layers in the layers panel.
-     *
-     * @param {Document} document
-     * @param {Layer|Immutable.Iterable.<Layer>} layers
-     * @param {boolean} expand - If true, expand the groups. Otherwise, collapse them.
-     * @param {boolean=} recursive - Whether to expand/collapse all descendants groups of the given layers.
-     * @return {Promise}
-     */
-    var setGroupExpansion = function (document, layers, expand, recursive) {
-        if (layers instanceof Layer) {
-            layers = Immutable.List.of(layers);
-        }
-
-        layers = layers
-            .filter(function (layer) {
-                return layer.isGroup;
-            });
-
-        if (layers.isEmpty()) {
-            return Promise.resolve();
-        }
-
-        var targetLayers = layers;
-
-        if (recursive) {
-            layers = layers.flatMap(document.layers.descendants, document.layers);
-        }
-
-        // When collapsing layers, if a visible descendent is selected then the selection
-        // is removed and moved up to the collapsing group.
-        var layersToSelect = [],
-            layersToDeselect = [],
-            playObjects = [];
-
-        if (!expand) {
-            layers.forEach(function (parent) {
-                var selectedDescendants = document.layers.strictDescendants(parent)
-                    .filter(function (child) {
-                        return child.selected && !document.layers.hasCollapsedAncestor(child);
-                    });
-
-                // If there are any selected hidden descendants, deselect the
-                // children and select the parent if necessary.
-                if (!selectedDescendants.isEmpty()) {
-                    layersToDeselect = layersToDeselect.concat(selectedDescendants.toArray());
-                    if (!parent.selected) {
-                        layersToSelect.push(parent);
-                    }
-                }
-            });
-
-            if (layersToSelect.length > 0) {
-                var selectRef = layersToSelect
-                    .map(function (layer) {
-                        return layerLib.referenceBy.id(layer.id);
-                    });
-
-                selectRef.unshift(documentLib.referenceBy.id(document.id));
-
-                var selectObj = layerLib.select(selectRef, false);
-                playObjects.push(selectObj);
-            }
-
-            if (layersToDeselect.length > 0) {
-                var deselectRef = layersToDeselect
-                    .map(function (layer) {
-                        return layerLib.referenceBy.id(layer.id);
-                    });
-
-                deselectRef.unshift(documentLib.referenceBy.id(document.id));
-
-                var deselectObj = layerLib.select(deselectRef, false, "deselect");
-                playObjects.push(deselectObj);
-            }
-        }
-
-        var documentRef = documentLib.referenceBy.id(document.id),
-            layerRefs = targetLayers
-                .map(function (layer) {
-                    return layerLib.referenceBy.id(layer.id);
-                })
-                .unshift(documentRef)
-                .toArray();
-
-        var expandPlayObject = layerLib.setGroupExpansion(layerRefs, !!expand, recursive);
-
-        playObjects.push(expandPlayObject);
-
-        var expansionPromise = descriptor.batchPlayObjects(playObjects),
-            dispatchPromise = this.dispatchAsync(events.document.SET_GROUP_EXPANSION, {
-                documentID: document.id,
-                layerIDs: collection.pluck(layers, "id"),
-                selected: collection.pluck(layersToSelect, "id"),
-                deselected: collection.pluck(layersToDeselect, "id"),
-                expanded: expand
-            });
-
-        return Promise.join(expansionPromise, dispatchPromise, function () {
-            if (layersToSelect.length > 0) {
-                var nextDocument = this.flux.store("document").getDocument(document.id),
-                    nextSelected = nextDocument.layers.selected;
-
-                return this.transfer(initializeLayers, nextDocument, nextSelected);
-            }
-        }.bind(this));
-    };
-    setGroupExpansion.action = {
-        reads: [],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [initializeLayers]
-    };
-
-    /**
      * Reveal the given layers in the layers panel by ensuring their ancestors
      * are expanded.
      *
@@ -956,12 +835,12 @@ define(function (require, exports) {
         }, new Set(), this),
         collapsedAncestors = Immutable.Set(collapsedAncestorSet).toList();
 
-        return this.transfer(setGroupExpansion, document, collapsedAncestors, true);
+        return this.transfer("groups.setGroupExpansion", document, collapsedAncestors, true);
     };
     revealLayers.action = {
         reads: [locks.JS_DOC],
         writes: [],
-        transfers: [setGroupExpansion]
+        transfers: ["groups.setGroupExpansion"]
     };
 
     /**
@@ -1295,249 +1174,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Groups the currently active layers
-     * 
-     * @param {Document} document 
-     * @return {Promise}
-     */
-    var groupSelected = function (document) {
-        var selectedLayers = document.layers.selected;
-
-        // plugin hangs on call with no selection, so for now, we avoid calling it
-        if (selectedLayers.size === 0) {
-            return Promise.resolve();
-        }
-
-        var artboardSelected = selectedLayers.some(function (layer) {
-            return layer.isArtboard;
-        });
-        if (artboardSelected) {
-            return Promise.resolve();
-        }
-
-        // FIXME: This should just unlock the background layer before proceeding
-        if (document.layers.backgroundSelected) {
-            return Promise.resolve();
-        }
-
-        // Don't let group deeper than 10 levels
-        var nestingLimitExceeded = selectedLayers.some(function (layer) {
-            return document.layers.maxDescendantDepth(layer) > PS_MAX_NEST_DEPTH;
-        });
-
-        if (nestingLimitExceeded) {
-            return Promise.resolve();
-        }
-
-        return descriptor.playObject(layerLib.groupSelected())
-            .bind(this)
-            .then(function (groupResult) {
-                var payload = {
-                    documentID: document.id,
-                    groupID: groupResult.layerSectionStart,
-                    groupEndID: groupResult.layerSectionEnd,
-                    groupname: groupResult.name,
-                    history: {
-                        newState: true,
-                        name: nls.localize("strings.ACTIONS.GROUP_LAYERS")
-                    }
-                };
-
-                this.dispatch(events.document.history.GROUP_SELECTED, payload);
-            });
-    };
-    groupSelected.action = {
-        reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    /**
-     * Groups the selected layers in the currently active document
-     * 
-     * @return {Promise}
-     */
-    var groupSelectedInCurrentDocument = function () {
-        var flux = this.flux,
-            applicationStore = flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
-
-        if (!currentDocument) {
-            return Promise.resolve();
-        }
-
-        return this.transfer(groupSelected, currentDocument);
-    };
-    groupSelectedInCurrentDocument.action = {
-        reads: [locks.JS_APP],
-        writes: [],
-        transfers: [groupSelected]
-    };
-
-    /**
-     * Ungroups the selected layers in the current document. If only groups are selected,
-     * all of their immediate children are moved out and the groups are deleted. Otherwise,
-     * if a grouped layer is selected, it is moved out of its parent group, but the parent
-     * group is not deleted.
-     *
-     * @private
-     * @param {Document=} document The model of the currently active document
-     * @return {Promise}
-     */
-    var ungroupSelected = function (document) {
-        if (!document) {
-            var applicationStore = this.flux.store("application");
-            document = applicationStore.getCurrentDocument();
-        }
-
-        if (!document) {
-            return Promise.resolve();
-        }
-
-        var documentRef = documentLib.referenceBy.id(document.id),
-            layers = document.layers.selectedNormalized,
-            hasLeaf = layers.some(function (layer) {
-                switch (layer.kind) {
-                case Layer.KINDS.GROUP:
-                case Layer.KINDS.GROUPEND:
-                    return false;
-                default:
-                    return true;
-                }
-            });
-
-        // Traverse layers from the top of the z-index to the bottom so that
-        // reordering higher layers doesn't affect the z-index of lower layers
-        var playObjRec = layers.reverse().reduce(function (playObjRec, layer) {
-            var parent = document.layers.parent(layer),
-                group = layer.isGroup,
-                childLayerRef,
-                layerTargetRef,
-                targetIndex,
-                reorderObj;
-
-            if (group && !hasLeaf) {
-                // Move all the children out and then delete the parent group.
-                playObjRec.groups.push(layer);
-
-                var children = document.layers.children(layer);
-                if (children.size > 1) { // group is non-empty
-                    childLayerRef = children
-                        .toSeq()
-                        .butLast() // omit the groupend
-                        .map(function (layer) {
-                            return layerLib.referenceBy.id(layer.id);
-                        })
-                        .toList()
-                        .unshift(documentRef)
-                        .toArray();
-
-                    targetIndex = document.layers.indexOf(layer);
-                    layerTargetRef = layerLib.referenceBy.index(targetIndex);
-                    reorderObj = layerLib.reorder(childLayerRef, layerTargetRef);
-                    playObjRec.reorderObjects.push(reorderObj);
-                }
-
-                var deleteTargetRef = layerLib.referenceBy.id(layer.id),
-                    deleteObj = layerLib.delete(deleteTargetRef);
-
-                playObjRec.deleted.add(layer);
-                playObjRec.deleteObjects.push(deleteObj);
-            } else if (parent) {
-                // Move this layer out but leave parent group.
-                childLayerRef = [
-                    documentRef,
-                    layerLib.referenceBy.id(layer.id)
-                ];
-
-                targetIndex = document.layers.indexOf(parent);
-                layerTargetRef = layerLib.referenceBy.index(targetIndex);
-                reorderObj = layerLib.reorder(childLayerRef, layerTargetRef);
-
-                playObjRec.reorderObjects.push(reorderObj);
-            }
-
-            return playObjRec;
-        }, { reorderObjects: [], deleteObjects: [], deleted: new Set(), groups: [] });
-
-        var playObjects = playObjRec.reorderObjects
-                .reverse() // preserves current order when layers are moved to same index
-                .concat(playObjRec.deleteObjects),
-            options = {
-                historyStateInfo: {
-                    name: nls.localize("strings.ACTIONS.UNGROUP_LAYERS"),
-                    target: documentLib.referenceBy.id(document.id)
-                }
-            };
-
-        var deletedDescendants = Immutable.List(playObjRec.deleted)
-            .flatMap(function (group) {
-                return document.layers.strictDescendants(group);
-            })
-            .filterNot(function (layer) {
-                return layer.isGroupEnd;
-            });
-
-        // Restore and augment selection after ungrouping
-        var nextSelected = document.layers.selected
-            .toSeq()
-            .filterNot(playObjRec.deleted.has, playObjRec.deleted)
-            .concat(deletedDescendants)
-            .toSet();
-
-        var selectionNeedsReset = false;
-
-        if (nextSelected.size > 0) {
-            var selectRef = nextSelected
-                .map(function (layer) {
-                    return layerLib.referenceBy.id(layer.id);
-                })
-                .toArray();
-
-            selectRef.unshift(documentLib.referenceBy.id(document.id));
-
-            var selectObj = layerLib.select(selectRef, false, "select");
-            playObjects.push(selectObj);
-        } else {
-            selectionNeedsReset = true;
-            // TODO: Add smart selection reset here, after we figure out
-            // what Photoshop does, and remove the last link of the return chain below
-        }
-
-        var lockList = Immutable.List(playObjRec.groups);
-        return locking.playWithLockOverride(document, lockList, playObjects, options, true)
-            .bind(this)
-            .then(function () {
-                return this.transfer(getLayerIDsForDocumentID, document.id);
-            })
-            .then(function (payload) {
-                payload.selectedIDs = collection.pluck(nextSelected, "id");
-                payload.history = {
-                    newState: true,
-                    amendRogue: true
-                };
-
-                this.dispatch(events.document.history.UNGROUP_SELECTED, payload);
-            })
-            .then(function () {
-                if (selectionNeedsReset) {
-                    return this.transfer(resetSelection, document);
-                } else {
-                    var nextDocument = this.flux.store("document").getDocument(document.id),
-                        selected = nextDocument.layers.selected;
-
-                    return this.transfer(initializeLayers, nextDocument, selected);
-                }
-            });
-    };
-    ungroupSelected.action = {
-        reads: [locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [resetSelection, initializeLayers, getLayerIDsForDocumentID],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    /**
      * Changes the visibility of layer
      *
      * @param {Document} document
@@ -1600,13 +1236,18 @@ define(function (require, exports) {
      * @param {Layer} layer
      * @returns {Promise}
      */
-    var _unlockBackgroundLayer = function (document, layer) {
+    var unlockBackgroundLayer = function (document, layer) {
         return descriptor.playObject(layerLib.unlockBackground(layer.id))
             .bind(this)
             .then(function (event) {
                 var layerID = event.layerID;
                 return this.transfer(addLayers, document, layerID, true, layer.id);
             });
+    };
+    unlockBackgroundLayer.action = {
+        reads: [],
+        writes: [locks.PS_DOC],
+        transfers: [addLayers]
     };
 
     /**
@@ -1620,7 +1261,7 @@ define(function (require, exports) {
      */
     var setLocking = function (document, layer, locked) {
         if (layer.isBackground) {
-            return _unlockBackgroundLayer.call(this, document, layer);
+            return this.transfer(unlockBackgroundLayer, document, layer);
         }
 
         var docRef = documentLib.referenceBy.id(document.id),
@@ -1648,7 +1289,7 @@ define(function (require, exports) {
     setLocking.action = {
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [addLayers],
+        transfers: [addLayers, unlockBackgroundLayer],
         post: [_verifyLayerIndex, _verifyLayerSelection]
     };
 
@@ -2098,223 +1739,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Default Artboard size 
-     * @const 
-     *
-     * @type {object} 
-     */
-    var DEFAULT_ARTBOARD_BOUNDS = {
-        bottom: 1960,
-        top: 0,
-        right: 1080,
-        left: 0
-    };
-
-    /**
-     * Helper function to find the right most artboard. It assumes a non-empty list of artboards. 
-     * 
-     * @private 
-     * @param {Immutable.List.<Layer>} artboards
-     * @return {Layer}
-     */
-    var _findRightMostArtboard = function (artboards) {
-        var layer = artboards.reduce(function (selectedLayer, currentLayer) {
-            if (currentLayer.bounds.right > selectedLayer.bounds.right) {
-                return currentLayer;
-            } else {
-                return selectedLayer;
-            }
-        }, artboards.first());
-        return layer;
-    };
-
-    /**
-     * Helper function to get Bounds from specs (template preset)
-     *
-     * @private
-     * @param {object} specs 
-     * @param {Immutable.List.<Layer>} artboards
-     * @return {{finalBounds: Bounds, changeLayerRef: boolean}}
-     */
-    var _getBoundsFromTemplate = function (specs, artboards) {
-        var preset = specs.preset,
-            index = _.findIndex(templates, function (obj) {
-                return obj.preset === preset;
-            });
-
-        var height = templates[index].height,
-            width = templates[index].width,
-            changeLayerRef = false,
-            finalBounds;
-
-        // if artboards are empty, insert template at first position 
-        if (artboards.isEmpty()) {
-            changeLayerRef = true;
-            finalBounds = new Bounds({
-                top: DEFAULT_ARTBOARD_BOUNDS.top,
-                bottom: height,
-                left: DEFAULT_ARTBOARD_BOUNDS.left,
-                right: width
-            });
-        } else {
-            // find the rightmost artboard and insert the template after this 
-            var rightMostLayer = _findRightMostArtboard(artboards),
-                offset = 100;
-            finalBounds = rightMostLayer.bounds.merge({
-                bottom: rightMostLayer.bounds.top + height,
-                left: rightMostLayer.bounds.left + offset + rightMostLayer.bounds.width,
-                right: rightMostLayer.bounds.right + offset + width
-            });
-        }
-
-        return {
-            finalBounds: finalBounds,
-            changeLayerRef: changeLayerRef
-        };
-    };
-
-    /**
-     * Helper function to get the bounds of an artboard with no prior input
-     * 
-     * @private
-     * @param {Immutable.List.<Layer>} artboards
-     * @param {Immutable.List.<Layer>} selectedArtboards 
-     * @return {{finalBounds: Bounds, changeLayerRef: boolean}}
-     */
-    var _getBoundsFromNoInput = function (artboards, selectedArtboards) {
-        var changeLayerRef = false,
-            finalBounds;
-
-        // if there are no artboards in the document, the new artboard should have dimensions of default
-        if (artboards.isEmpty()) {
-            changeLayerRef = true;
-            finalBounds = new Bounds({
-                top: DEFAULT_ARTBOARD_BOUNDS.top,
-                bottom: DEFAULT_ARTBOARD_BOUNDS.bottom,
-                left: DEFAULT_ARTBOARD_BOUNDS.left,
-                right: DEFAULT_ARTBOARD_BOUNDS.right
-            });
-        } else {
-            // else we want to get the right most artboard 
-            var rightMostLayer = _findRightMostArtboard(artboards),
-                offset = 100;
-            // if there is a selected artboard, we want the new one to inherit the size of the selected
-            if (selectedArtboards.size === 1) {
-                var selectedbounds = selectedArtboards.first().bounds;
-                finalBounds = rightMostLayer.bounds.merge({
-                    bottom: rightMostLayer.bounds.top + selectedbounds.height,
-                    left: rightMostLayer.bounds.left + rightMostLayer.bounds.width + offset,
-                    right: rightMostLayer.bounds.right + offset + selectedbounds.width
-                });
-            } else {
-                // else we want it to insert after the right most artboard with default size 
-                finalBounds = rightMostLayer.bounds.merge({
-                    bottom: rightMostLayer.bounds.top + DEFAULT_ARTBOARD_BOUNDS.bottom,
-                    left: rightMostLayer.bounds.left + rightMostLayer.bounds.width + offset,
-                    right: rightMostLayer.bounds.right + offset + DEFAULT_ARTBOARD_BOUNDS.right
-                });
-            }
-        }
-
-        return {
-            finalBounds: finalBounds,
-            changeLayerRef: changeLayerRef
-        };
-    };
-
-    /**
-     * Create a new Artboard on the PS doc
-     * if no bounds are provided we place this 100 px to the right of selected artboard 
-     * or we add a default sized "iphone" artboard otherwise passed in bounds are used
-     *
-     * @param {Bounds=|object=} boundsOrSpecs
-     * @return {Promise}
-     */
-    var createArtboard = function (boundsOrSpecs) {
-        var document = this.flux.store("application").getCurrentDocument(),
-            artboards = document.layers.all.filter(function (layer) {
-                return layer.isArtboard;
-            }),
-            selectedArtboards = document.layers.selected.filter(function (layer) {
-                return layer.isArtboard;
-            }),
-            layerRef = layerLib.referenceBy.none,
-            boundsAndLayerRef,
-            finalBounds,
-            artboardLayerId;
-
-        if (boundsOrSpecs instanceof Bounds) {
-            finalBounds = boundsOrSpecs.toJS();
-        } else if (boundsOrSpecs === undefined) {
-            boundsAndLayerRef = _getBoundsFromNoInput(artboards, selectedArtboards);
-            finalBounds = boundsAndLayerRef.finalBounds.toJS();
-            if (boundsAndLayerRef.changeLayerRef) {
-                layerRef = layerLib.referenceBy.current;
-            }
-        } else {
-            boundsAndLayerRef = _getBoundsFromTemplate(boundsOrSpecs, artboards);
-            finalBounds = boundsAndLayerRef.finalBounds.toJS();
-            if (boundsAndLayerRef.changeLayerRef) {
-                layerRef = layerLib.referenceBy.current;
-            }
-        }
-
-        var backgroundLayer = document.layers.all.find(function (layer) {
-            return layer.isBackground;
-        });
-
-        var unlockBackgroundPromise = backgroundLayer ?
-            _unlockBackgroundLayer.call(this, document, backgroundLayer) :
-            Promise.resolve();
-
-        return unlockBackgroundPromise
-            .bind(this)
-            .then(function () {
-                var createObj = artboardLib.make(layerRef, finalBounds);
-
-                return descriptor.playObject(createObj);
-            })
-            .then(function (result) {
-                // Photoshop may have used different bounds for the artboard
-                if (result.artboardRect) {
-                    finalBounds = result.artboardRect;
-                }
-
-                artboardLayerId = result.layerSectionStart;
-
-                var payload = {
-                    documentID: document.id,
-                    groupID: result.layerSectionStart,
-                    groupEndID: result.layerSectionEnd,
-                    groupname: result.name,
-                    isArtboard: true,
-                    bounds: finalBounds,
-                    // don't redraw UI until after resetting the index
-                    suppressChange: true,
-                    history: {
-                        newState: true,
-                        name: nls.localize("strings.ACTIONS.CREATE_ARTBOARD")
-                    }
-                };
-
-                return this.dispatchAsync(events.document.history.GROUP_SELECTED, payload);
-            })
-            .then(function () {
-                return this.transfer(resetIndex, document);
-            })
-            .then(function () {
-                return this.transfer(exportActions.addDefaultAsset, document.id, artboardLayerId);
-            });
-    };
-
-    createArtboard.action = {
-        reads: [locks.JS_APP],
-        writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [resetIndex, addLayers, exportActions.addDefaultAsset],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
-    };
-
-    /**
      * Copy into the given document a set of layers, possibly from another document.
      *
      * @param {Document=} document
@@ -2411,21 +1835,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Dispatches a command to  select the VEctor mask for the currently selected layer
-     *
-     * @return {Promise}
-     */
-    var selectVectorMask = function () {
-        return descriptor.playObject(vectorMaskLib.selectVectorMask());
-    };
-
-    selectVectorMask.action = {
-        reads: [],
-        writes: [locks.PS_DOC],
-        modal: true
-    };
-
-    /**
      * Dispatches a layer reposition for all layers in the given document model
      *
      * @return {Promise}
@@ -2449,82 +1858,6 @@ define(function (require, exports) {
         modal: true
     };
 
-    /**
-     * Reveal and select the vector mask of the selected layer. 
-     * Also switch to the vector based superselect tool.
-     *
-     * @return {Promise}
-     */
-    var editVectorMask = function () {
-        var toolStore = this.flux.store("tool"),
-            superselectVector = toolStore.getToolByID("superselectVector");
-
-        return this.transfer(tools.select, superselectVector)
-            .then(function () {
-                // select and activate knots on Current Vector Mask
-                return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
-            });
-    };
-    editVectorMask.action = {
-        reads: [locks.JS_TOOL],
-        writes: [locks.PS_DOC],
-        transfers: [tools.select],
-        modal: true
-    };
-
-    /**
-     * removes a vector mask on the selected layer
-     *
-     * @return {Promise}
-     */
-    var deleteVectorMask = function () {
-        var applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
-
-        if (currentDocument === null) {
-            return Promise.resolve();
-        }
-
-        var layers = currentDocument.layers.selected;
-
-        if (layers === null || layers.isEmpty()) {
-            return Promise.resolve();
-        }
-
-        var currentLayer = layers.first();
-
-        if (currentLayer.vectorMaskEnabled) {
-            var deleteMaskOptions = {
-                historyStateInfo: {
-                    name: nls.localize("strings.ACTIONS.DELETE_VECTOR_MASK"),
-                    target: documentLib.referenceBy.id(currentDocument.id)
-                }
-            };
-            return descriptor.playObject(vectorMaskLib.deleteVectorMask(), deleteMaskOptions)
-                .bind(this)
-                .then(function () {
-                    var payload = {
-                            documentID: currentDocument.id,
-                            layerIDs: Immutable.List.of(currentLayer.id),
-                            vectorMaskEnabled: false,
-                            history: {
-                                newState: true,
-                                name: nls.localize("strings.ACTIONS.DELETE_VECTOR_MASK")
-                            }
-                        },
-                        event = events.document.history.REMOVE_VECTOR_MASK_FROM_LAYER;
-
-                    return this.dispatchAsync(event, payload);
-                });
-        } else {
-            return Promise.resolve();
-        }
-    };
-    deleteVectorMask.action = {
-        reads: [locks.JS_TOOL],
-        writes: [locks.PS_DOC, locks.JS_DOC]
-    };
-    
     /**
      * Event handlers initialized in beforeStartup.
      *
@@ -2798,11 +2131,9 @@ define(function (require, exports) {
     exports.deselectAll = deselectAll;
     exports.removeLayers = removeLayers;
     exports.deleteSelected = deleteSelected;
-    exports.groupSelected = groupSelected;
-    exports.groupSelectedInCurrentDocument = groupSelectedInCurrentDocument;
-    exports.ungroupSelected = ungroupSelected;
     exports.setVisibility = setVisibility;
     exports.setVisibilitySelectedInCurrentDocument = setVisibilitySelectedInCurrentDocument;
+    exports.unlockBackgroundLayer = unlockBackgroundLayer;
     exports.setLocking = setLocking;
     exports.setOpacity = setOpacity;
     exports.lockSelectedInCurrentDocument = lockSelectedInCurrentDocument;
@@ -2823,16 +2154,11 @@ define(function (require, exports) {
     exports.resetBounds = resetBounds;
     exports.resetBoundsQuietly = resetBoundsQuietly;
     exports.setProportional = setProportional;
-    exports.createArtboard = createArtboard;
     exports.resetLinkedLayers = resetLinkedLayers;
     exports.duplicate = duplicate;
-    exports.setGroupExpansion = setGroupExpansion;
     exports.revealLayers = revealLayers;
     exports.resetIndex = resetIndex;
     exports.handleCanvasShift = handleCanvasShift;
-    exports.editVectorMask = editVectorMask;
-    exports.selectVectorMask = selectVectorMask;
-    exports.deleteVectorMask = deleteVectorMask;
     exports.getLayerIDsForDocumentID = getLayerIDsForDocumentID;
 
     exports.beforeStartup = beforeStartup;
@@ -2840,6 +2166,7 @@ define(function (require, exports) {
 
     exports._getLayersForDocument = _getLayersForDocument;
     exports._verifyLayerIndex = _verifyLayerIndex;
+    exports._verifyLayerSelection = _verifyLayerSelection;
 
     exports.afterStartup = afterStartup;
 });
