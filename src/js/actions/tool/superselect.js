@@ -77,9 +77,12 @@ define(function (require, exports) {
                                     // We are not transferring here
                                     // because we actively want to end the use of our locks
                                     this.flux.actions.tools.enterPathModalState();
+                                    return Promise.resolve();
                                 });
                         }
                     });
+            } else {
+                return Promise.resolve();
             }
         }
     };

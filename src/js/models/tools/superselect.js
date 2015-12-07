@@ -318,7 +318,7 @@ define(function (require, exports, module) {
         }
     };
 
-    SuperSelectTool.prototype.toolOverlay = SuperselectOverlay;
+    SuperSelectTool.prototype.toolOverlays = [SuperselectOverlay];
 
     module.exports = SuperSelectTool;
 });

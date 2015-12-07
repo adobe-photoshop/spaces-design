@@ -113,14 +113,16 @@ define(function (require, exports, module) {
                 currentDocument = applicationStore.getCurrentDocument(),
                 modifierStore = flux.store("modifier"),
                 modifiers = modifierStore.getState(),
-                leafModifier = system.isMac ? modifiers.command : modifiers.control;
+                leafModifier = system.isMac ? modifiers.command : modifiers.control,
+                vectorMaskMode = toolStore.getVectorMode();
 
             return {
                 document: currentDocument,
                 marqueeEnabled: uiState.marqueeEnabled,
                 marqueeStart: uiState.marqueeStart,
                 modalState: modalState,
-                leafBounds: leafModifier
+                leafBounds: leafModifier,
+                vectorMaskMode: vectorMaskMode
             };
         },
 
@@ -213,6 +215,12 @@ define(function (require, exports, module) {
             svg.selectAll(".artboard-adder").remove();
 
             if (!currentDocument || this.state.modalState) {
+                return null;
+            }
+            
+            var currentLayer = currentDocument.layers.selected.first();
+                
+            if (currentLayer && currentLayer.vectorMaskEmpty && this.state.vectorMaskMode) {
                 return null;
             }
 
@@ -328,7 +336,7 @@ define(function (require, exports, module) {
 
             this.updateMouseOverHighlights();
         },
-
+        
         /**
          * Starts drawing the superselect marquee at the given location
          *

@@ -32,10 +32,9 @@ define(function (require, exports) {
         toolLib = require("adapter").lib.tool,
         layerLib = require("adapter").lib.layer,
         documentLib = require("adapter").lib.document,
-        adapterOS = require("adapter").os,
-        adapterUI = require("adapter").ps.ui,
         UI = require("adapter").ps.ui,
         OS = require("adapter").os,
+        ps = require("adapter").ps,
         vectorMaskLib = require("adapter").lib.vectorMask;
 
     var events = require("../events"),
@@ -172,53 +171,53 @@ define(function (require, exports) {
                 height: psSelectionHeight + (outset * 2)
             };
 
-        var insidePolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_TO_BROWSER,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+        var insidePolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
+                OS.eventKind.LEFT_MOUSE_DOWN,
                 {}, // no modifiers inside
                 innerRect
             ),
-            insideCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_TO_BROWSER,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+            insideCommandPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
+                OS.eventKind.LEFT_MOUSE_DOWN,
                 distortModifier,
                 innerRect
             ),
-            insideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_TO_BROWSER,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+            insideShiftPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
+                OS.eventKind.LEFT_MOUSE_DOWN,
                 { shift: true },
                 innerRect
             ),
-            insideCommandShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_TO_BROWSER,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+            insideCommandShiftPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
+                OS.eventKind.LEFT_MOUSE_DOWN,
                 _.merge(distortModifier, { shift: true }),
                 innerRect
             ),
             // Used for distort/skew transformations
-            noOutsetCommandPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+            noOutsetCommandPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_BY_ALPHA,
+                OS.eventKind.LEFT_MOUSE_DOWN,
                 distortModifier,
                 middleRect
             ),
             // Used for proportional resize
-            noOutsetShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+            noOutsetShiftPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_BY_ALPHA,
+                OS.eventKind.LEFT_MOUSE_DOWN,
                 { shift: true },
                 middleRect
             ),
             // Used for proportional distort/skew
-            noOutsetCommandShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+            noOutsetCommandShiftPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_BY_ALPHA,
+                OS.eventKind.LEFT_MOUSE_DOWN,
                 _.merge({ shift: true }, distortModifier),
                 middleRect
             ),
             // Used for rotation
-            outsidePolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+            outsidePolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_BY_ALPHA,
+                OS.eventKind.LEFT_MOUSE_DOWN,
                 {},
                 outerRect
             ),
             // Used for constrained rotation
-            outsideShiftPolicy = new PointerEventPolicy(adapterUI.policyAction.PROPAGATE_BY_ALPHA,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN,
+            outsideShiftPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_BY_ALPHA,
+                OS.eventKind.LEFT_MOUSE_DOWN,
                 { shift: true },
                 outerRect
             );
@@ -472,7 +471,7 @@ define(function (require, exports) {
                     selectHandlerPromise = null;
                 }
 
-                var resetCursorPromise = adapterOS.resetCursor(),
+                var resetCursorPromise = OS.resetCursor(),
                     swapPoliciesPromise = this.transfer(swapPolicies, nextTool);
 
                 return Promise.join(swapPoliciesPromise, selectHandlerPromise, resetCursorPromise, dispatchPromise,
@@ -784,6 +783,12 @@ define(function (require, exports) {
                 })
                 .bind(this)
                 .then(function () {
+                    return ps.endModalToolState(true)
+                        .catch(function () {
+                            // If the modal state has already ended, quietly continue
+                        });
+                })
+                .then(function () {
                     if (!currentLayer.vectorMaskEmpty) {
                         return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
                             .bind(this)
@@ -880,6 +885,7 @@ define(function (require, exports) {
         this.flux.store("document").on("change", _borderPolicyChangeHandler);
         this.flux.store("application").on("change", _borderPolicyChangeHandler);
         this.flux.store("ui").on("change", _borderPolicyChangeHandler);
+        this.flux.store("tool").on("change", _borderPolicyChangeHandler);
 
         // Listen for modal tool state entry/exit events
         _toolModalStateChangedHandler = this.flux.actions.tools.handleToolModalStateChanged.bind(this);
@@ -988,6 +994,7 @@ define(function (require, exports) {
         this.flux.store("document").removeListener("change", _borderPolicyChangeHandler);
         this.flux.store("application").removeListener("change", _borderPolicyChangeHandler);
         this.flux.store("ui").removeListener("change", _borderPolicyChangeHandler);
+        this.flux.store("tool").removeListener("change", _borderPolicyChangeHandler);
 
         _currentTransformPolicyID = null;
 

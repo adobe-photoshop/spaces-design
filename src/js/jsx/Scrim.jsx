@@ -209,7 +209,7 @@ define(function (require, exports, module) {
             if (!nextState.activeDocumentInitialized || !nextState.recentFilesInitialized) {
                 return false;
             }
-            
+
             // Only skip if it's currently a dropTarget and will continue to be
             if (this.state.isDropTarget && nextState.isDropTarget) {
                 return false;
@@ -251,15 +251,17 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            if (!tool || !tool.toolOverlay || this.state.isAssetDragOver) {
+            if (!tool || !tool.toolOverlays || this.state.isAssetDragOver) {
                 return null;
             }
             
-            var ToolOverlay = tool.toolOverlay;
+            var toolOverlays = tool.toolOverlays;
 
-            return (
-                <ToolOverlay transformString={transformString} ref="toolOverlay"/>
-            );
+            return toolOverlays.map(function (ToolOverlay) {
+                return (
+                    <ToolOverlay transformString={transformString}/>
+                );
+            });
         },
         
         /** 
