@@ -56,14 +56,26 @@ define(function (require, exports, module) {
                 React.PropTypes.string,
                 React.PropTypes.instanceOf(Immutable.Iterable)
             ]),
+            // special string value which, if matched, will be passed directly 
+            // into the DOM element (rather than formatted)
             special: React.PropTypes.string,
+            // Function to call when value is committed 
             onChange: React.PropTypes.func.isRequired,
+            // Amount to change per arrow key increment
             step: React.PropTypes.number,
+            // Amount to change per arrow key + modifier increment
             bigstep: React.PropTypes.number,
+            // Minimum value for input
             min: React.PropTypes.number,
+            // Maximum value for input
             max: React.PropTypes.number,
+            // Precision for rounding number for display
             precision: React.PropTypes.number,
+            // Placeholder text for the input
+            placeholder: React.PropTypes.string,
+            // Disable input
             disabled: React.PropTypes.bool,
+            // (Unit) suffix to add to display of number
             suffix: React.PropTypes.string
         },
 
@@ -415,10 +427,10 @@ define(function (require, exports, module) {
 
             return (
                 <input
-                    {...this.props}
                     type="text"
                     ref="input"
                     spellCheck="false"
+                    placeholder={this.props.placeholder}
                     className={className}
                     disabled={this.props.disabled}
                     value={this.state.rawValue}

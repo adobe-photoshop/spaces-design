@@ -60,7 +60,7 @@ define(function (require, exports, module) {
             // Disable editing and selection of the input
             disabled: React.PropTypes.bool,
             // Placeholder text for the input
-            placeholderText: React.PropTypes.string,
+            placeholder: React.PropTypes.string,
             // Disallow the element from being immediately (single click) focusable 
             doubleClickToEdit: React.PropTypes.bool,
             // On every DOM change event, fire the TextInput onChange handler
@@ -80,7 +80,7 @@ define(function (require, exports, module) {
                 disabled: false,
                 doubleClickToEdit: false,
                 continuous: false,
-                placeholderText: "",
+                placeholder: "",
                 neverSelectAll: false,
                 preventHorizontalScrolling: true
             };
@@ -97,7 +97,7 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             return !Immutable.is(this.props.value, nextProps.value) ||
                 !Immutable.is(this.state.value, nextState.value) ||
-                !Immutable.is(this.props.placeholderText, nextProps.placeholderText) ||
+                !Immutable.is(this.props.placeholder, nextProps.placeholder) ||
                 this.props.title !== nextProps.title ||
                 this.state.editing !== nextState.editing;
         },
@@ -424,7 +424,7 @@ define(function (require, exports, module) {
                         title={this.props.title}
                         className={className}
                         disabled={this.props.disabled}
-                        placeholder={this.props.placeholderText}
+                        placeholder={this.props.placeholder}
                         onClick={this.props.onClick}
                         onChange={this._handleChange}
                         onKeyDown={this._handleKeyDown}
