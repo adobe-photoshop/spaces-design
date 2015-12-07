@@ -727,8 +727,7 @@ define(function (require, exports, module) {
                                 min={MIN_TRACKING}
                                 max={MAX_TRACKING}
                                 size="column-5"
-                                onChange={this._handleTrackingChange}
-                                valueType="size" />
+                                onChange={this._handleTrackingChange} />
                         </div>
                         <div className=" control-group control-group__vertical">
                             <Label
@@ -745,8 +744,7 @@ define(function (require, exports, module) {
                                 max={toPixels(MAX_LEADING_PTS)}
                                 disabled={locked}
                                 special={nls.localize("strings.STYLE.TYPE.AUTO_LEADING")}
-                                onChange={this._handleLeadingChange}
-                                valueType="size" />
+                                onChange={this._handleLeadingChange} />
                         </div>
                     </div>
                 </div>

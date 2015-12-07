@@ -728,7 +728,7 @@ define(function (require, exports, module) {
                         size={size}
                         continuous={true}
                         value={title}
-                        placeholderText={this.props.placeholderText}
+                        placeholder={this.props.placeholderText}
                         neverSelectAll={this.props.neverSelectAllInput}
                         onFocus={this._handleInputFocus}
                         onBlur={this._handleInputBlur}

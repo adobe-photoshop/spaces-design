@@ -398,7 +398,7 @@ define(function (require, exports, module) {
                     ref="libraryNameInput"
                     className="libraries__bar__input"
                     value={inputDefaultValue}
-                    placeholderText={nls.localize("strings.LIBRARIES.LIBRARY_NAME")}
+                    placeholder={nls.localize("strings.LIBRARIES.LIBRARY_NAME")}
                     onKeyDown={this._handleLibraryNameInputKeydown}/>
                 <div className="libraries__bar__btn-cancel"
                      onClick={this._handleCancelCommand}>
