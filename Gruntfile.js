@@ -188,7 +188,8 @@ module.exports = function (grunt) {
             },
             watch: {
                 watch: true,
-                keepalive: true
+                keepalive: true,
+                failOnError: false
             }
         },
         uglify: {
