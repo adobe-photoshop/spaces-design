@@ -26,7 +26,8 @@
 "use strict";
 
 var path = require("path"),
-    webpack = require("webpack");
+    webpack = require("webpack"),
+    WebpackNotifierPlugin = require("webpack-notifier");
 
 require("es6-promise").polyfill(); // Required for css loading
 
@@ -105,7 +106,8 @@ var buildConfigs = languages.map(function (lang) {
             // This passes __PG_DEBUG__ variable to the bundle
             new webpack.DefinePlugin({
                 __PG_DEBUG__: devMode
-            })
+            }),
+            new WebpackNotifierPlugin({ alwaysNotify: true })
         ]
     };
 
