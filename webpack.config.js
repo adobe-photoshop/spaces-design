@@ -112,7 +112,7 @@ var buildConfigs = languages.map(function (lang) {
     };
 
     if (devMode) {
-        options.devtool = "source-map";
+        options.devtool = "inline-source-map";
         options.debug = "true";
         // These lines break the build into two chunks, one for our code, and one for all our dependencies
         // This allows for a faster rebuild time
