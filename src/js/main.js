@@ -116,6 +116,14 @@ define(function (require, exports) {
             flux: _controller.flux,
             initialColorStop: stop
         };
+        
+        if (__PG_DEBUG__) {
+            // Expose these for snippet usage, only available in debug builds
+            window.__PS_ADAPTER__ = adapter;
+            window.__FLUX_CONTROLLER__ = _controller;
+            window.__LOG_UTIL__ = log;
+            window.__PERF_UTIL = performanceUtil;
+        }
 
         var startupPromises = _controller.start()
             .then(function () {
@@ -169,14 +177,6 @@ define(function (require, exports) {
 
         /* global _spaces */
         _spaces._debug.enableDebugContextMenu(true, function () {});
-
-        if (__PG_DEBUG__) {
-            // Expose these for snippet usage, only available in debug builds
-            window.__PS_ADAPTER__ = adapter;
-            window.__FLUX_CONTROLLER__ = _controller;
-            window.__LOG_UTIL__ = log;
-            window.__PERF_UTIL = performanceUtil;
-        }
     }
 
     exports.startup = startup;
