@@ -43,16 +43,10 @@ define(function (require, exports, module) {
     var Datalist = React.createClass({
         propTypes: {
             options: React.PropTypes.instanceOf(Immutable.List),
-            // ID of the item that should initially be selected
-            defaultSelected: React.PropTypes.string,
+            // ID of the item that is currently selected
+            selected: React.PropTypes.string,
             // Initial text value to display.  TODO: explain how this behaves differently based on other options
             value: React.PropTypes.string,
-            // Callback to handle change of selection. Return false will cancel the selection.
-            onChange: React.PropTypes.func,
-            // Callback to handle change of input
-            onInputChange: React.PropTypes.func,
-            // If true, mouse over selection will fire invoke the onChange callback.
-            live: React.PropTypes.bool,
             // If true, text input will get focus when Datalist is mounted or reset
             startFocused: React.PropTypes.bool,
             // Filler text for input when nothing has been typed
@@ -63,16 +57,69 @@ define(function (require, exports, module) {
             useAutofill: React.PropTypes.bool,
             // If true, will not highlight input text on commit
             neverSelectAllInput: React.PropTypes.bool,
-            // If true, mouse over an item will automatically select it and trigger the onChange callback.
-            autoSelect: React.PropTypes.bool,
-            // IDs of items that, when selected, won't close the dialog
-            dontCloseDialogIDs: React.PropTypes.arrayOf(React.PropTypes.string),
             // SVG class for an icon to show next to the Text Input
             filterIcon: React.PropTypes.string,
             // Release keyboard focus when the text input is blurred.
             releaseOnBlur: React.PropTypes.bool,
             // Emit a change event when the input blurs
-            changeOnBlur: React.PropTypes.bool
+            changeOnBlur: React.PropTypes.bool,
+            
+            /**
+             * Callback to handle change of selection. This event is fired when the user confirm selection of the 
+             * highlighted option. For example, when user click on the option, or hit Return/Enter/Tab.
+             * 
+             * @callback Datalist~onChange
+             * @param {string} selectedID - the ID of the selected option
+             * @return {{dontCloseDialog: boolean}=} - if dontCloseDialog is true, the dropdown list will not 
+             *                                         close automatically. 
+             */
+            onChange: React.PropTypes.func,
+
+            /**
+             * Callback to handle input change
+             * 
+             * @callback Datalist~onChange
+             * @param {string} value - the current value of the input
+             */
+            onInputChange: React.PropTypes.func,
+            
+            /**
+             * Callback to handle input keydown
+             * 
+             * @callback Datalist~onKeyDown
+             * @param {SyntheticEvent} event
+             * @param {string} highlightedID - the current highlighted ID
+             * @return {{preventListDefault: boolean}=} - use preventListDefault option to prevent the default action 
+             *                                            of the list.
+             */
+            onKeyDown: React.PropTypes.func,
+
+            /**
+             * Callback to handle change of highlighted option.
+             * 
+             * @callback Datalist~onHighlightedChange
+             * @param {string} highlightedID
+             */
+            onHighlightedChange: React.PropTypes.func,
+
+            /**
+             * Callback to handle input focus
+             * 
+             * @callback Datalist~onFocus
+             * @param {SyntheticEvent} event
+             */
+            onFocus: React.PropTypes.func,
+            
+            /**
+             * Callback to handle dropdown list close.
+             * 
+             * @callback Datalist~onClose
+             * @param {boolean} applied - true if confirm selection of the highlighted option.
+             * @param {string} initialSelectedID - the initial selected ID when the dropdown list is opened.
+             * @param {string} lastHighlightedID - the last highlighted ID. This is equal to initialSelectedID 
+             *                                     if the selection is confirmed (with onChange event fired).
+             */
+            onClose: React.PropTypes.func
         },
 
         /**
@@ -84,20 +131,38 @@ define(function (require, exports, module) {
          * @type {Number}
          */
         _uniqkey: null,
+        
+        /**
+         * The initial selected ID when the dropdown list is open. 
+         *
+         * @private
+         * @type {string}
+         */
+        _initialSelectedID: null,
+        
+        /**
+         * True if the last highlighted ID is applied.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _isApplied: false,
 
         getDefaultProps: function () {
             return {
-                onChange: _.identity,
-                defaultSelected: null,
-                live: true,
+                selected: null,
                 startFocused: false,
                 placeholderText: "",
                 useAutofill: false,
                 neverSelectAllInput: false,
                 dontCloseDialogIDs: [],
                 filterIcon: null,
-                autoSelect: true,
-                changeOnBlur: true
+                changeOnBlur: true,
+                onChange: _.noop,
+                onHighlightedChange: _.noop,
+                onListOpen: _.noop,
+                onClose: _.noop,
+                onKeyDown: _.noop
             };
         },
 
@@ -106,17 +171,17 @@ define(function (require, exports, module) {
                 active: false,
                 // Corresponds with value of the text input
                 filter: "",
-                // ID of the selected item
-                id: this.props.defaultSelected,
                 // If using autofill, the full title of the suggested option
-                suggestTitle: ""
+                suggestTitle: "",
+                suggestID: null,
+                lastHighlightedID: null
             };
         },
 
         componentWillReceiveProps: function (nextProps) {
-            if (nextProps.defaultSelected && nextProps.defaultSelected !== this.state.id) {
+            if (this.props.selected !== nextProps.selected) {
                 this.setState({
-                    id: null
+                    lastHighlightedID: nextProps.selected
                 });
             }
         },
@@ -132,16 +197,16 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            if (this.props.live && this.state.id !== nextState.id) {
-                return true;
-            }
-
-            return (this.props.options !== nextProps.options ||
-                this.state.filter !== nextState.filter ||
+            return (
+                (this.props.selected !== nextProps.selected && nextProps.selected !== nextState.lastHighlightedID) ||
+                this.props.value !== nextProps.value ||
                 this.props.placeholderText !== nextProps.placeholderText ||
+                this.state.filter !== nextState.filter ||
                 this.state.active !== nextState.active ||
                 this.state.suggestTitle !== nextState.suggestTitle ||
-                this.props.value !== nextProps.value);
+                this.state.lastHighlightedID !== nextState.lastHighlightedID ||
+                !Immutable.is(this.props.options, nextProps.options)
+            );
         },
 
         componentDidUpdate: function () {
@@ -225,10 +290,6 @@ define(function (require, exports, module) {
                 dialog.toggle(event);
             }
 
-            if (!this.props.live && this.state.id && this.props.changeOnBlur) {
-                this.props.onChange(this.state.id);
-            }
-
             if (this.props.releaseOnBlur) {
                 // Blur the text input and release focus.
                 this.refs.textInput.finish();
@@ -248,9 +309,7 @@ define(function (require, exports, module) {
             if (!select) {
                 switch (event.key) {
                 case "Escape":
-                    if (this.props.onKeyDown) {
-                        this.props.onKeyDown(event);
-                    }
+                    this.props.onKeyDown(event, this.state.lastHighlightedID);
                     return;
                 case "Tab":
                     return;
@@ -264,83 +323,51 @@ define(function (require, exports, module) {
                 }
             }
 
-            switch (event.key) {
-            case "ArrowUp":
-                select.selectPrev();
-                event.preventDefault();
-                event.stopPropagation();
-                break;
-            case "ArrowDown":
-                select.selectNext();
-                event.preventDefault();
-                event.stopPropagation();
-                break;
-            case "Tab":
-                // Check if ID should close the dialog or not
-                if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id && _.contains(this.props.dontCloseDialogIDs, this.state.id)) {
-                    this.props.onKeyDown(event);
-                    event.preventDefault();
-                    return;
-                } else {
-                    select.close(event, "apply");
-                    if (dialog && dialog.isOpen()) {
-                        dialog.toggle(event);
-                    }
-                }
-                break;
-            case "Enter":
-            case "Return":
-                // Check if ID should close the dialog or not
-                if (!this.props.live && this.props.onKeyDown &&
-                        this.state.id && _.contains(this.props.dontCloseDialogIDs, this.state.id)) {
-                    this.props.onKeyDown(event);
-                    return;
-                } else {
-                    select.close(event, "apply");
-                    if (dialog && dialog.isOpen()) {
-                        dialog.toggle(event);
-                    }
-                }
-                break;
-            case "Space":
-            case "Escape":
-                select.close(event, "cancel");
-                if (dialog && dialog.isOpen()) {
-                    dialog.toggle(event);
-                }
-                break;
-            }
+            var cbOptions = this.props.onKeyDown(event, this.state.lastHighlightedID),
+                options = _.merge({ preventListDefault: false }, cbOptions);
 
-            if (this.props.onKeyDown) {
-                this.props.onKeyDown(event);
+            if (!options.preventListDefault) {
+                switch (event.key) {
+                case "ArrowUp":
+                    select.selectPrev();
+                    event.preventDefault();
+                    event.stopPropagation();
+                    break;
+                case "ArrowDown":
+                    select.selectNext();
+                    event.preventDefault();
+                    event.stopPropagation();
+                    break;
+                case "Enter":
+                case "Return":
+                    select.close(event, "apply");
+                    if (dialog && dialog.isOpen()) {
+                        dialog.toggle(event);
+                    }
+                    break;
+                case "Space":
+                case "Escape":
+                case "Tab":
+                    select.close(event, "cancel");
+                    if (dialog && dialog.isOpen()) {
+                        dialog.toggle(event);
+                    }
+                    break;
+                }
             }
         },
 
         /**
-         * When the selection changes, if live, fire a change event so the parent can
-         * act accordingly. Returning false from the change event callback will discard the
-         * change.
-         *
+         * Handle change of higlighted option.
+         * 
          * @param {string} id - The id of the currently selected option
-         * @param {boolean} force - Force to trigger a change event and accept the new id.
          */
-        _handleSelectChange: function (id, force) {
-            var confirmSelection = true;
+        _handleSelectChange: function (id) {
+            this.setState({
+                lastHighlightedID: id
+            });
 
-            if ((this.props.live || force) && (!this.props.defaultSelected || this.props.defaultSelected !== id)) {
-                confirmSelection = (this.props.onChange(id) !== false);
-            }
-
-            if (confirmSelection) {
-                if (this.props.autoSelect || force) {
-                    this.setState({
-                        id: id
-                    });
-                } else {
-                    this._lastSelectedID = id;
-                }
-            }
+            this.props.onHighlightedChange(id);
         },
 
         /**
@@ -351,22 +378,16 @@ define(function (require, exports, module) {
          * @param {string} action Either "apply" or "cancel"
          */
         _handleSelectClick: function (event, action) {
-            // If this select component is not live, call onChange handler here
-            if (!this.props.live || !this.props.autoSelect) {
-                var selectedID = action !== "apply" ? null : this._lastSelectedID || this.state.id;
+            var selectedID = action !== "apply" ? null : this.state.lastHighlightedID,
+                options = _.merge({ dontCloseDialog: false }, this.props.onChange(selectedID));
 
-                this._handleSelectChange(selectedID, true);
-                this._lastSelectedID = null;
-            }
-
-            var dontCloseDialog = _.contains(this.props.dontCloseDialogIDs, this.state.id);
-
-            if (!dontCloseDialog) {
+            if (!options.dontCloseDialog) {
                 var dialog = this.refs.dialog;
                 if (dialog && dialog.isOpen()) {
                     dialog.toggle(event);
                 }
-
+                
+                this._isApplied = true;
                 this._handleDialogClose();
             }
         },
@@ -379,9 +400,11 @@ define(function (require, exports, module) {
          * @param {string} action Either "apply" or "cancel"
          */
         _handleSelectClose: function (event, action) {
-            if (this.props.autoSelect || action === "apply") {
+            if (action === "apply") {
                 this._handleSelectClick(event, action);
             }
+            
+            this._isApplied = false;
         },
 
         /**
@@ -391,9 +414,23 @@ define(function (require, exports, module) {
          * @private
          */
         _handleDialogClose: function () {
+            this.props.onClose(this._isApplied, this._initialSelectedID, this.state.lastHighlightedID);
+            this._initialSelectedID = null;
+            this._isApplied = false;
+            
             this.setState({
-                active: false
+                active: false,
+                lastHighlightedID: null
             });
+        },
+        
+        /**
+         * Handle dialog open.
+         * 
+         * @private
+         */
+        _handleDialogOpen: function () {
+            this._initialSelectedID = this.props.selected;
         },
 
         /**
@@ -443,7 +480,7 @@ define(function (require, exports, module) {
             var options = this.props.options;
 
             if (this.props.filterOptions) {
-                return this.props.filterOptions(filter, this.state.id, truncate);
+                return this.props.filterOptions(filter, this.state.suggestID, truncate);
             }
 
             if (filter.length === 0) {
@@ -540,8 +577,9 @@ define(function (require, exports, module) {
 
                 this.setState({
                     filter: value,
-                    id: suggestionID,
-                    suggestTitle: suggestionTitle
+                    suggestTitle: suggestionTitle,
+                    suggestID: suggestionID,
+                    lastHighlightedID: suggestionID
                 });
 
                 if (this.refs.select) {
@@ -590,43 +628,26 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Returns the currently selected id
-         *
-         * @return {string}
-         */
-        getSelected: function () {
-            return this.state.id;
-        },
-
-        /**
-         * Returns the currently filter
+         * Returns the current input value
          *
          * @return {string}
          */
         getInputValue: function () {
-            return this.state.filter;
+            return this.refs.textInput.getValue();
+        },
+
+        /**
+         * Ensure that the child text input has focus.
+         */
+        focus: function () {
+            this.refs.textInput.focus();
         },
 
         render: function () {
-            // HACK - Because Select has no correspondence between ID and title
-            // during selection methods, only when the Datalist component is not live
-            // we manually set the shown value of the input to the selected option's title
-            // This can be an expensive operation when options is big enough, so
-            // use carefully. If we are using autocomplete, then we can use the suggestion
-            // title, since it corresponds with the current ID.
-            var current,
-                currentTitle = this.props.value;
+            var currentTitle = this.props.value;
 
-            if (!this.props.live) {
-                if (this.state.suggestTitle !== "") {
-                    currentTitle = this.state.suggestTitle;
-                } else if (!this.props.useAutofill) {
-                    current = this.props.options.find(function (option) {
-                        return option.id === this.state.id;
-                    }.bind(this));
-
-                    currentTitle = current ? current.title : this.props.value;
-                }
+            if (this.state.suggestTitle !== "") {
+                currentTitle = this.state.suggestTitle;
             }
 
             var value = currentTitle || "",
@@ -634,7 +655,8 @@ define(function (require, exports, module) {
                 title = this.state.active && filter !== "" ? filter : value,
                 searchableFilter = filter.toLowerCase(),
                 filteredOptions = this._filterOptions(searchableFilter, true),
-                searchableOptions = filteredOptions;
+                searchableOptions = filteredOptions,
+                selectedID = this.state.lastHighlightedID || this.props.selected;
 
             // If we only have headers as options, only display the placeholder option, if one exists
             if (filteredOptions && collection.uniformValue(collection.pluck(filteredOptions, "type"))) {
@@ -685,11 +707,12 @@ define(function (require, exports, module) {
                         ref="dialog"
                         id={"datalist-" + this.props.list + this._uniqkey}
                         className={this.props.className}
+                        onOpen={this._handleDialogOpen}
                         onClose={this._handleDialogClose}>
                         <Select
                             ref="select"
                             options={searchableOptions}
-                            defaultSelected={this.props.defaultSelected || this.state.id}
+                            defaultSelected={selectedID}
                             useAutofill={this.props.useAutofill}
                             sorted={this.props.sorted}
                             onChange={this._handleSelectChange}
@@ -740,13 +763,6 @@ define(function (require, exports, module) {
                     {dialog}
                 </div>
             );
-        },
-
-        /**
-         * Ensure that the child text input has focus.
-         */
-        focus: function () {
-            this.refs.textInput.focus();
         }
     });
 

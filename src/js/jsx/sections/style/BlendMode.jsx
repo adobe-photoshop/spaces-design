@@ -209,9 +209,9 @@ define(function (require, exports, module) {
                     className="dialog-blendmodes"
                     options={modesToShow}
                     value={title}
-                    defaultSelected={mode}
+                    selected={mode}
                     size={this.props.size}
-                    onChange={this.props.handleChange}
+                    onHighlightedChange={this.props.handleChange}
                     onFocus={this.props.onFocus} />
             );
         }

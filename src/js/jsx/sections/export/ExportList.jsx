@@ -106,6 +106,7 @@ define(function (require, exports, module) {
          * Update this asset's scale
          *
          * @private
+         * @type {Datalist~onChange}
          */
         _handleUpdateScale: function (scale) {
             var scaleNum = mathUtil.parseNumber(scale);
@@ -128,6 +129,7 @@ define(function (require, exports, module) {
          * Update this asset's format and quality
          *
          * @private
+         * @type {Datalist~onChange}
          */
         _handleUpdateFormat: function (id) {
             var formatIndex = mathUtil.parseNumber(id),
@@ -172,10 +174,8 @@ define(function (require, exports, module) {
                             className="dialog-export-scale"
                             options={_scaleOptions.toList()}
                             value={scaleOption.title}
-                            defaultSelected={scaleOption.id}
+                            selected={scaleOption.id}
                             onChange={this._handleUpdateScale}
-                            live={false}
-                            autoSelect={false}
                             changeOnBlur={false}
                             size="column-4" />
                     </div>
@@ -191,10 +191,8 @@ define(function (require, exports, module) {
                             className="dialog-export-format"
                             options={_formatOptions.toList()}
                             value={formatOption.title}
-                            defaultSelected={formatOptionId}
+                            selected={formatOptionId}
                             onChange={this._handleUpdateFormat}
-                            live={false}
-                            autoSelect={false}
                             changeOnBlur={false}
                             size="column-8" />
                     </div>
