@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         _ = require("lodash"),
         log = require("js/util/log");
 
@@ -54,16 +55,34 @@ define(function (require, exports, module) {
         },
 
         componentDidMount: function () {
+            if (!this._updatePosition) {
+                log.debug("update Position was not declared in a class that uses the Scrubby Mixin");
+            }
+            ReactDOM.findDOMNode(this).addEventListener("mousedown", this._installListeners);
+        },
+
+        componentWillUnmount: function () {
+            ReactDOM.findDOMNode(this).removeEventListener("mousedown", this._installListeners);
+            this._uninstallListeners();
+        },
+
+        /**
+         * On mouse down, all these window listeners will be added to handle Scrubby behavior
+         * @private
+         */
+        _installListeners: function () {
             window.document.addEventListener("mousemove", this._handleUpdate);
             window.document.addEventListener("touchmove", this._handleUpdate);
             window.document.addEventListener("mouseup", this._stopUpdates);
             window.document.addEventListener("touchend", this._stopUpdates);
-            if (!this._updatePosition) {
-                log.debug("update Position was not declared in a class that uses the Scrubby Mixin");
-            }
         },
 
-        componentWillUnmount: function () {
+        /**
+         * On mouse up, _stopUpdates gets called, which calls this to uninstall listeners
+         * It's also called on component unmount to not leave zombie listeners behind
+         * @private
+         */
+        _uninstallListeners: function () {
             window.document.removeEventListener("mousemove", this._handleUpdate);
             window.document.removeEventListener("touchmove", this._handleUpdate);
             window.document.removeEventListener("mouseup", this._stopUpdates);
@@ -131,6 +150,7 @@ define(function (require, exports, module) {
          * @private
          */
         _stopUpdates: function () {
+            this._uninstallListeners();
             if (this._updatePositionEnd) {
                 this._updatePositionEnd();
             }
