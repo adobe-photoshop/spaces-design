@@ -386,16 +386,16 @@ define(function (require, exports) {
             return Promise.resolve();
         } else {
             return Promise.join(
-                this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
+                this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: false }),
                 this.transfer(history.decrementHistory, currentDocument.id),
                 function () {
-                    return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                    return this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: true });
                 }.bind(this));
         }
     };
     undo.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [locks.JS_UI],
+        writes: [locks.JS_PANEL],
         transfers: [history.decrementHistory],
         post: [layers._verifyLayerIndex],
         modal: true
@@ -413,10 +413,10 @@ define(function (require, exports) {
             return Promise.resolve();
         } else {
             return Promise.join(
-                this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false }),
+                this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: false }),
                 this.transfer(history.incrementHistory, currentDocument.id),
                 function () {
-                    return this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+                    return this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: true });
                 }.bind(this));
         }
     };

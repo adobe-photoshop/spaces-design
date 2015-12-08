@@ -228,13 +228,13 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setOverlayCloaking = function () {
-        var uiStore = this.flux.store("ui"),
-            cloakRect = uiStore.getCloakRect();
+        var panelStore = this.flux.store("panel"),
+            cloakRect = panelStore.getCloakRect();
 
         return adapterUI.setOverlayCloaking(cloakRect, ["scroll"], "afterPaint");
     };
     setOverlayCloaking.action = {
-        reads: [locks.JS_UI],
+        reads: [locks.JS_PANEL],
         writes: [locks.PS_APP],
         modal: true
     };
@@ -246,13 +246,13 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var cloak = function () {
-        var uiStore = this.flux.store("ui"),
-            cloakRect = uiStore.getCloakRect();
+        var panelStore = this.flux.store("panel"),
+            cloakRect = panelStore.getCloakRect();
 
         return adapterUI.setOverlayCloaking(cloakRect, "immediate", "afterPaint");
     };
     cloak.action = {
-        reads: [locks.JS_UI],
+        reads: [locks.JS_PANEL],
         writes: [locks.PS_APP]
     };
 
@@ -290,22 +290,22 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var updatePanelSizes = function (sizes) {
-        return this.dispatchAsync(events.ui.PANELS_RESIZED, sizes)
+        var transformPromise = this.transfer(updateTransform),
+            dispatchPromise = this.dispatchAsync(events.panel.PANELS_RESIZED, sizes)
             .bind(this)
-            .then(function () {
-                return this.transfer(updateTransform);
-            })
-            .then(function () {
-                var centerOffsets = this.flux.store("ui").getState().centerOffsets;
-                return adapterUI.setOverlayOffsets(centerOffsets);
-            })
-            .then(function () {
-                return this.transfer(setOverlayCloaking);
-            });
+                .then(function () {
+                    var centerOffsets = this.flux.store("panel").getState().centerOffsets;
+                    return adapterUI.setOverlayOffsets(centerOffsets);
+                })
+                .then(function () {
+                    return this.transfer(setOverlayCloaking);
+                });
+
+        return Promise.join(transformPromise, dispatchPromise);
     };
     updatePanelSizes.action = {
         reads: [],
-        writes: [locks.JS_UI, locks.PS_APP],
+        writes: [locks.JS_PANEL, locks.PS_APP],
         transfers: [setOverlayCloaking, updateTransform],
         modal: true
     };
@@ -327,19 +327,19 @@ define(function (require, exports) {
         }
 
         var preferencesStore = flux.store("preferences"),
-            uiStore = flux.store("ui"),
+            panelStore = flux.store("panel"),
             preferences = preferencesStore.getState(),
             columnCount = 0;
 
-        if (preferences.get(uiStore.components.LAYERS_LIBRARY_COL, true)) {
+        if (preferences.get(panelStore.components.LAYERS_LIBRARY_COL, true)) {
             columnCount++;
         }
 
-        if (preferences.get(uiStore.components.PROPERTIES_COL, true)) {
+        if (preferences.get(panelStore.components.PROPERTIES_COL, true)) {
             columnCount++;
         }
 
-        var centerOffsets = uiStore.getCenterOffsets(columnCount);
+        var centerOffsets = panelStore.getCenterOffsets(columnCount);
 
         return adapterUI.setOverlayOffsets(centerOffsets);
     };
@@ -347,22 +347,6 @@ define(function (require, exports) {
         reads: [locks.JS_PREF, locks.JS_APP],
         writes: [locks.PS_APP],
         transfers: []
-    };
-
-    /**
-     * Updates the center offsets being sent to PS
-     *
-     * @param {number} toolbarWidth
-     * @return {Promise}
-     */
-    var updateToolbarWidth = function (toolbarWidth) {
-        return this.transfer(updatePanelSizes, { toolbarWidth: toolbarWidth });
-    };
-    updateToolbarWidth.action = {
-        reads: [],
-        writes: [],
-        transfers: [updatePanelSizes],
-        modal: true
     };
 
     /**
@@ -401,11 +385,13 @@ define(function (require, exports) {
      */
     var centerBounds = function (bounds, zoomInto) {
         var factor = window.devicePixelRatio,
-            uiState = this.flux.store("ui").getState(),
-            offsets = uiState.centerOffsets,
+            flux = this.flux,
+            uiState = flux.store("ui").getState(),
+            panelState = flux.store("panel").getState(),
+            offsets = panelState.centerOffsets,
             zoom = 1;
 
-        var dispatchPromise = this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+        var dispatchPromise = this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: false });
 
         if (zoomInto) {
             var padding = 50,
@@ -431,8 +417,8 @@ define(function (require, exports) {
         return Promise.join(dispatchPromise, centerPromise);
     };
     centerBounds.action = {
-        reads: [],
-        writes: [locks.JS_UI, locks.PS_APP],
+        reads: [locks.JS_UI],
+        writes: [locks.JS_PANEL, locks.PS_APP],
         transfers: [updateTransform]
     };
 
@@ -489,16 +475,18 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var zoom = function (payload) {
-        var uiStore = this.flux.store("ui"),
-            uiState = uiStore.getState(),
+        var flux = this.flux,
+            uiStore = flux.store("ui"),
+            panelStore = this.flux.store("panel"),
+            panelState = panelStore.getState(),
             document = this.flux.store("application").getCurrentDocument(),
             zoom = payload.zoom,
             bounds = document.layers.selectedAreaBounds;
 
-        this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: false });
+        this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
 
         if (!bounds || bounds.width === 0) {
-            var cloakRect = uiStore.getCloakRect(),
+            var cloakRect = panelStore.getCloakRect(),
                 tl = uiStore.transformWindowToCanvas(cloakRect.left, cloakRect.top),
                 br = uiStore.transformWindowToCanvas(cloakRect.right, cloakRect.bottom),
                 model = {
@@ -512,7 +500,7 @@ define(function (require, exports) {
         }
 
         var factor = window.devicePixelRatio,
-            offsets = uiState.centerOffsets,
+            offsets = panelState.centerOffsets,
             panZoomDescriptor = _calculatePanZoom(bounds, offsets, zoom, factor);
 
         return descriptor.play("setPanZoom", panZoomDescriptor)
@@ -522,8 +510,8 @@ define(function (require, exports) {
             });
     };
     zoom.action = {
-        reads: [locks.JS_APP],
-        writes: [locks.JS_UI, locks.PS_APP],
+        reads: [locks.JS_APP, locks.JS_UI],
+        writes: [locks.JS_PANEL, locks.PS_APP],
         transfers: [updateTransform]
     };
 
@@ -576,7 +564,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setReferencePoint = function (referencePoint) {
-        var dispatchPromise = this.dispatchAsync(events.ui.REFERENCE_POINT_CHANGED, {
+        var dispatchPromise = this.dispatchAsync(events.panel.REFERENCE_POINT_CHANGED, {
             referencePoint: referencePoint
         });
 
@@ -587,7 +575,7 @@ define(function (require, exports) {
     };
     setReferencePoint.action = {
         reads: [],
-        writes: [locks.JS_UI],
+        writes: [locks.JS_PANEL],
         transfers: [preferences.setPreference],
         modal: true
     };
@@ -603,7 +591,7 @@ define(function (require, exports) {
             psStop = appLib.colorStops[stop],
             setColorStop = appLib.setColorStop(psStop),
             setColorStopPromise = descriptor.playObject(setColorStop),
-            dispatchPromise = this.dispatchAsync(events.ui.COLOR_STOP_CHANGED, {
+            dispatchPromise = this.dispatchAsync(events.panel.COLOR_STOP_CHANGED, {
                 stop: stop
             });
 
@@ -611,7 +599,7 @@ define(function (require, exports) {
     };
     setColorStop.action = {
         reads: [],
-        writes: [locks.PS_APP, locks.JS_UI],
+        writes: [locks.PS_APP, locks.JS_PANEL],
         transfers: []
     };
 
@@ -649,7 +637,7 @@ define(function (require, exports) {
 
         // Handles Photoshop focus change events
         _activationChangeHandler = function (event) {
-            this.dispatchAsync(events.ui.TOGGLE_OVERLAYS, { enabled: event.becameActive });
+            this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: event.becameActive });
         }.bind(this);
         adapterOS.addListener("activationChanged", _activationChangeHandler);
 
@@ -685,7 +673,7 @@ define(function (require, exports) {
         const colorStopPromise = uiUtil.getPSColorStop()
             .bind(this)
             .then(function (stop) {
-                this.dispatch(events.ui.COLOR_STOP_CHANGED, {
+                this.dispatch(events.panel.COLOR_STOP_CHANGED, {
                     stop: stop
                 });
             });
@@ -695,7 +683,7 @@ define(function (require, exports) {
     };
     beforeStartup.action = {
         reads: [],
-        writes: [locks.PS_APP, locks.JS_UI],
+        writes: [locks.PS_APP, locks.JS_PANEL],
         transfers: [setReferencePoint],
         modal: true
     };
@@ -752,7 +740,6 @@ define(function (require, exports) {
     exports.cloak = cloak;
     exports.updatePanelSizes = updatePanelSizes;
     exports.setOverlayOffsetsForFirstDocument = setOverlayOffsetsForFirstDocument;
-    exports.updateToolbarWidth = updateToolbarWidth;
     exports.centerBounds = centerBounds;
     exports.centerOn = centerOn;
     exports.zoomInOut = zoomInOut;

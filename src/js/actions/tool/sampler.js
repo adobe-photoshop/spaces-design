@@ -45,7 +45,7 @@ define(function (require, exports) {
      */
     var select = function () {
         _mouseMoveHandler = _.throttle(function (event) {
-            this.dispatch(events.ui.MOUSE_POSITION_CHANGED, {
+            this.dispatch(events.panel.MOUSE_POSITION_CHANGED, {
                 currentMouseX: event.location[0],
                 currentMouseY: event.location[1]
             });
@@ -71,7 +71,7 @@ define(function (require, exports) {
     var deselect = function () {
         OS.removeListener("externalMouseMove", _mouseMoveHandler);
 
-        var mousePositionPromise = this.dispatchAsync(events.ui.MOUSE_POSITION_CHANGED, null),
+        var mousePositionPromise = this.dispatchAsync(events.panel.MOUSE_POSITION_CHANGED, null),
             hideHUDPromise = this.dispatchAsync(events.style.HIDE_HUD)
                 .bind(this)
                 .then(function () {
@@ -83,7 +83,7 @@ define(function (require, exports) {
     };
     deselect.action = {
         reads: [],
-        writes: [locks.JS_UI],
+        writes: [locks.JS_PANEL],
         transfers: ["policy.setMode"],
         modal: true
     };

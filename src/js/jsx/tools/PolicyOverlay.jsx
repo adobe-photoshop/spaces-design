@@ -35,14 +35,14 @@ define(function (require, exports, module) {
     var UI = require("adapter").ps.ui;
 
     var PolicyOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("policy", "ui")],
+        mixins: [FluxMixin, StoreWatchMixin("policy", "panel")],
 
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 policyStore = flux.store("policy"),
-                uiStore = flux.store("ui"),
+                panelStore = flux.store("panel"),
                 pointerPolicies = policyStore.getMasterPointerPolicyList(),
-                canvasBounds = uiStore.getCloakRect();
+                canvasBounds = panelStore.getCloakRect();
 
             return {
                 policies: pointerPolicies,

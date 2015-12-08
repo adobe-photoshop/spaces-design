@@ -88,8 +88,8 @@ define(function (require, exports, module) {
         }
 
         if (event.detail.keyChar === " ") {
-            var uiStore = flux.store("ui"),
-                position = uiStore.getCurrentMousePosition();
+            var panelStore = flux.store("panel"),
+                position = panelStore.getCurrentMousePosition();
 
             if (!position) {
                 return;

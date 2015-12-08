@@ -64,7 +64,7 @@ define(function (require, exports, module) {
                 applicationStore = flux.store("application"),
                 applicationState = applicationStore.getState(),
                 preferencesState = flux.store("preferences").getState(),
-                components = flux.store("ui").components,
+                components = flux.store("panel").components,
                 documentIDs = applicationState.documentIDs,
                 document = applicationStore.getCurrentDocument(),
                 count = applicationStore.getDocumentCount(),

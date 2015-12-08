@@ -45,7 +45,7 @@ define(function (require, exports, module) {
     var DEBOUNCE_DELAY = 200;
 
     var SuperselectOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui", "modifier")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui", "panel", "modifier")],
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
@@ -107,8 +107,8 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
                 toolStore = flux.store("tool"),
-                uiStore = flux.store("ui"),
-                uiState = uiStore.getState(),
+                panelStore = flux.store("panel"),
+                panelState = panelStore.getState(),
                 modalState = toolStore.getModalToolState(),
                 currentDocument = applicationStore.getCurrentDocument(),
                 modifierStore = flux.store("modifier"),
@@ -118,8 +118,8 @@ define(function (require, exports, module) {
 
             return {
                 document: currentDocument,
-                marqueeEnabled: uiState.marqueeEnabled,
-                marqueeStart: uiState.marqueeStart,
+                marqueeEnabled: panelState.marqueeEnabled,
+                marqueeStart: panelState.marqueeStart,
                 modalState: modalState,
                 leafBounds: leafModifier,
                 vectorMaskMode: vectorMaskMode

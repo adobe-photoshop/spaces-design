@@ -815,9 +815,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var createLayerFromElement = function (element, location) {
-        var appStore = this.flux.store("application"),
-            libState = this.flux.store("library").getState(),
-            uiStore = this.flux.store("ui"),
+        var flux = this.flux,
+            appStore = flux.store("application"),
+            libState = flux.store("library").getState(),
+            uiStore = flux.store("ui"),
             currentDocument = appStore.getCurrentDocument(),
             currentLibrary = libState.currentLibrary,
             pixelRatio = window.devicePixelRatio;

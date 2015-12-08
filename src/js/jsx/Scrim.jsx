@@ -38,7 +38,7 @@ define(function (require, exports, module) {
         Droppable = require("js/jsx/shared/Droppable");
     
     var Scrim = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("dialog", "tool", "ui", "application", "preferences")],
+        mixins: [FluxMixin, StoreWatchMixin("dialog", "tool", "ui", "panel", "application", "preferences")],
 
         /**
          * Dispatches (synthetic) click events from the scrim to the currently
@@ -178,6 +178,7 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 toolState = flux.store("tool").getState(),
                 uiState = flux.store("ui").getState(),
+                panelState = flux.store("panel").getState(),
                 preferenceStore = flux.store("preferences"),
                 applicationStore = flux.store("application"),
                 applicationState = applicationStore.getState(),
@@ -188,7 +189,7 @@ define(function (require, exports, module) {
             return {
                 current: toolState.current,
                 transform: uiState.inverseTransformMatrix,
-                overlaysEnabled: uiState.overlaysEnabled,
+                overlaysEnabled: panelState.overlaysEnabled,
                 policyFrames: policyFrames,
                 document: document,
                 activeDocumentInitialized: applicationState.activeDocumentInitialized,

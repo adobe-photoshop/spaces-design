@@ -114,12 +114,14 @@ define(function (require, exports, module) {
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated",
+            DISPLAY_CHANGED: "displayChanged"
+        },
+        panel: {
             PANELS_RESIZED: "panelsResized",
             TOGGLE_OVERLAYS: "toggleOverlays",
             SUPERSELECT_MARQUEE: "superselectMarquee",
             REFERENCE_POINT_CHANGED: "referencePointChanged",
             COLOR_STOP_CHANGED: "colorStopChanged",
-            DISPLAY_CHANGED: "displayChanged",
             MOUSE_POSITION_CHANGED: "mousePositionChanged"
         },
         modifiers: {

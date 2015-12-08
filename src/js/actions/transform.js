@@ -1262,7 +1262,7 @@ define(function (require, exports) {
         }, this);
 
         _layerTransformHandler = function (event) {
-            this.dispatch(events.ui.TOGGLE_OVERLAYS, { enabled: true });
+            this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: true });
 
             var appStore = this.flux.store("application"),
                 currentDoc = appStore.getCurrentDocument();

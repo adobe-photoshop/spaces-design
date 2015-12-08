@@ -39,6 +39,7 @@ define(function (require, exports) {
         "policy": require("./policy"),
         "menu": require("./menu"),
         "modifier": require("./modifier"),
+        "panel": require("./panel"),
         "preferences": require("./preferences"),
         "ui": require("./ui"),
         "shortcut": require("./shortcut"),
