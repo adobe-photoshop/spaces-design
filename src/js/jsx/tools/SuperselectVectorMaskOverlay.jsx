@@ -163,8 +163,8 @@ define(function (require, exports, module) {
          */
         _drawVectorMaskHUDObjects: function () {
             var flux = this.getFlux(),
-                uiStore = flux.store("ui"),
-                cloakRect = uiStore.getCloakRect();
+                panelStore = flux.store("panel"),
+                cloakRect = panelStore.getCloakRect();
             
             var layerTree = this.state.document.layers;
     
