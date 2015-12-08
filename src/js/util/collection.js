@@ -81,7 +81,7 @@ define(function (require, exports) {
     var pluck = function (iterable, property, notSetValue) {
         return iterable.map(function (obj) {
             if (obj) {
-                if (obj.hasOwnProperty(property) || obj[property]) {
+                if (obj.hasOwnProperty(property) || obj[property] !== undefined) {
                     return obj[property];
                 } else if (obj instanceof Immutable.Iterable) {
                     return obj.get(property, notSetValue);
