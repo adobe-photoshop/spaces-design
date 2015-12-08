@@ -835,7 +835,7 @@ define(function (require, exports) {
     };
     selectNextDocument.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [locks.JS_UI],
+        writes: [],
         transfers: [selectDocument],
         lockUI: true
     };
@@ -857,7 +857,7 @@ define(function (require, exports) {
     };
     selectPreviousDocument.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [locks.JS_UI],
+        writes: [],
         transfers: [selectDocument],
         lockUI: true
     };
