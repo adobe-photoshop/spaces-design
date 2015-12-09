@@ -41,6 +41,7 @@ define(function (require, exports, module) {
         libraries: require("./libraries"),
         mask: require("./mask"),
         menu: require("./menu"),
+        panel: require("./panel"),
         policy: require("./policy"),
         preferences: require("./preferences"),
         sampler: require("./sampler"),

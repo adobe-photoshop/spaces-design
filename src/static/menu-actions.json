@@ -411,34 +411,34 @@
             "$enable-rule": "multiple-documents"
         },
         "TOGGLE_TOOLBAR": {
-            "$action": "ui.togglePinnedToolbar",
+            "$action": "panel.togglePinnedToolbar",
             "$enable-rule": "always-except-modal"
         },
         "COLOR_THEME": {
             "$enable-rule": "always-except-modal",
             "ORIGINAL": {
-                "$action": "ui.setColorStop",
+                "$action": "panel.setColorStop",
                 "$enable-rule": "always-except-modal",
                 "$payload": {
                     "stop": "ORIGINAL"
                 }
             },
             "LIGHT": {
-                "$action": "ui.setColorStop",
+                "$action": "panel.setColorStop",
                 "$enable-rule": "always-except-modal",
                 "$payload": {
                     "stop": "LIGHT"
                 }
             },
             "MEDIUM": {
-                "$action": "ui.setColorStop",
+                "$action": "panel.setColorStop",
                 "$enable-rule": "always-except-modal",
                 "$payload": {
                     "stop": "MEDIUM"
                 }
             },
             "DARK": {
-                "$action": "ui.setColorStop",
+                "$action": "panel.setColorStop",
                 "$enable-rule": "always-except-modal",
                 "$payload": {
                     "stop": "DARK"
@@ -446,7 +446,7 @@
             }
         },
         "TOGGLE_SINGLE_COLUMN_MODE": {
-            "$action": "ui.toggleSingleColumnMode",
+            "$action": "panel.toggleSingleColumnMode",
             "$enable-rule": "always-except-modal"
         },
         "RETURN_TO_STANDARD": {

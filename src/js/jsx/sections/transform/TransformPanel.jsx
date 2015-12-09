@@ -65,7 +65,7 @@ define(function (require, exports, module) {
          * @param {string} referencePoint Two character string denoting the active reference point [lmr][tcb]
          */
         _handleReferenceClick: function (referencePoint) {
-            this.getFlux().actions.ui.setReferencePoint(referencePoint);
+            this.getFlux().actions.panel.setReferencePoint(referencePoint);
         },
         
         render: function () {
