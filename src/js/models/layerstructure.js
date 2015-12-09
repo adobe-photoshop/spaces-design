@@ -350,7 +350,7 @@ define(function (require, exports, module) {
         },
         
         /**
-         * Overall bounds of selection of unlocked layers.
+         * Overall bounds of selection, but exclude locked layers.
          * @type {Bounds}
          */
         "selectedUnlockedAreaBounds": function () {
