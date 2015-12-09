@@ -166,6 +166,9 @@ module.exports = function (grunt) {
                     spawn: false,
                     interrupt: true
                 }
+            },
+            sources: {
+                files: ["src/**/*"]
             }
         },
         // Build tasks
