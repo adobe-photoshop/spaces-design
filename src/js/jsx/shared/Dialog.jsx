@@ -110,6 +110,38 @@ define(function (require, exports, module) {
             this.getFlux().store("dialog").registerDialog(this.props.id, this._getDismissalPolicy());
         },
 
+        componentWillUnmount: function () {
+            if (this.state.open) {
+                this._removeListeners();
+                this.getFlux().actions.dialog.closeDialog(this.props.id);
+            }
+
+            this.getFlux().store("dialog").deregisterDialog(this.props.id);
+        },
+
+        componentDidUpdate: function (prevProps, prevState) {
+            var dialogEl = ReactDOM.findDOMNode(this);
+
+            if (this.state.open && !prevState.open) {
+                // Dialog opening
+                if (this.props.modal) {
+                    dialogEl.showModal();
+                }
+
+                this._addListeners();
+                this._positionDialog(dialogEl);
+                this.props.onOpen();
+            } else if (!this.state.open && prevState.open) {
+                // Dialog closing
+                this._removeListeners();
+                
+                if (this.props.modal && dialogEl.open) {
+                    dialogEl.close();
+                }
+                this.props.onClose();
+            }
+        },
+
         /**
          * Build an object representation of the dismissal policy to be sent to the Dialog Store
          *
@@ -141,6 +173,11 @@ define(function (require, exports, module) {
             }
 
             event.stopPropagation();
+        },
+
+        /** @ignore */
+        isOpen: function () {
+            return this.state.open;
         },
 
         /**
@@ -211,34 +248,40 @@ define(function (require, exports, module) {
                 if (this._target) {
                     dialogBounds = dialogEl.getBoundingClientRect();
 
-                    var placedAbove = false,
-                        clientHeight = window.document.documentElement.clientHeight,
-
-                        // Need to account for element margin
-                        dialogComputedStyle = window.getComputedStyle(dialogEl),
-                        dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
-                        dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom),
-                     
+                    var clientHeight = window.document.documentElement.clientHeight,
                         // Adjust the position of the opened dialog according to the target
                         targetBounds = this._target.getBoundingClientRect(),
                         offsetParentBounds = this._target.offsetParent.getBoundingClientRect(),
                         placedDialogTop = Math.round(targetBounds.bottom) - Math.round(offsetParentBounds.top),
-                        placedDialogBottom = placedDialogTop + Math.round(dialogBounds.height);
-
-                    if (placedDialogBottom > clientHeight) {
-                        // If there is space, let's place this above the target
+                        placedDialogBottom = placedDialogTop + Math.round(dialogBounds.height),
+                        topPosition,
+                        bottomPosition,
+                        placedAbove;
+                    
+                    // If there is space below the target, place the dialog below.
+                    if (placedDialogBottom <= clientHeight) {
+                        placedAbove = false;
+                        topPosition = placedDialogTop + "px";
+                    } else {
                         placedAbove = true;
+                        
+                        // Need to account for element margin
+                        var dialogComputedStyle = window.getComputedStyle(dialogEl),
+                            dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
+                            dialogMarginBottom = math.pixelDimensionToNumber(dialogComputedStyle.marginBottom);
+
+                        // If there is space above the target, let's place the dialog above it
                         if (dialogBounds.height + dialogMarginTop + dialogMarginBottom < targetBounds.top) {
-                            placedDialogTop = targetBounds.top -
-                                dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                            bottomPosition = (clientHeight - targetBounds.top - dialogMarginBottom) + "px";
                         } else {
-                            placedDialogTop = clientHeight -
-                                dialogBounds.height - dialogMarginTop - dialogMarginBottom;
+                            topPosition = (clientHeight -
+                                dialogBounds.height - dialogMarginTop - dialogMarginBottom) + "px";
                         }
                     }
 
                     this.setState({
-                        "topPosition": placedDialogTop + "px",
+                        "topPosition": topPosition,
+                        "bottomPosition": bottomPosition,
                         "placedAbove": placedAbove
                     });
                 } else {
@@ -321,6 +364,7 @@ define(function (require, exports, module) {
                     className: classes,
                     style: {
                         top: this.state.topPosition,
+                        bottom: this.state.bottomPosition,
                         left: this.state.leftPosition
                     }
                 };
@@ -339,43 +383,6 @@ define(function (require, exports, module) {
                     {children}
                 </dialog>
             );
-        },
-
-        componentDidUpdate: function (prevProps, prevState) {
-            var dialogEl = ReactDOM.findDOMNode(this);
-
-            if (this.state.open && !prevState.open) {
-                // Dialog opening
-                if (this.props.modal) {
-                    dialogEl.showModal();
-                }
-
-                this._addListeners();
-                this._positionDialog(dialogEl);
-                this.props.onOpen();
-            } else if (!this.state.open && prevState.open) {
-                // Dialog closing
-                this._removeListeners();
-                
-                if (this.props.modal && dialogEl.open) {
-                    dialogEl.close();
-                }
-                this.props.onClose();
-            }
-        },
-
-        componentWillUnmount: function () {
-            if (this.state.open) {
-                this._removeListeners();
-                this.getFlux().actions.dialog.closeDialog(this.props.id);
-            }
-
-            this.getFlux().store("dialog").deregisterDialog(this.props.id);
-        },
-
-        /** @ignore */
-        isOpen: function () {
-            return this.state.open;
         }
     });
 
