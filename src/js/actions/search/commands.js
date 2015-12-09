@@ -123,13 +123,11 @@ define(function (require, exports) {
     var _menuCommandSearchOptions = function () {
         var menuStore = this.flux.store("menu"),
             menu = menuStore.getApplicationMenu(),
-            menuMap = menu.rootMap,
             roots = menu.roots.reverse();
 
         var menuCommands = [];
         roots.forEach(function (root) {
-            var currRoot = menuMap.get(root.id),
-                nodes = [currRoot],
+            var nodes = [root],
                 currItem;
 
             while (nodes.length > 0) {
