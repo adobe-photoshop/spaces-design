@@ -25,7 +25,6 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        ReactDOM = require("react-dom"),
         classnames = require("classnames"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
@@ -35,52 +34,7 @@ define(function (require, exports, module) {
         mixins: [FluxMixin, ScrubbyMixin],
         
         propTypes: {
-            size: React.PropTypes.string,
-            onScrub: React.PropTypes.func,
-            onScrubStart: React.PropTypes.func,
-            onScrubEnd: React.PropTypes.func
-        },
-
-        /**
-         * inform the parent that scrubbing has started
-         *
-         * @private
-         */
-        _updatePositionBegin: function () {
-            if (this.props.onScrubStart) {
-                this.props.onScrubStart();
-            }
-        },
-        
-        /**
-         * inform the parent that scrubbing has ended
-         *
-         * @private
-         */
-        _updatePositionEnd: function () {
-            if (this.props.onScrubEnd) {
-                this.props.onScrubEnd();
-            }
-        },
-
-        /**
-         * Update the parents scrubby information
-         *
-         * @private
-         */
-        _updatePosition: function (clientX, clientY) {
-            if (this.props.onScrub) {
-                var rect = ReactDOM.findDOMNode(this).getBoundingClientRect();
-
-                var value;
-                if (this.props.vertical) {
-                    value = (rect.bottom - clientY);
-                } else {
-                    value = (clientX - rect.left);
-                }
-
-                this.props.onScrub(value);
-            }
+            size: React.PropTypes.string
         },
 
         render: function () {
@@ -94,8 +48,6 @@ define(function (require, exports, module) {
                 <label
                     {...this.props}
                     ref="label"
-                    onMouseDown={!this.props.disabled && this.props.onScrub && this._startUpdates}
-                    onTouchStart={!this.props.disabled && this.props.onScrub && this._startUpdates}
                     className={className}>
                     {this.props.children}
                 </label>

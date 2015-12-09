@@ -51,14 +51,14 @@ define(function (require, exports, module) {
          * @private 
          * @type {number}
          */
-        _xScrubbyValue: null,
+        _initialScrubX: null,
         
         /**
          * Variables for storing inital scrub value to determine correct offset.
          * @private 
          * @type {number}
          */
-        _yScrubbyValue: null,
+        _initialScrubY: null,
 
         getDefaultProps: function () {
             return {
@@ -112,22 +112,22 @@ define(function (require, exports, module) {
                 xValues = collection.pluck(bounds, positionKeys.x),
                 value = collection.uniformValue(xValues);
 
-            this._xScrubbyValue = value;
+            this._initialScrubX = value;
         },
 
         /**
-         * Update the current X position of the selected layers.
+         * Update the current X position of the selected layers based on change from initial scrub position
          *
          * @private
-         * @param {number} newX
+         * @param {number} deltaX
          */
-        _handleXScrub: function (newX) {
-            if (_.isNumber(this._xScrubbyValue)) {
+        _handleXScrub: function (deltaX) {
+            if (_.isNumber(this._initialScrubX)) {
                 var document = this.props.document,
                     uiStore = this.getFlux().store("ui"),
                     resolution = document.resolution,
                     positionObj = {
-                        x: (uiStore.zoomCanvasToWindow(newX * resolution) / resolution) + this._xScrubbyValue,
+                        x: (uiStore.zoomCanvasToWindow(deltaX * resolution) / resolution) + this._initialScrubX,
                         relative: true
                     };
                     
@@ -148,22 +148,22 @@ define(function (require, exports, module) {
                 yValues = collection.pluck(bounds, positionKeys.y),
                 value = collection.uniformValue(yValues);
 
-            this._yScrubbyValue = value;
+            this._initialScrubY = value;
         },
         
         /**
          * Update the current X position of the selected layers.
          *
          * @private
-         * @param {number} newY
+         * @param {number} deltaX
          */
-        _handleYScrub: function (newY) {
-            if (_.isNumber(this._yScrubbyValue)) {
+        _handleYScrub: function (deltaX) {
+            if (_.isNumber(this._initialScrubY)) {
                 var document = this.props.document,
                     uiStore = this.getFlux().store("ui"),
                     resolution = document.resolution,
                     positionObj = {
-                        y: (uiStore.zoomCanvasToWindow(newY * resolution) / resolution) + this._yScrubbyValue,
+                        y: (uiStore.zoomCanvasToWindow(deltaX * resolution) / resolution) + this._initialScrubY,
                         relative: true
                     };
 
@@ -238,8 +238,8 @@ define(function (require, exports, module) {
                         title={nls.localize("strings.TOOLTIPS.SET_X_POSITION")}
                         className="label__medium__left-aligned"
                         size="column-1"
-                        onScrub={this._handleXScrub}
-                        onScrubStart={this._handleXScrubBegin}>
+                        onScrub={!disabled && this._handleXScrub}
+                        onScrubStart={!disabled && this._handleXScrubBegin}>
                         {nls.localize("strings.TRANSFORM.X")}
                     </Label>
                     <NumberInput
@@ -256,8 +256,8 @@ define(function (require, exports, module) {
                         title={nls.localize("strings.TOOLTIPS.SET_Y_POSITION")}
                         className="label__medium__left-aligned"
                         size="column-1"
-                        onScrub={this._handleYScrub}
-                        onScrubStart={this._handleYScrubBegin}>
+                        onScrub={!disabled && this._handleYScrub}
+                        onScrubStart={!disabled && this._handleYScrubBegin}>
                         {nls.localize("strings.TRANSFORM.Y")}
                     </Label>
                     <NumberInput
