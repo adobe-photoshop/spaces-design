@@ -53,6 +53,7 @@
     "grunt-lintspaces": "^0.7.0",
     "grunt-merge-json": "^0.9.5",
     "grunt-webpack": "^1.0.11",
+    "html-loader": "^0.4.0",
     "jscs-jsdoc": "^1.2.0",
     "jscs-trailing-whitespace-in-source": "0.0.1",
     "json-loader": "^0.5.3",

@@ -78,7 +78,7 @@ var buildConfigs = languages.map(function (lang) {
                 {
                     test: /\.svg$/,
                     exclude: /(node_modules)/,
-                    loader: "url",
+                    loader: "html",
                     query: {
                         name: "[name].[ext]" // This keeps the file name intact
                     }
