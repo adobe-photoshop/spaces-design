@@ -1256,7 +1256,17 @@ define(function (require, exports) {
     var _toolModalStateChangedHandler;
 
     var beforeStartup = function () {
-        apiLoadPromise
+        _toolModalStateChangedHandler = function (event) {
+            var isPlacingGraphic = this.flux.store("library").getState().isPlacingGraphic,
+                modalStateEnded = event.state && event.state._value === "exit";
+
+            if (isPlacingGraphic && modalStateEnded) {
+                this.flux.actions.libraries.handleCompletePlacingGraphic();
+            }
+        }.bind(this);
+        descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
+
+        return apiLoadPromise
             .bind(this)
             .then(function () {
                 /* global ccLibraries */
@@ -1320,18 +1330,6 @@ define(function (require, exports) {
                     ]
                 });
             });
-
-        _toolModalStateChangedHandler = function (event) {
-            var isPlacingGraphic = this.flux.store("library").getState().isPlacingGraphic,
-                modalStateEnded = event.state && event.state._value === "exit";
-
-            if (isPlacingGraphic && modalStateEnded) {
-                this.flux.actions.libraries.handleCompletePlacingGraphic();
-            }
-        }.bind(this);
-        descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
-
-        return apiLoadPromise;
     };
     beforeStartup.action = {
         reads: [locks.JS_PREF],
