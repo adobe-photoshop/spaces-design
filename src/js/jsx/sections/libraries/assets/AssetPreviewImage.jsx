@@ -98,6 +98,13 @@ define(function (require, exports, module) {
             })
             .bind(this)
             .then(function (path) {
+                // component will be unmounted if the column mode is changed (Two-Column/Single-Column Mode) 
+                // before it completes fetching the rendition path. If so, simply ignore the result as the new 
+                // component will fetch the rendition path again.
+                if (!this.isMounted()) {
+                    return;
+                }
+
                 // path will be undefined when the element is a graphic and its representation 
                 // is empty (e.g. an empty artboard).
                 this.setState({
