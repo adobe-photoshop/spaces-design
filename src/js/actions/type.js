@@ -173,7 +173,7 @@ define(function (require, exports) {
     };
     setPostScript.action = {
         reads: [locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_UI],
+        writes: [locks.PS_DOC],
         transfers: [updatePostScript, layerActions.resetBounds, layerActions.resetLayers],
         modal: true
     };
@@ -244,7 +244,7 @@ define(function (require, exports) {
     };
     setFace.action = {
         reads: [locks.JS_DOC],
-        writes: [locks.JS_UI, locks.PS_DOC],
+        writes: [locks.PS_DOC],
         transfers: [updateFace, layerActions.resetBounds, layerActions.resetLayers],
         modal: true
     };
@@ -407,7 +407,7 @@ define(function (require, exports) {
     };
     setSize.action = {
         reads: [locks.JS_DOC],
-        writes: [locks.JS_UI, locks.PS_DOC],
+        writes: [locks.PS_DOC],
         transfers: [updateSize, layerActions.resetBounds, layerActions.resetLayers],
         modal: true
     };
@@ -475,7 +475,7 @@ define(function (require, exports) {
     };
     setTracking.action = {
         reads: [locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_UI],
+        writes: [locks.PS_DOC],
         transfers: [updateTracking, layerActions.resetBounds, layerActions.resetLayers],
         modal: true
     };
@@ -545,7 +545,7 @@ define(function (require, exports) {
     };
     setLeading.action = {
         reads: [locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_UI],
+        writes: [locks.PS_DOC],
         transfers: [updateLeading, layerActions.resetBounds, layerActions.resetLayers],
         modal: true
     };
@@ -612,7 +612,7 @@ define(function (require, exports) {
     };
     setAlignment.action = {
         reads: [locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_UI],
+        writes: [locks.PS_DOC],
         transfers: [updateAlignment, layerActions.resetBounds, layerActions.resetLayers],
         modal: true
     };

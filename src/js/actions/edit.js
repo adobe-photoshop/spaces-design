@@ -422,7 +422,7 @@ define(function (require, exports) {
     };
     redo.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [locks.JS_UI],
+        writes: [locks.JS_PANEL],
         transfers: [history.incrementHistory],
         post: [layers._verifyLayerIndex],
         modal: true
