@@ -262,7 +262,7 @@ define(function (require, exports, module) {
             var panelClassnames = classnames("exports-panel__container");
 
             var exportButton = serviceBusy ?
-                (<SVGIcon CSSID="loader" viewbox="0 0 16 16" iconPath="" />)
+                (<SVGIcon CSSID="loader" viewbox="0 0 16 16" />)
                 : nls.localize("strings.EXPORT.BUTTON_EXPORT");
 
             return (
@@ -312,6 +312,7 @@ define(function (require, exports, module) {
                     <div className="exports-panel__two-column">
                         <div className="exports-panel__button-group">
                             <Button
+                                className="loader-animation"
                                 disabled={this.state.exportDisabled || serviceBusy}
                                 onClick={this._exportAllAssets.bind(this, prefixMap)}>
                                 {exportButton}

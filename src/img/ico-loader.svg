@@ -1,65 +1,11 @@
 <svg version="1.1" id="loader" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="100%" height="100%" viewBox="0 0 16 16" xml:space="preserve">
-    <g transform="scale(.5625)">
-        <circle cx="9" cy="7" r="3" opacity="1">
-          <animate attributeType="XML"
-              attributeName="opacity"
-              from="1" 
-              to="0"
-              begin = "0"
-              repeatCount ="indefinite"
-              fill = "freeze"
-              dur="1s"/>
-        </circle>
-        <circle opacity=".16666" cx="17" cy="7" r="3">
-          <animate attributeType="XML"
-              attributeName="opacity"
-              from="1" 
-              to="0"
-              begin = ".16666s"
-              repeatCount ="indefinite"
-              fill = "freeze"
-              dur="1s"/>
-        </circle>
-        <circle opacity=".33333" cx="21" cy="13.5" r="3">
-          <animate attributeType="XML"
-              attributeName="opacity"
-              from="1" 
-              to="0"
-              begin = ".3333s"
-              repeatCount ="indefinite"
-              fill = "freeze"
-              dur="1s"/>
-        </circle>
-        <circle opacity=".4999" cx="17" cy="20" r="3">
-          <animate attributeType="XML"
-              attributeName="opacity"
-              from="1" 
-              to="0"
-              begin = ".499999999333332s"
-              repeatCount ="indefinite"
-              fill = "freeze"
-              dur="1s"/>
-        </circle>
-        <circle opacity=".6667" cx="9" cy="20" r="3">
-          <animate attributeType="XML"
-              attributeName="opacity"
-              from="1" 
-              to="0"
-              begin = ".666666665999998s"
-              repeatCount ="indefinite"
-              fill = "freeze"
-              dur="1s"/>
-        </circle>
-        <circle opacity=".83333" cx="5" cy="13.5" r="3">
-          <animate attributeType="XML"
-              attributeName="opacity"
-              from="1" 
-              to="0"
-              begin = ".833333332666664s"
-              repeatCount ="indefinite"
-              fill = "freeze"
-              dur="1s"/>
-        </circle>
-    </g>
+    <g> 
+        <circle opacity="1" cx="5"  cy="2" r="2"/>
+        <circle opacity=".1667" cx="11"  cy="2" r="2"/>
+        <circle opacity=".3333" cx="14"  cy="7.196" r="2"/>
+        <circle opacity=".4999" cx="11" cy="12.392" r="2"/>
+        <circle opacity=".6667" cx="5"  cy="12.392" r="2"/>
+        <circle opacity=".8333" cx="2"  cy="7.196" r="2"/>
+     </g>
 </svg>

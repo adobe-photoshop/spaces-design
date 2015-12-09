@@ -114,8 +114,8 @@ define(function (require, exports, module) {
         render: function () {
             if (this.state.loading) {
                 return (<div className="libraries__asset__preview-image
-                    libraries__asset__preview-image-loading">
-                    <SVGIcon viewBox="0 0 16 16" CSSID="loader" iconPath=""/>
+                    libraries__asset__preview-image-loading loader-animation">
+                    <SVGIcon viewBox="0 0 16 16" CSSID="loader" />
                 </div>);
             }
             

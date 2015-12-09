@@ -70,18 +70,6 @@ var buildConfigs = languages.map(function (lang) {
                     test: /\.json$/,
                     exclude: /(node_modules)/,
                     loader: "json"
-                },
-                // SVG files get loaded to memory if they are smaller than 100 KB
-                // TODO: We have a lot of svg files that are external
-                // and read at run time, see if bundling them along is any better
-                // using require.context
-                {
-                    test: /\.svg$/,
-                    exclude: /(node_modules)/,
-                    loader: "url",
-                    query: {
-                        name: "[name].[ext]" // This keeps the file name intact
-                    }
                 }
             ]
         },
