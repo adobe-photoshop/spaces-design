@@ -241,9 +241,9 @@ define(function (require, exports, module) {
                             iconId="libraries-stock"
                             onClick={this._handleStockButtonClicked}/>
                         <SplitButtonItem
+                            className={this.props.isSyncing ? "loader-animation" : null}
                             title={nls.localize("strings.TOOLTIPS.SYNC_LIBRARIES")}
                             iconId={this.props.isSyncing ? "loader" : "libraries-cc"}
-                            iconPath={this.props.isSyncing ? "" : null}
                             onClick={this._handleSyncLibraries}
                             disabled={this.props.disabled}/>
                     </ul>
