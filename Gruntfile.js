@@ -168,7 +168,10 @@ module.exports = function (grunt) {
                 }
             },
             sources: {
-                files: ["src/**/*"]
+                files: ["src/**/*"],
+                options: {
+                    interval: 500
+                }
             }
         },
         // Build tasks
