@@ -655,7 +655,8 @@ define(function (require, exports, module) {
                         onKeyDown={this._handleKeyDown}
                         onChange={this._handleInputChanged}
                         onFocus={this._handleFocus}
-                        onClick={this._handleInputClicked} />
+                        onClick={this._handleInputClicked}
+                        allowEmpty={false} />
                   </div>
             );
         }

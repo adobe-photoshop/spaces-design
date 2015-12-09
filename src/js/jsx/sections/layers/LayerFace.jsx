@@ -155,13 +155,7 @@ define(function (require, exports, module) {
          * @param {string} newName 
          */
         _handleLayerNameChange: function (event, newName) {
-            if (newName.length !== 0) {
-                if (newName !== this.props.layer.name) {
-                    this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
-                }
-            } else {
-                this.refs.layerName.setValue(this.props.layer.name);
-            }
+            this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
         },
 
         /**
@@ -664,7 +658,8 @@ define(function (require, exports, module) {
                                         value={layer.name}
                                         disabled={this.props.disabled || !nameEditable}
                                         onKeyDown={this._skipToNextLayerName}
-                                        onChange={this._handleLayerNameChange}>
+                                        onChange={this._handleLayerNameChange}
+                                        allowEmpty={false}>
                                     </TextInput>
                                     {showHideButton}
                                 </span>
