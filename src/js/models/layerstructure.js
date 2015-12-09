@@ -348,6 +348,25 @@ define(function (require, exports, module) {
         "selectedAreaBounds": function () {
             return Bounds.union(this.selectedChildBounds);
         },
+        
+        /**
+         * Overall bounds of selection of unlocked layers.
+         * @type {Bounds}
+         */
+        "selectedUnlockedAreaBounds": function () {
+            var unlockedLayers = this.selected.filter(function (l) { return !l.locked; }),
+                bounds = unlockedLayers
+                    .toSeq()
+                    .map(function (layer) {
+                        return this.childBounds(layer);
+                    }, this)
+                    .filter(function (bounds) {
+                        return bounds && bounds.area > 0;
+                    })
+                    .toList();
+
+            return Bounds.union(bounds);
+        },
 
         /**
          * Bounds of all the top layers

@@ -186,7 +186,7 @@ define(function (require, exports, module) {
             
             this.drawBoundRectangles(layerTree);
             this.drawSelectionBounds(layerTree);
-            this.drawSamplerHUD();
+            this.drawSamplerHUD(layerTree);
         },
 
         /**
@@ -197,7 +197,7 @@ define(function (require, exports, module) {
          */
         drawSelectionBounds: function (layerTree) {
             var scale = this._scale,
-                bounds = layerTree.selectedAreaBounds;
+                bounds = layerTree.selectedUnlockedAreaBounds;
 
             // Skip empty bounds
             if (!bounds || bounds.empty) {
@@ -263,8 +263,10 @@ define(function (require, exports, module) {
         /**
          * Draws sampler HUD if there is one available from the store
          */
-        drawSamplerHUD: function () {
-            if (!this.state.sampleTypes || !this.state.samplePoint) {
+        drawSamplerHUD: function (layerTree) {
+            var selectedLayers = layerTree.selected.filter(function (l) { return !l.locked });
+            
+            if (selectedLayers.isEmpty() || !this.state.sampleTypes || !this.state.samplePoint) {
                 return;
             }
 
