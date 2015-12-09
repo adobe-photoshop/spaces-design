@@ -30,9 +30,9 @@ define(function (require, exports) {
         system = require("js/util/system"),
         nls = require("js/util/nls");
 
-    var events = require("js/events");
-
-    var menuActions = require("js/actions/menu"),
+    var events = require("js/events"),
+        locks = require("js/locks"),
+        menuActions = require("js/actions/menu"),
         shortcutActions = require("js/actions/shortcuts");
 
     /**
@@ -271,13 +271,17 @@ define(function (require, exports) {
             "getSVGClass": _getSVGClass
         };
 
-        this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, menuCommandPayload);
+        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, menuCommandPayload);
+    };
+    registerMenuCommandSearch.action = {
+        reads: [],
+        writes: [locks.JS_SEARCH]
     };
 
     /**
      * Register global shortcut info for search
      */
-    var _registerGlobalShortcutSearch = function () {
+    var registerGlobalShortcutSearch = function () {
         var globalShortcutPayload = {
             "type": "GLOBAL_SHORTCUT",
             "getOptions": _globalShortcutSearchOptions.bind(this),
@@ -287,9 +291,13 @@ define(function (require, exports) {
             "getSVGClass": _getSVGClass
         };
 
-        this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, globalShortcutPayload);
+        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, globalShortcutPayload);
+    };
+    registerGlobalShortcutSearch.action = {
+        reads: [],
+        writes: [locks.JS_SEARCH]
     };
 
-    exports._registerGlobalShortcutSearch = _registerGlobalShortcutSearch;
+    exports.registerGlobalShortcutSearch = registerGlobalShortcutSearch;
     exports.registerMenuCommandSearch = registerMenuCommandSearch;
 });

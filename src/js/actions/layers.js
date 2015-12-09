@@ -40,7 +40,6 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         documentActions = require("./documents"),
         historyActions = require("./history"),
-        searchActions = require("./search/layers"),
         exportActions = require("./export"),
         log = require("js/util/log"),
         events = require("../events"),
@@ -2728,9 +2727,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        searchActions.registerAllLayerSearch.call(this);
-        searchActions.registerCurrentLayerSearch.call(this);
-
         var deleteFn = function () {
             // Note: shortcuts are executed iff some CEF element does not have focus.
             // In particular, this means that if is no active element but there _is_
@@ -2759,12 +2755,17 @@ define(function (require, exports) {
             }
         ];
 
-        return this.transfer(shortcuts.addShortcuts, shortcutSpecs);
+        var shortcutPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),
+            searchAllPromise = this.transfer("searchLayers.registerAllLayerSearch"),
+            searchCurrentPromise = this.transfer("searchLayers.registerCurrentLayerSearch");
+
+        return Promise.join(shortcutPromise, searchAllPromise, searchCurrentPromise);
     };
     afterStartup.action = {
         reads: [],
         writes: [],
-        transfers: [shortcuts.addShortcuts]
+        transfers: [shortcuts.addShortcuts, "searchLayers.registerAllLayerSearch",
+            "searchLayers.registerCurrentLayerSearch"]
     };
 
     /**

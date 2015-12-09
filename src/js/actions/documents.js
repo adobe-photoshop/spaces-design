@@ -38,7 +38,6 @@ define(function (require, exports) {
         historyActions = require("./history"),
         layerActions = require("./layers"),
         toolActions = require("./tools"),
-        searchActions = require("./search/documents"),
         libraryActions = require("./libraries"),
         application = require("./application"),
         preferencesActions = require("./preferences"),
@@ -1178,18 +1177,19 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function (payload) {
-        searchActions.registerCurrentDocumentSearch.call(this);
-        searchActions.registerRecentDocumentSearch.call(this);
-
         var activeDocumentID = payload && payload.activeDocumentID,
-            openDocumentIDs = payload ? payload.openDocumentIDs : [];
+            openDocumentIDs = payload ? payload.openDocumentIDs : [],
+            initPromise = this.transfer(initInactiveDocuments, activeDocumentID, openDocumentIDs),
+            searchCurrentPromise = this.transfer("searchDocuments.registerCurrentDocumentSearch"),
+            searchRecentPromise = this.transfer("searchDocuments.registerRecentDocumentSearch");
 
-        return this.transfer(initInactiveDocuments, activeDocumentID, openDocumentIDs);
+        return Promise.join(initPromise, searchCurrentPromise, searchRecentPromise);
     };
     afterStartup.action = {
-        reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC, locks.JS_SEARCH],
-        transfers: [initInactiveDocuments]
+        reads: [],
+        writes: [],
+        transfers: [initInactiveDocuments, "searchDocuments.registerCurrentDocumentSearch",
+            "searchDocuments.registerRecentDocumentSearch"]
     };
 
     /**
