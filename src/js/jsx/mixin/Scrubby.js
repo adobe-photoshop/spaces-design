@@ -26,8 +26,7 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         ReactDOM = require("react-dom"),
-        _ = require("lodash"),
-        log = require("js/util/log");
+        _ = require("lodash");
 
     /**
      * This mixin provides the component with scrubby functionality, where the user can
@@ -35,7 +34,7 @@ define(function (require, exports, module) {
      * about the relative position of the drag is passed to the component
      *
      * For minimal use, clients need to provide the `onScrub` function which
-     * is passed the distance mouse traveled since last onScrub call
+     * is passed the distance mouse traveled since scrub started
      *
      * Optionally, clients can also provide onScrubStart and onScrubEnd for initialize/cleanup
      * onScrubStart is passed the initial mouse coordinates (x,y)
@@ -57,7 +56,6 @@ define(function (require, exports, module) {
         _initialScrubY: null,
 
         propTypes: {
-            onChange: React.PropTypes.func,
             onScrub: React.PropTypes.func,
             onScrubStart: React.PropTypes.func,
             onScrubEnd: React.PropTypes.func
@@ -65,7 +63,6 @@ define(function (require, exports, module) {
 
         getDefaultProps: function () {
             return {
-                onChange: _.identity,
                 onScrub: _.identity,
                 onScrubStart: _.identity,
                 onScrubEnd: _.identity
@@ -79,9 +76,6 @@ define(function (require, exports, module) {
         },
 
         componentDidMount: function () {
-            if (!this.props.onScrub && !this.props.onScrubEnd) {
-                log.debug("Scrubby Mixin is being used without onScrub or onScrubEnd defined");
-            }
             ReactDOM.findDOMNode(this).addEventListener("mousedown", this._installListeners);
         },
 

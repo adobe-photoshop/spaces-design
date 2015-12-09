@@ -27,17 +27,19 @@ define(function (require, exports, module) {
     var React = require("react"),
         Immutable = require("immutable"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        _ = require("lodash");
 
     var collection = require("js/util/collection");
 
     var NumberInput = require("js/jsx/shared/NumberInput"),
         Label = require("js/jsx/shared/Label"),
         SVGIcon = require("js/jsx/shared/SVGIcon"),
+        CoalesceMixin = require("js/jsx/mixin/Coalesce"),
         nls = require("js/util/nls");
 
     var Rotate = React.createClass({
-        mixins: [FluxMixin],
+        mixins: [FluxMixin, CoalesceMixin],
         
         propTypes: {
             document: React.PropTypes.object
@@ -50,18 +52,36 @@ define(function (require, exports, module) {
          */
         _lastAngle: null,
 
-        shouldComponentUpdate: function (nextProps) {
+        /**
+         * Value of the input as user scrubs this control
+         *
+         * @type {number}
+         */
+        _scrubAngle: null,
+
+        getInitialState: function () {
+            return {
+                value: 0
+            };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
             var curDocument = this.props.document,
                 nextDocument = nextProps.document,
                 curLayerIDs = collection.pluck(this.props.document.layers.selected, "id"),
                 nextLayerIDs = collection.pluck(nextProps.document.layers.selected, "id");
 
-            return curDocument.id !== nextDocument.id ||
+            var differentSource = curDocument.id !== nextDocument.id ||
                 !Immutable.is(curLayerIDs, nextLayerIDs);
-        },
 
-        componentWillUpdate: function () {
-            this._lastAngle = 0;
+            // HACK: Now is the best place to update these values as they shouldn't affect render
+            // and we want to update them only when selection changes without re-render
+            if (differentSource) {
+                this._lastAngle = 0;
+                this._scrubAngle = 0;
+            }
+
+            return differentSource || this.state.value !== nextState.value;
         },
 
         /**
@@ -70,10 +90,16 @@ define(function (require, exports, module) {
          * @private
          */
         _handleHistoryStateChange: function () {
-            this.forceUpdate();
+            this._lastAngle = 0;
+            this._scrubAngle = 0;
+            this.setState({
+                value: 0
+            });
         },
 
         componentWillMount: function () {
+            this._scrubAngle = 0;
+            this._lastAngle = 0;
             // HACK: force the rotation back to 0 on undo/redo. We explicitly
             // listen for changes here instead of with the StoreWatchMixin because
             // there is no relevant history state.
@@ -105,6 +131,60 @@ define(function (require, exports, module) {
             }
 
             this._lastAngle = newAngle;
+            this._scrubAngle = newAngle;
+
+            this.setState({
+                value: modAngle
+            });
+        },
+
+        /**
+         * Starts scrubbing by playing a non-coalesced rotate action so we have a history state to go back to
+         *
+         * @private
+         */
+        _handleScrubBegin: function () {
+            this.startCoalescing();
+        },
+
+        /**
+         * Throttled scrub handler
+         *
+         * @private
+         * @param {number} deltaX How far the user has scrubbed in X axis
+         */
+        _handleScrub: _.throttle(function (deltaX) {
+            var document = this.props.document,
+                angleDelta = deltaX % 360;
+
+            if (angleDelta !== 0) {
+                this.getFlux().actions.transform.rotate(
+                    document,
+                    angleDelta,
+                    { coalesce: this.shouldCoalesce() }
+                );
+            }
+
+            // lastAngle is used to keep track of last input user has made
+            // so if user enters 30, then 50, we only rotate by 20 on second step
+            // In scrubby case, we use the last angle user has inputted, similar to 
+            // `initialScrubValue` we use in other components
+            this._scrubAngle = this._lastAngle + angleDelta;
+            
+            this.setState({
+                value: this._scrubAngle
+            });
+        }, 100),
+
+        /**
+         * When scrub finishes, updates the stored rotation value
+         *
+         * @private
+         */
+        _handleScrubEnd: function () {
+            this._lastAngle = this._scrubAngle;
+
+            this.stopCoalescing();
         },
 
         /**
@@ -146,6 +226,9 @@ define(function (require, exports, module) {
             return (
                 <div className="control-group">
                     <Label
+                        onScrubStart={this._handleScrubBegin}
+                        onScrub={this._handleScrub}
+                        onScrubEnd={this._handleScrubEnd}
                         size="column-3"
                         title={nls.localize("strings.TOOLTIPS.SET_ROTATION")}>
                         <SVGIcon CSSID="rotation" />
@@ -153,7 +236,7 @@ define(function (require, exports, module) {
                     <NumberInput
                         disabled={disabled}
                         // HACK: This lets 0 as a value work and not be considered the starting value
-                        value={disabled ? "" : "0"}
+                        value={disabled ? "" : this.state.value}
                         onChange={this._rotateLayer}
                         step={1}
                         bigstep={15}

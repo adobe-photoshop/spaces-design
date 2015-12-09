@@ -27,12 +27,12 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable"),
-        _ = require("lodash");
+        Immutable = require("immutable");
         
     var Gutter = require("js/jsx/shared/Gutter"),
         Label = require("js/jsx/shared/Label"),
         NumberInput = require("js/jsx/shared/NumberInput"),
+        CoalesceMixin = require("js/jsx/mixin/Coalesce"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         uiUtil = require("js/util/ui");
@@ -41,24 +41,10 @@ define(function (require, exports, module) {
         MIN_LAYER_POS = -32000;
 
     var Position = React.createClass({
-        mixins: [FluxMixin],
+        mixins: [FluxMixin, CoalesceMixin],
         propTypes: {
             referencePoint: React.PropTypes.string.isRequired
         },
-
-        /**
-         * Variables for storing inital scrub value to determine correct offset.
-         * @private 
-         * @type {number}
-         */
-        _initialScrubX: null,
-        
-        /**
-         * Variables for storing inital scrub value to determine correct offset.
-         * @private 
-         * @type {number}
-         */
-        _initialScrubY: null,
 
         getDefaultProps: function () {
             return {
@@ -66,7 +52,11 @@ define(function (require, exports, module) {
             };
         },
 
-        shouldComponentUpdate: function (nextProps) {
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.state !== nextState;
+        },
+
+        componentWillReceiveProps: function (nextProps) {
             var getSelectedChildBounds = function (props) {
                 return props.document.layers.selectedRelativeChildBounds;
             };
@@ -77,9 +67,26 @@ define(function (require, exports, module) {
                 return collection.pluckAll(layers, ["kind", "locked", "isBackground"]);
             };
 
-            return this.props.referencePoint !== nextProps.referencePoint ||
-                !Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) ||
-                !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+            if (this.state &&
+                this.props.referencePoint === nextProps.referencePoint &&
+                Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) &&
+                Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps))) {
+                return;
+            }
+
+            var document = nextProps.document,
+                layers = document.layers.selected,
+                bounds = document.layers.selectedRelativeChildBounds,
+                disabled = this._disabled(document, layers),
+                positionKeys = uiUtil.getPositionKeysByRefPoint(nextProps.referencePoint),
+                xValues = collection.pluck(bounds, positionKeys.x),
+                yValues = collection.pluck(bounds, positionKeys.y);
+
+            this.setState({
+                disabled: disabled,
+                xValues: xValues,
+                yValues: yValues
+            });
         },
 
         /**
@@ -101,75 +108,125 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Update the current X position of the selected layers.
+         * Starts scrubbing by saving current X value
          *
          * @private
          */
         _handleXScrubBegin: function () {
-            var document = this.props.document,
-                bounds = document.layers.selectedRelativeChildBounds,
-                positionKeys = uiUtil.getPositionKeysByRefPoint(this.props.referencePoint),
-                xValues = collection.pluck(bounds, positionKeys.x),
-                value = collection.uniformValue(xValues);
+            var currentX = collection.uniformValue(this.state.xValues);
 
-            this._initialScrubX = value;
+            if (currentX !== null) {
+                this.setState({
+                    scrubX: currentX
+                });
+
+                this.startCoalescing();
+            }
         },
 
         /**
-         * Update the current X position of the selected layers based on change from initial scrub position
+         * Update the X position of the selected layers by scrub amount
          *
          * @private
          * @param {number} deltaX
          */
         _handleXScrub: function (deltaX) {
-            if (_.isNumber(this._initialScrubX)) {
+            if (this.state.scrubX === null) {
+                return;
+            }
+
+            var newX = this.state.scrubX + deltaX,
+                currentX = collection.uniformValue(this.state.xValues);
+
+            if (newX !== currentX) {
                 var document = this.props.document,
-                    uiStore = this.getFlux().store("ui"),
-                    resolution = document.resolution,
                     positionObj = {
-                        x: (uiStore.zoomCanvasToWindow(deltaX * resolution) / resolution) + this._initialScrubX,
+                        x: newX,
                         relative: true
                     };
-                    
-                this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected,
-                    positionObj, this.props.referencePoint);
+                
+                this.getFlux().actions.transform.setPositionThrottled(
+                    document,
+                    document.layers.selected,
+                    positionObj,
+                    this.props.referencePoint,
+                    { coalesce: this.shouldCoalesce() }
+                );
             }
         },
 
         /**
-         * Update the current X position of the selected layers.
+         * Resets the scrub initial X value
+         *
+         * @private
+         */
+        _handleXScrubEnd: function () {
+            this.setState({
+                scrubX: null
+            });
+
+            this.stopCoalescing();
+        },
+
+        /**
+         * Starts scrubbing by saving the current Y value
          *
          * @private
          */
         _handleYScrubBegin: function () {
-            var document = this.props.document,
-                bounds = document.layers.selectedRelativeChildBounds,
-                positionKeys = uiUtil.getPositionKeysByRefPoint(this.props.referencePoint),
-                yValues = collection.pluck(bounds, positionKeys.y),
-                value = collection.uniformValue(yValues);
+            var currentY = collection.uniformValue(this.state.yValues);
 
-            this._initialScrubY = value;
+            if (currentY !== null) {
+                this.setState({
+                    scrubY: currentY
+                });
+
+                this.startCoalescing();
+            }
         },
         
         /**
-         * Update the current X position of the selected layers.
+         * Updates the Y position of the selected layers by scrub amount
          *
          * @private
          * @param {number} deltaX
          */
         _handleYScrub: function (deltaX) {
-            if (_.isNumber(this._initialScrubY)) {
+            if (this.state.scrubY === null) {
+                return;
+            }
+
+            var newY = this.state.scrubY + deltaX,
+                currentY = collection.uniformValue(this.state.yValues);
+
+            if (newY !== currentY) {
                 var document = this.props.document,
-                    uiStore = this.getFlux().store("ui"),
-                    resolution = document.resolution,
                     positionObj = {
-                        y: (uiStore.zoomCanvasToWindow(deltaX * resolution) / resolution) + this._initialScrubY,
+                        y: newY,
                         relative: true
                     };
 
-                this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected,
-                    positionObj, this.props.referencePoint);
+                this.getFlux().actions.transform.setPositionThrottled(
+                    document,
+                    document.layers.selected,
+                    positionObj,
+                    this.props.referencePoint,
+                    { coalesce: this.shouldCoalesce() }
+                );
             }
+        },
+
+        /**
+         * Resets the scrub initial Y value
+         *
+         * @private
+         */
+        _handleYScrubEnd: function () {
+            this.setState({
+                scrubY: null
+            });
+
+            this.stopCoalescing();
         },
 
         /**
@@ -223,14 +280,9 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var document = this.props.document,
-                layers = document.layers.selected,
-                bounds = document.layers.selectedRelativeChildBounds;
-
-            var disabled = this._disabled(document, layers),
-                positionKeys = uiUtil.getPositionKeysByRefPoint(this.props.referencePoint),
-                xValues = collection.pluck(bounds, positionKeys.x),
-                yValues = collection.pluck(bounds, positionKeys.y);
+            if (!this.state) {
+                return null;
+            }
 
             return (
                 <div className="control-group__horizontal">
@@ -238,13 +290,14 @@ define(function (require, exports, module) {
                         title={nls.localize("strings.TOOLTIPS.SET_X_POSITION")}
                         className="label__medium__left-aligned"
                         size="column-1"
-                        onScrub={!disabled && this._handleXScrub}
-                        onScrubStart={!disabled && this._handleXScrubBegin}>
+                        onScrub={this._handleXScrub}
+                        onScrubStart={this._handleXScrubBegin}
+                        onScrubEnd={this._handleXScrubEnd}>
                         {nls.localize("strings.TRANSFORM.X")}
                     </Label>
                     <NumberInput
-                        disabled={disabled}
-                        value={xValues}
+                        disabled={this.state.disabled}
+                        value={this.state.xValues}
                         onChange={this._handleXChange}
                         ref="xValue"
                         min={MIN_LAYER_POS}
@@ -256,13 +309,14 @@ define(function (require, exports, module) {
                         title={nls.localize("strings.TOOLTIPS.SET_Y_POSITION")}
                         className="label__medium__left-aligned"
                         size="column-1"
-                        onScrub={!disabled && this._handleYScrub}
-                        onScrubStart={!disabled && this._handleYScrubBegin}>
+                        onScrub={this._handleYScrub}
+                        onScrubStart={this._handleYScrubBegin}
+                        onScrubEnd={this._handleYScrubEnd}>
                         {nls.localize("strings.TRANSFORM.Y")}
                     </Label>
                     <NumberInput
-                        disabled={disabled}
-                        value={yValues}
+                        disabled={this.state.disabled}
+                        value={this.state.yValues}
                         onChange={this._handleYChange}
                         ref="yValue"
                         min={MIN_LAYER_POS}

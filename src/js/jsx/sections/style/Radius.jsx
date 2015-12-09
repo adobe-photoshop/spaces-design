@@ -44,68 +44,133 @@ define(function (require, exports, module) {
             document: React.PropTypes.object.isRequired
         },
 
-        shouldComponentUpdate: function (nextProps) {
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.state !== nextState;
+        },
+
+        componentWillReceiveProps: function (nextProps) {
             var getRelevantProps = function (props) {
-                var layers = props.document.layers.selected;
+                    var layers = props.document.layers.selected.filter(function (layer) {
+                        return layer.radii;
+                    });
 
-                return collection.pluckAll(layers, ["id", "bounds", "radii"]);
-            };
+                    return collection.pluckAll(layers, ["id", "bounds", "radii"]);
+                },
+                relevantProps = getRelevantProps(this.props),
+                nextRelevantProps = getRelevantProps(nextProps);
 
-            return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+            if (!Immutable.is(relevantProps, nextRelevantProps)) {
+                this._calculateState(nextProps);
+            }
+        },
+
+        componentWillMount: function () {
+            this._calculateState(this.props);
+        },
+
+        /**
+         * Given the props object, calculates and sets the state
+         * This is refactored out of componentWillReceiveProps, because 
+         * it doesn't run on initial render, causing a null state
+         *
+         * @private
+         * @param {object} props
+         */
+        _calculateState: function (props) {
+            var layers = props.document.layers.selected.filter(function (layer) {
+                    return layer.radii;
+                }),
+                scalars = layers.map(function (layer) {
+                    return layer.radii.scalar || 0;
+                }),
+                maxRadius = layers
+                    .toSeq()
+                    .filter(function (layer) {
+                        return !!layer.bounds;
+                    })
+                    .reduce(function (sides, layer) {
+                        return sides.concat(Immutable.List.of(layer.bounds.width / 2, layer.bounds.height / 2));
+                    }, Immutable.List())
+                    .min();
+
+            this.setState({
+                layers: layers,
+                scalars: scalars,
+                maxRadius: maxRadius,
+                maxRadiusInput: Math.floor(maxRadius)
+            });
+        },
+
+        _handleScrubStart: function () {
+            var currentRadius = collection.uniformValue(this.state.scalars);
+
+            // This initial call helps set the history state right before coalescing
+            if (currentRadius !== null) {
+                this.setState({
+                    scrubRadius: currentRadius
+                });
+
+                this.startCoalescing();
+            }
+        },
+
+        _handleRadiusScrub: function (deltaX) {
+            if (this.state.scrubRadius === null) {
+                return;
+            }
+
+            var newRadius = this.state.scrubRadius + deltaX,
+                currentRadius = collection.uniformValue(this.state.scalars);
+
+            newRadius = math.clamp(newRadius, 0, this.state.maxRadius);
+
+            if (newRadius !== currentRadius) {
+                this.getFlux().actions.transform.setRadiusThrottled(
+                    this.props.document,
+                    this.state.layers,
+                    newRadius,
+                    { coalesce: this.shouldCoalesce() }
+                );
+            }
+        },
+
+        _handleScrubEnd: function () {
+            this.setState({
+                scrubRadius: null
+            });
+
+            this.stopCoalescing();
         },
 
         /**
          * Update the radius of the selected layers in response to user input.
          *
-         * @param {Immutable.Iterable.<Layer>} layers
          * @param {SyntheticEvent} event
          * @param {number=} value
          */
-        _handleRadiusChange: function (layers, event, value) {
+        _handleRadiusChange: function (event, value) {
             if (value === undefined) {
                 // In this case, the value is coming from the DOM element
                 value = math.parseNumber(event.target.value);
             }
 
-            var coalesce = this.shouldCoalesce();
+            var options = {
+                coalesce: this.shouldCoalesce()
+            };
+
             this.getFlux().actions.transform
-                .setRadiusThrottled(this.props.document, layers, value, coalesce);
+                .setRadiusThrottled(this.props.document, this.state.layers, value, options);
         },
 
         render: function () {
-            var layers = this.props.document.layers.selected.filter(function (layer) {
-                    return layer.radii;
-                });
-
-            // If there is not at least one selected vector layer, don't render
-            if (layers.isEmpty()) {
-                return null;
-            }
-
-            var scalars = collection.pluck(layers, "radii")
-                .map(function (radii) {
-                    return radii.scalar || 0;
-                });
-
-            // The maximum border radius is one-half of the shortest side of
-            // from all the selected shapes.
-            var maxRadius = collection.pluck(layers, "bounds")
-                .toSeq()
-                .filter(function (bounds) {
-                    return !!bounds;
-                })
-                .reduce(function (sides, bounds) {
-                    return sides.concat(Immutable.List.of(bounds.width / 2, bounds.height / 2));
-                }, Immutable.List())
-                .min();
-
-            var maxRadiusInput = Math.floor(maxRadius);
-
             return (
                 <div className="formline">
                     <Label
                         className="label__medium__left-aligned"
                         size="column-4"
+                        onScrubStart={this._handleScrubStart}
+                        onScrub={this._handleRadiusScrub}
+                        onScrubEnd={this._handleScrubEnd}
                         title={nls.localize("strings.TOOLTIPS.SET_RADIUS")}>
                         {nls.localize("strings.TRANSFORM.RADIUS")}
                     </Label>
@@ -114,19 +179,19 @@ define(function (require, exports, module) {
                             size="column-4"
                             disabled={this.props.disabled}
                             min={0}
-                            max={maxRadiusInput}
-                            value={this.props.disabled ? "" : scalars}
-                            onChange={this._handleRadiusChange.bind(this, layers)} />
+                            max={this.state.maxRadiusInput}
+                            value={this.props.disabled ? "" : this.state.scalars}
+                            onChange={this._handleRadiusChange} />
                     </div>
                     <Range
                         disabled={this.props.disabled}
                         min={0}
-                        max={maxRadius}
-                        value={scalars}
+                        max={this.state.maxRadius}
+                        value={this.state.scalars}
                         size="column-14"
                         onMouseDown={this.startCoalescing}
                         onMouseUp={this.stopCoalescing}
-                        onChange={this._handleRadiusChange.bind(this, layers)} />
+                        onChange={this._handleRadiusChange} />
                 </div>
             );
         }

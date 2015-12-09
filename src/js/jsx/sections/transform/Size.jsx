@@ -33,6 +33,8 @@ define(function (require, exports, module) {
         Label = require("js/jsx/shared/Label"),
         NumberInput = require("js/jsx/shared/NumberInput"),
         ToggleButton = require("js/jsx/shared/ToggleButton"),
+        CoalesceMixin = require("js/jsx/mixin/Coalesce"),
+        math = require("js/util/math"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection");
 
@@ -40,9 +42,24 @@ define(function (require, exports, module) {
         MIN_LAYER_SIZE = 0.1;
 
     var Size = React.createClass({
-        mixins: [FluxMixin],
+        mixins: [FluxMixin, CoalesceMixin],
 
-        shouldComponentUpdate: function (nextProps) {
+        shouldComponentUpdate: function (nextProps, nextState) {
+            // Calculations that are usually done here are done in
+            // componentWillReceiveProps
+            return this.state !== nextState;
+        },
+
+        /**
+         * Calculates the new state only if it will change
+         * The top part of this function used to be in shouldComponentUpdate
+         * To make state available outside render(), we moved the calculation into this function
+         * But we don't want to re-calculate it if the component is not going to update
+         * If it will, we calculate and set the new state
+         *
+         * @param {object} nextProps
+         */
+        componentWillReceiveProps: function (nextProps) {
             var getSelectedChildBounds = function (props) {
                 return props.document.layers.selectedChildBounds;
             };
@@ -56,9 +73,40 @@ define(function (require, exports, module) {
                 return props.document.bounds;
             };
 
-            return !Immutable.is(getBounds(this.props), getBounds(nextProps)) ||
-                !Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) ||
-                !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+            // If these props are the same, we don't need to calculate new state
+            if (this.state &&
+                Immutable.is(getBounds(this.props), getBounds(nextProps)) &&
+                Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) &&
+                Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps))) {
+                return;
+            }
+
+            var document = nextProps.document,
+                documentBounds = document.bounds,
+                layers = document.layers.selected,
+                boundsShown = document.layers.selectedChildBounds,
+                hasArtboard = document.layers.hasArtboard,
+                disabled = this._disabled(document, layers, boundsShown),
+                proportional = layers.map(function (layer) {
+                    return layer.proportionalScaling;
+                });
+                
+            if (layers.isEmpty()) {
+                boundsShown = documentBounds && !hasArtboard ?
+                    Immutable.List.of(documentBounds) :
+                    boundsShown;
+            }
+
+            var widths = collection.pluck(boundsShown, "width"),
+                heights = collection.pluck(boundsShown, "height");
+            
+            this.setState({
+                disabled: disabled,
+                layers: layers,
+                widths: widths,
+                heights: heights,
+                proportional: proportional
+            });
         },
 
         /**
@@ -78,6 +126,109 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Saves the current width of selected layers on scrub start
+         *
+         * @private
+         */
+        _handleWScrubBegin: function () {
+            var currentWidth = collection.uniformValue(this.state.widths);
+            
+            if (currentWidth !== null) {
+                this.setState({
+                    scrubWidth: currentWidth
+                });
+
+                this.startCoalescing();
+            }
+        },
+
+        /**
+         * Update the current width of the selected layers based on change from initial scrub position
+         *
+         * @private
+         * @param {number} deltaX
+         */
+        _handleWScrub: function (deltaX) {
+            if (this.state.scrubWidth === null) {
+                return;
+            }
+
+            var document = this.props.document,
+                newWidth = math.clamp(this.state.scrubWidth + deltaX, MIN_LAYER_SIZE, MAX_LAYER_SIZE),
+                currentWidth = collection.uniformValue(this.state.widths);
+            
+            if (newWidth !== currentWidth) {
+                this.getFlux().actions.transform.setSizeThrottled(
+                    document,
+                    document.layers.selected,
+                    { w: newWidth },
+                    this.props.referencePoint,
+                    { coalesce: this.shouldCoalesce() }
+                );
+            }
+        },
+
+        _handleWScrubEnd: function () {
+            this.setState({
+                scrubWidth: null
+            });
+
+            this.stopCoalescing();
+        },
+
+        /**
+         * Saves the current height of selected layers on scrub start
+         *
+         * @private
+         */
+        _handleHScrubBegin: function () {
+            var currentHeight = collection.uniformValue(this.state.heights);
+            
+            if (currentHeight !== null) {
+                this.setState({
+                    scrubHeight: currentHeight
+                });
+
+                this.startCoalescing();
+            }
+        },
+
+        /**
+         * Update the current height of the selected layers based on change from initial scrub position
+         *
+         * @private
+         * @param {number} deltaX
+         */
+        _handleHScrub: function (deltaX) {
+            // If it's a mixed value, we shouldn't scrub
+            if (this.state.scrubHeight === null) {
+                return;
+            }
+
+            var document = this.props.document,
+                newHeight = math.clamp(this.state.scrubHeight + deltaX, MIN_LAYER_SIZE, MAX_LAYER_SIZE),
+                currentHeight = collection.uniformValue(this.state.heights);
+
+            if (newHeight !== currentHeight) {
+                this.getFlux().actions.transform.setSizeThrottled(
+                    document,
+                    document.layers.selected,
+                    { h: newHeight },
+                    this.props.referencePoint,
+                    { coalesce: true }
+                );
+            }
+        },
+
+        _handleHScrubEnd: function () {
+            this.setState({
+                scrubHeight: null
+            });
+
+            this.stopCoalescing();
+        },
+
+        /**
          * Update the width of the selected layers.
          *
          * @private
@@ -89,8 +240,12 @@ define(function (require, exports, module) {
                 flux = this.getFlux(),
                 referencePoint = flux.store("panel").getState().referencePoint;
 
-            flux.actions.transform
-                .setSizeThrottled(document, document.layers.selected, { w: newWidth }, referencePoint);
+            flux.actions.transform.setSizeThrottled(
+                document,
+                document.layers.selected,
+                { w: newWidth },
+                referencePoint
+            );
         },
 
         /**
@@ -159,58 +314,43 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var document = this.props.document,
-                documentBounds = document.bounds,
-                layers = document.layers.selected,
-                boundsShown = document.layers.selectedChildBounds,
-                proportionalToggle = null,
-                hasArtboard = document.layers.hasArtboard,
-                disabled = this._disabled(document, layers, boundsShown),
-                proportional = layers.map(function (layer) {
-                    return layer.proportionalScaling;
-                });
-            
-            // document resizing
-            if (layers.isEmpty() || disabled) {
-                if (!disabled) {
-                    boundsShown = documentBounds && !hasArtboard ?
-                        Immutable.List.of(documentBounds) :
-                        boundsShown;
-                }
-                
+            if (!this.state) {
+                return null;
+            }
+
+            var proportionalToggle = null;
+
+            if (this.state.layers.isEmpty() || this.state.disabled) {
                 proportionalToggle = (
                     <Gutter
                         size="column-4" />
                 );
             } else {
-                var connectedClass = "toggle-connected",
-                    disconnectedClass = "toggle-disconnected";
-                
                 proportionalToggle = (
                     <ToggleButton
                         size="column-4"
-                        buttonType={disconnectedClass}
+                        buttonType="toggle-disconnected"
                         title={nls.localize("strings.TOOLTIPS.LOCK_PROPORTIONAL_TRANSFORM")}
-                        selected={proportional}
-                        selectedButtonType = {connectedClass}
+                        selected={this.state.proportional}
+                        selectedButtonType = "toggle-connected"
                         onClick={this._handleProportionChange} />
                 );
             }
-
-            var widths = collection.pluck(boundsShown, "width"),
-                heights = collection.pluck(boundsShown, "height");
 
             return (
                 <div className="control-group__horizontal">
                     <Label
                         title={nls.localize("strings.TOOLTIPS.SET_WIDTH")}
                         className="label__medium__left-aligned"
+                        onScrub={this._handleWScrub}
+                        onScrubStart={this._handleWScrubBegin}
+                        onScrubEnd={this._handleWScrubEnd}
                         size="column-1">
                         {nls.localize("strings.TRANSFORM.W")}
                     </Label>
                     <NumberInput
-                        disabled={disabled}
-                        value={widths}
+                        disabled={this.state.disabled}
+                        value={this.state.widths}
                         onChange={this._handleWidthChange}
                         onKeyDown={this._handleWidthKeyDown}
                         ref="width"
@@ -221,13 +361,16 @@ define(function (require, exports, module) {
                     <Label
                         size="column-1"
                         className="label__medium__left-aligned"
+                        onScrub={this._handleHScrub}
+                        onScrubStart={this._handleHScrubBegin}
+                        onScrubEnd={this._handleHScrubEnd}
                         title={nls.localize("strings.TOOLTIPS.SET_HEIGHT")}>
                         {nls.localize("strings.TRANSFORM.H")}
                     </Label>
                     <div className="column-6">
                     <NumberInput
-                        value={heights}
-                        disabled={disabled}
+                        value={this.state.heights}
+                        disabled={this.state.disabled}
                         onChange={this._handleHeightChange}
                         ref="height"
                         min={MIN_LAYER_SIZE}

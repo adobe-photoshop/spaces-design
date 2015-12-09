@@ -37,7 +37,9 @@ define(function (require, exports, module) {
         FillColor = Fill.FillColor,
         FillVisiblity = Fill.FillVisibility,
         Label = require("js/jsx/shared/Label"),
+        CoalesceMixin = require("js/jsx/mixin/Coalesce"),
         nls = require("js/util/nls"),
+        math = require("js/util/math"),
         collection = require("js/util/collection"),
         classnames = require("classnames");
 
@@ -45,7 +47,7 @@ define(function (require, exports, module) {
      * VectorFill Component displays information of fills for non-type only sets of layers
      */
     var VectorFill = React.createClass({
-        mixins: [FluxMixin],
+        mixins: [FluxMixin, CoalesceMixin],
 
         shouldComponentUpdate: function (nextProps) {
             return this.props.disabled !== nextProps.disabled ||
@@ -65,11 +67,13 @@ define(function (require, exports, module) {
                     return layer.isVector;
                 }),
                 fills = collection.pluck(layers, "fill"),
-                downsample = this._downsampleFills(fills);
+                downsample = this._downsampleFills(fills),
+                opacities = collection.pluck(document.layers.selected, "opacity");
 
             this.setState({
                 layers: layers,
-                fill: downsample
+                fill: downsample,
+                opacities: opacities
             });
         },
 
@@ -113,6 +117,55 @@ define(function (require, exports, module) {
             };
         },
 
+        /**
+         * Begins opacity scrubbing by saving current opacity value
+         *
+         * @private
+         */
+        _handleOpacityScrubBegin: function () {
+            var opacity = collection.uniformValue(this.state.opacities);
+
+            if (opacity !== null) {
+                this.setState({
+                    scrubOpacity: opacity
+                });
+
+                this.startCoalescing();
+            }
+        },
+
+        /**
+         * Calls a throttled setOpacity action on scrubs
+         *
+         * @private
+         * @param {number} deltaX Amount of scrub distance
+         */
+        _handleOpacityScrub: function (deltaX) {
+            if (this.state.scrubOpacity === null) {
+                return;
+            }
+             
+            var newOpacity = math.clamp(this.state.scrubOpacity + deltaX, 0, 100),
+                currentOpacity = collection.uniformValue(this.state.opacities);
+
+            if (newOpacity !== currentOpacity) {
+                this.getFlux().actions.layers.setOpacityThrottled(
+                    this.props.document,
+                    this.props.document.layers.selected,
+                    newOpacity,
+                    { coalesce: this.shouldCoalesce() }
+                );
+            }
+        },
+
+        _handleOpacityScrubEnd: function () {
+            this.setState({
+                scrubOpacity: null
+            });
+
+            this.stopCoalescing();
+        },
+
         render: function () {
             if (this.props.uniformLayerKind && this.props.hasSomeTextLayers) {
                 return null;
@@ -152,6 +205,9 @@ define(function (require, exports, module) {
                         <Label
                             size="column-4"
                             className={opacityLabelClasses}
+                            onScrubStart={this._handleOpacityScrubBegin}
+                            onScrub={this._handleOpacityScrub}
+                            onScrubEnd={this._handleOpacityScrubEnd}
                             title={nls.localize("strings.TOOLTIPS.SET_OPACITY")}>
                             {nls.localize("strings.STYLE.OPACITY")}
                         </Label>
