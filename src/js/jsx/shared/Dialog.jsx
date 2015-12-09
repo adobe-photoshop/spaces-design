@@ -110,6 +110,38 @@ define(function (require, exports, module) {
             this.getFlux().store("dialog").registerDialog(this.props.id, this._getDismissalPolicy());
         },
 
+        componentWillUnmount: function () {
+            if (this.state.open) {
+                this._removeListeners();
+                this.getFlux().actions.dialog.closeDialog(this.props.id);
+            }
+
+            this.getFlux().store("dialog").deregisterDialog(this.props.id);
+        },
+
+        componentDidUpdate: function (prevProps, prevState) {
+            var dialogEl = ReactDOM.findDOMNode(this);
+
+            if (this.state.open && !prevState.open) {
+                // Dialog opening
+                if (this.props.modal) {
+                    dialogEl.showModal();
+                }
+
+                this._addListeners();
+                this._positionDialog(dialogEl);
+                this.props.onOpen();
+            } else if (!this.state.open && prevState.open) {
+                // Dialog closing
+                this._removeListeners();
+                
+                if (this.props.modal && dialogEl.open) {
+                    dialogEl.close();
+                }
+                this.props.onClose();
+            }
+        },
+
         /**
          * Build an object representation of the dismissal policy to be sent to the Dialog Store
          *
@@ -141,6 +173,11 @@ define(function (require, exports, module) {
             }
 
             event.stopPropagation();
+        },
+
+        /** @ignore */
+        isOpen: function () {
+            return this.state.open;
         },
 
         /**
@@ -346,43 +383,6 @@ define(function (require, exports, module) {
                     {children}
                 </dialog>
             );
-        },
-
-        componentDidUpdate: function (prevProps, prevState) {
-            var dialogEl = ReactDOM.findDOMNode(this);
-
-            if (this.state.open && !prevState.open) {
-                // Dialog opening
-                if (this.props.modal) {
-                    dialogEl.showModal();
-                }
-
-                this._addListeners();
-                this._positionDialog(dialogEl);
-                this.props.onOpen();
-            } else if (!this.state.open && prevState.open) {
-                // Dialog closing
-                this._removeListeners();
-                
-                if (this.props.modal && dialogEl.open) {
-                    dialogEl.close();
-                }
-                this.props.onClose();
-            }
-        },
-
-        componentWillUnmount: function () {
-            if (this.state.open) {
-                this._removeListeners();
-                this.getFlux().actions.dialog.closeDialog(this.props.id);
-            }
-
-            this.getFlux().store("dialog").deregisterDialog(this.props.id);
-        },
-
-        /** @ignore */
-        isOpen: function () {
-            return this.state.open;
         }
     });
 
