@@ -178,9 +178,12 @@ define(function (require, exports) {
      * @private
      * @param {Document} doc Selected layers of this document will be sampled into
      * @param {Layer} sourceLayer Layer to be sampled
+     * @param {Immutable.Iterable.<Layer>=} targetLayers Default are the selected layers
+     * @param {number} x
+     * @param {number} y
      * @return {Promise}
      */
-    var _sampleLayerPrimary = function (doc, sourceLayer, x, y) {
+    var _sampleLayerPrimary = function (doc, sourceLayer, targetLayers, x, y) {
         if (!sourceLayer) {
             return Promise.resolve();
         }
@@ -192,7 +195,7 @@ define(function (require, exports) {
                     return Promise.resolve();
                 }
 
-                return this.transfer(applyColor, doc, null, sourceColor);
+                return this.transfer(applyColor, doc, targetLayers, sourceColor);
             });
     };
 
@@ -322,16 +325,17 @@ define(function (require, exports) {
      * @private
      * @param {Document} doc Selected layers of this document will be sampled into
      * @param {Layer} sourceLayer Layer to be sampled
+     * @param {Immutable.Iterable.<Layer>=} targetLayers Default are the selected layers
      * @return {Promise}
      */
-    var _sampleLayerSecondary = function (doc, sourceLayer) {
-        var selectedLayers = doc.layers.selected;
+    var _sampleLayerSecondary = function (doc, sourceLayer, targetLayers) {
+        targetLayers = targetLayers || doc.layers.selected;
 
-        if (selectedLayers.isEmpty() || !sourceLayer) {
+        if (targetLayers.isEmpty() || !sourceLayer) {
             return Promise.resolve();
         }
         
-        return this.transfer(layerFXActions.duplicateLayerEffects, doc, selectedLayers, sourceLayer.effects);
+        return this.transfer(layerFXActions.duplicateLayerEffects, doc, targetLayers, sourceLayer.effects);
     };
 
     /**
@@ -377,12 +381,13 @@ define(function (require, exports) {
                     .then(function () {
                         // If the layer is unitialized, we need to get the updated model
                         var sourceDoc = docStore.getDocument(doc.id),
-                            sourceLayer = sourceDoc.layers.byID(topLayer.id);
-                        
+                            sourceLayer = sourceDoc.layers.byID(topLayer.id),
+                            targetLayers = sourceDoc.layers.selected.filter(function (l) { return !l.locked; });
+
                         if (secondary) {
-                            return _sampleLayerSecondary.call(this, sourceDoc, sourceLayer);
+                            return _sampleLayerSecondary.call(this, sourceDoc, sourceLayer, targetLayers);
                         } else {
-                            return _sampleLayerPrimary.call(this, sourceDoc, sourceLayer, x, y);
+                            return _sampleLayerPrimary.call(this, sourceDoc, sourceLayer, targetLayers, x, y);
                         }
                     });
             });

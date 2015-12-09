@@ -186,7 +186,7 @@ define(function (require, exports, module) {
             
             this.drawBoundRectangles(layerTree);
             this.drawSelectionBounds(layerTree);
-            this.drawSamplerHUD();
+            this.drawSamplerHUD(layerTree);
         },
 
         /**
@@ -197,7 +197,7 @@ define(function (require, exports, module) {
          */
         drawSelectionBounds: function (layerTree) {
             var scale = this._scale,
-                bounds = layerTree.selectedAreaBounds;
+                bounds = layerTree.selectedUnlockedAreaBounds;
 
             // Skip empty bounds
             if (!bounds || bounds.empty) {
@@ -263,8 +263,10 @@ define(function (require, exports, module) {
         /**
          * Draws sampler HUD if there is one available from the store
          */
-        drawSamplerHUD: function () {
-            if (!this.state.sampleTypes || !this.state.samplePoint) {
+        drawSamplerHUD: function (layerTree) {
+            var selectedLayers = layerTree.selected.filter(function (l) { return !l.locked; });
+            
+            if (selectedLayers.isEmpty() || !this.state.sampleTypes || !this.state.samplePoint) {
                 return;
             }
 
@@ -326,7 +328,7 @@ define(function (require, exports, module) {
                 .classed("sampler-hud-outline", true);
 
             // Draw each sample square
-            this._drawSampleHUDObjects(rectTLX, rectTLY, sampleSize, samples);
+            this._drawSampleHUDObjects(rectTLX, rectTLY, sampleSize, samples, selectedLayers);
             headlights.logEvent("tools", "sampler-hud", "sampler-invoked");
         },
         
@@ -338,8 +340,9 @@ define(function (require, exports, module) {
          * @param {number} top Top coordinates of the HUD
          * @param {number} size Icon size
          * @param {Array.<object>} samples Description of attributes that can be styled
+         * @param {Immutable.Iterable.<Layer>} targetLayers
          */
-        _drawSampleHUDObjects: function (left, top, size, samples) {
+        _drawSampleHUDObjects: function (left, top, size, samples, targetLayers) {
             var fluxActions = this.getFlux().actions,
                 iconSize = Math.round(size * 0.58333333333333),
                 iconOffset = Math.round(size / 3);
@@ -372,7 +375,7 @@ define(function (require, exports, module) {
                         .attr("opacity", fillOpacity)
                         .on("click", function () {
                             // Apply the color to selected layers
-                            fluxActions.sampler.applyColor(this.state.document, null, sample.value);
+                            fluxActions.sampler.applyColor(this.state.document, targetLayers, sample.value);
                             d3.event.stopPropagation();
                             headlights.logEvent("tools", "sampler-hud", _.kebabCase(sample.type));
                         }.bind(this));
@@ -380,6 +383,13 @@ define(function (require, exports, module) {
                     var stroke = sample.value,
                         strokeColor = (stroke && stroke.color) ? stroke.color.toTinyColor().toRgbString() : "#000000",
                         strokeOpacity = (stroke && stroke.color && stroke.enabled) ? 1.0 : 0.0;
+                    
+                    var applyStrokeFunc = function () {
+                        // Apply the color to selected layers
+                        fluxActions.sampler.applyStroke(this.state.document, targetLayers, stroke);
+                        d3.event.stopPropagation();
+                        headlights.logEvent("tools", "sampler-hud", sample.type);
+                    }.bind(this);
                     
                     // background of stroke 
                     this._hudGroup
@@ -389,12 +399,7 @@ define(function (require, exports, module) {
                         .attr("y", iconTop)
                         .attr("width", iconSize)
                         .attr("height", iconSize)
-                        .on("click", function () {
-                            // Apply the color to selected layers
-                            fluxActions.sampler.applyStroke(this.state.document, null, stroke);
-                            d3.event.stopPropagation();
-                            headlights.logEvent("tools", "sampler-hud", sample.type);
-                        }.bind(this));
+                        .on("click", applyStrokeFunc);
                     
                     // stroke color        
                     this._hudGroup
@@ -406,17 +411,12 @@ define(function (require, exports, module) {
                         .attr("height", iconSize)
                         .attr("fill", strokeColor)
                         .attr("opacity", strokeOpacity)
-                        .on("click", function () {
-                            // Apply the color to selected layers
-                            fluxActions.sampler.applyStroke(this.state.document, null, stroke);
-                            d3.event.stopPropagation();
-                            headlights.logEvent("tools", "sampler-hud", sample.type);
-                        }.bind(this));
+                        .on("click", applyStrokeFunc);
                 } else if (sample.type === "typeStyle") {
                     var applyTypeStyleFunc = function () {
                         if (sample.value) {
                             // Apply the type style to selected layers
-                            fluxActions.type.applyTextStyle(this.state.document, null, sample.value,
+                            fluxActions.type.applyTextStyle(this.state.document, targetLayers, sample.value,
                                 null, { ignoreAlpha: false });
                         }
                         d3.event.stopPropagation();
@@ -446,7 +446,7 @@ define(function (require, exports, module) {
                         .on("click", applyTypeStyleFunc);
                 } else if (sample.type === "layerEffects") {
                     var duplicateLayerEffectsFunc = function () {
-                        fluxActions.layerEffects.duplicateLayerEffects(this.state.document, null, sample.value);
+                        fluxActions.layerEffects.duplicateLayerEffects(this.state.document, targetLayers, sample.value);
                         d3.event.stopPropagation();
                         headlights.logEvent("tools", "sampler-hud", sample.type);
                     }.bind(this);
@@ -475,11 +475,11 @@ define(function (require, exports, module) {
                         .on("click", duplicateLayerEffectsFunc);
                 } else if (sample.type === "graphic") {
                     var replaceGraphicFunc = function () {
-                        fluxActions.sampler.replaceGraphic(this.state.document, null, sample.value);
+                        fluxActions.sampler.replaceGraphic(this.state.document, targetLayers, sample.value);
                         d3.event.stopPropagation();
                         headlights.logEvent("tools", "sampler-hud", sample.type);
                     }.bind(this);
-                    
+
                     // background rectangle for the icon so it's clickable easier
                     this._hudGroup
                         .append("rect")
