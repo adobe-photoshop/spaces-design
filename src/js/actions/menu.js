@@ -39,8 +39,7 @@ define(function (require, exports) {
         global = require("js/util/global"),
         headlights = require("js/util/headlights"),
         policyActions = require("./policy"),
-        preferencesActions = require("./preferences"),
-        searchActions = require("./search/commands");
+        preferencesActions = require("./preferences");
 
     var macMenuJSON = require("static/menu-mac.json"),
         winMenuJSON = require("static/menu-win.json"),
@@ -498,12 +497,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        searchActions.registerMenuCommandSearch.call(this);
-        return Promise.resolve();
+        return this.transfer("searchCommands.registerMenuCommandSearch");
     };
     afterStartup.action = {
         reads: [],
-        writes: []
+        writes: [],
+        transfers: ["searchCommands.registerMenuCommandSearch"]
     };
 
     /**

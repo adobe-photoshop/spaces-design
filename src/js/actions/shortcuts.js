@@ -33,7 +33,6 @@ define(function (require, exports) {
     var events = require("js/events"),
         locks = require("js/locks"),
         policy = require("js/actions/policy"),
-        globalShortcutActions = require("./search/commands"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         dom = require("js/util/dom");
@@ -271,12 +270,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        globalShortcutActions._registerGlobalShortcutSearch.call(this);
-        return Promise.resolve();
+        return this.transfer("searchCommands.registerGlobalShortcutSearch");
     };
     afterStartup.action = {
         reads: [],
-        writes: []
+        writes: [],
+        transfers: ["searchCommands.registerGlobalShortcutSearch"]
     };
 
     /**

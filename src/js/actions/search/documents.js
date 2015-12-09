@@ -27,6 +27,7 @@ define(function (require, exports) {
     var Immutable = require("immutable");
 
     var events = require("js/events"),
+        locks = require("js/locks"),
         pathUtil = require("js/util/path");
 
     /**
@@ -111,6 +112,8 @@ define(function (require, exports) {
 
     /**
      * Register current document info for search
+     *
+     * @return {Promise}
      */
     var registerCurrentDocumentSearch = function () {
         var currentDocPayload = {
@@ -123,11 +126,17 @@ define(function (require, exports) {
             "getSVGClass": _getSVGClass
         };
 
-        this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, currentDocPayload);
+        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, currentDocPayload);
+    };
+    registerCurrentDocumentSearch.action = {
+        reads: [],
+        writes: [locks.JS_SEARCH]
     };
     
     /**
      * Register recent document info for search
+     *
+     * @return {Promise}     
      */
     var registerRecentDocumentSearch = function () {
         var recentDocPayload = {
@@ -139,7 +148,11 @@ define(function (require, exports) {
             "getSVGClass": _getSVGClass
         };
 
-        this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, recentDocPayload);
+        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, recentDocPayload);
+    };
+    registerRecentDocumentSearch.action = {
+        reads: [],
+        writes: [locks.JS_SEARCH]
     };
 
     exports.registerCurrentDocumentSearch = registerCurrentDocumentSearch;

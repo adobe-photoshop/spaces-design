@@ -28,6 +28,7 @@ define(function (require, exports) {
         Immutable = require("immutable");
 
     var events = require("js/events"),
+        locks = require("js/locks"),
         mathUtil = require("js/util/math"),
         svgUtil = require("js/util/svg"),
         Layer = require("js/models/layer");
@@ -183,11 +184,13 @@ define(function (require, exports) {
     };
 
     /**
-     * Register layer info to search
+     * Register layer info to search.
+     * FIXME: This should be a private action.
      *
      * @param {boolean} searchAllDocuments Whether to search all documents or not (just the current one)
+     * @return {Promise}
      */
-    var _registerLayerSearch = function (searchAllDocuments) {
+    var registerLayerSearch = function (searchAllDocuments) {
         var type = searchAllDocuments ? "ALL" : "CURRENT",
             filters = Immutable.List.of(
                 (type + "_LAYER"),
@@ -211,25 +214,42 @@ define(function (require, exports) {
             "getSVGClass": svgUtil.getSVGClassFromLayerCategories
         };
         
-        this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, payload);
+        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, payload);
+    };
+    registerLayerSearch.action = {
+        reads: [],
+        writes: [locks.JS_SEARCH]
     };
 
     /**
      * Register layer info to search for layers in all current documents
      *
+     * @return {Promise}
      */
     var registerAllLayerSearch = function () {
-        _registerLayerSearch.call(this, true);
+        return this.transfer(registerLayerSearch, true);
+    };
+    registerAllLayerSearch.action = {
+        reads: [],
+        writes: [],
+        transfers: [registerLayerSearch]
     };
     
     /**
      * Register layer info to search for layers just in current document
      *
+     * @return {Promise}
      */
     var registerCurrentLayerSearch = function () {
-        _registerLayerSearch.call(this, false);
+        return this.transfer(registerLayerSearch, false);
+    };
+    registerCurrentLayerSearch.action = {
+        reads: [],
+        writes: [],
+        transfers: [registerLayerSearch]
     };
 
+    exports.registerLayerSearch = registerLayerSearch;
     exports.registerCurrentLayerSearch = registerCurrentLayerSearch;
     exports.registerAllLayerSearch = registerAllLayerSearch;
 });

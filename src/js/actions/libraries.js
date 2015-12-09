@@ -50,7 +50,6 @@ define(function (require, exports) {
         layerActions = require("./layers"),
         exportActions = require("./export"),
         documentActions = require("./documents"),
-        searchActions = require("./search/libraries"),
         shapeActions = require("./shapes"),
         typeActions = require("./type"),
         historyActions = require("./history"),
@@ -1193,32 +1192,41 @@ define(function (require, exports) {
      * Handle libraries load event. 
      *
      * @private
+     * @return {Promise}
      */
     var handleLibrariesLoaded = function () {
         var ccLibraries = this.flux.store("library").getLibrariesAPI(),
-            libraryCollection = (ccLibraries.getLoadedCollections() || [])[0];
+            libraryCollection = (ccLibraries.getLoadedCollections() || [])[0],
+            searchPromise,
+            dispatchPromise;
 
         if (!libraryCollection) {
-            searchActions.registerLibrarySearch.call(this, []);
+            searchPromise = this.transfer("searchLibraries.registerLibrarySearch", []);
+            dispatchPromise = this.dispatchAsync(events.libraries.LIBRARIES_UNLOADED);
+        } else {
+            searchPromise = this.transfer("searchLibraries.registerLibrarySearch", libraryCollection.libraries);
             
-            return this.dispatchAsync(events.libraries.LIBRARIES_UNLOADED);
+            // List to library collection's sync event.
+            _librarySyncStatus = new LibrarySyncStatus(libraryCollection);
+            _librarySyncStatus.addSyncListener(handleSyncingLibraries.bind(this));
+            
+            var preferenceState = this.flux.stores.preferences.getState(),
+                graphicEditStatusPref = preferenceState.get(_EDIT_STATUS_PREF) || {},
+                lastSelectedLibraryID = preferenceState.get(_LAST_SELECTED_LIBRARY_ID_PREF);
+                
+            dispatchPromise = this.dispatchAsync(events.libraries.LIBRARIES_LOADED, {
+                collection: libraryCollection,
+                editStatus: graphicEditStatusPref,
+                lastSelectedLibraryID: lastSelectedLibraryID
+            });
         }
 
-        searchActions.registerLibrarySearch.call(this, libraryCollection.libraries);
-        
-        // List to library collection's sync event.
-        _librarySyncStatus = new LibrarySyncStatus(libraryCollection);
-        _librarySyncStatus.addSyncListener(handleSyncingLibraries.bind(this));
-        
-        var preferenceState = this.flux.stores.preferences.getState(),
-            graphicEditStatusPref = preferenceState.get(_EDIT_STATUS_PREF) || {},
-            lastSelectedLibraryID = preferenceState.get(_LAST_SELECTED_LIBRARY_ID_PREF);
-            
-        return this.dispatchAsync(events.libraries.LIBRARIES_LOADED, {
-            collection: libraryCollection,
-            editStatus: graphicEditStatusPref,
-            lastSelectedLibraryID: lastSelectedLibraryID
-        });
+        return Promise.join(searchPromise, dispatchPromise);
+    };
+    handleLibrariesLoaded.action = {
+        reads: [locks.CC_LIBRARIES],
+        writes: [locks.JS_LIBRARIES],
+        transfers: ["searchLibraries.registerLibrarySearch"]
     };
     
     /**
@@ -1331,6 +1339,14 @@ define(function (require, exports) {
     };
 
     /**
+     * Libraries loadedCollections event handlers.
+     *
+     * @private
+     * @type {function}
+     */
+    var _handleLibrariesLoadedHelper;
+
+    /**
      * After startup, load the libraries
      *
      * @return {Promise}
@@ -1338,17 +1354,25 @@ define(function (require, exports) {
     var afterStartup = function () {
         var ccLibraries = this.flux.store("library").getLibrariesAPI();
 
+        if (_handleLibrariesLoadedHelper) {
+            ccLibraries.removeLoadedCollectionsListener(_handleLibrariesLoadedHelper);
+        }
+
         // Listen to the load event of CC Libraries. The event has two scenarios:
         //     loaded: Libraries data is ready for use. Fired after user sign in creative cloud.
         //     unloaded: Libraries data is cleared. Fired after user sign out creative cloud.
-        ccLibraries.addLoadedCollectionsListener(handleLibrariesLoaded.bind(this));
+        _handleLibrariesLoadedHelper = function () {
+            return this.flux.actions.libraries.handleLibrariesLoaded();
+        }.bind(this);
+        ccLibraries.addLoadedCollectionsListener(_handleLibrariesLoadedHelper);
         
-        // Triger the load event callback manually for initial start up.
-        return (handleLibrariesLoaded.bind(this))();
+        // Trigger the load event callback manually for initial start up.
+        return this.transfer(handleLibrariesLoaded);
     };
     afterStartup.action = {
-        reads: [locks.JS_PREF, locks.CC_LIBRARIES],
-        writes: [locks.JS_LIBRARIES]
+        reads: [locks.JS_LIBRARIES, locks.CC_LIBRARIES],
+        writes: [],
+        transfers: [handleLibrariesLoaded]
     };
     
     /**
@@ -1405,6 +1429,7 @@ define(function (require, exports) {
     exports.applyCharacterStyle = applyCharacterStyle;
     exports.applyColor = applyColor;
 
+    exports.handleLibrariesLoaded = handleLibrariesLoaded;
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;
     exports.onReset = onReset;

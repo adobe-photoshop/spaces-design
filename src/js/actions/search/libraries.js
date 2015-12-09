@@ -27,6 +27,7 @@ define(function (require, exports) {
     var Immutable = require("immutable");
 
     var events = require("js/events"),
+        locks = require("js/locks"),
         collection = require("js/util/collection"),
         nls = require("js/util/nls"),
         libraryActions = require("js/actions/libraries"),
@@ -183,6 +184,7 @@ define(function (require, exports) {
      * Register library info to search
      *
      * @param {Array.<AdobeLibraryComposite>} libraries
+     * @return {Promise}
      */
     var registerLibrarySearch = function (libraries) {
         var libraryIDs = libraries.length > 0 ? collection.pluck(libraries, "id") : Immutable.List(),
@@ -202,7 +204,12 @@ define(function (require, exports) {
             "getSVGClass": _getSVGClass
         };
         
-        this.dispatch(events.search.REGISTER_SEARCH_PROVIDER, payload);
+        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, payload);
+    };
+    registerLibrarySearch.action = {
+        reads: [],
+        writes: [locks.JS_SEARCH],
+        transfers: []
     };
     
     exports.registerLibrarySearch = registerLibrarySearch;
