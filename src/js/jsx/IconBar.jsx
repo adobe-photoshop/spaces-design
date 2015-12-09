@@ -61,7 +61,7 @@ define(function (require, exports, module) {
                 }
             }
 
-            return this.getFlux().actions.ui.updatePanelSizes({
+            return this.getFlux().actions.panel.updatePanelSizes({
                 iconBarWidth: iconBarWidth
             });
         },

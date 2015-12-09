@@ -417,28 +417,28 @@
         "COLOR_THEME": {
             "$enable-rule": "always-except-modal",
             "ORIGINAL": {
-                "$action": "ui.setColorStop",
+                "$action": "panel.setColorStop",
                 "$enable-rule": "always-except-modal",
                 "$payload": {
                     "stop": "ORIGINAL"
                 }
             },
             "LIGHT": {
-                "$action": "ui.setColorStop",
+                "$action": "panel.setColorStop",
                 "$enable-rule": "always-except-modal",
                 "$payload": {
                     "stop": "LIGHT"
                 }
             },
             "MEDIUM": {
-                "$action": "ui.setColorStop",
+                "$action": "panel.setColorStop",
                 "$enable-rule": "always-except-modal",
                 "$payload": {
                     "stop": "MEDIUM"
                 }
             },
             "DARK": {
-                "$action": "ui.setColorStop",
+                "$action": "panel.setColorStop",
                 "$enable-rule": "always-except-modal",
                 "$payload": {
                     "stop": "DARK"

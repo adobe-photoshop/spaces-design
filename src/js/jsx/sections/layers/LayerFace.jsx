@@ -391,7 +391,7 @@ define(function (require, exports, module) {
             }
             
             this._isDragEventTarget = true;
-            this.getFlux().actions.ui.disableTooltips();
+            this.getFlux().actions.panel.disableTooltips();
             
             return { draggedTargets: draggedLayers };
         },
@@ -404,7 +404,7 @@ define(function (require, exports, module) {
          */
         _handleDragStop: function () {
             if (this._isDragEventTarget) {
-                this.getFlux().actions.ui.enableTooltips();
+                this.getFlux().actions.panel.enableTooltips();
                 this._isDragEventTarget = false;
             }
             

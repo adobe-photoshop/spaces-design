@@ -42,7 +42,6 @@ define(function (require, exports) {
         layers = require("./layers"),
         locks = require("js/locks"),
         policy = require("./policy"),
-        ui = require("./ui"),
         shortcuts = require("./shortcuts"),
         nls = require("js/util/nls"),
         layerActionsUtil = require("js/util/layeractions"),
@@ -572,7 +571,7 @@ define(function (require, exports) {
         // During artboard transforms, PS switches to artboard tool, so switch back to superselect
         var cloakPromise;
         if (event.kind._value === "mouse" && event.tool && event.tool.ID === "ArtT") {
-            cloakPromise = this.transfer(ui.cloak);
+            cloakPromise = this.transfer("panel.cloak");
         }
 
         return Promise.join(changeStatePromise, policyPromise, cloakPromise);
@@ -581,7 +580,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [policy.suspendAllPolicies, policy.restoreAllPolicies,
-        changeModalState, "ui.cloak"],
+        changeModalState, "panel.cloak"],
         modal: true
     };
 

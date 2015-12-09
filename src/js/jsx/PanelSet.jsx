@@ -121,7 +121,7 @@ define(function (require, exports, module) {
                 columnCount = 1;
             }
 
-            return this.getFlux().actions.ui.updatePanelSizes({
+            return this.getFlux().actions.panel.updatePanelSizes({
                 panelWidth: panelWidth,
                 columnCount: columnCount
             });

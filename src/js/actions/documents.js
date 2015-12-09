@@ -579,7 +579,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var createNewExtended = function () {
-        return this.transfer(ui.setOverlayOffsetsForFirstDocument)
+        return this.transfer("panel.setOverlayOffsetsForFirstDocument")
             .bind(this)
             .then(function () {
                 return this.transfer(menu.native, {
@@ -591,7 +591,7 @@ define(function (require, exports) {
     createNewExtended.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.PS_APP],
-        transfers: [menu.native, ui.setOverlayOffsetsForFirstDocument],
+        transfers: [menu.native, "panel.setOverlayOffsetsForFirstDocument"],
         lockUI: true
     };
 
@@ -627,7 +627,7 @@ define(function (require, exports) {
 
         headlights.logEvent("file", "new-from-template", preset);
 
-        return this.transfer(ui.setOverlayOffsetsForFirstDocument)
+        return this.transfer("panel.setOverlayOffsetsForFirstDocument")
             .bind(this)
             .then(function () {
                 var playObject = documentLib.createWithPreset(preset),
@@ -651,7 +651,7 @@ define(function (require, exports) {
         reads: [locks.JS_PREF],
         writes: [locks.PS_DOC, locks.PS_APP],
         transfers: [preferencesActions.setPreference, allocateDocument,
-            ui.setOverlayOffsetsForFirstDocument, exportActions.addDefaultAsset, toolActions.changeVectorMaskMode],
+            "panel.setOverlayOffsetsForFirstDocument", exportActions.addDefaultAsset, toolActions.changeVectorMaskMode],
         post: [_verifyActiveDocument, _verifyOpenDocuments],
         locksUI: true
     };
@@ -667,7 +667,7 @@ define(function (require, exports) {
     var open = function (filePath, settings) {
         settings = settings || {};
         
-        return this.transfer(ui.setOverlayOffsetsForFirstDocument)
+        return this.transfer("panel.setOverlayOffsetsForFirstDocument")
             .bind(this)
             .then(function () {
                 this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
@@ -707,7 +707,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_APP, locks.JS_PANEL],
         transfers: [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
-            ui.setOverlayOffsetsForFirstDocument, menu.native, toolActions.changeVectorMaskMode],
+            "panel.setOverlayOffsetsForFirstDocument", menu.native, toolActions.changeVectorMaskMode],
         lockUI: true,
         post: [_verifyActiveDocument, _verifyOpenDocuments]
     };
@@ -732,7 +732,7 @@ define(function (require, exports) {
                 interactionMode: descriptor.interactionMode.DISPLAY
             };
 
-        return this.transfer(ui.cloak)
+        return this.transfer("panel.cloak")
             .bind(this)
             .then(function () {
                 return descriptor.playObject(closeObj, playOptions);
@@ -748,7 +748,7 @@ define(function (require, exports) {
     close.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.JS_PANEL, locks.PS_APP, locks.PS_DOC],
-        transfers: [ui.cloak, disposeDocument],
+        transfers: ["panel.cloak", disposeDocument],
         lockUI: true,
         post: [_verifyActiveDocument, _verifyOpenDocuments]
     };
@@ -767,7 +767,7 @@ define(function (require, exports) {
 
         this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
 
-        return this.transfer(ui.cloak)
+        return this.transfer("panel.cloak")
             .bind(this)
             .then(function () {
                 return descriptor.playObject(documentLib.select(documentRef));
@@ -812,7 +812,7 @@ define(function (require, exports) {
         reads: [locks.JS_TOOL],
         writes: [locks.JS_APP, locks.JS_PANEL],
         transfers: ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
-            ui.updateTransform, toolActions.select, ui.cloak, guideActions.queryCurrentGuides,
+            ui.updateTransform, toolActions.select, "panel.cloak", guideActions.queryCurrentGuides,
             toolActions.changeVectorMaskMode, updateDocument],
         lockUI: true,
         post: [_verifyActiveDocument]
