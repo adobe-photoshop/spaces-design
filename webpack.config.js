@@ -108,7 +108,10 @@ var buildConfigs = languages.map(function (lang) {
                 __PG_DEBUG__: devMode
             }),
             new WebpackNotifierPlugin({ alwaysNotify: true })
-        ]
+        ],
+        stats: {
+            hash: true // This prints out the build hash, making it easier to tell when a rebuild happens
+        }
     };
 
     if (devMode) {
