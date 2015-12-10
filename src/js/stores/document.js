@@ -27,6 +27,8 @@ define(function (require, exports, module) {
     var Fluxxor = require("fluxxor"),
         Immutable = require("immutable"),
         _ = require("lodash");
+        
+    var collection = require("js/util/collection");
 
     var Document = require("../models/document"),
         Guide = require("../models/guide"),
@@ -35,9 +37,24 @@ define(function (require, exports, module) {
     var DocumentStore = Fluxxor.createStore({
 
         /**
-         * @type {Object.<number, Document>}
+         * @private
+         * @type {Map.<number, Document>}
          */
         _openDocuments: null,
+        
+        /**
+         * Stores the previous version of the current document for calculating the layer diff.
+         * 
+         * @private
+         * @type {Map.<number, Document>}
+         */
+        _oldDocuments: null,
+        
+        /**
+         * @private
+         * @type {Map.<number, LayerDiff>}
+         */
+        _layerDiffs: null,
 
         initialize: function () {
             this.bindActions(
@@ -106,6 +123,9 @@ define(function (require, exports, module) {
          */
         _handleReset: function () {
             this._openDocuments = {};
+            this._layerDiffs = {};
+            this._layerListeners = {};
+            this._oldDocuments = {};
         },
 
         /**
@@ -147,22 +167,31 @@ define(function (require, exports, module) {
          * model has changed, and emit a change event.
          *
          * @param {Document} nextDocument
-         * @param {boolean=} dirty Whether to set the dirty bit, assuming the model has changed
-         * @param {boolean=} suppressChange
+         * @param {object=} options
+         * @param {boolean=} options.dirty - Whether to set the dirty bit, assuming the model has changed
+         * @param {boolean=} options.suppressChange
+         * @param {boolean=} options.performLayerDiff
          */
-        setDocument: function (nextDocument, dirty, suppressChange) {
+        setDocument: function (nextDocument, options) {
+            options = _.merge({}, options);
+            
             var oldDocument = this._openDocuments[nextDocument.id];
+
             if (Immutable.is(oldDocument, nextDocument)) {
                 return;
             }
 
-            if (dirty) {
+            if (options.dirty) {
                 nextDocument = nextDocument.set("dirty", true);
             }
 
             this._openDocuments[nextDocument.id] = nextDocument;
+            
+            if (!this._oldDocuments[nextDocument.id]) {
+                this._oldDocuments[nextDocument.id] = oldDocument;
+            }
 
-            if (suppressChange) {
+            if (options.suppressChange) {
                 return;
             }
 
@@ -174,6 +203,27 @@ define(function (require, exports, module) {
                 });
 
             if (initialized) {
+                var document = this._oldDocuments[nextDocument.id];
+
+                this._oldDocuments[nextDocument.id] = null;
+
+                if (options.performLayerDiff) {
+                    this._layerDiffs[nextDocument.id] = _layerDiff(document, nextDocument);
+                    
+                    var diff = this._layerDiffs[nextDocument.id];
+                    if (diff.layerTree.size !== 0) {
+                        var layerPaths = _getLayerPaths(diff.layerTree, nextDocument);
+
+                        this.emit("layer-tree-change-" + nextDocument.id, layerPaths);
+                    }
+
+                    diff.layerFace.forEach(function (layerID) {
+                        var nextLayer = nextDocument.layers.byID(layerID);
+
+                        this.emit(this._layerFaceEventName(nextDocument.id, layerID), nextLayer);
+                    }, this);
+                }
+
                 this.emit("change");
             }
         },
@@ -187,7 +237,7 @@ define(function (require, exports, module) {
         _documentUpdated: function (payload) {
             var doc = this._makeDocument(payload);
 
-            this.setDocument(doc);
+            this.setDocument(doc, { performLayerDiff: true });
         },
 
         /**
@@ -249,7 +299,7 @@ define(function (require, exports, module) {
                 document = this._openDocuments[documentID],
                 nextDocument = document.resize(size.w, size.h);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -275,7 +325,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.addLayers(layerIDs, descriptors, selected, replace, document),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true, performLayerDiff: true });
         },
 
         /**
@@ -295,7 +345,7 @@ define(function (require, exports, module) {
                 nextDocument = document.merge(props),
                 guides = payload.guides;
 
-            this.setDocument(nextDocument, false, !!guides);
+            this.setDocument(nextDocument, { dirty: true, supressChange: !!guides });
 
             if (guides) {
                 this._handleGuidesUpdated(payload);
@@ -321,7 +371,7 @@ define(function (require, exports, module) {
                 nextDocument = document.set("layers", nextLayers),
                 suppressDirty = payload.suppressDirty;
 
-            this.setDocument(nextDocument, !suppressDirty);
+            this.setDocument(nextDocument, { dirty: !suppressDirty, performLayerDiff: true });
         },
 
         /**
@@ -337,7 +387,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.resetBounds(boundsObjs),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -353,7 +403,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.replaceLayersByIndex(document, descriptors),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true, performLayerDiff: true });
         },
 
         /**
@@ -363,14 +413,16 @@ define(function (require, exports, module) {
          * @param {number} documentID
          * @param {Immutable.List.<number>} layerIDs
          * @param {object} properties
-         * @param {boolean=} quiet If true, suppress change event.
+         * @param {object=} options - options accepted by setDocument
          */
-        _updateLayerProperties: function (documentID, layerIDs, properties, quiet) {
+        _updateLayerProperties: function (documentID, layerIDs, properties, options) {
             var document = this._openDocuments[documentID],
                 nextLayers = document.layers.setProperties(layerIDs, properties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true, quiet);
+            options = _.merge({ dirty: true }, options);
+
+            this.setDocument(nextDocument, options);
         },
 
         /**
@@ -387,7 +439,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setVisibility(layerProps),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true, performLayerDiff: true });
         },
 
         /**
@@ -402,7 +454,7 @@ define(function (require, exports, module) {
                 layerIDs = Immutable.List.of(layerID),
                 locked = payload.locked;
 
-            this._updateLayerProperties(documentID, layerIDs, { locked: locked });
+            this._updateLayerProperties(documentID, layerIDs, { locked: locked }, { performLayerDiff: true });
         },
 
         /**
@@ -432,7 +484,7 @@ define(function (require, exports, module) {
             // If there will be a selection change, suppress change event for
             // initial group expansion change.
             this._updateLayerProperties(documentID, layerIDs, { expanded: expanded },
-                suppressChange);
+                { suppressChange: suppressChange, performLayerDiff: true });
 
             if (!suppressChange) {
                 // A change event has already been emitted, and there are no
@@ -497,7 +549,7 @@ define(function (require, exports, module) {
                 layerIDs = Immutable.List.of(layerID),
                 name = payload.name;
 
-            this._updateLayerProperties(documentID, layerIDs, { name: name });
+            this._updateLayerProperties(documentID, layerIDs, { name: name }, { performLayerDiff: true });
         },
 
         /**
@@ -526,7 +578,7 @@ define(function (require, exports, module) {
                 updatedLayers = document.layers.deleteLayers(layerIDs),
                 nextDocument = document.set("layers", updatedLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true, performLayerDiff: true });
 
             if (payload.selectedIndices) {
                 this._updateLayerSelectionByIndices(nextDocument, Immutable.Set(payload.selectedIndices));
@@ -553,7 +605,7 @@ define(function (require, exports, module) {
                     isArtboard, bounds),
                 nextDocument = document.set("layers", updatedLayers);
 
-            this.setDocument(nextDocument, true, suppressChange);
+            this.setDocument(nextDocument, { dirty: true, supressChange: suppressChange, performLayerDiff: true });
         },
 
         /**
@@ -573,7 +625,7 @@ define(function (require, exports, module) {
                 selectedLayers = reorderedLayers.updateSelection(selectedIDs),
                 nextDocument = document.set("layers", selectedLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true, performLayerDiff: true });
         },
 
         /**
@@ -595,7 +647,7 @@ define(function (require, exports, module) {
                 nextLayers = reorderLayers.updateSelection(selectedIDs),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true, performLayerDiff: true });
         },
 
         /**
@@ -610,8 +662,7 @@ define(function (require, exports, module) {
             var nextLayers = document.layers.updateSelection(selectedIDs, pivotID),
                 nextDocument = document.set("layers", nextLayers);
 
-            // layer selection should NOT dirty the document
-            this.setDocument(nextDocument, false);
+            this.setDocument(nextDocument, { performLayerDiff: true });
         },
 
         /**
@@ -668,7 +719,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.repositionLayers(payload.positions),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -684,7 +735,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.resizeLayers(payload.sizes),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -701,7 +752,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setLayersProportional(layerIDs, proportional),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -718,7 +769,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setBorderRadii(layerIDs, radii),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -743,7 +794,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setFillProperties(layerIDs, fillProperties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -768,7 +819,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setStrokeProperties(layerIDs, strokeProperties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -786,7 +837,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.addStroke(layerIDs, strokeStyleDescriptor),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -815,7 +866,7 @@ define(function (require, exports, module) {
                     layerIDs, layerEffectIndex, layerEffectType, layerEffectProperties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -859,7 +910,7 @@ define(function (require, exports, module) {
                 }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -886,7 +937,7 @@ define(function (require, exports, module) {
             var nextLayers = document.layers.deleteLayerEffectProperties(layerIDs, layerEffectIndex, layerEffectType),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -918,7 +969,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { postScriptName: postScriptName }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -937,7 +988,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { textSize: size }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -974,7 +1025,7 @@ define(function (require, exports, module) {
 
             var nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -993,7 +1044,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { tracking: tracking }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -1012,7 +1063,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setCharacterStyleProperties(layerIDs, { leading: leading }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -1031,7 +1082,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setParagraphStyleProperties(layerIDs, { alignment: alignment }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -1071,7 +1122,7 @@ define(function (require, exports, module) {
                     .setParagraphStyleProperties(layerIDs, paragraphProperties),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -1126,7 +1177,7 @@ define(function (require, exports, module) {
 
             var nextDocument = document.setIn(["guides", index], nextGuide);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -1142,7 +1193,7 @@ define(function (require, exports, module) {
 
             var nextDocument = document.deleteIn(["guides", index]);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
 
         /**
@@ -1157,7 +1208,7 @@ define(function (require, exports, module) {
 
             var nextDocument = document.set("guides", Immutable.List());
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
         },
         
         /**
@@ -1174,9 +1225,233 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setProperties(layerIDs, { vectorMaskEnabled: vectorMaskEnabled }),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, { dirty: true });
+        },
+        
+        /**
+         * @callback Document~LayerTreeListener
+         * @param {LayerPath} changedLayerPaths
+         */
+
+        /**
+         * Listen to layer tree changes including:
+         *
+         * - create layer
+         * - delete layer
+         * - reorder layer
+         * - undo any of changes above
+         *
+         * The event callback will receive the path to the changed layer from the root. For example
+         * 
+         *
+         * @param {number} documentID
+         * @param {Document~LayerTreeListener} callback
+         */
+        addLayerTreeListener: function (documentID, callback) {
+            this.on("layer-tree-change-" + documentID, callback);
+        },
+
+        /**
+         * Remove layer tree listener.
+         *
+         * @param {number} documentID
+         * @param {Document~LayerTreeListener} callback
+         */
+        removeLayerTreeListener: function (documentID, callback) {
+            this.removeListener("layer-tree-change-" + documentID, callback);
+        },
+        
+        /**
+         * Return layer face event name.
+         *
+         * @private
+         * @param {number} documentID
+         * @param {number} layerID
+         * @return {string}
+         */
+        _layerFaceEventName: function (documentID, layerID) {
+            return ["layer-face-change", documentID, layerID].join("-");
+        },
+        
+        /**
+         * @callback Document~LayerFaceListener
+         * @param {Layer} nextLayer
+         */
+
+        /**
+         * Listen to layer face (Layer#face) changes.
+         *
+         * @param {number} documentID
+         * @param {number} layerID
+         * @param {Document~LayerFaceListener} callback
+         */
+        addLayerFaceListener: function (documentID, layerID, callback) {
+            this.on(this._layerFaceEventName(documentID, layerID), callback);
+        },
+
+        /**
+         * Remove layer face listener.
+         *
+         * @param {number} documentID
+         * @param {number} layerID
+         * @param {Document~LayerFaceListener} callback
+         */
+        removeLayerFaceListener: function (documentID, layerID, callback) {
+            this.removeListener(this._layerFaceEventName(documentID, layerID), callback);
         }
     });
+    
+    
+    /**
+     * Get the layer attributes that correspond to the given document. Used by "_layerDiff" for calculating 
+     * the diff between the current and next documents.
+     *
+     * @private
+     * @param {Document} document
+     * @return {Map.<number, object>}
+     */
+    var _getLayerAttrs = function (document) {
+        var faces = collection.pluck(document.layers.allVisible, "face");
+
+        return faces.reduce(function (facesMap, face, index) {
+            var layerID = face.get("id"),
+                children = document.layers.nodes.get(layerID).children;
+            
+            facesMap[layerID] = {
+                id: layerID,
+                face: face,
+                index: index,
+                childrenCount: children ? children.size : 0,
+                depth: document.layers.depth(document.layers.byID(layerID))
+            };
+            
+            return facesMap;
+        }, {});
+    };
+    
+    /**
+     *
+     * Returns IDs of the layers that are changed between two document models. See "LayerDiff" for details.
+     *
+     * @private
+     * @param  {Document} document
+     * @param  {Document} nextDocument
+     * @return {LayerDiff}
+     *
+     * @typedef {object} LayerDiff
+     * @property {Set.<number>} layerFace - IDs of the layers that have updates in their face (Layer#face) attributes.
+     * @property {Set.<number>} layerTree - IDs of the layers that changed in the layer tree. This usually means the 
+     *                                      layer tree is changed due to layer creation / deletion / reorder.
+     */
+    var _layerDiff = function (document, nextDocument) {
+        var diff = {
+            layerFace: new Set(),
+            layerTree: new Set()
+        };
+            
+        if (!document || !document.layers) {
+            return diff;
+        }
+        
+        var faces = _getLayerAttrs(document),
+            nextFaces = _getLayerAttrs(nextDocument);
+
+        _.forEach(faces, function (face) {
+            var nextFace = nextFaces[face.id];
+            
+            if (nextFace && !Immutable.is(face.face, nextFace.face)) {
+                diff.layerFace.add(face.id);
+            }
+            
+            // layer is removed or updated
+            if (!nextFace ||
+                face.index !== nextFace.index ||
+                face.depth !== nextFace.depth ||
+                face.childrenCount !== nextFace.childrenCount) {
+                diff.layerTree.add(face.id);
+            }
+        });
+
+        _.forEach(nextFaces, function (nextFace) {
+            // new layer
+            if (!faces[nextFace.id]) {
+                diff.layerTree.add(nextFace.id);
+            }
+        });
+
+        return diff;
+    };
+    
+    /**
+     * Return the merged paths of the given layer IDs in the layer tree. 
+     * For example:
+     *   given layer IDs [10]
+     *   path [1, 6, 10]
+     *   returns [Set.<1>, Set.<6>, Set.<10>]
+     *   - 1 is the root, 6 is the parent
+     *
+     *   given layer IDs [10, 20]
+     *   paths [1, 6, 10], [2, 9, 12, 20]
+     *   returns [Set.<1, 2>, Set.<6, 9>, Set.<10, 12>, Set.<20>]
+     *   - in this case, the result is the merge path of the two paths, which is easier and fast to know whether 
+     *   - a layer is changed via its depth and id.
+     *
+     * @private
+     * @param  {Set.<number>} layerIDs
+     * @return {LayerPath}
+     *
+     * @typedef {Array.<Set.<number>>} LayerPath
+     */
+    var _getLayerPaths = function (layerIDs, document) {
+        var result = [],
+            targetIDs = new Set(layerIDs.keys());
+
+        document.layers.roots.forEach(function (node) {
+            _getLayerPathsRecursively([], node, targetIDs, result);
+        });
+        
+        // Convert paths to zipped values for better performance in "LayerPanel#_renderLayersList".
+        // From
+        //   [[1,2,3], [1,4,6], [1,7]]
+        // To
+        //   [Set[1], Set[2,4,7], Set[3,6]]
+        var zippedResult = _.zip.apply(null, result)
+                .map(function (ids) {
+                    return _.reduce(ids, function (set, id) {
+                        return set.add(id);
+                    }, new Set());
+                });
+        
+        return zippedResult;
+    };
+    
+    /**
+     * Used by "_getLayerPaths" for searching layer path in the tree.
+     * 
+     * @private
+     * @param  {Array.<number>} path - the current path to the "node"
+     * @param  {LayerNode} node
+     * @param  {Set.<number>} targetIDs - the remaining target layer IDs
+     * @param {Array.<Array<number>>} results
+     */
+    var _getLayerPathsRecursively = function (path, node, targetIDs, results) {
+        if (targetIDs.size === 0) {
+            return;
+        }
+        
+        path.push(node.id);
+        
+        if (targetIDs.has(node.id)) {
+            results.push(_.clone(path));
+            targetIDs.delete(node.id);
+        }
+
+        (node.children || []).forEach(function (childNode) {
+            _getLayerPathsRecursively(path, childNode, targetIDs, results);
+        }, this);
+        
+        path.pop();
+    };
 
     module.exports = DocumentStore;
 });

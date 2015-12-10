@@ -52,13 +52,24 @@ define(function (require, exports, module) {
         
         /**
          * Indicates whether the component is the initial target of a drag event.
-         
+         *
+         * @private
          * @type {boolean}
          */
         _isDragEventTarget: false,
+        
+        /**
+         * True if the layer is or was expanded. Used to avoid
+         * rendering its child faces until they are first visible.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _isExpanded: false,
 
         getInitialState: function () {
             return {
+                layer: this._getDocument().layers.byID(this.props.layerID),
                 isDropTarget: false,
                 dropPosition: null,
                 isDragging: false,
@@ -66,53 +77,34 @@ define(function (require, exports, module) {
             };
         },
         
+        componentWillMount: function () {
+            this.getFlux().stores.document.addLayerFaceListener(this.props.documentID, this.props.layerID,
+                this._handleLayerFaceChange);
+        },
+        
+        componentWillUnmount: function () {
+            this.getFlux().stores.document.removeLayerFaceListener(this.props.documentID, this.props.layerID,
+                this._handleLayerFaceChange);
+        },
+
         shouldComponentUpdate: function (nextProps, nextState) {
-            // Drag states
-            if (this.state.isDragging !== nextState.isDragging ||
-                this.state.dragStyle !== nextState.dragStyle ||
-                this.state.dropPosition !== nextState.dropPosition ||
-                this.state.isDropTarget !== nextState.isDropTarget) {
+            var depth = nextProps.depth,
+                isLayerChanged = !!nextProps.changedLayerPaths[depth] &&
+                    nextProps.changedLayerPaths[depth].has(nextProps.layerID);
+
+            if (isLayerChanged) {
                 return true;
             }
             
-            // Face change
-            if (!Immutable.is(this.props.layer.face, nextProps.layer.face)) {
+            if (this.state.isDragging !== nextState.isDragging ||
+                this.state.dragStyle !== nextState.dragStyle ||
+                this.state.dropPosition !== nextState.dropPosition ||
+                this.state.isDropTarget !== nextState.isDropTarget ||
+                !Immutable.is(this.state.layer, nextState.layer)) {
                 return true;
             }
-
-            if (!Immutable.is(this.props.layer.vectorMaskEnabled, nextProps.layer.vectorMaskEnabled)) {
-                return true;
-            }
-
-            var document = this.props.document,
-                nextDocument = nextProps.document;
-
-            // Depth changes
-            var currentDepth = document.layers.depth(this.props.layer),
-                nextDepth = nextDocument.layers.depth(nextProps.layer);
-
-            if (currentDepth !== nextDepth) {
-                return true;
-            }
-
-            // Deeper selection changes
-            var childOfSelection = document.layers.hasSelectedAncestor(this.props.layer);
-            if (childOfSelection || nextDocument.layers.hasSelectedAncestor(nextProps.layer)) {
-                if (!Immutable.is(document.layers.allSelected, nextDocument.layers.allSelected)) {
-                    return true;
-                }
-            }
-
-            // Given that the face hasn't changed and no selected ancestor has changed, this
-            // component only needs to re-render when going from having a collapsed ancestor
-            // (i.e., being hidden) to not having one (i.e., becoming newly visible).
-            var hadCollapsedAncestor = document.layers.hasCollapsedAncestor(this.props.layer),
-                willHaveCollapsedAncestor = nextDocument.layers.hasCollapsedAncestor(nextProps.layer),
-                hadInvisibleAncestor = document.layers.hasInvisibleAncestor(this.props.layer),
-                willHaveInvisibleAncestor = nextDocument.layers.hasInvisibleAncestor(nextProps.layer);
-
-            return hadCollapsedAncestor !== willHaveCollapsedAncestor ||
-                   hadInvisibleAncestor !== willHaveInvisibleAncestor;
+            
+            return false;
         },
 
         /**
@@ -122,7 +114,7 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleIconClick: function (event) {
-            var layer = this.props.layer;
+            var layer = this.state.layer;
             if (!layer.isGroup) {
                 return;
             }
@@ -138,10 +130,8 @@ define(function (require, exports, module) {
 
             // The clicked layer may an have out-of-date document models due to
             // the aggressive SCU method in LayersPanel.
-            var documentID = this.props.document.id,
-                documentStore = this.getFlux().store("document"),
-                currentDocument = documentStore.getDocument(documentID),
-                currentLayer = currentDocument.layers.byID(this.props.layer.id);
+            var currentDocument = this._getDocument(),
+                currentLayer = currentDocument.layers.byID(this.state.layer.id);
 
             this.getFlux().actions.layers.setGroupExpansion(currentDocument, currentLayer,
                 !currentLayer.expanded, descendants);
@@ -157,11 +147,19 @@ define(function (require, exports, module) {
         _handleLayerNameChange: function (event, newName) {
             if (newName.length !== 0) {
                 if (newName !== this.props.layer.name) {
-                    this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
+                    this.getFlux().actions.layers.rename(this._getDocument, this.props.layer, newName);
                 }
             } else {
                 this.refs.layerName.setValue(this.props.layer.name);
             }
+        },
+        
+        /**
+         * @private
+         * @return {Document}
+         */
+        _getDocument: function () {
+            return this.getFlux().stores.document.getDocument(this.props.documentID);
         },
 
         /**
@@ -175,6 +173,18 @@ define(function (require, exports, module) {
             // TODO: Skip to next layer on the tree
             event.stopPropagation();
         },
+        
+        /**
+         * Handle layer face change.
+         * 
+         * @private
+         * @type {Document~LayerFaceListener}
+         */
+        _handleLayerFaceChange: function (nextLayer) {
+            this.setState({
+                layer: nextLayer
+            });
+        },
 
         /**
          * Grabs the correct modifier by processing event modifier keys
@@ -184,13 +194,14 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event React event
          */
         _handleLayerClick: function (event) {
+            window.console.time("Layer Select");
             event.stopPropagation();
 
             var modifier = "select";
             if (event.shiftKey) {
                 modifier = "addUpTo";
             } else if (system.isMac ? event.metaKey : event.ctrlKey) {
-                var selected = this.props.layer.selected;
+                var selected = this.state.layer.selected;
 
                 if (selected) {
                     modifier = "deselect";
@@ -201,10 +212,8 @@ define(function (require, exports, module) {
 
             // The clicked layer may an have out-of-date document models due to
             // the aggressive SCU method in LayersPanel.
-            var documentID = this.props.document.id,
-                documentStore = this.getFlux().store("document"),
-                currentDocument = documentStore.getDocument(documentID),
-                currentLayer = currentDocument.layers.byID(this.props.layer.id);
+            var currentDocument = this._getDocument(),
+                currentLayer = currentDocument.layers.byID(this.state.layer.id);
 
             this.getFlux().actions.layers.select(currentDocument, currentLayer, modifier);
         },
@@ -218,7 +227,7 @@ define(function (require, exports, module) {
          */
         _handleVisibilityToggle: function (event, toggled) {
             // Invisible if toggled, visible if not
-            this.getFlux().actions.layers.setVisibility(this.props.document, this.props.layer, !toggled);
+            this.getFlux().actions.layers.setVisibility(this._getDocument(), this.state.layer, !toggled);
             event.stopPropagation();
         },
 
@@ -232,12 +241,12 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleLayerEdit: function (event) {
-            var layer = this.props.layer;
+            var layer = this.state.layer;
             if (layer.locked || !layer.visible) {
                 return;
             }
 
-            this.getFlux().actions.superselect.editLayer(this.props.document, this.props.layer);
+            this.getFlux().actions.superselect.editLayer(this._getDocument(), layer);
             event.stopPropagation();
         },
 
@@ -250,7 +259,7 @@ define(function (require, exports, module) {
          */
         _handleLockToggle: function (event, toggled) {
             // Locked if toggled, visible if not
-            this.getFlux().actions.layers.setLocking(this.props.document, this.props.layer, toggled);
+            this.getFlux().actions.layers.setLocking(this._getDocument(), this.state.layer, toggled);
             event.stopPropagation();
         },
         
@@ -280,8 +289,8 @@ define(function (require, exports, module) {
             }
 
             // Do not allow reordering to exceed the nesting limit.
-            var doc = this.props.document,
-                targetDepth = doc.layers.depth(target);
+            var doc = this._getDocument(),
+                targetDepth = this.props.depth;
 
             // Target depth is incremented if we're dropping INTO a group
             switch (dropPosition) {
@@ -296,7 +305,7 @@ define(function (require, exports, module) {
             default:
                 break;
             }
-
+            
             // When dragging artboards, the nesting limit is 0 because artboard
             // nesting is forbidden.
             var draggingArtboard = draggedLayers.some(function (layer) {
@@ -350,8 +359,8 @@ define(function (require, exports, module) {
          * @return {string}
          */
         _getDropPosition: function (dragPosition) {
-            var layer = this.props.layer,
-                bounds = ReactDOM.findDOMNode(this).getBoundingClientRect(),
+            var layer = this.state.layer,
+                bounds = ReactDOM.findDOMNode(this.refs.face).getBoundingClientRect(),
                 dropPosition;
 
             if (layer.isGroup) {
@@ -387,10 +396,12 @@ define(function (require, exports, module) {
         _handleBeforeDragStart: function () {
             // Photoshop logic is, if we drag a selected layers, all selected layers are being reordered
             // If we drag an unselected layer, only that layer will be reordered
-            var draggedLayers = Immutable.List([this.props.layer]);
+            var document = this._getDocument(),
+                layer = document.layers.byID(this.props.layerID),
+                draggedLayers = Immutable.List([layer]);
 
-            if (this.props.layer.selected) {
-                draggedLayers = this.props.document.layers.selected.filter(function (layer) {
+            if (layer.selected) {
+                draggedLayers = document.layers.selected.filter(function (layer) {
                     // For now, we only check for background layer, but we might prevent locked layers dragging later
                     return !layer.isBackground;
                 }, this);
@@ -414,10 +425,12 @@ define(function (require, exports, module) {
                 this._isDragEventTarget = false;
             }
             
-            this.setState({
-                isDragging: false,
-                dragStyle: null
-            });
+            if (this.isMounted()) {
+                this.setState({
+                    isDragging: false,
+                    dragStyle: null
+                });
+            }
         },
         
         /**
@@ -451,8 +464,8 @@ define(function (require, exports, module) {
             
             this.setState({ isDropTarget: false });
             
-            var dropLayer = this.props.layer,
-                doc = this.props.document,
+            var dropLayer = this.state.layer,
+                doc = this._getDocument(),
                 dropPosition = this.state.dropPosition,
                 dropOffset;
 
@@ -489,11 +502,12 @@ define(function (require, exports, module) {
          * @type {Droppable~onDragTargetMove}
          */
         _handleDragTargetMove: function (draggedLayers, dragPosition) {
-            var isDropTarget = !draggedLayers.includes(this.props.layer),
+            var layer = this.state.layer,
+                isDropTarget = !draggedLayers.includes(layer),
                 dropPosition = isDropTarget ? this._getDropPosition(dragPosition) : null,
                 canDropLayer = isDropTarget && this._validCompatibleDropTarget(
-                    this.props.layer, draggedLayers, dropPosition);
-            
+                    layer, draggedLayers, dropPosition);
+
             this.setState({
                 isDropTarget: canDropLayer,
                 dropPosition: dropPosition
@@ -514,76 +528,36 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var doc = this.props.document,
-                layer = this.props.layer,
-                layerStructure = doc.layers,
+            var doc = this._getDocument(),
+                layer = this.state.layer,
                 layerIndex = doc.layers.indexOf(layer),
                 nameEditable = !layer.isBackground,
-                isSelected = layer.selected,
-                isChildOfSelected = !layer.selected &&
-                    layerStructure.parent(layer) &&
-                    layerStructure.parent(layer).selected,
-                isStrictDescendantOfSelected = !isChildOfSelected && layerStructure.hasStrictSelectedAncestor(layer),
                 isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
-                isGroupStart = layer.isGroup || layer.isArtboard;
-
-            var depth = layerStructure.depth(layer),
-                endOfGroupStructure = false,
-                isLastInGroup = false,
-                dragStyle;
-
-            if (isDragging && this.state.dragStyle) {
-                dragStyle = this.state.dragStyle;
-            } else {
-                // We can skip some rendering calculations if dragging
-                isLastInGroup = layerIndex > 0 &&
-                    isChildOfSelected &&
-                    layerStructure.byIndex(layerIndex - 1).isGroupEnd;
-                
-                // Check to see if this layer is the last in a bunch of nested groups
-                if (isStrictDescendantOfSelected &&
-                    layerStructure.byIndex(layerIndex - 1).isGroupEnd) {
-                    var nextVisibleLayer = doc.layers.allVisibleReversed.get(this.props.visibleLayerIndex + 1);
-                    if (nextVisibleLayer && !doc.layers.hasStrictSelectedAncestor(nextVisibleLayer)) {
-                        endOfGroupStructure = true;
-                    }
-                }
-
-                dragStyle = {};
-            }
+                hasChildren = this.props.layerNodes;
             
-            var layerClasses = {
+            var layerClasses = classnames({
                 "layer": true,
-                "layer__group_start": isGroupStart,
-                "layer__select": isSelected,
-                "layer__select_child": isChildOfSelected,
-                "layer__select_descendant": isStrictDescendantOfSelected,
-                "layer__group_end": isLastInGroup,
-                "layer__nested_group_end": endOfGroupStructure,
-                "layer__group_collapsed": layer.isGroup && !layer.expanded,
-                "layer__ancestor_collapsed": doc.layers.hasCollapsedAncestor(layer)
-            };
+                "layer__select": layer.selected,
+                "layer-group": hasChildren,
+                "layer-group__selected": hasChildren && layer.selected,
+                "layer-group__collapsed": hasChildren && !layer.expanded,
+                "layer-group__not-visible": hasChildren && !layer.visible,
+                "layer-group__drag-target": isDragging
+            });
 
             // Set all the classes need to style this LayerFace
-            var faceClasses = {
+            var faceClasses = classnames({
                 "face": true,
-                "face__select_immediate": isSelected,
-                "face__select_child": isChildOfSelected,
-                "face__select_descendant": isStrictDescendantOfSelected,
-                "face__drag_target": isDragging && this.state.dragStyle,
+                "face__selected": layer.selected,
+                "face__not-visible": !layer.visible,
+                "face__drag-target": isDragging,
                 "face__drop_target": isDropTarget,
                 "face__drop_target_above": isDropTarget && dropPosition === "above",
                 "face__drop_target_below": isDropTarget && dropPosition === "below",
-                "face__drop_target_on": isDropTarget && dropPosition === "on",
-                "face__group_start": isGroupStart,
-                "face__group_lastchild": isLastInGroup,
-                "face__group_lastchildgroup": endOfGroupStructure,
-                "face__not-visible": !layer.visible || layerStructure.hasInvisibleAncestor(layer)
-            };
-
-            faceClasses["face__depth-" + depth] = true;
+                "face__drop_target_on": isDropTarget && dropPosition === "on"
+            }, "face__depth-" + this.props.depth);
 
             // Super Hack: If two tooltip regions are flush and have the same title,
             // the plugin does not invalidate the tooltip when moving the mouse from
@@ -597,7 +571,7 @@ define(function (require, exports, module) {
                 showHideButton = layer.isBackground ? null : (
                     <ToggleButton
                         disabled={this.props.disabled}
-                        title={nls.localize("strings.TOOLTIPS.SET_LAYER_VISIBILITY") + tooltipPadding}
+                        title={nls.localize("strings.TOOLTIPS.SET_LAYER_VISIBILITY")}
                         className="face__button_visibility"
                         size="column-2"
                         buttonType={ layer.visible ? "layer-visible" : "layer-not-visible" }
@@ -624,10 +598,29 @@ define(function (require, exports, module) {
                 }
             }
 
+            var layerList;
+
+            if (hasChildren && (layer.expanded || this._isExpanded)) {
+                this._isExpanded = true;
+                
+                var LayersList = require("./LayersList");
+
+                layerList = (
+                    <LayersList
+                        disabled={this.props.disabled}
+                        documentID={this.props.documentID}
+                        layerNodes={this.props.layerNodes}
+                        depth={this.props.depth + 1}
+                        changedLayerPaths={this.props.changedLayerPaths}/>
+                );
+            }
+            
+            window.console.timeEnd("Layer Select");
+            
             return (
                 <Draggable
                     type="layer"
-                    target={this.props.layer}
+                    target={layer}
                     beforeDragStart={this._handleBeforeDragStart}
                     onDragStart={this._handleDragStart}
                     onDrag={this._handleDrag}
@@ -637,10 +630,11 @@ define(function (require, exports, module) {
                         onDrop={this._handleDrop}
                         onDragTargetMove={this._handleDragTargetMove}
                         onDragTargetLeave={this._handleDragTargetLeave}>
-                        <li className={classnames(layerClasses)}>
+                        <li className={layerClasses}>
                             <div
-                                style={dragStyle}
-                                className={classnames(faceClasses)}
+                                ref="face"
+                                style={this.state.dragStyle}
+                                className={faceClasses}
                                 data-layer-id={layer.id}
                                 data-kind={layer.kind.toLowerCase()}
                                 onClick={!this.props.disabled && this._handleLayerClick}>
@@ -678,6 +672,7 @@ define(function (require, exports, module) {
                                     onClick={this._handleLockToggle}>
                                 </ToggleButton>
                             </div>
+                            {layerList}
                         </li>
                     </Droppable>
                 </Draggable>

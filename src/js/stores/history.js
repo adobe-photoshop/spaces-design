@@ -438,7 +438,7 @@ define(function (require, exports, module) {
                 nextDocument = nextDocument.overlayVisibility(currentDocument);
 
                 // these will emit their own changes
-                this.flux.store("document").setDocument(nextDocument);
+                this.flux.store("document").setDocument(nextDocument, { performLayerDiff: true });
                 this.flux.store("export").setDocumentExports(documentID, nextDocumentExports);
                 this.emit("timetravel");
             }

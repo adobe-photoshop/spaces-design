@@ -29,51 +29,46 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        _ = require("lodash");
 
     var os = require("adapter").os;
 
     var TitleHeader = require("js/jsx/shared/TitleHeader"),
-        LayerFace = require("./LayerFace"),
-        DummyLayerFace = require("./DummyLayerFace"),
+        LayersList = require("./LayersList"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         synchronization = require("js/util/synchronization");
-
-    /**
-     * Get the layer depths that correspond to the current document's visible layers.
-     * Used for invalidation
-     *
-     * @private
-     * @param {object} props
-     * @return {?Immutable.Iterable.<number>}
-     */
-    var _getDepths = function (props) {
-        var document = props.document;
-        if (!document) {
-            return null;
-        }
-
-        var layers = document.layers.allVisible;
-        return layers.map(document.layers.depth.bind(document.layers));
-    };
 
     /**
      * Get the layer faces that correspond to the current document. Used for
      * fast, coarse invalidation.
      *
      * @private
-     * @param {object} props
-     * @return {?Immutable.Iterable.<Immutable.Map.<string, *>>}
+     * @param {Document} document
+     * @return {Map.<number, object>}
      */
-    var _getFaces = function (props) {
-        var document = props.document;
+    var _getFaces = function (document) {
         if (!document) {
-            return null;
+            return {};
         }
+        
+        var faces = collection.pluck(document.layers.allVisible, "face");
 
-        var layers = document.layers.allVisible;
-        return collection.pluck(layers, "face");
+        return faces.reduce(function (facesMap, face, index) {
+            var layerID = face.get("id"),
+                children = document.layers.nodes.get(layerID).children;
+            
+            facesMap[layerID] = {
+                id: layerID,
+                face: face,
+                index: index,
+                childrenCount: children ? children.size : 0,
+                depth: document.layers.depth(document.layers.byID(layerID))
+            };
+            
+            return facesMap;
+        }, {});
     };
 
     var LayersPanel = React.createClass({
@@ -86,16 +81,6 @@ define(function (require, exports, module) {
          * @type {?function}
          */
         _setTooltipThrottled: null,
-
-        /**
-         * Set of layer IDs with faces that have been mounted. Used to avoid
-         * rendering faces until they are first visible. Initialized when the
-         * panel is mounted.
-         *
-         * @private
-         * @type {Set.<number>}
-         */
-        _mountedLayerIDs: null,
 
         /**
          * The list of layers last scrolled to. Used by _scrollToSelection
@@ -117,7 +102,6 @@ define(function (require, exports, module) {
 
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
-            this._mountedLayerIDs = new Set();
         },
 
         /**
@@ -143,24 +127,114 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps) {
-            if (this.props.disabled !== nextProps.disabled ||
-                this.props.active !== nextProps.active) {
-                return true;
+            return this.props.disabled !== nextProps.disabled ||
+                this.props.visible !== nextProps.visible ||
+                this.props.active !== nextProps.active;
+        },
+        
+        /**
+         * Return IDs of the layers that are changed between two document models. Changes include:
+         * - creation
+         * - deletion
+         * - update (e.g. select, expand, reorder, rename)
+         *
+         * @private
+         * @param  {Document} document
+         * @param  {Document} nextDocument
+         * @return {Set.<number>}
+         */
+        _layerDiff: function (document, nextDocument) {
+            var faces = _getFaces(document),
+                nextFaces = _getFaces(nextDocument),
+                changedLayerIDs = new Set();
+
+            _.forEach(faces, function (face) {
+                var nextFace = nextFaces[face.id];
+                
+                // layer is removed or updated
+                if (!nextFace ||
+                    face.index !== nextFace.index ||
+                    face.depth !== nextFace.depth ||
+                    face.childrenCount !== nextFace.childrenCount ||
+                    !Immutable.is(face.face, nextFace.face)) {
+                    changedLayerIDs.add(face.id);
+                }
+            });
+
+            _.forEach(nextFaces, function (nextFace) {
+                // new layer
+                if (!faces[nextFace.id]) {
+                    changedLayerIDs.add(nextFace.id);
+                }
+            });
+
+            return changedLayerIDs;
+        },
+        
+        /**
+         * Return the paths of the given layer IDs in the layer tree. 
+         * For example:
+         *   given: [10]
+         *   returns: [[1, 6, 8, 10]]
+         *   where 1 is the root, 6 and 8 are the parents
+         *
+         * @private
+         * @param  {Set.<number>} layerIDs
+         * @return {Array.<Set.<number>>}
+         */
+        _getLayerPaths: function (layerIDs) {
+            var result = [],
+                targetIDs = new Set(layerIDs.keys());
+
+            this.props.document.layers.roots.forEach(function (node) {
+                this._getLayerPathsRecursively([], node, targetIDs, result);
+            }, this);
+            
+            // Convert paths to zipped values for better performance in "LayerPanel#_renderLayersList".
+            // From
+            //   [[1,2,3], [1,4,6], [1,7]]
+            // To
+            //   [Set[1], Set[2,4,7], Set[3,6]]
+            var zippedResult = _.zip.apply(null, result)
+                    .map(function (ids) {
+                        return _.reduce(ids, function (set, id) {
+                            return set.add(id);
+                        }, new Set());
+                    });
+
+            return zippedResult;
+        },
+
+        /**
+         * Used by "LayerPanel#_getLayerPaths" for searching layer path in the tree.
+         * 
+         * @private
+         * @param  {Array.<number>} path - the current path to the "node"
+         * @param  {LayerNode} node
+         * @param  {Set.<number>} targetIDs - the remaining target layer IDs
+         * @param {Array.<Array<number>>} results
+         */
+        _getLayerPathsRecursively: function (path, node, targetIDs, results) {
+            if (targetIDs.size === 0) {
+                return;
+            }
+            
+            path.push(node.id);
+            
+            if (targetIDs.has(node.id)) {
+                results.push(_.clone(path));
+                targetIDs.delete(node.id);
             }
 
-            if (this.props.visible !== nextProps.visible) {
-                return true;
-            }
-
-            return this.props.active !== nextProps.active ||
-                !Immutable.is(_getFaces(this.props), _getFaces(nextProps)) ||
-                !Immutable.is(_getDepths(this.props), _getDepths(nextProps));
+            (node.children || []).forEach(function (childNode) {
+                this._getLayerPathsRecursively(path, childNode, targetIDs, results);
+            }, this);
+            
+            path.pop();
         },
 
         /**
          * Scrolls the layers panel to make (newly) selected layers visible.
-         *
-         * @param {LayerStructure} layerStructure
          */
         _scrollToSelection: function (layerStructure) {
             // This is set when a face is clicked on initially. Suppressing the call
@@ -215,48 +289,11 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var doc = this.props.document;
-
-            var layerComponents = doc.layers.allVisibleReversed
-                    .filter(function (layer) {
-                        // Do not render descendants of collapsed layers unless
-                        // they have been mounted previously
-                        if (this._mountedLayerIDs.has(layer.id)) {
-                            return true;
-                        } else if (doc.layers.hasCollapsedAncestor(layer)) {
-                            return false;
-                        } else {
-                            this._mountedLayerIDs.add(layer.id);
-                            return true;
-                        }
-                    }, this)
-                    .map(function (layer, visibleIndex) {
-                        return (
-                            <LayerFace
-                                ref={layer.key}
-                                key={layer.key}
-                                disabled={this.props.disabled}
-                                document={doc}
-                                layer={layer}
-                                visibleLayerIndex={visibleIndex}/>
-                        );
-                    }, this);
-
-            var bottomLayer = doc.layers.byIndex(1);
-            if (bottomLayer.isGroupEnd) {
-                layerComponents = layerComponents.push(
-                    <DummyLayerFace key="dummy" document={doc}/>
-                );
-            }
-
-            var layerListClasses = classnames({
-                "layer-list": true
-            });
-
-            var childComponents = (
-                <ul ref="parent" className={layerListClasses}>
-                    {layerComponents}
-                </ul>
+            var layersListComponent = (
+                <LayersList
+                    isRoot={true}
+                    disabled={this.props.disabled}
+                    documentID={this.props.document.id}/>
             );
 
             var containerClasses = classnames({
@@ -286,7 +323,7 @@ define(function (require, exports, module) {
                         className={containerClasses}
                         onClick={this._handleContainerClick}
                         onClickCapture={this._handleContainerClickCapture}>
-                        {childComponents}
+                        {layersListComponent}
                     </div>
                 </section>
             );

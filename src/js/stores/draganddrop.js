@@ -204,13 +204,17 @@ define(function (require, exports, module) {
          * End the current drag operation.
          */
         stopDrag: function () {
+            if (this._isDropping) {
+                return;
+            }
+            
+            this._isDropping = true;
+            
             var onDropPromise = Promise.resolve();
 
             if (this._dropTarget) {
                 onDropPromise = this._dropTarget.onDrop(this._dragTargets, this._dragPosition);
             }
-            
-            this._isDropping = true;
 
             onDropPromise
                 .bind(this)
@@ -219,7 +223,7 @@ define(function (require, exports, module) {
                     this._dragTargets = Immutable.List();
                     this._dropTarget = null;
                     this._hasValidDropTarget = false;
-                    this._dragPosition = null; // Removing this causes an offset
+                    this._dragPosition = null;
                     this._initialDragPosition = null;
                     this._isDropping = false;
                     this.emit("stop-drag");

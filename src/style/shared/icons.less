@@ -205,6 +205,18 @@ svg use {
     }
 }
 
+.layer-group__invisible {
+    .face:hover .button-toggle,
+    .face .button-toggle {
+        svg {
+            fill: @icon-hover;
+            opacity: @label-hidden-opacity;
+            stroke: none;
+            display: block;
+        }
+    }
+}
+
 .face.face__not-visible:hover .button-toggle,
 .face.face__not-visible .button-toggle {
     svg {
@@ -295,7 +307,7 @@ svg use {
     }
 }
 
-.face__not-visible {
+.layer-group__not-visible .face, .face__not-visible {
     .face__kind, 
     &:hover .face__kind
     &.face[data-kind="group"]:hover .face__kind,
