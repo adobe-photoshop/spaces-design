@@ -91,8 +91,12 @@ define(function (require, exports, module) {
          * @param {string} newName
          */
         _handleRename: function (event, newName) {
-            if (this.props.displayName !== newName) {
-                this.getFlux().actions.libraries.renameAsset(this.props.element, newName);
+            if (newName.length !== 0) {
+                if (this.props.displayName !== newName) {
+                    this.getFlux().actions.libraries.renameAsset(this.props.element, newName);
+                }
+            } else {
+                this.refs.input.setValue(this.props.displayName);
             }
         },
 

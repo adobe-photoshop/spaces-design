@@ -146,6 +146,15 @@ define(function (require, exports, module) {
         getValue: function () {
             return this.state.value;
         },
+        
+        /**
+         * Update the text input's current value
+         */
+        setValue: function (value) {
+            this.setState({
+                value: value
+            });
+        },
 
         /**
          * Update the value of the text input.

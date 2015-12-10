@@ -155,7 +155,13 @@ define(function (require, exports, module) {
          * @param {string} newName 
          */
         _handleLayerNameChange: function (event, newName) {
-            this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
+            if (newName.length !== 0) {
+                if (newName !== this.props.layer.name) {
+                    this.getFlux().actions.layers.rename(this.props.document, this.props.layer, newName);
+                }
+            } else {
+                this.refs.layerName.setValue(this.props.layer.name);
+            }
         },
 
         /**
