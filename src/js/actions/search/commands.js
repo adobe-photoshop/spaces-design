@@ -27,6 +27,7 @@ define(function (require, exports) {
     var _ = require("lodash"),
         Immutable = require("immutable"),
         keyUtil = require("js/util/key"),
+        mathUtil = require("js/util/math"),
         system = require("js/util/system"),
         nls = require("js/util/nls");
 
@@ -50,7 +51,7 @@ define(function (require, exports) {
             menuTree;
 
         parts.forEach(function (part) {
-            if (!_.isNumber(parseInt(part, 10))) {
+            if (!_.isNumber(mathUtil.parseNumber(part, 10))) {
                 nlsPath = nlsPath + "." + part;
                 menuTree = nls.localize(nlsPath);
 
@@ -60,12 +61,10 @@ define(function (require, exports) {
                 }
 
                 if (menuTree.$MENU) {
-                    resultPath += menuTree.$MENU + ">";
+                    resultPath += menuTree.$MENU + " > ";
                 } else {
-                    resultPath += menuTree.part;
+                    resultPath += menuTree;
                 }
-            } else {
-                resultPath += part;
             }
         });
 
