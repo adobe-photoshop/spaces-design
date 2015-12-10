@@ -65,8 +65,18 @@ define(function (require, exports, module) {
                 dragStyle: null
             };
         },
-        
+
+        componentWillReceiveProps: function () {
+            this.setState({
+                clicked: false
+            });
+        },
+
         shouldComponentUpdate: function (nextProps, nextState) {
+            if (nextState.clicked) {
+                return true;
+            }
+
             // Drag states
             if (this.state.isDragging !== nextState.isDragging ||
                 this.state.dragStyle !== nextState.dragStyle ||
@@ -180,7 +190,7 @@ define(function (require, exports, module) {
         _handleLayerClick: function (event) {
             event.stopPropagation();
 
-            var modifier = "select";
+            var modifier;
             if (event.shiftKey) {
                 modifier = "addUpTo";
             } else if (system.isMac ? event.metaKey : event.ctrlKey) {
@@ -191,6 +201,12 @@ define(function (require, exports, module) {
                 } else {
                     modifier = "add";
                 }
+            } else {
+                modifier = "select";
+                this.setState({
+                    clicked: true
+                });
+                console.time("select");
             }
 
             // The clicked layer may an have out-of-date document models due to
@@ -563,7 +579,7 @@ define(function (require, exports, module) {
             // Set all the classes need to style this LayerFace
             var faceClasses = {
                 "face": true,
-                "face__select_immediate": isSelected,
+                "face__select_immediate": isSelected || this.state.clicked,
                 "face__select_child": isChildOfSelected,
                 "face__select_descendant": isStrictDescendantOfSelected,
                 "face__drag_target": isDragging && this.state.dragStyle,
@@ -676,6 +692,10 @@ define(function (require, exports, module) {
                     </Droppable>
                 </Draggable>
             );
+        },
+
+        componentDidUpdate: function () {
+            console.timeEnd("select");
         }
     });
 
