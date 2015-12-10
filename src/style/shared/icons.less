@@ -21,15 +21,9 @@
  *
  */
 
-// TODO: I need to normalize the naming convention, because there isn't one ATM -TR
-
-.x-document-button(@name) {
-  background: url("img/ico-@{name}-white.svg") no-repeat center;
-  background-size: .8rem;
+svg use {
+    transform: rotate(0);
 }
-
-.document-controls__previous { .x-document-button("previous-arrow") }
-.document-controls__next { .x-document-button("next-arrow") }
 
 .toolbar-button, .toolbar__backToPs.button-simple{
     display: flex;
@@ -53,6 +47,7 @@
         }
     }
 }
+
 .tool-selected.button-simple svg, .tool-selected.button-simple:hover svg {
     fill: @focus-highlight;
     stroke: none;
