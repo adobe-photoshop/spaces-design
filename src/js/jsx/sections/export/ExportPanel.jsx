@@ -268,6 +268,11 @@ define(function (require, exports, module) {
                 "section__expand": this.props.shouldPanelGrow
             });
 
+            var exportButtonClasses = classnames({
+                "button-plus": true,
+                "loader-animation": exportState.serviceBusy
+            });
+            
             return (
                 <section
                     className={sectionClasses}
@@ -307,13 +312,12 @@ define(function (require, exports, module) {
                                     CSSID="hdpi" />
                             </Button>
                             <Button
-                                className="button-plus"
+                                className={exportButtonClasses}
                                 disabled={exportDisabled || disabled}
                                 title={nls.localize("strings.TOOLTIPS.EXPORT_EXPORT_ASSETS")}
                                 onClick={this._exportAssetsClickHandler}>
                                 <SVGIcon
-                                    CSSID={exportState.serviceBusy ? "loader" : "export"}
-                                    iconPath={exportState.serviceBusy ? "" : null} />
+                                    CSSID={exportState.serviceBusy ? "loader" : "export"} />
                             </Button>
                         </div>
                     </TitleHeader>
