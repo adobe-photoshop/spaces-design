@@ -1267,6 +1267,7 @@ define(function (require, exports) {
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
         return apiLoadPromise
+            .timeout(3000, "CC Libraries API load timeout, please don't restart and notify the chatroom!")
             .bind(this)
             .then(function () {
                 /* global ccLibraries */
