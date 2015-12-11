@@ -34,7 +34,8 @@ define(function (require, exports) {
 
     var locks = require("../locks"),
         events = require("../events"),
-        nls = require("js/util/nls");
+        nls = require("js/util/nls"),
+        layerActionsUtil = require("js/util/layeractions");
 
     var _CLEAR_PATH = 106;
 
@@ -129,7 +130,6 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
     
-
     /**
      * Handle escaping from vector mask for the selection-based vector mask tools.
      * Most tools can just call tools.changeVectorMaskMode directly.
@@ -269,11 +269,14 @@ define(function (require, exports) {
                     coalesce: true,
                     suppressHistoryStateNotification: true
                 }
-            };
-
-        return descriptor.batchPlayObjects([vectorMaskLib.makeBoundsWorkPath(bounds),
+            },
+            layerList = Immutable.List.of(currentLayer),
+            createActions = [
+                vectorMaskLib.makeBoundsWorkPath(bounds),
                 vectorMaskLib.makeVectorMaskFromWorkPath(),
-                vectorMaskLib.deleteWorkPath()], options)
+                vectorMaskLib.deleteWorkPath()];
+
+        return layerActionsUtil.playSimpleLayerActions(currentDocument, layerList, createActions, true, options)
             .bind(this)
             .then(function () {
                 return this.transfer("tools.select", toolStore.getToolByID("newSelect"));
@@ -314,11 +317,14 @@ define(function (require, exports) {
                     coalesce: true,
                     suppressHistoryStateNotification: true
                 }
-            };
-            
-        return descriptor.batchPlayObjects([vectorMaskLib.makeCircularBoundsWorkPath(bounds),
+            },
+            layerList = Immutable.List.of(currentLayer),
+            createActions = [
+                vectorMaskLib.makeCircularBoundsWorkPath(bounds),
                 vectorMaskLib.makeVectorMaskFromWorkPath(),
-                vectorMaskLib.deleteWorkPath()], options)
+                vectorMaskLib.deleteWorkPath()];
+
+        return layerActionsUtil.playSimpleLayerActions(currentDocument, layerList, createActions, true, options)
             .bind(this)
             .then(function () {
                 return this.transfer("tools.select", toolStore.getToolByID("newSelect"));
