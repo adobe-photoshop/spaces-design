@@ -146,7 +146,8 @@ define(function (require, exports) {
             switch (elementInfo.type) {
                 case "GRAPHIC":
                     var uiStore = this.flux.stores.ui,
-                        centerOffsets = uiStore.getState().centerOffsets,
+                        panelStore = this.flux.stores.panel,
+                        centerOffsets = panelStore.getState().centerOffsets,
                         midX = (window.document.body.clientWidth + centerOffsets.left - centerOffsets.right) / 2,
                         midY = (window.document.body.clientHeight + centerOffsets.top - centerOffsets.bottom) / 2,
                         location = uiStore.transformWindowToCanvas(midX, midY);
