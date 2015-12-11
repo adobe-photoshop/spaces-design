@@ -182,8 +182,8 @@ module.exports = function (grunt) {
                 },
                 options: {
                     sourceMap: grunt.option("DEV_MODE"),
-                    sourceMapFilename: "build/style.css.map", // Put it in build
-                    sourceMapURL: "style.css.map" // But point to it in the same folder
+                    sourceMapFileInline: true,
+                    outputSourceFiles: true
                 }
             }
         },
