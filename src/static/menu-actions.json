@@ -234,7 +234,7 @@
             "$enable-rule": "have-document,layer-selected"
         },
         "CREATE_ARTBOARD": {
-            "$action": "layers.createArtboard",
+            "$action": "groups.createArtboard",
             "$enable-rule": "supported-document,not-vector-mask-mode"
         },
         "NEW_ARTBOARD_FROM_TEMPLATE": {
@@ -274,11 +274,11 @@
             "$enable-rule": "layers-selected-2,no-background,no-nesting"
         },
         "GROUP_LAYERS": {
-            "$action": "layers.groupSelectedInCurrentDocument",
+            "$action": "groups.groupSelectedInCurrentDocument",
             "$enable-rule": "layer-selected,no-background,no-artboards"
         },
         "UNGROUP_LAYERS": {
-            "$action": "layers.ungroupSelected",
+            "$action": "groups.ungroupSelected",
             "$enable-rule": "layer-selected"
         },
         "DISTRIBUTE": {

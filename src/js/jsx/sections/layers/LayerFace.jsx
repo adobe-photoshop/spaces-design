@@ -143,7 +143,7 @@ define(function (require, exports, module) {
                 currentDocument = documentStore.getDocument(documentID),
                 currentLayer = currentDocument.layers.byID(this.props.layer.id);
 
-            this.getFlux().actions.layers.setGroupExpansion(currentDocument, currentLayer,
+            this.getFlux().actions.groups.setGroupExpansion(currentDocument, currentLayer,
                 !currentLayer.expanded, descendants);
         },
 

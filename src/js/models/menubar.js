@@ -330,7 +330,7 @@ define(function (require, exports, module) {
             // Define the template menu action 
             templateActions[id] = {
                 "$enable-rule": "always-except-modal",
-                "$action": "layers.createArtboard",
+                "$action": "groups.createArtboard",
                 "$payload": {
                     preset: preset
                 }

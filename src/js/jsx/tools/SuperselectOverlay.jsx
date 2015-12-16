@@ -703,7 +703,7 @@ define(function (require, exports, module) {
                     d3.event.stopPropagation();
                 })
                 .on("click", function () {
-                    this.getFlux().actions.layers.createArtboard(checkBounds);
+                    this.getFlux().actions.groups.createArtboard(checkBounds);
                     d3.event.stopPropagation();
                 }.bind(this));
 
