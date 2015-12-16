@@ -307,7 +307,8 @@ define(function (require, exports) {
     };
     initInactiveDocuments.action = {
         reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        writes: [locks.JS_DOC],
+        private: true
     };
 
     /**

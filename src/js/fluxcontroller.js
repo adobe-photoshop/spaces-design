@@ -103,12 +103,13 @@ define(function (require, exports, module) {
         EventEmitter.call(this);
 
         this._actionQueue = new AsyncDependencyQueue(CORES);
+        this._initAllActions();
         this._initActionNames();
         this._initActionLocks();
         this._synchronizedActions = new Map();
         this._idleTasks = new Set();
 
-        var actions = this._synchronizeAllModules(actionIndex),
+        var actions = this._synchronizeAllModules(this._allActions),
             stores = storeIndex.create(),
             allStores = _.merge(stores, testStores || {});
 
@@ -139,6 +140,22 @@ define(function (require, exports, module) {
      * @type {ActionQueue} 
      */
     FluxController.prototype._actionQueue = null;
+
+    /**
+     * local store of all the available properly defined flux actions
+     * 
+     * @private 
+     * @type {Object}
+     */
+    FluxController.prototype._allActions = null;
+
+    /**
+     * Map from action functions to modules
+     *
+     * @private
+     * @type {Map.<function, string>}
+     */
+    FluxController.prototype._actionModules = null;
 
     /**
      * Map from unsynchronized action functions to pathnames.
@@ -220,6 +237,32 @@ define(function (require, exports, module) {
     });
 
     /**
+     * Initialize all action functions 
+     *
+     * @private
+     */
+    FluxController.prototype._initAllActions = function () {
+        this._allActions = {};
+        this._actionModules = new Map();
+
+        Object.keys(actionIndex).forEach(function (actionModuleName) {
+            var actionModule = actionIndex[actionModuleName],
+                moduleActions = {};
+            Object.keys(actionModule)
+                .filter(function (actionName) {
+                    return actionModule[actionName].action;
+                })
+                .forEach(function (actionName) {
+                    var action = actionModule[actionName];
+
+                    this._actionModules.set(action, actionModuleName);
+                    moduleActions[actionName] = action;
+                }, this);
+            this._allActions[actionModuleName] = moduleActions;
+        }, this);
+    };
+
+    /**
      * Initialize maps to and from unsynchronized action functions and action pathnames.
      *
      * @private
@@ -228,8 +271,8 @@ define(function (require, exports, module) {
         this._actionsByName = new Map();
         this._actionNames = new Map();
 
-        Object.keys(actionIndex).forEach(function (actionModuleName) {
-            var actionModule = actionIndex[actionModuleName];
+        Object.keys(this._allActions).forEach(function (actionModuleName) {
+            var actionModule = this._allActions[actionModuleName];
 
             Object.keys(actionModule)
                 .filter(function (actionName) {
@@ -354,8 +397,8 @@ define(function (require, exports, module) {
         var dispatchBinder = flux.dispatchBinder,
             actionReceivers = new Map();
         
-        Object.keys(actionIndex).forEach(function (actionModuleName) {
-            var actionModule = actionIndex[actionModuleName];
+        Object.keys(this._allActions).forEach(function (actionModuleName) {
+            var actionModule = this._allActions[actionModuleName];
 
             Object.keys(actionModule)
                 .filter(function (actionName) {
@@ -465,6 +508,15 @@ define(function (require, exports, module) {
                         throw new Error(message);
                     }
     
+                    if (nextAction.private) {
+                        if (self._actionModule.get(nextAction) !== self._actionModule.get(action)) {
+                            var privateMessage = "Invalid transfer from " + actionName + " to " + nextActionName +
+                                    ". " + nextActionName + " is declared private and is in a different module from" +
+                                    actionName + ".";
+
+                            throw new Error(privateMessage);
+                        }
+                    }
                     var params = Array.prototype.slice.call(arguments, 1),
                         nextReceiver = self._actionReceivers.get(nextAction),
                         reads = self._transitiveReads.get(nextAction),
@@ -723,6 +775,9 @@ define(function (require, exports, module) {
             actionTitle = "sub-action " + actionName + " of action " + parentActionName;
         } else {
             actionTitle = "action " + actionName;
+            if (action.private) {
+                throw new Error("Action " + actionName + "is private and cannot be executed");
+            }
         }
 
         var uiWasLocked = this._uiLocked;
@@ -920,7 +975,7 @@ define(function (require, exports, module) {
             }
         };
 
-        var allMethodPromises = Object.keys(actionIndex)
+        var allMethodPromises = Object.keys(this._allActions)
                 .filter(function (moduleName) {
                     if (this._flux.actions[moduleName].hasOwnProperty(methodName)) {
                         return true;
