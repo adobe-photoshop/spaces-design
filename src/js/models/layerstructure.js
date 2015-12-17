@@ -464,7 +464,7 @@ define(function (require, exports, module) {
         /**
          * The subset of Layer models that are all selected or are descendants of selected
          *
-         * @return {Immutable.List.<Layer>}
+         * @return {Immutable.OrderedSet.<Layer>}
          */
         "allSelected": function () {
             return this.selected.flatMap(this.descendants, this).toOrderedSet();

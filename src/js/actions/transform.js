@@ -446,7 +446,8 @@ define(function (require, exports) {
     setPosition.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetIndex]
+        transfers: [layerActions.resetIndex],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -546,7 +547,8 @@ define(function (require, exports) {
     swapLayers.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetIndex]
+        transfers: [layerActions.resetIndex],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -662,7 +664,8 @@ define(function (require, exports) {
     setSize.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetLayers]
+        transfers: [layerActions.resetLayers],
+        post: [layerActions._verifySelectedBounds]
     };
     
     /**
@@ -728,7 +731,8 @@ define(function (require, exports) {
     flipX.action = {
         reads: [],
         writes: [locks.JS_DOC, locks.PS_DOC],
-        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds],
+        post: [layerActions._verifySelectedBounds]
     };
     
     /**
@@ -745,7 +749,8 @@ define(function (require, exports) {
     flipY.action = {
         reads: [],
         writes: [locks.JS_DOC, locks.JS_DOC],
-        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds],
+        post: [layerActions._verifySelectedBounds]
     };
     
     /**
@@ -839,7 +844,8 @@ define(function (require, exports) {
     align.action = {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds],
+        post: [layerActions._verifySelectedBounds]
     };
     
     /**
@@ -1029,7 +1035,8 @@ define(function (require, exports) {
     distributeX.action = {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -1050,7 +1057,8 @@ define(function (require, exports) {
     distributeY.action = {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -1175,7 +1183,8 @@ define(function (require, exports) {
     rotate.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [historyActions.newHistoryState, layerActions.resetBounds]
+        transfers: [historyActions.newHistoryState, layerActions.resetBounds],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -1241,7 +1250,71 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [],
         transfers: ["history.newHistoryStateRogueSafe", "layers.resetBounds", "layers.resetSelection",
-            "layers.resetIndex"]
+            "layers.resetIndex"],
+        post: [layerActions._verifySelectedBounds]
+    };
+
+    /**
+     * Handle non-artboard layer transform events.
+     *
+     * @param {object} event
+     * @return {Promise}
+     */
+    var handleTransformLayer = function (event) {
+        this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: true });
+
+        var appStore = this.flux.store("application"),
+            currentDoc = appStore.getCurrentDocument();
+
+        if (!currentDoc) {
+            return Promise.resolve();
+        }
+
+        // newDuplicateSheets move events should be processed immediately, not debounced
+        if (event.newDuplicateSheets) {
+            var duplicateInfo = event.newDuplicateSheets,
+                newSheetIDlist = duplicateInfo.newSheetIDlist,
+                toIDs = _.pluck(newSheetIDlist, "newLayerID");
+
+            // TODO: The objects in this array also contain layerID and
+            // newLayerIndex properties which could be used to implement
+            // a somewhat more optimistic copy routine, instead of addLayers
+            // which doesn't know that the layers being added are copies of
+            // existing layers.
+            var modelPromise = this.transfer("layers.addLayers", currentDoc, toIDs, true, false),
+                transformPromise = this.transfer("ui.updateTransform");
+
+            return Promise.join(modelPromise, transformPromise);
+        } else {
+            // short circuit based on this trackerEndedWithoutBreakingHysteresis event flag
+            if (event.trackerEndedWithoutBreakingHysteresis) {
+                return Promise.resolve();
+            } else {
+                var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
+                        // Reset these layers completely because their impliedFontSize may have changed
+                        // FIXME: does this need event for events like "move"?
+                        return layer.isText;
+                    }),
+                    otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
+                        return layer.isText;
+                    }),
+
+                    // note that in this case, the debouncing is critical even for just one "move" event
+                    // because the historyState event must be processed first for the following
+                    // "amend history" workflow to function correctly
+                    textLayersPromise = this.transfer("layers.resetLayers", currentDoc, textLayers),
+                    otherLayersPromise = this.transfer("layers.resetBounds", currentDoc, otherLayers);
+
+                return Promise.join(textLayersPromise, otherLayersPromise);
+            }
+        }
+    };
+    handleTransformLayer.action = {
+        read: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.JS_PANEL],
+        transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds"],
+        modal: true,
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -1262,54 +1335,7 @@ define(function (require, exports) {
         }, this);
 
         _layerTransformHandler = function (event) {
-            this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: true });
-
-            var appStore = this.flux.store("application"),
-                currentDoc = appStore.getCurrentDocument();
-
-            // Handle the normal move events with a debounced function
-            var debouncedMoveHandler = synchronization.debounce(function () {
-                // short circuit based on this trackerEndedWithoutBreakingHysteresis event flag
-                if (event.trackerEndedWithoutBreakingHysteresis) {
-                    return Promise.resolve();
-                } else {
-                    var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
-                            // Reset these layers completely because their impliedFontSize may have changed
-                            return layer.isText;
-                        }),
-                        otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
-                            return layer.isText;
-                        }),
-
-                        // note that in this case, the debouncing is critical even for just one "move" event
-                        // because the historyState event must be processed first for the following
-                        // "amend history" workflow to function correctly
-                        textLayersPromise = this.flux.actions.layers.resetLayers(currentDoc, textLayers),
-                        otherLayersPromise = this.flux.actions.layers.resetBounds(currentDoc, otherLayers);
-
-                    return Promise.join(textLayersPromise, otherLayersPromise);
-                }
-            }, this, 200);
-
-            // newDuplicateSheets move events should be processed immediately, not debounced
-            if (event.newDuplicateSheets) {
-                var duplicateInfo = event.newDuplicateSheets,
-                    newSheetIDlist = duplicateInfo.newSheetIDlist,
-                    toIDs = _.pluck(newSheetIDlist, "newLayerID");
-
-                // TODO: The objects in this array also contain layerID and
-                // newLayerIndex properties which could be used to implement
-                // a somewhat more optimistic copy routine, instead of addLayers
-                // which doesn't know that the layers being added are copies of
-                // existing layers.
-                return this.flux.actions.layers.addLayers(currentDoc, toIDs, true, false)
-                    .bind(this)
-                    .then(function () {
-                        return this.flux.actions.ui.updateTransform();
-                    });
-            } else {
-                return debouncedMoveHandler();
-            }
+            this.flux.actions.transform.handleTransformLayer(event);
         }.bind(this);
 
         _moveToArtboardHandler = synchronization.debounce(function () {
@@ -1370,4 +1396,5 @@ define(function (require, exports) {
     exports.rotate = rotate;
     exports.rotateLayersInCurrentDocument = rotateLayersInCurrentDocument;
     exports.handleTransformArtboard = handleTransformArtboard;
+    exports.handleTransformLayer = handleTransformLayer;
 });

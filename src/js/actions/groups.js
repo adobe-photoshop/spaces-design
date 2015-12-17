@@ -613,7 +613,8 @@ define(function (require, exports) {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: ["layers.resetIndex", "export.addDefaultAsset", "layers.unlockBackgroundLayer"],
-        post: [layerActions._verifyLayerIndex, layerActions._verifyLayerSelection]
+        post: [layerActions._verifyLayerIndex, layerActions._verifyLayerSelection,
+            layerActions._verifySelectedBounds]
     };
 
     exports.groupSelected = groupSelected;

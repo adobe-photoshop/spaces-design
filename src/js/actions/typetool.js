@@ -87,7 +87,8 @@ define(function (require, exports) {
         modal: true,
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [],
-        transfers: [layerActions.resetLayers]
+        transfers: [layerActions.resetLayers],
+        post: [layerActions._verifySelectedBounds]
     };
 
     exports.handleDeletedLayer = handleDeletedLayer;
