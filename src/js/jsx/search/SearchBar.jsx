@@ -192,11 +192,13 @@ define(function (require, exports, module) {
                 filterValues = _.drop(idArray);
 
             var updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
-                filterIcon = id && this.getFlux().store("search").getSVGClass(updatedFilter);
+                filterIcon = id && this.getFlux().store("search").getSVGClass(updatedFilter),
+                nextHasInputValue = id !== null;
             
             this.setState({
                 filter: updatedFilter,
-                icon: filterIcon
+                icon: filterIcon,
+                hasInputValue: nextHasInputValue
             });
         },
 
