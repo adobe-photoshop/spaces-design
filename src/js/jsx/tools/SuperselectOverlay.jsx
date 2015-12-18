@@ -131,9 +131,12 @@ define(function (require, exports, module) {
         },
 
         componentWillUnmount: function () {
+            this._drawDebounced.cancel();
+
             window.removeEventListener("mousemove", this.marqueeUpdater);
             window.removeEventListener("mouseup", this.mouseUpHandler);
             window.removeEventListener("mousedown", this.mouseDownHandler);
+            
             OS.removeListener("externalMouseMove", this.mouseMoveHandler);
         },
 
@@ -171,14 +174,12 @@ define(function (require, exports, module) {
          * @param {CustomEvent} event EXTERNAL_MOUSE_MOVE event coming from _spaces.OS
          */
         mouseMoveHandler: function (event) {
-            if (this.isMounted()) {
-                this._currentMouseX = event.location[0];
-                this._currentMouseY = event.location[1];
-                if (this.state.marqueeEnabled) {
-                    this.updateMarqueeRect();
-                } else {
-                    this.updateMouseOverHighlights();
-                }
+            this._currentMouseX = event.location[0];
+            this._currentMouseY = event.location[1];
+            if (this.state.marqueeEnabled) {
+                this.updateMarqueeRect();
+            } else {
+                this.updateMouseOverHighlights();
             }
         },
 
@@ -189,12 +190,10 @@ define(function (require, exports, module) {
          * @param {MouseEvent} event
          */
         marqueeUpdater: function (event) {
-            if (this.isMounted()) {
-                this._currentMouseX = event.x;
-                this._currentMouseY = event.y;
-                if (this.state.marqueeEnabled) {
-                    this.updateMarqueeRect();
-                }
+            this._currentMouseX = event.x;
+            this._currentMouseY = event.y;
+            if (this.state.marqueeEnabled) {
+                this.updateMarqueeRect();
             }
         },
 
@@ -203,10 +202,6 @@ define(function (require, exports, module) {
          * Cleans it first
          */
         drawOverlay: function () {
-            if (!this.isMounted()) {
-                return;
-            }
-
             var currentDocument = this.state.document,
                 svg = d3.select(ReactDOM.findDOMNode(this));
 
@@ -386,10 +381,6 @@ define(function (require, exports, module) {
          * @param {MouseEvent} event
          */
         mouseUpHandler: function (event) {
-            if (!this.isMounted()) {
-                return;
-            }
-
             var runMarquee = !!this._marqueeRect;
             
             this.getFlux().actions.superselect.marqueeSelect(

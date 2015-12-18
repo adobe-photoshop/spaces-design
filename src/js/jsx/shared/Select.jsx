@@ -143,6 +143,14 @@ define(function (require, exports, module) {
      */
     var Select = React.createClass({
 
+        /**
+         * ID of timeout handler used to delay rendering the component
+         * Stored for canceling if component gets unmounted before timeout
+         *
+         * @type {number}
+         */
+        _mountTimeoutID: null,
+
         propTypes: {
             options: React.PropTypes.instanceOf(Immutable.Iterable).isRequired,
             defaultSelected: React.PropTypes.string,
@@ -198,6 +206,13 @@ define(function (require, exports, module) {
             }
 
             return -1;
+        },
+
+        componentWillUnmount: function () {
+            if (this._mountTimeoutID) {
+                window.clearTimeout(this._mountTimeoutID);
+                this._mountTimeoutID = null;
+            }
         },
 
         componentWillReceiveProps: function (nextProps) {
@@ -608,14 +623,14 @@ define(function (require, exports, module) {
             // Re-render a few milliseconds after mounting with the full set of
             // options. This is hack to eliminate a noticeable pause at mount
             // time with many options.
-            window.setTimeout(function () {
+            this._mountTimeoutID = window.setTimeout(function () {
+                this._mountTimeoutID = null;
+
                 // If we're tabbing between, component will
                 // unmount before this timeout occurs
-                if (this.isMounted()) {
-                    this.setState({
-                        mounted: true
-                    });
-                }
+                this.setState({
+                    mounted: true
+                });
             }.bind(this), 100);
 
             this._scrollTo(this.state.selected);

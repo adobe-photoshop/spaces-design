@@ -49,6 +49,15 @@ define(function (require, exports, module) {
          * @type {number}
          */
         _elementLastModified: 0,
+
+        /**
+         * Rendition update promise currently running for this asset preview
+         * will be cancelled if still around during unmount time
+         * This was added to prevent using `this.isMounted()`
+         *
+         * @type {Promise}
+         */
+        _renditionUpdate: null,
         
         getInitialState: function () {
             return {
@@ -63,6 +72,13 @@ define(function (require, exports, module) {
         
         componentWillUpdate: function () {
             this._updateRenditionPath();
+        },
+
+        componentWillUnmount: function () {
+            // This will prevent the callback that sets state from being called
+            if (this._renditionUpdate) {
+                this._renditionUpdate.cancel();
+            }
         },
         
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -93,29 +109,22 @@ define(function (require, exports, module) {
                 renditionSize = element.type === librariesAction.ELEMENT_GRAPHIC_TYPE ?
                     librariesAction.RENDITION_GRAPHIC_SIZE : librariesAction.RENDITION_DEFAULT_SIZE;
 
-            Promise.fromCallback(function (cb) {
-                element.getRenditionPath(renditionSize, cb);
-            })
-            .bind(this)
-            .then(function (path) {
-                // component will be unmounted if the column mode is changed (Two-Column/Single-Column Mode) 
-                // before it completes fetching the rendition path. If so, simply ignore the result as the new 
-                // component will fetch the rendition path again.
-                if (!this.isMounted()) {
-                    return;
-                }
-
-                // path will be undefined when the element is a graphic and its representation 
-                // is empty (e.g. an empty artboard).
-                this.setState({
-                    renditionPath: path ? (path + "?cachebuster=" + this._elementLastModified) : null,
-                    loading: false
+            this._renditionUpdate = Promise.fromCallback(function (cb) {
+                    element.getRenditionPath(renditionSize, cb);
+                })
+                .bind(this)
+                .then(function (path) {
+                    // path will be undefined when the element is a graphic and its representation 
+                    // is empty (e.g. an empty artboard).
+                    this.setState({
+                        renditionPath: path ? (path + "?cachebuster=" + this._elementLastModified) : null,
+                        loading: false
+                    });
+                    
+                    if (this.props.onComplete) {
+                        this.props.onComplete(this.state.renditionPath);
+                    }
                 });
-                
-                if (this.props.onComplete) {
-                    this.props.onComplete(this.state.renditionPath);
-                }
-            });
         },
 
         render: function () {

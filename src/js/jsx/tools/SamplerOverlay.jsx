@@ -110,6 +110,7 @@ define(function (require, exports, module) {
         },
 
         componentWillUnmount: function () {
+            this._drawDebounced.cancel();
             OS.removeListener("externalMouseMove", this.mouseMoveHandler);
         },
 
@@ -142,12 +143,10 @@ define(function (require, exports, module) {
          * @param {CustomEvent} event EXTERNAL_MOUSE_MOVE event coming from _spaces.OS
          */
         mouseMoveHandler: function (event) {
-            if (this.isMounted()) {
-                this._currentMouseX = event.location[0];
-                this._currentMouseY = event.location[1];
-                
-                this.updateMouseOverHighlights();
-            }
+            this._currentMouseX = event.location[0];
+            this._currentMouseY = event.location[1];
+            
+            this.updateMouseOverHighlights();
         },
 
         /**
@@ -156,10 +155,6 @@ define(function (require, exports, module) {
          * @private
          */
         drawOverlay: function () {
-            if (!this.isMounted()) {
-                return;
-            }
-
             var currentDocument = this.state.document,
                 svg = d3.select(ReactDOM.findDOMNode(this));
 
