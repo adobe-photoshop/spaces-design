@@ -48,7 +48,8 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         headlights = require("js/util/headlights"),
         nls = require("js/util/nls"),
-        global = require("js/util/global");
+        global = require("js/util/global"),
+        synchronization = require("js/util/synchronization");
 
     /**
      * Properties to be included when requesting layer
@@ -253,6 +254,29 @@ define(function (require, exports) {
     };
 
     /**
+     * The property on the Photoshop layer descriptor that corresponds to bounds.
+     *
+     * @private
+     * @param {Layer} layer
+     * @return {string}
+     */
+    var _boundsPropertyForLayer = function (layer) {
+        var property;
+
+        if (layer.isArtboard) {
+            property = "artboard";
+        } else if (layer.isVector) {
+            property = "pathBounds";
+        } else if (layer.isText) {
+            property = "boundingBox";
+        } else {
+            property = "boundsNoMask";
+        }
+
+        return property;
+    };
+
+    /**
      * Verify the correctness of the list of layer IDs.
      *
      * @private
@@ -325,6 +349,62 @@ define(function (require, exports) {
                 if (currentDocument.layers.selected.size > 0) {
                     throw new Error("Incorrect selected layer count: " + currentDocument.layers.selected.size +
                         " instead of " + 0);
+                }
+            });
+    };
+
+    /**
+     * Verify the bounds of the selected layers and their descendants.
+     *
+     * @return {Promise}
+     */
+    var _verifySelectedBounds = function () {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+        
+        var docRef = documentLib.referenceBy.current,
+            layers = currentDocument.layers.allSelected.toList(),
+            propertyRefs = layers
+                .map(function (layer) {
+                    var property = _boundsPropertyForLayer(layer);
+
+                    return [
+                        docRef,
+                        layerLib.referenceBy.id(layer.id),
+                        {
+                            _ref: "property",
+                            _property: property
+                        }
+                    ];
+                })
+                .toArray();
+
+        return descriptor.batchGet(propertyRefs)
+            .bind(this)
+            .then(function (results) {
+                if (results.length !== propertyRefs.length) {
+                    throw new Error("Incorrect bounds count: " + propertyRefs.length + " instead of " + results.length);
+                }
+
+                results = results.map(function (descriptor, index) {
+                    var layer = layers.get(index);
+
+                    return {
+                        layerID: layer.id,
+                        descriptor: descriptor
+                    };
+                });
+
+                var currentDocument = applicationStore.getCurrentDocument(),
+                    currentLayers = currentDocument.layers,
+                    nextLayers = currentLayers.resetBounds(results);
+
+                if (!Immutable.is(currentLayers, nextLayers)) {
+                    throw new Error("Bounds mismatch");
                 }
             });
     };
@@ -573,16 +653,8 @@ define(function (require, exports) {
         }
 
         var propertyRefs = layers.map(function (layer) {
-            var property;
-            if (layer.isArtboard) {
-                property = "artboard";
-            } else if (layer.isVector) {
-                property = "pathBounds";
-            } else if (layer.isText) {
-                property = "boundingBox";
-            } else {
-                property = "boundsNoMask";
-            }
+            var property = _boundsPropertyForLayer(layer);
+
             return [
                 documentLib.referenceBy.id(document.id),
                 layerLib.referenceBy.id(layer.id),
@@ -1831,7 +1903,8 @@ define(function (require, exports) {
     duplicate.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: ["documents.updateDocument", addLayers, select]
+        transfers: ["documents.updateDocument", addLayers, select],
+        post: [_verifySelectedBounds, _verifyLayerSelection, _verifyLayerIndex]
     };
 
     /**
@@ -1855,7 +1928,8 @@ define(function (require, exports) {
         reads: [locks.JS_DOC],
         writes: [],
         transfers: [resetBounds],
-        modal: true
+        modal: true,
+        post: [_verifySelectedBounds]
     };
 
     /**
@@ -1962,9 +2036,9 @@ define(function (require, exports) {
 
         // Listens to layer shift events caused by auto canvas resize feature of artboards
         // and shifts all the layers correctly
-        _autoCanvasResizeShiftHandler = function (event) {
-            this.flux.actions.layers.handleCanvasShift(event);
-        }.bind(this);
+        _autoCanvasResizeShiftHandler = synchronization.debounce(function (event) {
+            return this.flux.actions.layers.handleCanvasShift(event);
+        }.bind(this), 500);
         descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);
 
         // Listeners for shift / option shape drawing
@@ -2167,6 +2241,7 @@ define(function (require, exports) {
     exports._getLayersForDocument = _getLayersForDocument;
     exports._verifyLayerIndex = _verifyLayerIndex;
     exports._verifyLayerSelection = _verifyLayerSelection;
+    exports._verifySelectedBounds = _verifySelectedBounds;
 
     exports.afterStartup = afterStartup;
 });

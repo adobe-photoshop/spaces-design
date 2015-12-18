@@ -220,7 +220,8 @@ define(function (require, exports) {
     setStroke.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetBounds]
+        transfers: [layerActions.resetBounds],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -350,7 +351,8 @@ define(function (require, exports) {
     setStrokeEnabled.action = {
         reads: [],
         writes: [],
-        transfers: [setStrokeColor]
+        transfers: [setStrokeColor],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -394,7 +396,8 @@ define(function (require, exports) {
     setStrokeAlignment.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetBounds]
+        transfers: [layerActions.resetBounds],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -482,7 +485,8 @@ define(function (require, exports) {
     setStrokeWidth.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetBounds]
+        transfers: [layerActions.resetBounds],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -690,7 +694,8 @@ define(function (require, exports) {
     combineUnion.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex]
+        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -717,7 +722,8 @@ define(function (require, exports) {
     combineSubtract.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex]
+        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -744,7 +750,8 @@ define(function (require, exports) {
     combineIntersect.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex]
+        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
+        post: [layerActions._verifySelectedBounds]
     };
 
     /**
@@ -771,7 +778,8 @@ define(function (require, exports) {
     combineDifference.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex]
+        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
+        post: [layerActions._verifySelectedBounds]
     };
 
     exports.setStrokeEnabled = setStrokeEnabled;
