@@ -53,7 +53,8 @@ module.exports = function (grunt) {
                 "src/**/*.js",
                 "src/**/*.jsx",
                 "test/**/*.js",
-                "test/**/*.jsx"
+                "test/**/*.jsx",
+                "!npm-shrinkwrap.json"
             ]
         },
         jscs: {
