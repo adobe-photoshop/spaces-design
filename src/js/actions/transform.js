@@ -98,19 +98,24 @@ define(function (require, exports) {
      *                                     parent artboard of the layer
      * @param {string} refPoint Two character string denoting corner/edge of the layer to set the position into
      * @param {Array.<{layer: Layer, x: number, y: number}>} moveResults payload for updating each layer's bounds
+     * @param {boolean=} translate Whether to use translate or set absolute position by given coordinates
+     *                             absolute position is default
      *
      * @return {Immutable.List<{layer: Layer, playObject: PlayObject}>}
      */
-    var _getMoveLayerActions = function (document, targetLayer, position, refPoint, moveResults) {
+    var _getMoveLayerActions = function (document, targetLayer, position, refPoint, moveResults, translate) {
         var overallBounds = position.relative ?
                 document.layers.relativeChildBounds(targetLayer) :
                 document.layers.childBounds(targetLayer),
             positionKeys = uiUtil.getPositionKeysByRefPoint(refPoint),
             deltaX = position.hasOwnProperty("x") ? position.x - overallBounds[positionKeys.x] : 0,
             deltaY = position.hasOwnProperty("y") ? position.y - overallBounds[positionKeys.y] : 0,
+            newX = translate ? deltaX : (overallBounds.left + deltaX),
+            newY = translate ? deltaY : (overallBounds.top + deltaY),
             documentRef = documentLib.referenceBy.id(document.id),
             movingLayers = document.layers.descendants(targetLayer),
-            layerRef = [documentRef, layerLib.referenceBy.id(targetLayer.id)];
+            layerRef = [documentRef, layerLib.referenceBy.id(targetLayer.id)],
+            descriptorFn = translate ? layerLib.translate : layerLib.setPosition;
 
         moveResults = moveResults || [];
 
@@ -130,7 +135,7 @@ define(function (require, exports) {
 
         return Immutable.List.of({
             layer: targetLayer,
-            playObject: layerLib.translate(layerRef, deltaX, deltaY)
+            playObject: descriptorFn(layerRef, newX, newY)
         });
     };
          
@@ -404,44 +409,59 @@ define(function (require, exports) {
      * @param {boolean} position.relative If true, x and y will be relative to the owner artboard of layer
      * @param {string} refPoint Two character string denoting the active reference point so we know 
      *                 which corner of the layer to move
-     *
+     * @param {object} options Batch play options
+     * 
      * @return {Promise}
      */
-    var setPosition = function (document, layerSpec, position, refPoint) {
+    var setPosition = function (document, layerSpec, position, refPoint, options) {
+        options = _.merge({}, options);
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.isGroupEnd;
         });
 
         var payload = {
-                documentID: document.id,
-                positions: [],
-                history: {
-                    newState: true,
-                    name: nls.localize("strings.ACTIONS.SET_LAYER_POSITION")
-                }
-            },
-            options = {
-                paintOptions: _paintOptions,
-                historyStateInfo: {
-                    name: nls.localize("strings.ACTIONS.SET_LAYER_POSITION"),
-                    target: documentLib.referenceBy.id(document.id)
-                }
-            };
+            documentID: document.id,
+            positions: [],
+            coalesce: !!options.coalesce,
+            history: {
+                newState: true,
+                name: nls.localize("strings.ACTIONS.SET_LAYER_POSITION")
+            }
+        };
 
+        options = _.merge(options, {
+            paintOptions: _paintOptions,
+            historyStateInfo: {
+                name: nls.localize("strings.ACTIONS.SET_LAYER_POSITION"),
+                target: documentLib.referenceBy.id(document.id),
+                coalesce: !!options.coalesce,
+                suppressHistoryStateNotification: !!options.coalesce
+            }
+        });
+
+        // If coalescing, we use absolute setPosition function to avoid model mismatch
         var dispatchPromise = this.dispatchAsync(events.document.history.REPOSITION_LAYERS, payload),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
                 var layerActions = _getMoveLayerActions.call(this,
-                        document, layer, position, refPoint, payload.positions);
+                        document, layer, position, refPoint, payload.positions, !options.coalesce);
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
 
-        var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, options)
+        var transaction = descriptor.beginTransaction(options),
+            actionOpts = _.merge(options, {
+                transaction: transaction
+            });
+
+        var positionPromise = layerActionsUtil.playLayerActions(document, translateLayerActions, true, actionOpts)
+            .then(function () {
+                return descriptor.endTransaction(transaction);
+            });
+
+        return Promise.join(dispatchPromise, positionPromise)
             .bind(this)
             .then(function () {
                 return this.transfer(layerActions.resetIndex, undefined);
             });
-
-        return Promise.join(dispatchPromise, positionPromise);
     };
     setPosition.action = {
         reads: [],
@@ -558,10 +578,12 @@ define(function (require, exports) {
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a Layer reference or array of Layers
      * @param {{w: number=, h: number=}} size
      * @param {string} refPoint reference point, vertical position first then horizontal
+     * @param {object} options Batch play options
      *
      * @returns {Promise}
      */
-    var setSize = function (document, layerSpec, size, refPoint) {
+    var setSize = function (document, layerSpec, size, refPoint, options) {
+        options = _.merge({}, options);
         layerSpec = layerSpec.filterNot(function (layer) {
             return layer.isGroupEnd ||
                 document.layers.strictAncestors(layer)
@@ -571,20 +593,24 @@ define(function (require, exports) {
         }, this);
 
         var payload = {
-                documentID: document.id,
-                sizes: [],
-                history: {
-                    newState: true,
-                    name: nls.localize("strings.ACTIONS.SET_LAYER_SIZE")
-                }
-            },
-            options = {
-                paintOptions: _paintOptions,
-                historyStateInfo: {
-                    name: nls.localize("strings.ACTIONS.SET_LAYER_SIZE"),
-                    target: documentLib.referenceBy.id(document.id)
-                }
-            };
+            documentID: document.id,
+            sizes: [],
+            coalesce: !!options.coalesce,
+            history: {
+                newState: true,
+                name: nls.localize("strings.ACTIONS.SET_LAYER_SIZE")
+            }
+        };
+        
+        options = _.merge(options, {
+            paintOptions: _paintOptions,
+            historyStateInfo: {
+                name: nls.localize("strings.ACTIONS.SET_LAYER_SIZE"),
+                target: documentLib.referenceBy.id(document.id),
+                coalesce: !!options.coalesce,
+                suppressHistoryStateNotification: !!options.coalesce
+            }
+        });
 
         // Document
         var dispatchPromise,
@@ -612,11 +638,11 @@ define(function (require, exports) {
             dispatchPromise = this.dispatchAsync(events.document.history.RESIZE_LAYERS, payload);
 
             var transaction = descriptor.beginTransaction(options),
-                actionOpts = {
+                actionOpts = _.merge(options, {
                     transaction: transaction
-                };
+                });
 
-            sizePromise = descriptor.getProperty(documentRef, "artboards")
+            sizePromise = descriptor.getProperty(documentRef, "artboards", actionOpts)
                 .bind(this)
                 .then(function (artboardInfo) {
                     autoExpandEnabled = artboardInfo.autoExpandEnabled;
@@ -628,7 +654,7 @@ define(function (require, exports) {
                             autoExpandEnabled: false
                         });
 
-                        return descriptor.playObject(setObj);
+                        return descriptor.playObject(setObj, actionOpts);
                     }
                 })
                 .then(function () {
@@ -640,7 +666,7 @@ define(function (require, exports) {
                             autoExpandEnabled: true
                         });
 
-                        return descriptor.playObject(setObj);
+                        return descriptor.playObject(setObj, actionOpts);
                     }
                 })
                 .then(function () {
@@ -1149,12 +1175,24 @@ define(function (require, exports) {
      * @param {number} angle Angle in degrees
      * @return {Promise}
      */
-    var rotate = function (document, angle) {
+    var rotate = function (document, angle, options) {
+        options = _.merge({}, options);
         var layers = _filterTransform(document, document.layers.selected);
         if (layers.isEmpty()) {
             return Promise.resolve();
         }
 
+        var coalesce = !!options.coalesce;
+
+        options = _.merge(options, {
+            historyStateInfo: {
+                name: nls.localize("strings.ACTIONS.ROTATE_LAYERS"),
+                target: documentLib.referenceBy.id(document.id),
+                coalesce: coalesce,
+                suppressHistoryStateNotification: coalesce
+            }
+        });
+        
         var documentRef = documentLib.referenceBy.id(document.id),
             layerRef = layers.map(function (layer) {
                     return layerLib.referenceBy.id(layer.id);
@@ -1162,13 +1200,7 @@ define(function (require, exports) {
                 .unshift(documentRef)
                 .toArray(),
             rotateObj = layerLib.rotate(layerRef, angle),
-            options = {
-                historyStateInfo: {
-                    name: nls.localize("strings.ACTIONS.ROTATE_LAYERS"),
-                    target: documentLib.referenceBy.id(document.id)
-                }
-            },
-            historyPromise = this.transfer(historyActions.newHistoryState, document.id,
+            historyPromise = coalesce ? Promise.resolve() : this.transfer(historyActions.newHistoryState, document.id,
                 nls.localize("strings.ACTIONS.ROTATE_LAYERS")),
             playPromise = locking.playWithLockOverride(document, layers, rotateObj, options);
 

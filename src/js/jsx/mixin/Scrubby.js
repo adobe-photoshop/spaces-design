@@ -25,49 +25,88 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        _ = require("lodash"),
-        log = require("js/util/log");
+        ReactDOM = require("react-dom"),
+        _ = require("lodash");
 
     /**
-     * Mixin for drag-and-drop functionality. Clients should call _startUpdates
-     * on mousedown/touchstart and implement the abstract method _updatePosition.
-     * CLinets can optinally implement _updatePositionBegin and _updatePositionEnd
+     * This mixin provides the component with scrubby functionality, where the user can
+     * start dragging on the component in either direction, and continuous updates
+     * about the relative position of the drag is passed to the component
+     *
+     * For minimal use, clients need to provide the `onScrub` function which
+     * is passed the distance mouse traveled since scrub started
+     *
+     * Optionally, clients can also provide onScrubStart and onScrubEnd for initialize/cleanup
+     * onScrubStart is passed the initial mouse coordinates (x,y)
+     * onScrubEnd is passed the distance of the scrub from when onScrubStart is called (dx, dy)
      */
     module.exports = {
+        /**
+         * X position of mouse/touch event when scrubbing starts
+         *
+         * @type {number}
+         */
+        _initialScrubX: null,
+
+        /**
+         * Y position of mouse/touch event when scrubbing starts
+         *
+         * @type {number}
+         */
+        _initialScrubY: null,
 
         propTypes: {
-            onChange: React.PropTypes.func,
-            max: React.PropTypes.number
+            onScrub: React.PropTypes.func,
+            onScrubStart: React.PropTypes.func,
+            onScrubEnd: React.PropTypes.func
         },
 
         getDefaultProps: function () {
             return {
-                onChange: _.identity,
-                max: 1
+                onScrub: _.identity,
+                onScrubStart: _.identity,
+                onScrubEnd: _.identity
             };
         },
 
         getInitialState: function () {
             return {
-                active: false
+                scrubbing: false
             };
         },
 
         componentDidMount: function () {
-            window.document.addEventListener("mousemove", this._handleUpdate);
-            window.document.addEventListener("touchmove", this._handleUpdate);
-            window.document.addEventListener("mouseup", this._stopUpdates);
-            window.document.addEventListener("touchend", this._stopUpdates);
-            if (!this._updatePosition) {
-                log.debug("update Position was not declared in a class that uses the Scrubby Mixin");
-            }
+            ReactDOM.findDOMNode(this).addEventListener("mousedown", this._installListeners);
         },
 
         componentWillUnmount: function () {
-            window.document.removeEventListener("mousemove", this._handleUpdate);
-            window.document.removeEventListener("touchmove", this._handleUpdate);
-            window.document.removeEventListener("mouseup", this._stopUpdates);
-            window.document.removeEventListener("touchend", this._stopUpdates);
+            ReactDOM.findDOMNode(this).removeEventListener("mousedown", this._installListeners);
+            this._uninstallListeners();
+        },
+
+        /**
+         * On mouse down, starts listening for related mouse/touch events, and starts scrubbing
+         * @param {SyntheticEvent} event
+         * @private
+         */
+        _installListeners: function (event) {
+            this._startScrubUpdates(event);
+            window.document.addEventListener("mousemove", this._handleScrubMove);
+            window.document.addEventListener("touchmove", this._handleScrubMove);
+            window.document.addEventListener("mouseup", this._stopScrubUpdates);
+            window.document.addEventListener("touchend", this._stopScrubUpdates);
+        },
+
+        /**
+         * On mouse up, _stopScrubUpdates gets called, which calls this to uninstall listeners
+         * It's also called on component unmount to not leave zombie listeners behind
+         * @private
+         */
+        _uninstallListeners: function () {
+            window.document.removeEventListener("mousemove", this._handleScrubMove);
+            window.document.removeEventListener("touchmove", this._handleScrubMove);
+            window.document.removeEventListener("mouseup", this._stopScrubUpdates);
+            window.document.removeEventListener("touchend", this._stopScrubUpdates);
         },
 
         /**
@@ -84,58 +123,85 @@ define(function (require, exports, module) {
          * @private
          * @param {MouseEvent} event
          */
-        _suppressClick: function (event) {
+        _suppressScrubbyClick: function (event) {
             event.stopPropagation();
 
-            window.removeEventListener("click", this._suppressClick, true);
+            window.removeEventListener("click", this._suppressScrubbyClick, true);
         },
 
         /**
-         * Handler for the start-drag operation.
+         * Handler for the start of scrubby behavior, logs the start location,
+         * calls the start handler, if provided, and handles the inevitable click event
+         * we'll receive on window
          * 
          * @private
          * @param {SyntheticEvent} e
          */
-        _startUpdates: function (e) {
+        _startScrubUpdates: function (e) {
             e.stopPropagation();
-            var coords = this._getPosition(e);
-            this.setState({ active: true });
-            if (this._updatePositionBegin) {
-                this._updatePositionBegin();
+            
+            var coords = this._getScrubPosition(e);
+            
+            this.setState({
+                scrubbing: true
+            });
+            
+            if (this.props.onScrubStart) {
+                this.props.onScrubStart(coords.x, coords.y);
             }
-            if (this._updatePosition) {
-                this._updatePosition(coords.x, coords.y);
-            }
-            window.addEventListener("click", this._suppressClick, true);
+
+            this._initialScrubX = coords.x;
+            this._initialScrubY = coords.y;
+            
+            // @see _suppressScrubbyClick
+            window.addEventListener("click", this._suppressScrubbyClick, true);
         },
 
         /**
-         * Handler for the update-drag operation.
+         * Handler for the input move during scrubby behavior, 
+         * calls the provided onScrub handler with the delta from the last call
          * 
          * @private
          * @param {SyntheticEvent} e
          */
-        _handleUpdate: function (e) {
-            if (this.state.active) {
+        _handleScrubMove: function (e) {
+            if (this.state.scrubbing) {
                 e.stopPropagation();
-                var coords = this._getPosition(e);
-                if (this._updatePosition) {
-                    this._updatePosition(coords.x, coords.y);
+
+                var coords = this._getScrubPosition(e),
+                    deltaX = coords.x - this._initialScrubX,
+                    deltaY = coords.y - this._initialScrubY;
+
+                if (this.props.onScrub) {
+                    this.props.onScrub(deltaX, deltaY);
                 }
             }
         },
 
         /**
-         * Handler for the stop-drag operation.
+         * Handler for when scrubby behavior is finished by user letting go of the mouse
+         * or the touch event. If provided, calls the onScrubEnd handler with the total mouse delta
+         * between scrub finish and start position, allowing non-live scrubby clients a chance
          * 
          * @private
+         * @param {SyntheticEvent} e
          */
-        _stopUpdates: function () {
-            if (this._updatePositionEnd) {
-                this._updatePositionEnd();
-            }
-            if (this.state.active) {
-                this.setState({ active: false });
+        _stopScrubUpdates: function (e) {
+            this._uninstallListeners();
+
+            this.setState({
+                scrubbing: false
+            });
+
+            var coords = this._getScrubPosition(e),
+                deltaX = coords.x - this._initialScrubX,
+                deltaY = coords.y - this._initialScrubY;
+
+            this._initialScrubX = null;
+            this._initialScrubY = null;
+            
+            if (this.props.onScrubEnd) {
+                this.props.onScrubEnd(deltaX, deltaY);
             }
         },
 
@@ -143,9 +209,9 @@ define(function (require, exports, module) {
          * Helper function to extract the position a move or touch event.
          * 
          * @param {SyntheticEvent} e
-         * @return {{x: number, y: num}}
+         * @return {{x: number, y: number}}
          */
-        _getPosition: function (e) {
+        _getScrubPosition: function (e) {
             if (e.touches) {
                 e = e.touches[0];
             }

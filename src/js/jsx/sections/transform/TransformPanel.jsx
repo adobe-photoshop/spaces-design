@@ -98,7 +98,8 @@ define(function (require, exports, module) {
                     <div className="section-container__no-collapse transform__body">
                         <div className="formline formline__padded-first-child formline__space-between">
                             <div className="control-group">
-                                <Size document={this.props.document} />
+                                <Size document={this.props.document}
+                                    referencePoint={this.state.referencePoint}/>
                             </div>
                             <div className="control-group reference-mark" title={referencePointTooltip}>
                                 <svg className="reference-none" preserveAspectRatio="xMidYMid" width="100%"
