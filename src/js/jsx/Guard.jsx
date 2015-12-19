@@ -63,7 +63,7 @@ define(function (require, exports, module) {
      * @private
      * @type {function}
      */
-    var _resetCursorDebounced = synchronization.debounce(os.resetCursor, os, 100);
+    var _resetCursorDebounced = synchronization.debounce(os.resetCursor, os, 500);
 
     var Guard = React.createClass({
 
