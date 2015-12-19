@@ -1283,7 +1283,8 @@ define(function (require, exports) {
         writes: [],
         transfers: ["history.newHistoryStateRogueSafe", "layers.resetBounds", "layers.resetSelection",
             "layers.resetIndex"],
-        post: [layerActions._verifySelectedBounds]
+        post: [layerActions._verifySelectedBounds],
+        hideOverlays: true
     };
 
     /**
@@ -1293,8 +1294,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var handleTransformLayer = function (event) {
-        this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: true });
-
         var appStore = this.flux.store("application"),
             currentDoc = appStore.getCurrentDocument();
 
@@ -1347,11 +1346,12 @@ define(function (require, exports) {
     };
     handleTransformLayer.action = {
         read: [locks.JS_APP, locks.JS_DOC],
-        writes: [locks.JS_PANEL],
+        writes: [],
         transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds",
             "history.newHistoryStateRogueSafe"],
         modal: true,
-        post: [layerActions._verifySelectedBounds]
+        post: [layerActions._verifySelectedBounds],
+        hideOverlays: true
     };
 
     /**

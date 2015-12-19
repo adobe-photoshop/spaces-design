@@ -1929,7 +1929,8 @@ define(function (require, exports) {
         writes: [],
         transfers: [resetBounds],
         modal: true,
-        post: [_verifySelectedBounds]
+        post: [_verifySelectedBounds],
+        hideOverlays: true
     };
 
     /**

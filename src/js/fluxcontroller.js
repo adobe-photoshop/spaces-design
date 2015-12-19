@@ -715,6 +715,7 @@ define(function (require, exports, module) {
         }
 
         var lockUI = actionObject.lockUI,
+            hideOverlays = actionObject.hideOverlays,
             post = actionObject.post,
             modal = actionObject.modal || false,
             actionTitle;
@@ -723,6 +724,10 @@ define(function (require, exports, module) {
             actionTitle = "sub-action " + actionName + " of action " + parentActionName;
         } else {
             actionTitle = "action " + actionName;
+        }
+
+        if (hideOverlays) {
+            actionReceiver.dispatch(events.panel.START_CANVAS_UPDATE);
         }
 
         var uiWasLocked = this._uiLocked;
@@ -755,6 +760,14 @@ define(function (require, exports, module) {
                 return actionPromise;
             })
             .tap(function () {
+                if (hideOverlays) {
+                    actionReceiver.dispatch(events.panel.END_CANVAS_UPDATE);
+                }
+
+                if (lockUI && !uiWasLocked) {
+                    this._unlockUI();
+                }
+
                 if (global.debug && post && post.length > 0 &&
                     flux.store("preferences").get("postConditionsEnabled")) {
                     var postStart = Date.now(),
@@ -778,11 +791,6 @@ define(function (require, exports, module) {
                             log.debug("Verified " + postTitle + " for " + actionTitle +
                                 " in " + postElapsed + "ms");
                         });
-                }
-            })
-            .tap(function () {
-                if (lockUI && !uiWasLocked) {
-                    this._unlockUI();
                 }
             });
     };

@@ -623,8 +623,7 @@ define(function (require, exports) {
         var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
             coordinates = [x, y],
             dragModifiers = keyUtil.modifiersToBits(modifiers),
-            diveIn = system.isMac ? modifiers.command : modifiers.control,
-            dontDeselect = modifiers.shift;
+            diveIn = system.isMac ? modifiers.command : modifiers.control;
 
         if (panning) {
             var dragEvent = {
@@ -636,43 +635,44 @@ define(function (require, exports) {
             return adapterOS.postEvent(dragEvent);
         }
         
+        var dontDeselect = modifiers.shift;
         if (dontDeselect) {
             return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
-        } else {
-            var uiStore = this.flux.store("ui"),
-                canvasCoords = uiStore.transformWindowToCanvas(x, y),
-                coveredLayers = _getContainingLayerBounds.call(this, doc.layers, canvasCoords.x, canvasCoords.y);
-
-            if (coveredLayers.isEmpty()) {
-                // This general bounds check on JS prevents a PS call and starts marquee faster
-                return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
-            } else {
-                // Hide transform controls
-                return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
-                    .bind(this)
-                    .then(function () {
-                        return this.transfer(click, doc, x, y, diveIn, false);
-                    })
-                    .then(function (anySelected) {
-                        if (anySelected) {
-                            var dragEvent = {
-                                eventKind: eventKind,
-                                location: coordinates,
-                                modifiers: dragModifiers
-                            };
-
-                            return adapterOS.postEvent(dragEvent);
-                        }
-                    })
-                    .catch(function () {}) // Move should silently fail if there are no selected layers
-                    .finally(function () {
-                        // Re show the transform controls, which will appear once we're out of the modal state
-                        return descriptor.playObject(
-                            toolLib.setToolOptions("moveTool", { "$Abbx": true }),
-                            { canExecuteWhileModal: true });
-                    });
-            }
         }
+
+        var uiStore = this.flux.store("ui"),
+            canvasCoords = uiStore.transformWindowToCanvas(x, y),
+            coveredLayers = _getContainingLayerBounds.call(this, doc.layers, canvasCoords.x, canvasCoords.y);
+
+        if (coveredLayers.isEmpty()) {
+            // This general bounds check on JS prevents a PS call and starts marquee faster
+            return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
+        }
+
+        // Hide transform controls
+        return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
+            .bind(this)
+            .then(function () {
+                return this.transfer(click, doc, x, y, diveIn, false);
+            })
+            .then(function (anySelected) {
+                if (anySelected) {
+                    var dragEvent = {
+                        eventKind: eventKind,
+                        location: coordinates,
+                        modifiers: dragModifiers
+                    };
+
+                    return adapterOS.postEvent(dragEvent);
+                }
+            })
+            .catch(function () {}) // Move should silently fail if there are no selected layers
+            .finally(function () {
+                // Re show the transform controls, which will appear once we're out of the modal state
+                return descriptor.playObject(
+                    toolLib.setToolOptions("moveTool", { "$Abbx": true }),
+                    { canExecuteWhileModal: true });
+            });
     };
     drag.action = {
         reads: [locks.JS_DOC, locks.JS_UI],

@@ -385,7 +385,8 @@ define(function (require, exports) {
     initActiveDocument.action = {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC, locks.JS_APP],
-        transfers: [historyActions.queryCurrentHistory, "layers.deselectAll", "application.updateRecentFiles"]
+        transfers: [historyActions.queryCurrentHistory, "layers.deselectAll", "application.updateRecentFiles"],
+        hideOverlays: true
     };
 
     /**
@@ -439,7 +440,8 @@ define(function (require, exports) {
         reads: [locks.PS_DOC, locks.PS_APP],
         writes: [locks.JS_DOC],
         transfers: [historyActions.queryCurrentHistory],
-        lockUI: true
+        lockUI: true,
+        hideOverlays: true
     };
 
     /**
@@ -530,7 +532,8 @@ define(function (require, exports) {
         writes: [locks.JS_DOC, locks.JS_APP],
         transfers: [updateDocument, "layers.resetLinkedLayers", "history.queryCurrentHistory",
             "ui.updateTransform", "application.updateRecentFiles", "libraries.deleteGraphicTempFiles"],
-        lockUI: true
+        lockUI: true,
+        hideOverlays: true
     };
 
     /**
@@ -569,7 +572,8 @@ define(function (require, exports) {
         reads: [locks.PS_APP],
         writes: [locks.JS_APP],
         transfers: [updateDocument, historyActions.queryCurrentHistory, ui.updateTransform],
-        lockUI: true
+        lockUI: true,
+        hideOverlays: true
     };
 
     /**
@@ -591,7 +595,8 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.PS_APP],
         transfers: [menu.native, "panel.setOverlayOffsetsForFirstDocument"],
-        lockUI: true
+        lockUI: true,
+        hideOverlays: true
     };
 
     /**
@@ -652,7 +657,8 @@ define(function (require, exports) {
         transfers: [preferencesActions.setPreference, allocateDocument,
             "panel.setOverlayOffsetsForFirstDocument", exportActions.addDefaultAsset, toolActions.changeVectorMaskMode],
         post: [_verifyActiveDocument, _verifyOpenDocuments],
-        locksUI: true
+        locksUI: true,
+        hideOverlays: true
     };
 
     /**
@@ -669,8 +675,6 @@ define(function (require, exports) {
         return this.transfer("panel.setOverlayOffsetsForFirstDocument")
             .bind(this)
             .then(function () {
-                this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
-
                 if (!filePath) {
                     // An "open" event will be triggered
                     return this.transfer(menu.native, { commandID: _OPEN_DOCUMENT, waitForCompletion: true })
@@ -704,11 +708,12 @@ define(function (require, exports) {
     };
     open.action = {
         reads: [],
-        writes: [locks.PS_APP, locks.JS_PANEL],
+        writes: [locks.PS_APP],
         transfers: [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
             "panel.setOverlayOffsetsForFirstDocument", menu.native, toolActions.changeVectorMaskMode],
         lockUI: true,
-        post: [_verifyActiveDocument, _verifyOpenDocuments]
+        post: [_verifyActiveDocument, _verifyOpenDocuments],
+        hideOverlays: true
     };
 
     /**
@@ -723,8 +728,6 @@ define(function (require, exports) {
         if (document === undefined) {
             document = this.flux.store("application").getCurrentDocument();
         }
-
-        this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
 
         var closeObj = documentLib.close(document.id),
             playOptions = {
@@ -746,10 +749,11 @@ define(function (require, exports) {
     };
     close.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [locks.JS_PANEL, locks.PS_APP, locks.PS_DOC],
+        writes: [locks.PS_APP, locks.PS_DOC],
         transfers: ["panel.cloak", disposeDocument],
         lockUI: true,
-        post: [_verifyActiveDocument, _verifyOpenDocuments]
+        post: [_verifyActiveDocument, _verifyOpenDocuments],
+        hideOverlays: true
     };
 
     /**
@@ -763,8 +767,6 @@ define(function (require, exports) {
             documentID = typeof documentSpec === "number" ? documentSpec : documentSpec.id,
             document = flux.stores.document.getDocument(documentID),
             documentRef = documentLib.referenceBy.id(documentID);
-
-        this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
 
         return this.transfer("panel.cloak")
             .bind(this)
@@ -809,12 +811,13 @@ define(function (require, exports) {
     };
     selectDocument.action = {
         reads: [locks.JS_TOOL],
-        writes: [locks.JS_APP, locks.JS_PANEL],
+        writes: [locks.JS_APP],
         transfers: ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
             ui.updateTransform, toolActions.select, "panel.cloak", guideActions.queryCurrentGuides,
             toolActions.changeVectorMaskMode, updateDocument],
         lockUI: true,
-        post: [_verifyActiveDocument]
+        post: [_verifyActiveDocument],
+        hideOverlays: true
     };
 
     /**
@@ -1004,7 +1007,8 @@ define(function (require, exports) {
         writes: [],
         transfers: [updateDocument, "layers.addLayers", "layers.resetLayers", "layers.resetIndex",
         "history.newHistoryStateRogueSafe"],
-        modal: true
+        modal: true,
+        hideOverlays: true
     };
 
     /**

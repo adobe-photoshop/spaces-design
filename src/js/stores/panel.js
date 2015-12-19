@@ -24,7 +24,8 @@
 define(function (require, exports, module) {
     "use strict";
     
-    var Fluxxor = require("fluxxor");
+    var Fluxxor = require("fluxxor"),
+        _ = require("lodash");
     
     var events = require("../events"),
         log = require("js/util/log");
@@ -56,6 +57,14 @@ define(function (require, exports, module) {
          * @type {boolean}
          */
         _overlaysEnabled: null,
+
+        /**
+         * A count of current number of requests to disable the overlays.
+         *
+         * @private
+         * @type {number}
+         */
+        _overlayCount: 0,
 
         /**
          * Flag to tell if the scrim should be drawing a marquee
@@ -138,19 +147,26 @@ define(function (require, exports, module) {
          */
         _currentMousePosition: null,
 
+        /**
+         * A bound, debounced version of _setOverlays,
+         *
+         * @type {function}
+         */
+        _enableOverlaysDebounced: null,
+
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
                 events.panel.PANELS_RESIZED, this._handlePanelResize,
                 events.panel.SUPERSELECT_MARQUEE, this._handleMarqueeStart,
-                events.panel.TOGGLE_OVERLAYS, this._handleOverlayToggle,
                 events.panel.REFERENCE_POINT_CHANGED, this._handleReferencePointChanged,
                 events.panel.COLOR_STOP_CHANGED, this._handleColorStopChanged,
                 events.panel.MOUSE_POSITION_CHANGED, this._handleMousePositionChanged,
-                events.document.DOCUMENT_UPDATED, this._handleLayersUpdated,
-                events.document.history.RESET_LAYERS, this._handleLayersUpdated,
-                events.document.history.RESET_BOUNDS, this._handleLayersUpdated
+                events.panel.START_CANVAS_UPDATE, this._handleStartCanvasUpdate,
+                events.panel.END_CANVAS_UPDATE, this._handleEndCanvasUpdate
             );
+
+            this._enableOverlaysDebounced = _.debounce(this._setOverlays.bind(this), 100);
 
             // HACK: Do not reset panel sizes because they should remain constant.
             this._panelWidth = 0;
@@ -168,6 +184,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleReset: function () {
+            this._overlayCount = 0;
             this._overlaysEnabled = true;
             this._marqueeEnabled = false;
             this._marqueeStart = null;
@@ -279,26 +296,44 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Updates the overlays enabled flag
+         * Update the overlaysEnabled property based on the current overlayCount.
          *
          * @private
-         * @param {{enabled: boolean}} payload
          */
-        _handleOverlayToggle: function (payload) {
-            this._overlaysEnabled = payload.enabled;
-            this.emit("change");
+        _setOverlays: function () {
+            var nextEnabled = this._overlayCount === 0;
+
+            if (nextEnabled !== this._overlaysEnabled) {
+                this._overlaysEnabled = nextEnabled;
+                this.emit("change");
+            }
         },
 
         /**
-         * Re-enables the overlays once document layers are updated.
+         * Increase the overlay count and immediately update overlaysEnabled
+         * when starting a canvas update.
          *
          * @private
          */
-        _handleLayersUpdated: function () {
-            this.waitFor(["document"], function () {
-                this._overlaysEnabled = true;
-                this.emit("change");
-            });
+        _handleStartCanvasUpdate: function () {
+            this._overlayCount++;
+            this._setOverlays();
+            this._enableOverlaysDebounced.cancel();
+        },
+
+        /**
+         * Decrease the overlay count and update overlaysEnabled once the
+         * overlay count has quiesced.
+         *
+         * @private
+         */
+        _handleEndCanvasUpdate: function () {
+            if (this._overlayCount === 0) {
+                return;
+            }
+
+            this._overlayCount--;
+            this._enableOverlaysDebounced();
         },
 
         /**
