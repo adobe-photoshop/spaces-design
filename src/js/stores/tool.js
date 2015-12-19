@@ -106,6 +106,8 @@ define(function (require, exports, module) {
          */
         _vectorMaskPolicyID: null,
 
+        _draggedLayerID: null,
+
         /**
          * Initialize the ToolStore
          */
@@ -116,7 +118,8 @@ define(function (require, exports, module) {
                 events.tool.SELECT_TOOL_END, this._handleSelectTool,
                 events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange,
                 events.tool.VECTOR_MASK_MODE_CHANGE, this._handleVectorMaskModeChange,
-                events.tool.VECTOR_MASK_POLICY_CHANGE, this._handleVectorMaskPolicyChange
+                events.tool.VECTOR_MASK_POLICY_CHANGE, this._handleVectorMaskPolicyChange,
+                events.tool.TOGGLE_SELECT_DRAG, this._handleSelectToolDrag
             );
 
             this._handleReset();
@@ -170,7 +173,8 @@ define(function (require, exports, module) {
             return {
                 current: this._currentTool,
                 previous: this._previousTool,
-                vectorMaskMode: this._inVectorMode
+                vectorMaskMode: this._inVectorMode,
+                draggedLayerID: this._draggedLayerID
             };
         },
 
@@ -250,6 +254,10 @@ define(function (require, exports, module) {
             this._vectorMaskPolicyID = payload;
 
             this.emit("change");
+        },
+
+        _handleSelectToolDrag: function (dragLayerID) {
+            this._draggedLayerID = dragLayerID;
         },
 
         /**

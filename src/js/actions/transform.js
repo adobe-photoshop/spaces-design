@@ -1322,29 +1322,43 @@ define(function (require, exports) {
             if (event.trackerEndedWithoutBreakingHysteresis) {
                 return Promise.resolve();
             } else {
-                var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
-                        // Reset these layers completely because their impliedFontSize may have changed
-                        // FIXME: does this need event for events like "move"?
-                        return layer.isText;
-                    }),
-                    otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
-                        return layer.isText;
-                    }),
+                var dragUpdatePromise = Promise.resolve(),
+                    dragLayerID = this.flux.store("tool").getState().draggedLayerID;
 
-                    // note that in this case, the debouncing is critical even for just one "move" event
-                    // because the historyState event must be processed first for the following
-                    // "amend history" workflow to function correctly
-                    textLayersPromise = this.transfer("layers.resetLayers", currentDoc, textLayers),
-                    otherLayersPromise = this.transfer("layers.resetBounds", currentDoc, otherLayers);
+                if (dragLayerID) {
+                    dragUpdatePromise = this.transfer("layers.select", currentDoc, currentDoc.layers.byID(dragLayerID));
+                }
 
-                return Promise.join(textLayersPromise, otherLayersPromise);
+                return dragUpdatePromise
+                    .bind(this)
+                    .then(function () {
+                        this.dispatch(events.tool.TOGGLE_SELECT_DRAG, null);
+
+                        var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
+                                // Reset these layers completely because their impliedFontSize may have changed
+                                // FIXME: does this need event for events like "move"?
+                                return layer.isText;
+                            }),
+                            otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
+                                return layer.isText;
+                            }),
+
+                            // note that in this case, the debouncing is critical even for just one "move" event
+                            // because the historyState event must be processed first for the following
+                            // "amend history" workflow to function correctly
+                            textLayersPromise = this.transfer("layers.resetLayers", currentDoc, textLayers),
+                            otherLayersPromise = this.transfer("layers.resetBounds", currentDoc, otherLayers);
+
+                        return Promise.join(textLayersPromise, otherLayersPromise);
+                    });
             }
         }
     };
     handleTransformLayer.action = {
         read: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.JS_PANEL],
-        transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds"],
+        transfers: ["layers.addLayers", "ui.updateTransform",
+            "layers.resetLayers", "layers.resetBounds", "layers.select"],
         modal: true,
         post: [layerActions._verifySelectedBounds]
     };

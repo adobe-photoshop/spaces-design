@@ -110,7 +110,8 @@ define(function (require, exports, module) {
             SELECT_TOOL_END: "selectToolEnd",
             MODAL_STATE_CHANGE: "modalStateChange",
             VECTOR_MASK_MODE_CHANGE: "vectorMaskModeChange",
-            VECTOR_MASK_POLICY_CHANGE: "vectorMaskPolicyChange"
+            VECTOR_MASK_POLICY_CHANGE: "vectorMaskPolicyChange",
+            TOGGLE_SELECT_DRAG: "toggleSelectDrag"
         },
         ui: {
             TRANSFORM_UPDATED: "transformUpdated",

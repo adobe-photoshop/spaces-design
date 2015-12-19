@@ -954,10 +954,11 @@ define(function (require, exports) {
      * @param {string=} modifier Way of modifying the selection. Possible values
      *  are defined in `adapter/src/lib/layer.js` under `select.vals`.
      *  Default is similar to "select", but the pivot layer will always be cleared.
+     *  @param {boolean?} quiet If set, will prevent all dispatches
      *
      * @returns {Promise}
      */
-    var select = function (document, layerSpec, modifier) {
+    var select = function (document, layerSpec, modifier, quiet) {
         if (layerSpec instanceof Layer) {
             layerSpec = Immutable.List.of(layerSpec);
         }
@@ -1031,12 +1032,13 @@ define(function (require, exports) {
             pivotID: nextPivot && nextPivot.id
         };
 
-        var dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
+        var dispatchPromise = quiet ? Promise.resolve() :
+            this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
                 .bind(this)
                 .then(function () {
                     return this.transfer(initializeLayers, document, nextSelected);
                 }),
-            revealPromise = this.transfer(revealLayers, document, nextSelected);
+            revealPromise = quiet ? Promise.resolve() : this.transfer(revealLayers, document, nextSelected);
 
         var layerRef = (modifier === "deselect" ? layerSpec : nextSelected)
             .map(function (layer) {
