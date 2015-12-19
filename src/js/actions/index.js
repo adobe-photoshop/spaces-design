@@ -66,6 +66,8 @@ define(function (require, exports, module) {
         transform: require("./transform"),
         type: require("./type"),
         typetool: require("./typetool"),
-        ui: require("./ui")
+        ui: require("./ui"),
+        verifyDocuments: require("./verify/documents.js"),
+        verifyLayers: require("./verify/layers.js")
     };
 });

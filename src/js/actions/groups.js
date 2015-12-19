@@ -35,7 +35,6 @@ define(function (require, exports) {
 
     var Layer = require("js/models/layer"),
         collection = require("js/util/collection"),
-        layerActions = require("./layers"),
         events = require("../events"),
         locks = require("js/locks"),
         locking = require("js/util/locking"),
@@ -212,7 +211,7 @@ define(function (require, exports) {
     groupSelected.action = {
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [layerActions._verifyLayerIndex, layerActions._verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -397,7 +396,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: ["layers.resetSelection", "layers.initializeLayers", "layers.getLayerIDsForDocumentID"],
-        post: [layerActions._verifyLayerIndex, layerActions._verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -613,8 +612,8 @@ define(function (require, exports) {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: ["layers.resetIndex", "export.addDefaultAsset", "layers.unlockBackgroundLayer"],
-        post: [layerActions._verifyLayerIndex, layerActions._verifyLayerSelection,
-            layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection",
+            "verifyLayers.verifySelectedBounds"]
     };
 
     exports.groupSelected = groupSelected;

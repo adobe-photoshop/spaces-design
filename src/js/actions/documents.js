@@ -210,70 +210,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Verify the correctness of the list of open document IDs.
-     *
-     * @private
-     * @return {Promise} Rejects if the number or order of open document IDs in
-     *  differs from Photoshop.
-     */
-    var _verifyOpenDocuments = function () {
-        var applicationStore = this.flux.store("application"),
-            openDocumentIDs = applicationStore.getOpenDocumentIDs();
-
-        return descriptor.getProperty("application", "numberOfDocuments")
-            .bind(this)
-            .then(function (docCount) {
-                var docPromises = _.range(1, docCount + 1)
-                    .map(function (index) {
-                        var indexRef = documentLib.referenceBy.index(index);
-                        return _getDocumentByRef(indexRef, ["documentID"], []);
-                    });
-
-                return Promise.all(docPromises);
-            })
-            .then(function (documentIDs) {
-                if (openDocumentIDs.size !== documentIDs.length) {
-                    throw new Error("Incorrect open document count: " + openDocumentIDs.size +
-                        " instead of " + documentIDs.length);
-                } else {
-                    openDocumentIDs.forEach(function (openDocumentID, index) {
-                        var documentID = documentIDs[index].documentID;
-                        if (openDocumentID !== documentID) {
-                            throw new Error("Incorrect document ID at index " + index + ": " + openDocumentID +
-                                " instead of " + documentID);
-                        }
-                    });
-                }
-            });
-    };
-
-    /**
-     * Verify the correctness of the currently active document ID.
-     *
-     * @private
-     * @return {Promise} Rejects if active document ID differs from Photoshop.
-     */
-    var _verifyActiveDocument = function () {
-        var currentRef = documentLib.referenceBy.current,
-            applicationStore = this.flux.store("application"),
-            currentDocumentID = applicationStore.getCurrentDocumentID();
-
-        return _getDocumentByRef(currentRef, ["documentID"], [])
-            .bind(this)
-            .get("documentID")
-            .then(function (documentID) {
-                if (currentDocumentID !== documentID) {
-                    throw new Error("Incorrect active document: " + currentDocumentID +
-                        " instead of " + documentID);
-                }
-            }, function () {
-                if (typeof currentDocumentID === "number") {
-                    throw new Error("Spurious active document: " + currentDocumentID);
-                }
-            });
-    };
-
-    /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED events, for
      * all the inactive documents.
      *
@@ -656,8 +592,8 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.PS_APP],
         transfers: [preferencesActions.setPreference, allocateDocument,
             "panel.setOverlayOffsetsForFirstDocument", exportActions.addDefaultAsset, toolActions.changeVectorMaskMode],
-        post: [_verifyActiveDocument, _verifyOpenDocuments],
-        locksUI: true,
+        post: ["verifyDocuments.verifyActiveDocument", "verifyDocuments.verifyOpenDocuments"],
+        lockUI: true,
         hideOverlays: true
     };
 
@@ -711,8 +647,8 @@ define(function (require, exports) {
         writes: [locks.PS_APP],
         transfers: [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
             "panel.setOverlayOffsetsForFirstDocument", menu.native, toolActions.changeVectorMaskMode],
+        post: ["verifyDocuments.verifyActiveDocument", "verifyDocuments.verifyOpenDocuments"],
         lockUI: true,
-        post: [_verifyActiveDocument, _verifyOpenDocuments],
         hideOverlays: true
     };
 
@@ -751,8 +687,8 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.PS_APP, locks.PS_DOC],
         transfers: ["panel.cloak", disposeDocument],
+        post: ["verifyDocuments.verifyActiveDocument", "verifyDocuments.verifyOpenDocuments"],
         lockUI: true,
-        post: [_verifyActiveDocument, _verifyOpenDocuments],
         hideOverlays: true
     };
 
@@ -818,7 +754,7 @@ define(function (require, exports) {
             ui.updateTransform, toolActions.select, "panel.cloak", guideActions.queryCurrentGuides,
             toolActions.changeVectorMaskMode, updateDocument],
         lockUI: true,
-        post: [_verifyActiveDocument],
+        post: ["verifyDocuments.verifyActiveDocument"],
         hideOverlays: true
     };
 
