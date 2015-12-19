@@ -1290,29 +1290,34 @@ define(function (require, exports) {
             if (event.trackerEndedWithoutBreakingHysteresis) {
                 return Promise.resolve();
             } else {
-                var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
-                        // Reset these layers completely because their impliedFontSize may have changed
-                        // FIXME: does this need event for events like "move"?
-                        return layer.isText;
-                    }),
-                    otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
-                        return layer.isText;
-                    }),
+                // The history event may arrive before or after the transform event. The
+                // following ensures correct behavior w.r.t. history amendment by reset
+                // actions for either case.
+                return this.transfer("history.newHistoryStateRogueSafe", currentDoc.id)
+                    .bind(this)
+                    .then(function () {
+                        var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
+                                // Reset these layers completely because their impliedFontSize may have changed
+                                // FIXME: does this need event for events like "move"?
+                                return layer.isText;
+                            }),
+                            otherLayers = currentDoc.layers.allSelected.filterNot(function (layer) {
+                                return layer.isText;
+                            }),
 
-                    // note that in this case, the debouncing is critical even for just one "move" event
-                    // because the historyState event must be processed first for the following
-                    // "amend history" workflow to function correctly
-                    textLayersPromise = this.transfer("layers.resetLayers", currentDoc, textLayers),
-                    otherLayersPromise = this.transfer("layers.resetBounds", currentDoc, otherLayers);
+                            textLayersPromise = this.transfer("layers.resetLayers", currentDoc, textLayers),
+                            otherLayersPromise = this.transfer("layers.resetBounds", currentDoc, otherLayers);
 
-                return Promise.join(textLayersPromise, otherLayersPromise);
+                        return Promise.join(textLayersPromise, otherLayersPromise);
+                    });
             }
         }
     };
     handleTransformLayer.action = {
         read: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.JS_PANEL],
-        transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds"],
+        transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds",
+            "history.newHistoryStateRogueSafe"],
         modal: true,
         post: [layerActions._verifySelectedBounds]
     };
