@@ -46,14 +46,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Last angle on input for relative rotation
-         *
-         * @type {number}
-         */
-        _lastAngle: null,
-
-        /**
-         * Value of the input as user scrubs this control
+         * Value of the input as user begins to scrub this control
          *
          * @type {number}
          */
@@ -65,7 +58,7 @@ define(function (require, exports, module) {
             };
         },
 
-        shouldComponentUpdate: function (nextProps, nextState) {
+        componentWillReceiveProps: function (nextProps) {
             var curDocument = this.props.document,
                 nextDocument = nextProps.document,
                 curLayerIDs = collection.pluck(this.props.document.layers.selected, "id"),
@@ -74,14 +67,21 @@ define(function (require, exports, module) {
             var differentSource = curDocument.id !== nextDocument.id ||
                 !Immutable.is(curLayerIDs, nextLayerIDs);
 
-            // HACK: Now is the best place to update these values as they shouldn't affect render
-            // and we want to update them only when selection changes without re-render
+            // If selection has changed, reset the value back to zero
             if (differentSource) {
-                this._lastAngle = 0;
-                this._scrubAngle = 0;
+                this.setState({
+                    differentSource: true,
+                    value: 0
+                });
+            } else {
+                this.setState({
+                    differentSource: false
+                });
             }
+        },
 
-            return differentSource || this.state.value !== nextState.value;
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return nextState.differentSource || this.state.value !== nextState.value;
         },
 
         /**
@@ -90,16 +90,12 @@ define(function (require, exports, module) {
          * @private
          */
         _handleHistoryStateChange: function () {
-            this._lastAngle = 0;
-            this._scrubAngle = 0;
             this.setState({
                 value: 0
             });
         },
 
         componentWillMount: function () {
-            this._scrubAngle = 0;
-            this._lastAngle = 0;
             // HACK: force the rotation back to 0 on undo/redo. We explicitly
             // listen for changes here instead of with the StoreWatchMixin because
             // there is no relevant history state.
@@ -122,16 +118,13 @@ define(function (require, exports, module) {
         _rotateLayer: function (event, newAngle) {
             var document = this.props.document,
                 modAngle = newAngle % 360,
-                angleDelta = modAngle - this._lastAngle;
+                angleDelta = modAngle - this.state.value;
 
             if (angleDelta !== 0) {
                 // We do not debounce this action, because state is kept in React component
                 // and the view relies on amount of rotates being sent to Photoshop being accurate
                 this.getFlux().actions.transform.rotate(document, angleDelta);
             }
-
-            this._lastAngle = newAngle;
-            this._scrubAngle = newAngle;
 
             this.setState({
                 value: modAngle
@@ -144,6 +137,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleScrubBegin: function () {
+            this._scrubAngle = this.state.value;
             this.startCoalescing();
         },
 
@@ -165,14 +159,10 @@ define(function (require, exports, module) {
                 );
             }
 
-            // lastAngle is used to keep track of last input user has made
-            // so if user enters 30, then 50, we only rotate by 20 on second step
-            // In scrubby case, we use the last angle user has inputted, similar to 
-            // `initialScrubValue` we use in other components
-            this._scrubAngle = this._lastAngle + angleDelta;
+            var newAngle = this._scrubAngle + angleDelta;
             
             this.setState({
-                value: this._scrubAngle
+                value: newAngle
             });
         }, 100),
 
@@ -182,8 +172,6 @@ define(function (require, exports, module) {
          * @private
          */
         _handleScrubEnd: function () {
-            this._lastAngle = this._scrubAngle;
-
             this.stopCoalescing();
         },
 
