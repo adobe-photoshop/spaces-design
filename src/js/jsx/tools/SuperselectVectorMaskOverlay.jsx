@@ -68,10 +68,6 @@ define(function (require, exports, module) {
          * Cleans it first
          */
         drawOverlay: function () {
-            if (!this.isMounted()) {
-                return;
-            }
-
             var currentDocument = this.state.document,
                 svg = d3.select(ReactDOM.findDOMNode(this));
             svg.selectAll(".superselect-vector-mask-bounds").remove();
@@ -203,7 +199,7 @@ define(function (require, exports, module) {
                     d3.event.stopPropagation();
                 });
  
-            // ellipse
+            // ellipsec
             // 
             this._vectorMaskHudGroup
                 .append("use")

@@ -75,6 +75,7 @@ define(function (require, exports, module) {
 
         componentWillUnmount: function () {
             window.removeEventListener("resize", this._drawDebounced);
+            this._drawDebounced.cancel();
         },
 
         componentDidUpdate: function () {
@@ -85,10 +86,6 @@ define(function (require, exports, module) {
          * Draws the policy overlay showing where the pointer policies are
          */
         drawOverlay: function () {
-            if (!this.isMounted()) {
-                return;
-            }
-
             var svg = d3.select(ReactDOM.findDOMNode(this));
 
             svg.selectAll(".policy-overlays").remove();
