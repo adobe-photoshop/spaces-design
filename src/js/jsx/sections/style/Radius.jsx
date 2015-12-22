@@ -57,33 +57,53 @@ define(function (require, exports, module) {
                 nextRelevantProps = getRelevantProps(nextProps);
 
             if (!Immutable.is(relevantProps, nextRelevantProps)) {
-                this._calculateState(nextProps);
+                this._calculateState(nextProps.document.layers.selected, nextProps.disabled);
             }
         },
 
+        /**
+         * Handler for the document store's "radiiChange" event, which is emitted
+         * when just the radii of selected layers have changed.
+         *
+         * @param {Document} document
+         */
+        _handleStoreChange: function (document) {
+            if (document.id !== this.props.document.id) {
+                return;
+            }
+
+            this._calculateState(document.layers.selected, this.props.disabled);
+        },
+
         componentWillMount: function () {
-            this._calculateState(this.props);
+            this._calculateState(this.props.document.layers.selected, this.props.disabled);
+            this.getFlux().store("document").on("radiiChange", this._handleStoreChange);
+        },
+
+        componentWillUnmount: function () {
+            this.getFlux().store("document").off("radiiChange", this._handleStoreChange);
         },
 
         /**
-         * Given the props object, calculates and sets the state
-         * This is refactored out of componentWillReceiveProps, because 
-         * it doesn't run on initial render, causing a null state
+         * Given the props object, calculates and sets the state. This is factored
+         * out of componentWillReceiveProps, because it doesn't run on initial render,
+         * causing a null state.
          *
          * @private
-         * @param {object} props
+         * @param {Immutable.List.<Layer>} layers
+         * @param {boolean=} forceDisabled
          */
-        _calculateState: function (props) {
-            var disabled = props.disabled || props.document.layers.selected.every(function (layer) {
+        _calculateState: function (layers, forceDisabled) {
+            var disabled = forceDisabled || layers.every(function (layer) {
                     return !layer.radii;
                 }),
-                layers = props.document.layers.selected.filter(function (layer) {
+                shapeLayers = layers.filter(function (layer) {
                     return layer.radii;
                 }),
-                scalars = layers.map(function (layer) {
+                scalars = shapeLayers.map(function (layer) {
                     return layer.radii.scalar || 0;
                 }),
-                maxRadius = layers
+                maxRadius = shapeLayers
                     .toSeq()
                     .filter(function (layer) {
                         return !!layer.bounds;
@@ -95,7 +115,7 @@ define(function (require, exports, module) {
 
             this.setState({
                 disabled: disabled,
-                layers: layers,
+                layers: shapeLayers,
                 scalars: scalars,
                 maxRadius: maxRadius,
                 maxRadiusInput: Math.floor(maxRadius)

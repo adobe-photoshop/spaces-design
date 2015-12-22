@@ -148,9 +148,10 @@ define(function (require, exports, module) {
          *
          * @param {Document} nextDocument
          * @param {boolean=} dirty Whether to set the dirty bit, assuming the model has changed
-         * @param {boolean=} suppressChange
+         * @param {boolean=} suppressChange Whether or not to suppress the change event
+         * @param {string=} changeEventName The event to emit. Default: "change".
          */
-        setDocument: function (nextDocument, dirty, suppressChange) {
+        setDocument: function (nextDocument, dirty, suppressChange, changeEventName) {
             var oldDocument = this._openDocuments[nextDocument.id];
             if (Immutable.is(oldDocument, nextDocument)) {
                 return;
@@ -174,7 +175,8 @@ define(function (require, exports, module) {
                 });
 
             if (initialized) {
-                this.emit("change");
+                // Include the document in the event payload
+                this.emit(changeEventName || "change", nextDocument);
             }
         },
 
@@ -705,7 +707,9 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Set the radii for the given layers in the given document.
+         * Set the radii for the given layers in the given document. NOTE: This
+         * only emits a "radiiChange" event instead of a general-purpose "change"
+         * event.
          *
          * @private
          * @param {{documentID: number, layerIDs: Array.<number>, radii: object}} payload
@@ -718,7 +722,7 @@ define(function (require, exports, module) {
                 nextLayers = document.layers.setBorderRadii(layerIDs, radii),
                 nextDocument = document.set("layers", nextLayers);
 
-            this.setDocument(nextDocument, true);
+            this.setDocument(nextDocument, true, false, "radiiChange");
         },
 
         /**
