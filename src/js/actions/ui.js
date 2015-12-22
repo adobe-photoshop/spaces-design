@@ -101,11 +101,13 @@ define(function (require, exports) {
     };
     updateTransform.action = {
         reads: [locks.PS_APP, locks.JS_APP],
-        writes: [locks.JS_UI]
+        writes: [locks.JS_UI],
+        hideOverlays: true
     };
 
     /**
      * Directly emit a TRANSFORM_UPDATED event with the given value.
+     * NOTE: This action is currently dead and may be removed.
      *
      * @return {Promise}
      */
@@ -128,7 +130,8 @@ define(function (require, exports) {
     setTransform.action = {
         reads: [locks.PS_APP],
         writes: [locks.JS_UI],
-        modal: true
+        modal: true,
+        hideOverlays: true
     };
 
     /**
@@ -173,8 +176,6 @@ define(function (require, exports) {
             offsets = panelState.centerOffsets,
             zoom = 1;
 
-        var dispatchPromise = this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: false });
-
         if (zoomInto) {
             var padding = 50,
                 verticalOffset = offsets.top + offsets.bottom,
@@ -189,19 +190,18 @@ define(function (require, exports) {
             zoom = uiState.zoomFactor;
         }
 
-        var panZoom = _calculatePanZoom(bounds, offsets, zoom, factor),
-            centerPromise = descriptor.play("setPanZoom", panZoom)
-                .bind(this)
-                .then(function () {
-                    return this.transfer(updateTransform);
-                });
-
-        return Promise.join(dispatchPromise, centerPromise);
+        var panZoom = _calculatePanZoom(bounds, offsets, zoom, factor);
+        return descriptor.play("setPanZoom", panZoom)
+            .bind(this)
+            .then(function () {
+                return this.transfer(updateTransform);
+            });
     };
     centerBounds.action = {
-        reads: [locks.JS_UI],
-        writes: [locks.JS_PANEL, locks.PS_APP],
-        transfers: [updateTransform]
+        reads: [locks.JS_UI, locks.JS_PANEL],
+        writes: [locks.PS_APP],
+        transfers: [updateTransform],
+        hideOverlays: true
     };
 
     /**
@@ -265,8 +265,6 @@ define(function (require, exports) {
             zoom = payload.zoom,
             bounds = document.layers.selectedAreaBounds;
 
-        this.dispatch(events.panel.TOGGLE_OVERLAYS, { enabled: false });
-
         if (!bounds || bounds.width === 0) {
             var cloakRect = panelStore.getCloakRect(),
                 tl = uiStore.transformWindowToCanvas(cloakRect.left, cloakRect.top),
@@ -292,9 +290,10 @@ define(function (require, exports) {
             });
     };
     zoom.action = {
-        reads: [locks.JS_APP, locks.JS_UI],
-        writes: [locks.JS_PANEL, locks.PS_APP],
-        transfers: [updateTransform]
+        reads: [locks.JS_APP, locks.JS_UI, locks.JS_PANEL],
+        writes: [locks.PS_APP],
+        transfers: [updateTransform],
+        hideOverlays: true
     };
 
     /**
@@ -336,7 +335,8 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.JS_UI],
         transfers: [],
-        modal: true
+        modal: true,
+        hideOverlays: true
     };
 
     /**
@@ -349,27 +349,51 @@ define(function (require, exports) {
         _displayConfigurationChangedHandler;
 
     /**
+     * @const
+     * @type {number}
+     */
+    var EVENT_DEBOUNCE_DELAY = 200;
+
+    /**
      * Register event listeners for UI change events, and initialize the UI.
      *
      * @return {Promise}
      */
     var beforeStartup = function () {
-        var DEBOUNCE_DELAY = 200;
+        var scrolling = false,
+            updateTransformDebounced = synchronization.debounce(function () {
+                return this.flux.actions.ui.updateTransform()
+                    .bind(this)
+                    .then(function () {
+                        // Consider the scroll to be inactive
+                        scrolling = false;
 
-        var setTransformDebounced = synchronization.debounce(function (event) {
-            if (event.transform) {
-                return this.flux.actions.ui.setTransform(event.transform);
-            }
-        }, this, DEBOUNCE_DELAY, false);
+                        // Reenable overlays
+                        this.dispatch(events.panel.END_CANVAS_UPDATE);
+                    });
+            }, this, EVENT_DEBOUNCE_DELAY, false);
 
         // Handles spacebar + drag, scroll and window resize events
         _scrollHandler = function (event) {
-            setTransformDebounced(event);
+            if (!event.transform) {
+                return;
+            }
+
+            // When scrolling begins, cloak the canvas
+            if (!scrolling) {
+                // Only cloak once while scrolling is active
+                scrolling = true;
+
+                // Disable overlays
+                this.dispatch(events.panel.START_CANVAS_UPDATE);
+            }
+
+            updateTransformDebounced();
         }.bind(this);
         descriptor.addListener("scroll", _scrollHandler);
 
         _displayConfigurationChangedHandler = synchronization.debounce(
-            this.flux.actions.ui.handleDisplayConfigurationChanged, this, DEBOUNCE_DELAY);
+            this.flux.actions.ui.handleDisplayConfigurationChanged, this, EVENT_DEBOUNCE_DELAY);
         adapterOS.addListener("displayConfigurationChanged", _displayConfigurationChangedHandler);
 
         // Enable over-scroll mode

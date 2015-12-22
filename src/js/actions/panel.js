@@ -183,7 +183,8 @@ define(function (require, exports) {
     };
     cloak.action = {
         reads: [locks.JS_PANEL],
-        writes: [locks.PS_APP]
+        writes: [locks.PS_APP],
+        hideOverlays: true
     };
 
     /**
@@ -247,9 +248,10 @@ define(function (require, exports) {
         return adapterUI.setOverlayOffsets(centerOffsets);
     };
     setOverlayOffsetsForFirstDocument.action = {
-        reads: [locks.JS_PREF, locks.JS_APP],
+        reads: [locks.JS_PREF, locks.JS_APP, locks.JS_PANEL],
         writes: [locks.PS_APP],
-        transfers: []
+        transfers: [],
+        hideOverlays: true
     };
 
     /**
@@ -317,7 +319,11 @@ define(function (require, exports) {
 
         // Handles Photoshop focus change events
         _activationChangeHandler = function (event) {
-            this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: event.becameActive });
+            if (event.becameActive) {
+                this.dispatch(events.panel.END_CANVAS_UPDATE);
+            } else {
+                this.dispatch(events.panel.START_CANVAS_UPDATE);
+            }
         }.bind(this);
         adapterOS.addListener("activationChanged", _activationChangeHandler);
 

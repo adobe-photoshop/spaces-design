@@ -285,8 +285,6 @@ define(function (require, exports, module) {
             }
 
             this._zoom = payload.zoom;
-            this._overlaysEnabled = true;
-
             this.emit("change");
         },
 

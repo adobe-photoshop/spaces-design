@@ -300,7 +300,6 @@ define(function (require, exports) {
     var revertCurrentDocument = function () {
         var historyStore = this.flux.store("history"),
             currentDocumentID = this.flux.store("application").getCurrentDocumentID(),
-            clearOverlaysPromise = this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: false }),
             nextStateIndex = historyStore.lastSavedStateIndex(currentDocumentID),
             superPromise;
         
@@ -324,19 +323,15 @@ define(function (require, exports) {
                 });
         }
 
-        // Clear the overlays in parallel with the revert, and then re-enabled them when both complete
-        return Promise.join(clearOverlaysPromise, superPromise)
-            .bind(this)
-            .then(function () {
-                return this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: true });
-            });
+        return superPromise;
     };
     revertCurrentDocument.action = {
         reads: [locks.JS_APP],
-        writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC, locks.JS_PANEL],
+        writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC],
         transfers: ["documents.updateDocument"],
         post: [layerActions._verifyLayerIndex],
-        modal: true
+        modal: true,
+        hideOverlays: true
     };
 
     /**

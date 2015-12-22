@@ -29,8 +29,7 @@ define(function (require, exports) {
 
     var os = require("adapter").os;
 
-    var events = require("../events"),
-        locks = require("../locks"),
+    var locks = require("../locks"),
         layers = require("js/actions/layers"),
         menu = require("./menu"),
         collection = require("js/util/collection"),
@@ -384,21 +383,17 @@ define(function (require, exports) {
         var currentDocument = this.flux.store("application").getCurrentDocument();
         if (!currentDocument) {
             return Promise.resolve();
-        } else {
-            return Promise.join(
-                this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: false }),
-                this.transfer(history.decrementHistory, currentDocument.id),
-                function () {
-                    return this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: true });
-                }.bind(this));
         }
+
+        return this.transfer(history.decrementHistory, currentDocument.id);
     };
     undo.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [locks.JS_PANEL],
+        writes: [],
         transfers: [history.decrementHistory],
         post: [layers._verifyLayerIndex],
-        modal: true
+        modal: true,
+        hideOverlays: true
     };
 
     /**
@@ -411,21 +406,17 @@ define(function (require, exports) {
         var currentDocument = this.flux.store("application").getCurrentDocument();
         if (!currentDocument) {
             return Promise.resolve();
-        } else {
-            return Promise.join(
-                this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: false }),
-                this.transfer(history.incrementHistory, currentDocument.id),
-                function () {
-                    return this.dispatchAsync(events.panel.TOGGLE_OVERLAYS, { enabled: true });
-                }.bind(this));
         }
+
+        return this.transfer(history.incrementHistory, currentDocument.id);
     };
     redo.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [locks.JS_PANEL],
+        writes: [],
         transfers: [history.incrementHistory],
         post: [layers._verifyLayerIndex],
-        modal: true
+        modal: true,
+        hideOverlays: true
     };
 
     exports.nativeCut = nativeCut;

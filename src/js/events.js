@@ -118,7 +118,8 @@ define(function (require, exports, module) {
         },
         panel: {
             PANELS_RESIZED: "panelsResized",
-            TOGGLE_OVERLAYS: "toggleOverlays",
+            START_CANVAS_UPDATE: "startCanvasUpdate",
+            END_CANVAS_UPDATE: "endCanvasUpdate",
             SUPERSELECT_MARQUEE: "superselectMarquee",
             REFERENCE_POINT_CHANGED: "referencePointChanged",
             COLOR_STOP_CHANGED: "colorStopChanged",
