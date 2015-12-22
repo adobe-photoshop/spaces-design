@@ -191,16 +191,12 @@ define(function (require, exports) {
         }
 
         var panZoom = _calculatePanZoom(bounds, offsets, zoom, factor);
-        return descriptor.play("setPanZoom", panZoom)
-            .bind(this)
-            .then(function () {
-                return this.transfer(updateTransform);
-            });
+        return descriptor.play("setPanZoom", panZoom);
     };
     centerBounds.action = {
         reads: [locks.JS_UI, locks.JS_PANEL],
         writes: [locks.PS_APP],
-        transfers: [updateTransform],
+        transfers: [],
         hideOverlays: true
     };
 
@@ -283,16 +279,12 @@ define(function (require, exports) {
             offsets = panelState.centerOffsets,
             panZoomDescriptor = _calculatePanZoom(bounds, offsets, zoom, factor);
 
-        return descriptor.play("setPanZoom", panZoomDescriptor)
-            .bind(this)
-            .then(function () {
-                return this.transfer(updateTransform);
-            });
+        return descriptor.play("setPanZoom", panZoomDescriptor);
     };
     zoom.action = {
         reads: [locks.JS_APP, locks.JS_UI, locks.JS_PANEL],
         writes: [locks.PS_APP],
-        transfers: [updateTransform],
+        transfers: [],
         hideOverlays: true
     };
 
