@@ -34,8 +34,7 @@ define(function (require, exports) {
         FluxController = require("./fluxcontroller"),
         log = require("js/util/log"),
         performanceUtil = require("js/util/performance"),
-        nls = require("js/util/nls"),
-        global = require("js/util/global");
+        nls = require("js/util/nls");
 
     /**
      * The application controller. Holds the internal Fluxxor.Flux instance.
@@ -58,7 +57,7 @@ define(function (require, exports) {
 
         log.error("Unrecoverable error:", message);
 
-        if (global.debug) {
+        if (__PG_DEBUG__) {
             shutdown();
         } else {
             var dialogMessage = nls.localize("strings.ERR.UNRECOVERABLE");
@@ -99,7 +98,7 @@ define(function (require, exports) {
                 " is incompatible with the required version, " +
                  _formatVersion(adapter.compatiblePluginVersion);
 
-            if (global.debug) {
+            if (__PG_DEBUG__) {
                 log.error(message);
             } else {
                 throw new Error(message);
@@ -167,7 +166,7 @@ define(function (require, exports) {
         cancellation: true
     });
 
-    if (global.debug) {
+    if (__PG_DEBUG__) {
         Promise.longStackTraces();
         Promise.onPossiblyUnhandledRejection(function (err) {
             throw err;

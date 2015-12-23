@@ -30,7 +30,6 @@ define(function (require, exports, module) {
     var MenuItem = require("./menuitem"),
         MenuShortcut = require("./menushortcut"),
         keyutil = require("js/util/key"),
-        global = require("js/util/global"),
         pathUtil = require("js/util/path"),
         system = require("js/util/system"),
         object = require("js/util/object");
@@ -504,7 +503,7 @@ define(function (require, exports, module) {
             "TOGGLE_SINGLE_COLUMN_MODE": { "checked": preferences.get("singleColumnModeEnabled", false) }
         });
 
-        if (global.debug) {
+        if (__PG_DEBUG__) {
             return updatedMenu.updateSubmenuItems("HELP", {
                 "TOGGLE_POLICY_FRAMES": { "checked": preferences.get("policyFramesEnabled", false) },
                 "TOGGLE_POSTCONDITIONS": { "checked": preferences.get("postConditionsEnabled", false) },

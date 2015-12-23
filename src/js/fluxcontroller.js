@@ -39,8 +39,7 @@ define(function (require, exports, module) {
         AsyncDependencyQueue = require("./util/async-dependency-queue"),
         synchronization = require("./util/synchronization"),
         performance = require("./util/performance"),
-        log = require("./util/log"),
-        global = require("./util/global");
+        log = require("./util/log");
 
     /**
      * The number of logical CPU cores, used to determine the maximum number of
@@ -469,7 +468,7 @@ define(function (require, exports, module) {
                         nextReceiver = self._actionReceivers.get(nextAction),
                         reads = self._transitiveReads.get(nextAction),
                         writes = self._transitiveWrites.get(nextAction),
-                        logTransfers = global.debug &&
+                        logTransfers = __PG_DEBUG__ &&
                             this.flux.store("preferences").getState().get("logActionTransfers"),
                         enqueued;
 
@@ -768,7 +767,7 @@ define(function (require, exports, module) {
                     this._unlockUI();
                 }
 
-                if (global.debug && post && post.length > 0 &&
+                if (__PG_DEBUG__ && post && post.length > 0 &&
                     flux.store("preferences").get("postConditionsEnabled")) {
                     var postStart = Date.now(),
                         postTitle = post.length + " postcondition" + (post.length > 1 ? "s" : "");
@@ -840,7 +839,7 @@ define(function (require, exports, module) {
                         log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
                             actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
 
-                        if (global.debug) {
+                        if (__PG_DEBUG__) {
                             performance.recordAction(namespace, name, enqueued, start, finished);
                         }
                     })

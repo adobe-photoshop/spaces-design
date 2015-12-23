@@ -27,9 +27,7 @@ define(function (require, exports, module) {
 
     var loglevel = require("loglevel");
 
-    var global = require("./global");
-
-    if (global.debug) {
+    if (__PG_DEBUG__) {
         // If the debug global is set, log messages at and below debug level
         loglevel.enableAll();
     } else {
