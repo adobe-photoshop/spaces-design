@@ -21,50 +21,65 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import application from "./application";
+import documentStore from "./document";
+import exportStore from "./export";
+import font from "./font";
+import tool from "./tool";
+import policy from "./policy";
+import menu from "./menu";
+import modifier from "./modifier";
+import panel from "./panel";
+import preferences from "./preferences";
+import ui from "./ui";
+import shortcut from "./shortcut";
+import exampleOne from "./example-one";
+import exampleTwo from "./example-two";
+import dialog from "./dialog";
+import history from "./history";
+import draganddrop from "./draganddrop";
+import library from "./library";
+import search from "./search";
+import style from "./style";
 
-    /**
-     * The master set of store constructors.
-     * 
-     * @private
-     * @type {Object.<string, function()>}
-     */
-    var _imports = {
-        "application": require("./application"),
-        "document": require("./document"),
-        "export": require("./export"),
-        "font": require("./font"),
-        "tool": require("./tool"),
-        "policy": require("./policy"),
-        "menu": require("./menu"),
-        "modifier": require("./modifier"),
-        "panel": require("./panel"),
-        "preferences": require("./preferences"),
-        "ui": require("./ui"),
-        "shortcut": require("./shortcut"),
-        "example-one": require("./example-one"),
-        "example-two": require("./example-two"),
-        "dialog": require("./dialog"),
-        "history": require("./history"),
-        "draganddrop": require("./draganddrop"),
-        "library": require("./library"),
-        "search": require("./search"),
-        "style": require("./style")
-    };
+/**
+* The master set of store constructors.
+* 
+* @private
+* @type {Object.<string, function()>}
+*/
+var _imports = {
+    "application": application,
+    "document": documentStore,
+    "export": exportStore,
+    "font": font,
+    "tool": tool,
+    "policy": policy,
+    "menu": menu,
+    "modifier": modifier,
+    "panel": panel,
+    "preferences": preferences,
+    "ui": ui,
+    "shortcut": shortcut,
+    "example-one": exampleOne,
+    "example-two": exampleTwo,
+    "dialog": dialog,
+    "history": history,
+    "draganddrop": draganddrop,
+    "library": library,
+    "search": search,
+    "style": style
+};
 
-    /**
-     * Builds a set of instantiated store objects.
-     * 
-     * @return {Object.<string, Fluxxor.Store>}
-     */
-    var create = function () {
-        return Object.keys(_imports).reduce(function (stores, key) {
-            var Store = _imports[key];
-            stores[key] = new Store();
-            return stores;
-        }, {});
-    };
-
-    exports.create = create;
-});
+/**
+* Builds a set of instantiated store objects.
+* 
+* @return {Object.<string, Fluxxor.Store>}
+*/
+export var create = function () {
+    return Object.keys(_imports).reduce(function (stores, key) {
+        var Store = _imports[key];
+        stores[key] = new Store();
+        return stores;
+    }, {});
+};

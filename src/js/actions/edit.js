@@ -21,412 +21,399 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
+import * as Immutable from "immutable";
 
-    var Promise = require("bluebird"),
-        Immutable = require("immutable");
+import * as adapter from "adapter";
 
-    var os = require("adapter").os;
+var os = adapter.os;
 
-    var locks = require("../locks"),
-        layers = require("js/actions/layers"),
-        menu = require("./menu"),
-        collection = require("js/util/collection"),
-        headlights = require("js/util/headlights"),
-        history = require("js/actions/history"),
-        policyActions = require("js/actions/policy"),
-        dom = require("js/util/dom");
+import * as locks from "../locks";
+import * as layers from "js/actions/layers";
+import * as menu from "./menu";
+import * as collection from "js/util/collection";
+import * as headlights from "js/util/headlights";
+import * as history from "js/actions/history";
+import * as policyActions from "js/actions/policy";
+import * as dom from "js/util/dom";
 
-    /**
-     * Native menu command IDs for Photoshop edit commands.
-     * 
-     * @const     
-     * @private
-     * @type {number}
-     */
-    var CUT_NATIVE_MENU_COMMMAND_ID = 103,
-        COPY_NATIVE_MENU_COMMMAND_ID = 104,
-        PASTE_NATIVE_MENU_COMMMAND_ID = 105,
-        SELECT_ALL_NATIVE_MENU_COMMMAND_ID = 1017;
+/**
+ * Native menu command IDs for Photoshop edit commands.
+ * 
+ * @const     
+ * @private
+ * @type {number}
+ */
+var CUT_NATIVE_MENU_COMMMAND_ID = 103,
+    COPY_NATIVE_MENU_COMMMAND_ID = 104,
+    PASTE_NATIVE_MENU_COMMMAND_ID = 105,
+    SELECT_ALL_NATIVE_MENU_COMMMAND_ID = 1017;
 
-    var LAYER_CLIPBOARD_FORMAT = "com.adobe.photoshop.spaces.design.layers";
+var LAYER_CLIPBOARD_FORMAT = "com.adobe.photoshop.spaces.design.layers";
 
-    /**
-     * Execute a native cut command.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var nativeCut = function () {
-        return this.transfer(menu.nativeModal, {
-            commandID: CUT_NATIVE_MENU_COMMMAND_ID
-        })
-        .catch(function () {
-            // Ignore errors from menu.nativeModal
-        });
-    };
-    nativeCut.action = {
-        modal: true,
-        reads: [],
-        writes: [],
-        transfers: [menu.nativeModal]
-    };
+/**
+ * Execute a native cut command.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var nativeCut = function () {
+    return this.transfer(menu.nativeModal, {
+        commandID: CUT_NATIVE_MENU_COMMMAND_ID
+    })
+    .catch(function () {
+        // Ignore errors from menu.nativeModal
+    });
+};
+nativeCut.action = {
+    modal: true,
+    reads: [],
+    writes: [],
+    transfers: [menu.nativeModal]
+};
 
-    /**
-     * Execute a native copy command.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var nativeCopy = function () {
-        return this.transfer(menu.nativeModal, {
-            commandID: COPY_NATIVE_MENU_COMMMAND_ID
-        })
-        .catch(function () {
-            // Ignore errors from menu.nativeModal
-        });
-    };
-    nativeCopy.action = {
-        modal: true,
-        reads: [],
-        writes: [],
-        transfers: [menu.nativeModal]
-    };
+/**
+ * Execute a native copy command.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var nativeCopy = function () {
+    return this.transfer(menu.nativeModal, {
+        commandID: COPY_NATIVE_MENU_COMMMAND_ID
+    })
+    .catch(function () {
+        // Ignore errors from menu.nativeModal
+    });
+};
+nativeCopy.action = {
+    modal: true,
+    reads: [],
+    writes: [],
+    transfers: [menu.nativeModal]
+};
 
-    /**
-     * Execute a native paste command.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var nativePaste = function () {
-        // FIXME: this suspend policies hack is for pasting smart object from other sources (e.g. Illustrator).
-        // The cause is similar to the place-object menu commands: DS is not receiving "toolModalStateChanged" events
-        // until the object is committed.
-        // To avoid restoring policies while in a modal state, text in particular, first check the tool store
-        // modal state before restoring policies.  Super. Hack.
-        var policyStore = this.flux.store("policy"),
-            suspendPromise;
+/**
+ * Execute a native paste command.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var nativePaste = function () {
+    // FIXME: this suspend policies hack is for pasting smart object from other sources (e.g. Illustrator).
+    // The cause is similar to the place-object menu commands: DS is not receiving "toolModalStateChanged" events
+    // until the object is committed.
+    // To avoid restoring policies while in a modal state, text in particular, first check the tool store
+    // modal state before restoring policies.  Super. Hack.
+    var policyStore = this.flux.store("policy"),
+        suspendPromise;
 
-        if (policyStore.areAllSuspended()) {
-            suspendPromise = Promise.resolve();
-        } else {
-            suspendPromise = this.transfer(policyActions.suspendAllPolicies);
-        }
+    if (policyStore.areAllSuspended()) {
+        suspendPromise = Promise.resolve();
+    } else {
+        suspendPromise = this.transfer(policyActions.suspendAllPolicies);
+    }
 
-        return suspendPromise
-            .bind(this)
-            .then(function () {
-                return this.transfer(menu.nativeModal, {
-                    commandID: PASTE_NATIVE_MENU_COMMMAND_ID,
-                    waitForCompletion: true
-                });
-            })
-            .finally(function () {
-                var toolStore = this.flux.store("tool"),
-                    policyStore = this.flux.store("policy");
-
-                if (!toolStore.getModalToolState() && policyStore.areAllSuspended()) {
-                    return this.transfer(policyActions.restoreAllPolicies);
-                }
+    return suspendPromise
+        .bind(this)
+        .then(function () {
+            return this.transfer(menu.nativeModal, {
+                commandID: PASTE_NATIVE_MENU_COMMMAND_ID,
+                waitForCompletion: true
             });
-    };
-    nativePaste.action = {
-        modal: true,
-        reads: [],
-        writes: [],
-        transfers: [menu.nativeModal, policyActions.suspendAllPolicies, policyActions.restoreAllPolicies]
-    };
-
-    /**
-     * Execute a native selectAll command.
-     *
-     * @private
-     * @param {boolean} waitForCompletion Flag for nativeModal
-     * @return {Promise}
-     */
-    var nativeSelectAll = function (waitForCompletion) {
-        waitForCompletion = waitForCompletion || false;
-
-        return this.transfer(menu.nativeModal, {
-            commandID: SELECT_ALL_NATIVE_MENU_COMMMAND_ID,
-            waitForCompletion: waitForCompletion
         })
-        .catch(function () {
-            // Ignore errors from menu.nativeModal
+        .finally(function () {
+            var toolStore = this.flux.store("tool"),
+                policyStore = this.flux.store("policy");
+
+            if (!toolStore.getModalToolState() && policyStore.areAllSuspended()) {
+                return this.transfer(policyActions.restoreAllPolicies);
+            }
         });
-    };
-    nativeSelectAll.action = {
-        modal: true,
-        reads: [],
-        writes: [],
-        transfers: [menu.nativeModal]
-    };
+};
+nativePaste.action = {
+    modal: true,
+    reads: [],
+    writes: [],
+    transfers: [menu.nativeModal, policyActions.suspendAllPolicies, policyActions.restoreAllPolicies]
+};
 
-    /**
-     * Execute either a cut or copy operation, depending on the value of the parameter.
-     *
-     * @private
-     * @param {boolean} cut If true, perform a cut operation; otherwise, a copy.
-     * @return {Promise}
-     */
-    var _cutOrCopy = function (cut) {
-        return os.hasKeyboardFocus()
-            .bind(this)
-            .then(function (cefHasFocus) {
-                var el = window.document.activeElement,
-                    data;
+/**
+ * Execute a native selectAll command.
+ *
+ * @private
+ * @param {boolean} waitForCompletion Flag for nativeModal
+ * @return {Promise}
+ */
+export var nativeSelectAll = function (waitForCompletion) {
+    waitForCompletion = waitForCompletion || false;
 
-                if (cefHasFocus && dom.isInput(el)) {
-                    if (dom.isTextInput(el)) {
-                        data = el.value.substring(el.selectionStart, el.selectionEnd);
-                        if (cut) {
-                            el.setRangeText("");
-                        }
-                    } else {
-                        data = el.value;
-                    }
-                } else {
-                    // Even if CEF doesn't have focus, a disabled input could have a selection
-                    var selection = window.document.getSelection();
-                    if (selection.type === "Range") {
-                        data = selection.toString();
-                    }
-                }
+    return this.transfer(menu.nativeModal, {
+        commandID: SELECT_ALL_NATIVE_MENU_COMMMAND_ID,
+        waitForCompletion: waitForCompletion
+    })
+    .catch(function () {
+        // Ignore errors from menu.nativeModal
+    });
+};
+nativeSelectAll.action = {
+    modal: true,
+    reads: [],
+    writes: [],
+    transfers: [menu.nativeModal]
+};
 
-                if (typeof data === "string") {
-                    var cutCopyEvent = new window.Event(cut ? "cut" : "copy", { bubbles: true });
-                    el.dispatchEvent(cutCopyEvent);
+/**
+ * Execute either a cut or copy operation, depending on the value of the parameter.
+ *
+ * @private
+ * @param {boolean} cut If true, perform a cut operation; otherwise, a copy.
+ * @return {Promise}
+ */
+var _cutOrCopy = function (cut) {
+    return os.hasKeyboardFocus()
+        .bind(this)
+        .then(function (cefHasFocus) {
+            var el = window.document.activeElement,
+                data;
 
-                    return os.clipboardWrite(data);
-                }
-
-                // If we're on modal state (type edit), we should go with native copy/cut
-                if (this.flux.store("tool").getModalToolState()) {
+            if (cefHasFocus && dom.isInput(el)) {
+                if (dom.isTextInput(el)) {
+                    data = el.value.substring(el.selectionStart, el.selectionEnd);
                     if (cut) {
-                        return this.transfer(nativeCut);
-                    } else {
-                        return this.transfer(nativeCopy);
-                    }
-                } else if (!cut) {
-                    var applicationStore = this.flux.store("application"),
-                        document = applicationStore.getCurrentDocument();
-
-                    if (!document || document.unsupported) {
-                        return;
-                    }
-
-                    var layerIDs = collection.pluck(document.layers.selectedNormalized, "id"),
-                        payload = {
-                            document: document.id,
-                            layers: layerIDs
-                        },
-                        rawPayload = JSON.stringify(payload);
-
-                    headlights.logEvent("edit", "layers", "copy-layers");
-                    return os.clipboardWrite(rawPayload, LAYER_CLIPBOARD_FORMAT);
-                }
-            });
-    };
-
-    /**
-     * Execute a cut operation on the currently active HTML element.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var cut = function () {
-        return _cutOrCopy.call(this, true);
-    };
-    cut.action = {
-        modal: true,
-        reads: [locks.JS_TOOL, locks.PS_APP],
-        writes: [locks.JS_DOC, locks.PS_DOC, locks.OS_CLIPBOARD],
-        transfers: [nativeCut]
-    };
-
-    /**
-     * Execute a copy operation on the currently active HTML element.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var copy = function () {
-        return _cutOrCopy.call(this, false);
-    };
-    copy.action = {
-        modal: true,
-        reads: [locks.JS_DOC, locks.JS_TOOL, locks.PS_APP],
-        writes: [locks.OS_CLIPBOARD],
-        transfers: [nativeCopy]
-    };
-
-    /**
-     * Execute a paste operation on the currently active HTML element.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var paste = function () {
-        return os.hasKeyboardFocus()
-            .bind(this)
-            .then(function (cefHasFocus) {
-                var el = window.document.activeElement;
-                if (cefHasFocus && dom.isInput(el)) {
-                    return os.clipboardRead()
-                        .then(function (result) {
-                            var data = result.data,
-                                format = result.format;
-
-                            if (format !== "string") {
-                                return;
-                            }
-
-                            if (dom.isTextInput(el)) {
-                                var selectionStart = el.selectionStart;
-                                el.setRangeText(data);
-                                el.setSelectionRange(selectionStart + data.length, selectionStart + data.length);
-                            } else {
-                                el.value = data;
-                            }
-
-                            var pasteEvent = new window.Event("paste", { bubbles: true });
-                            el.dispatchEvent(pasteEvent);
-                        });
-                } else {
-                    return os.clipboardRead([LAYER_CLIPBOARD_FORMAT])
-                        .bind(this)
-                        .then(function (result) {
-                            var format = result.format;
-                            if (format !== LAYER_CLIPBOARD_FORMAT) {
-                                return this.transfer(nativePaste);
-                            }
-
-                            var applicationStore = this.flux.store("application"),
-                                document = applicationStore.getCurrentDocument();
-
-                            if (!document || document.unsupported) {
-                                return;
-                            }
-
-                            var data = result.data,
-                                payload = JSON.parse(data),
-                                documentID = payload.document,
-                                documentStore = this.flux.store("document"),
-                                fromDocument = documentStore.getDocument(documentID);
-
-                            if (!fromDocument || fromDocument.unsupported) {
-                                return;
-                            }
-
-                            var layerIDs = payload.layers,
-                                fromLayers = Immutable.List(layerIDs.reduce(function (layers, layerID) {
-                                    var layer = fromDocument.layers.byID(layerID);
-                                    if (layer) {
-                                        layers.push(layer);
-                                    }
-                                    return layers;
-                                }, []));
-
-                            headlights.logEvent("edit", "layers", "paste-layers");
-                            return this.transfer(layers.duplicate, document, fromDocument, fromLayers);
-                        });
-                }
-            });
-    };
-    paste.action = {
-        modal: true,
-        reads: [locks.JS_DOC, locks.JS_APP, locks.OS_CLIPBOARD, locks.PS_APP],
-        writes: [],
-        transfers: [layers.duplicate, nativePaste]
-    };
-    /**
-     * Execute a select operation on the currently active HTML element.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var selectAll = function () {
-        return os.hasKeyboardFocus()
-            .bind(this)
-            .then(function (cefHasFocus) {
-                var el = window.document.activeElement;
-                if (cefHasFocus && dom.isInput(el)) {
-                    if (dom.isTextInput(el)) {
-                        el.setSelectionRange(0, el.value.length);
+                        el.setRangeText("");
                     }
                 } else {
-                    var toolStore = this.flux.store("tool");
-                    if (toolStore.getModalToolState()) {
-                        return this.transfer(nativeSelectAll);
-                    } else {
-                        return this.transfer(layers.selectAll);
-                    }
+                    data = el.value;
                 }
-            });
-    };
-    selectAll.action = {
-        modal: true,
-        reads: [locks.JS_TOOL, locks.PS_APP],
-        writes: [],
-        transfers: [layers.selectAll, nativeSelectAll]
-    };
+            } else {
+                // Even if CEF doesn't have focus, a disabled input could have a selection
+                var selection = window.document.getSelection();
+                if (selection.type === "Range") {
+                    data = selection.toString();
+                }
+            }
 
-    /**
-     * Step Backwards by transferring to the appropriate history action
-     *
-     * @private
-     * @return {Promise}
-     */
-    var undo = function () {
-        var currentDocument = this.flux.store("application").getCurrentDocument();
-        if (!currentDocument) {
-            return Promise.resolve();
-        }
+            if (typeof data === "string") {
+                var cutCopyEvent = new window.Event(cut ? "cut" : "copy", { bubbles: true });
+                el.dispatchEvent(cutCopyEvent);
 
-        return this.transfer(history.decrementHistory, currentDocument.id);
-    };
-    undo.action = {
-        reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [],
-        transfers: [history.decrementHistory],
-        post: [layers._verifyLayerIndex],
-        modal: true,
-        hideOverlays: true
-    };
+                return os.clipboardWrite(data);
+            }
 
-    /**
-     * Step Forward by transferring to the appropriate history action
-     *
-     * @private
-     * @return {Promise}
-     */
-    var redo = function () {
-        var currentDocument = this.flux.store("application").getCurrentDocument();
-        if (!currentDocument) {
-            return Promise.resolve();
-        }
+            // If we're on modal state (type edit), we should go with native copy/cut
+            if (this.flux.store("tool").getModalToolState()) {
+                if (cut) {
+                    return this.transfer(nativeCut);
+                } else {
+                    return this.transfer(nativeCopy);
+                }
+            } else if (!cut) {
+                var applicationStore = this.flux.store("application"),
+                    document = applicationStore.getCurrentDocument();
 
-        return this.transfer(history.incrementHistory, currentDocument.id);
-    };
-    redo.action = {
-        reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [],
-        transfers: [history.incrementHistory],
-        post: [layers._verifyLayerIndex],
-        modal: true,
-        hideOverlays: true
-    };
+                if (!document || document.unsupported) {
+                    return;
+                }
 
-    exports.nativeCut = nativeCut;
-    exports.nativeCopy = nativeCopy;
-    exports.nativePaste = nativePaste;
-    exports.nativeSelectAll = nativeSelectAll;
-    exports.cut = cut;
-    exports.copy = copy;
-    exports.paste = paste;
-    exports.selectAll = selectAll;
-    exports.undo = undo;
-    exports.redo = redo;
-});
+                var layerIDs = collection.pluck(document.layers.selectedNormalized, "id"),
+                    payload = {
+                        document: document.id,
+                        layers: layerIDs
+                    },
+                    rawPayload = JSON.stringify(payload);
+
+                headlights.logEvent("edit", "layers", "copy-layers");
+                return os.clipboardWrite(rawPayload, LAYER_CLIPBOARD_FORMAT);
+            }
+        });
+};
+
+/**
+ * Execute a cut operation on the currently active HTML element.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var cut = function () {
+    return _cutOrCopy.call(this, true);
+};
+cut.action = {
+    modal: true,
+    reads: [locks.JS_TOOL, locks.PS_APP],
+    writes: [locks.JS_DOC, locks.PS_DOC, locks.OS_CLIPBOARD],
+    transfers: [nativeCut]
+};
+
+/**
+ * Execute a copy operation on the currently active HTML element.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var copy = function () {
+    return _cutOrCopy.call(this, false);
+};
+copy.action = {
+    modal: true,
+    reads: [locks.JS_DOC, locks.JS_TOOL, locks.PS_APP],
+    writes: [locks.OS_CLIPBOARD],
+    transfers: [nativeCopy]
+};
+
+/**
+ * Execute a paste operation on the currently active HTML element.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var paste = function () {
+    return os.hasKeyboardFocus()
+        .bind(this)
+        .then(function (cefHasFocus) {
+            var el = window.document.activeElement;
+            if (cefHasFocus && dom.isInput(el)) {
+                return os.clipboardRead()
+                    .then(function (result) {
+                        var data = result.data,
+                            format = result.format;
+
+                        if (format !== "string") {
+                            return;
+                        }
+
+                        if (dom.isTextInput(el)) {
+                            var selectionStart = el.selectionStart;
+                            el.setRangeText(data);
+                            el.setSelectionRange(selectionStart + data.length, selectionStart + data.length);
+                        } else {
+                            el.value = data;
+                        }
+
+                        var pasteEvent = new window.Event("paste", { bubbles: true });
+                        el.dispatchEvent(pasteEvent);
+                    });
+            } else {
+                return os.clipboardRead([LAYER_CLIPBOARD_FORMAT])
+                    .bind(this)
+                    .then(function (result) {
+                        var format = result.format;
+                        if (format !== LAYER_CLIPBOARD_FORMAT) {
+                            return this.transfer(nativePaste);
+                        }
+
+                        var applicationStore = this.flux.store("application"),
+                            document = applicationStore.getCurrentDocument();
+
+                        if (!document || document.unsupported) {
+                            return;
+                        }
+
+                        var data = result.data,
+                            payload = JSON.parse(data),
+                            documentID = payload.document,
+                            documentStore = this.flux.store("document"),
+                            fromDocument = documentStore.getDocument(documentID);
+
+                        if (!fromDocument || fromDocument.unsupported) {
+                            return;
+                        }
+
+                        var layerIDs = payload.layers,
+                            fromLayers = Immutable.List(layerIDs.reduce(function (layers, layerID) {
+                                var layer = fromDocument.layers.byID(layerID);
+                                if (layer) {
+                                    layers.push(layer);
+                                }
+                                return layers;
+                            }, []));
+
+                        headlights.logEvent("edit", "layers", "paste-layers");
+                        return this.transfer(layers.duplicate, document, fromDocument, fromLayers);
+                    });
+            }
+        });
+};
+paste.action = {
+    modal: true,
+    reads: [locks.JS_DOC, locks.JS_APP, locks.OS_CLIPBOARD, locks.PS_APP],
+    writes: [],
+    transfers: [layers.duplicate, nativePaste]
+};
+/**
+ * Execute a select operation on the currently active HTML element.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var selectAll = function () {
+    return os.hasKeyboardFocus()
+        .bind(this)
+        .then(function (cefHasFocus) {
+            var el = window.document.activeElement;
+            if (cefHasFocus && dom.isInput(el)) {
+                if (dom.isTextInput(el)) {
+                    el.setSelectionRange(0, el.value.length);
+                }
+            } else {
+                var toolStore = this.flux.store("tool");
+                if (toolStore.getModalToolState()) {
+                    return this.transfer(nativeSelectAll);
+                } else {
+                    return this.transfer(layers.selectAll);
+                }
+            }
+        });
+};
+selectAll.action = {
+    modal: true,
+    reads: [locks.JS_TOOL, locks.PS_APP],
+    writes: [],
+    transfers: [layers.selectAll, nativeSelectAll]
+};
+
+/**
+ * Step Backwards by transferring to the appropriate history action
+ *
+ * @private
+ * @return {Promise}
+ */
+export var undo = function () {
+    var currentDocument = this.flux.store("application").getCurrentDocument();
+    if (!currentDocument) {
+        return Promise.resolve();
+    }
+
+    return this.transfer(history.decrementHistory, currentDocument.id);
+};
+undo.action = {
+    reads: [locks.JS_APP, locks.JS_DOC],
+    writes: [],
+    transfers: [history.decrementHistory],
+    post: [layers._verifyLayerIndex],
+    modal: true,
+    hideOverlays: true
+};
+
+/**
+ * Step Forward by transferring to the appropriate history action
+ *
+ * @private
+ * @return {Promise}
+ */
+export var redo = function () {
+    var currentDocument = this.flux.store("application").getCurrentDocument();
+    if (!currentDocument) {
+        return Promise.resolve();
+    }
+
+    return this.transfer(history.incrementHistory, currentDocument.id);
+};
+redo.action = {
+    reads: [locks.JS_APP, locks.JS_DOC],
+    writes: [],
+    transfers: [history.incrementHistory],
+    post: [layers._verifyLayerIndex],
+    modal: true,
+    hideOverlays: true
+};

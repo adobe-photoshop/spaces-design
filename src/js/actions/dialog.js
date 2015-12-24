@@ -21,125 +21,117 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import Promise from "bluebird";
 
-    var Promise = require("bluebird");
+import { os as adapterOS, ps } from "adapter";
 
-    var adapterUI = require("adapter").ps.ui,
-        adapterOS = require("adapter").os;
+var adapterUI = ps.ui;
 
-    var events = require("../events"),
-        policy = require("./policy"),
-        locks = require("js/locks"),
-        EventPolicy = require("js/models/eventpolicy"),
-        PointerEventPolicy = EventPolicy.PointerEventPolicy;
+import * as events from "../events";
+import * as policy from "./policy";
+import * as locks from "js/locks";
+import * as EventPolicy from "js/models/eventpolicy";
 
-    /**
-     * Never propagate policy ID of each open dialog,
-     * which is active while the dialog is open, applies only to modal dialogs
-     *
-     * @type {{string: number}}
-     */
-    var _policyMap = {};
+var PointerEventPolicy = EventPolicy.PointerEventPolicy;
 
-    /**
-     * Open a dialog with a given ID and optional dismissal policy.
-     * Must pre-register if the dismissal policy is to be excluded
-     *
-     * @private
-     * @param {string} id
-     * @param {object=} dismissalPolicy
-     * @return {Promise}
-     */
-    var openDialog = function (id, dismissalPolicy) {
-        var payload = {
-                id: id,
-                dismissalPolicy: dismissalPolicy
-            },
-            isModal = this.flux.store("dialog").isModalDialog(id),
-            dispatchPromise = this.dispatchAsync(events.dialog.OPEN_DIALOG, payload),
-            policyPromise = Promise.resolve();
+/**
+ * Never propagate policy ID of each open dialog,
+ * which is active while the dialog is open, applies only to modal dialogs
+ *
+ * @type {{string: number}}
+ */
+var _policyMap = {};
 
-        if (isModal) {
-            var neverPropagatePolicy = new PointerEventPolicy(
-                adapterUI.policyAction.PROPAGATE_TO_BROWSER,
-                adapterOS.eventKind.LEFT_MOUSE_DOWN
-            );
+/**
+ * Open a dialog with a given ID and optional dismissal policy.
+ * Must pre-register if the dismissal policy is to be excluded
+ *
+ * @private
+ * @param {string} id
+ * @param {object=} dismissalPolicy
+ * @return {Promise}
+ */
+export var openDialog = function (id, dismissalPolicy) {
+    var payload = {
+            id: id,
+            dismissalPolicy: dismissalPolicy
+        },
+        isModal = this.flux.store("dialog").isModalDialog(id),
+        dispatchPromise = this.dispatchAsync(events.dialog.OPEN_DIALOG, payload),
+        policyPromise = Promise.resolve();
+
+    if (isModal) {
+        var neverPropagatePolicy = new PointerEventPolicy(
+            adapterUI.policyAction.PROPAGATE_TO_BROWSER,
+            adapterOS.eventKind.LEFT_MOUSE_DOWN
+        );
+        
+        policyPromise = this.transfer(policy.addPointerPolicies, [neverPropagatePolicy])
+            .then(function (policyID) {
+                _policyMap[id] = policyID;
+            });
+    }
             
-            policyPromise = this.transfer(policy.addPointerPolicies, [neverPropagatePolicy])
-                .then(function (policyID) {
-                    _policyMap[id] = policyID;
-                });
-        }
-                
-        return Promise.join(dispatchPromise, policyPromise);
-    };
-    openDialog.action = {
-        reads: [],
-        writes: [locks.JS_DIALOG],
-        transfers: [policy.addPointerPolicies],
-        modal: true
-    };
+    return Promise.join(dispatchPromise, policyPromise);
+};
+openDialog.action = {
+    reads: [],
+    writes: [locks.JS_DIALOG],
+    transfers: [policy.addPointerPolicies],
+    modal: true
+};
 
-    /**
-     * Close an already open dialog with the given ID.
-     *
-     * @private
-     * @param {string} id
-     * @return {Promise}
-     */
-    var closeDialog = function (id) {
-        var payload = {
-                id: id
-            },
-            dispatchPromise = this.dispatchAsync(events.dialog.CLOSE_DIALOG, payload),
-            activePolicy = _policyMap[id],
-            policyPromise = activePolicy ?
-                this.transfer(policy.removePointerPolicies, activePolicy) : Promise.resolve();
+/**
+ * Close an already open dialog with the given ID.
+ *
+ * @private
+ * @param {string} id
+ * @return {Promise}
+ */
+export var closeDialog = function (id) {
+    var payload = {
+            id: id
+        },
+        dispatchPromise = this.dispatchAsync(events.dialog.CLOSE_DIALOG, payload),
+        activePolicy = _policyMap[id],
+        policyPromise = activePolicy ?
+            this.transfer(policy.removePointerPolicies, activePolicy) : Promise.resolve();
 
-        return Promise.join(dispatchPromise, policyPromise);
-    };
-    closeDialog.action = {
-        reads: [],
-        writes: [locks.JS_DIALOG],
-        transfers: [policy.removePointerPolicies],
-        modal: true
-    };
+    return Promise.join(dispatchPromise, policyPromise);
+};
+closeDialog.action = {
+    reads: [],
+    writes: [locks.JS_DIALOG],
+    transfers: [policy.removePointerPolicies],
+    modal: true
+};
 
-    /**
-     * Close all open dialogs.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var closeAllDialogs = function () {
-        return this.dispatchAsync(events.dialog.CLOSE_DIALOG);
-    };
-    closeAllDialogs.action = {
-        reads: [],
-        writes: [locks.JS_DIALOG],
-        modal: true
-    };
+/**
+ * Close all open dialogs.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var closeAllDialogs = function () {
+    return this.dispatchAsync(events.dialog.CLOSE_DIALOG);
+};
+closeAllDialogs.action = {
+    reads: [],
+    writes: [locks.JS_DIALOG],
+    modal: true
+};
 
-    /**
-     * Clears the policy ID map on reset
-     *
-     * @return {Promise}
-     */
-    var onReset = function () {
-        _policyMap = {};
+/**
+ * Clears the policy ID map on reset
+ *
+ * @return {Promise}
+ */
+export var onReset = function () {
+    _policyMap = {};
 
-        return Promise.resolve();
-    };
-    onReset.action = {
-        reads: [],
-        writes: []
-    };
-
-    exports.openDialog = openDialog;
-    exports.closeDialog = closeDialog;
-    exports.closeAllDialogs = closeAllDialogs;
-
-    exports.onReset = onReset;
-});
+    return Promise.resolve();
+};
+onReset.action = {
+    reads: [],
+    writes: []
+};

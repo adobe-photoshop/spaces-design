@@ -21,73 +21,67 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
+import * as _ from "lodash";
 
-    var Promise = require("bluebird"),
-        _ = require("lodash");
+import { os as OS, ps } from "adapter";
 
-    var OS = require("adapter").os,
-        UI = require("adapter").ps.ui;
+import * as events from "js/events";
+import * as policyActions from "js/actions/policy";
+import * as PolicyStore from "js/stores/policy";
+import * as locks from "js/locks";
 
-    var events = require("js/events"),
-        policyActions = require("js/actions/policy"),
-        PolicyStore = require("js/stores/policy"),
-        locks = require("js/locks");
+var UI = ps.ui;
 
-    /** @ignore */
-    var _mouseMoveHandler;
+/** @ignore */
+var _mouseMoveHandler;
 
-    /**
-     * Track mouse movements and set the pointer propagation mode.
-     *
-     * @return {Promise}
-     */
-    var select = function () {
-        _mouseMoveHandler = _.throttle(function (event) {
-            this.dispatch(events.panel.MOUSE_POSITION_CHANGED, {
-                currentMouseX: event.location[0],
-                currentMouseY: event.location[1]
+/**
+ * Track mouse movements and set the pointer propagation mode.
+ *
+ * @return {Promise}
+ */
+export var select = function () {
+    _mouseMoveHandler = _.throttle(function (event) {
+        this.dispatch(events.panel.MOUSE_POSITION_CHANGED, {
+            currentMouseX: event.location[0],
+            currentMouseY: event.location[1]
+        });
+    }.bind(this), 200);
+
+    OS.addListener("externalMouseMove", _mouseMoveHandler);
+
+    return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
+        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_AND_NOTIFY);
+};
+select.action = {
+    reads: [],
+    writes: [],
+    transfers: ["policy.setMode"],
+    modal: true
+};
+
+/**
+ * Stop tracking mouse movements and hide the HUD.
+ *
+ * @return {Promise}
+ */
+export var deselect = function () {
+    OS.removeListener("externalMouseMove", _mouseMoveHandler);
+
+    var mousePositionPromise = this.dispatchAsync(events.panel.MOUSE_POSITION_CHANGED, null),
+        hideHUDPromise = this.dispatchAsync(events.style.HIDE_HUD)
+            .bind(this)
+            .then(function () {
+                return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
+                    UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
             });
-        }.bind(this), 200);
 
-        OS.addListener("externalMouseMove", _mouseMoveHandler);
-
-        return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
-            UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_AND_NOTIFY);
-    };
-    select.action = {
-        reads: [],
-        writes: [],
-        transfers: ["policy.setMode"],
-        modal: true
-    };
-
-    /**
-     * Stop tracking mouse movements and hide the HUD.
-     *
-     * @return {Promise}
-     */
-    var deselect = function () {
-        OS.removeListener("externalMouseMove", _mouseMoveHandler);
-
-        var mousePositionPromise = this.dispatchAsync(events.panel.MOUSE_POSITION_CHANGED, null),
-            hideHUDPromise = this.dispatchAsync(events.style.HIDE_HUD)
-                .bind(this)
-                .then(function () {
-                    return this.transfer(policyActions.setMode, PolicyStore.eventKind.POINTER,
-                        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
-                });
-
-        return Promise.join(mousePositionPromise, hideHUDPromise);
-    };
-    deselect.action = {
-        reads: [],
-        writes: [locks.JS_PANEL],
-        transfers: ["policy.setMode"],
-        modal: true
-    };
-
-    exports.select = select;
-    exports.deselect = deselect;
-});
+    return Promise.join(mousePositionPromise, hideHUDPromise);
+};
+deselect.action = {
+    reads: [],
+    writes: [locks.JS_PANEL],
+    transfers: ["policy.setMode"],
+    modal: true
+};

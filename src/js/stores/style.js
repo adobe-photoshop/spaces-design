@@ -21,155 +21,149 @@
  *
  */
 
-define(function (require, exports, module) {
-    "use strict";
+import * as Fluxxor from "fluxxor";
 
-    var Fluxxor = require("fluxxor");
+import * as events from "../events";
 
-    var events = require("../events");
+/**
+ * Manages a style clipboard and style link maps of active documents
+ */
+export default Fluxxor.createStore({
+    /**
+     * Currently stored style object for copy/pasting
+     * 
+     * @private
+     * @type {object}
+     */
+    _storedStyle: null,
+    
+    /**
+     * Currently stored effects object for copy/pasting
+     * 
+     * @private
+     * @type {LayerEffectsMap}
+     */
+    _storedEffects: null,
 
     /**
-     * Manages a style clipboard and style link maps of active documents
+     * Currently active sample types based on selection / clicked point
+     *
+     * @type {Array.<object>}
      */
-    var StyleStore = Fluxxor.createStore({
-        /**
-         * Currently stored style object for copy/pasting
-         * 
-         * @private
-         * @type {object}
-         */
-        _storedStyle: null,
+    _sampleTypes: null,
+
+    /** 
+     * Binds flux actions.
+     */
+    initialize: function () {
+        this.bindActions(
+            events.RESET, this._handleReset,
+            events.style.COPY_STYLE, this._copyStyle,
+            events.style.COPY_EFFECTS, this._copyEffects,
+            events.style.SHOW_HUD, this._showHUD,
+            events.style.HIDE_HUD, this._hideHUD,
+            events.ui.TRANSFORM_UPDATED, this._hideHUD
+        );
+
+        this._handleReset();
+    },
+
+    /**
+     * Returns the currently copied style object
+     *
+     * @return {object}
+     */
+    getClipboardStyle: function () {
+        return this._storedStyle;
+    },
+    
+    /**
+     * Returns the currently copied effects object
+     *
+     * @return {LayerEffectsMap}
+     */
+    getClipboardEffects: function () {
+        return this._storedEffects;
+    },
+
+    /**
+     * Returns the style types to be shown at the HUD, if any
+     *
+     * @return {?object}
+     */
+    getHUDStyles: function () {
+        return this._sampleTypes;
+    },
+
+    /**
+     * Returns canvas coordinates where sampler was started
+     *
+     * @return {{x: number, y: number}}
+     */
+    getSamplePoint: function () {
+        return this._samplePoint;
+    },
+
+    /**
+     * Reset or initialize the store state
+     *
+     * @private
+     */
+    _handleReset: function () {
+        this._storedStyle = null;
+        this._storedEffects = null;
+        this._sampleTypes = null;
+    },
+
+    /**
+     * Saves the passed in style internally for pasting
+     *
+     * @private
+     * @param {object} payload
+     */
+    _copyStyle: function (payload) {
+        this._storedStyle = payload.style;
+
+        this.emit("change");
+    },
+    
+    /**
+     * Saves the passed in effects internally for pasting
+     *
+     * @private
+     * @param {object} payload
+     */
+    _copyEffects: function (payload) {
+        this._storedEffects = payload.effects;
+
+        this.emit("change");
+    },
+
+    /**
+     * Sets the showable sample types, and emits a change event for 
+     * Sampler overlay to pick up
+     *
+     * @private
+     * @param {object} payload
+     */
+    _showHUD: function (payload) {
+        this._sampleTypes = payload.sampleTypes;
+        this._samplePoint = { x: payload.x, y: payload.y };
         
-        /**
-         * Currently stored effects object for copy/pasting
-         * 
-         * @private
-         * @type {LayerEffectsMap}
-         */
-        _storedEffects: null,
+        this.emit("change");
+    },
 
-        /**
-         * Currently active sample types based on selection / clicked point
-         *
-         * @type {Array.<object>}
-         */
-        _sampleTypes: null,
-
-        /** 
-         * Binds flux actions.
-         */
-        initialize: function () {
-            this.bindActions(
-                events.RESET, this._handleReset,
-                events.style.COPY_STYLE, this._copyStyle,
-                events.style.COPY_EFFECTS, this._copyEffects,
-                events.style.SHOW_HUD, this._showHUD,
-                events.style.HIDE_HUD, this._hideHUD,
-                events.ui.TRANSFORM_UPDATED, this._hideHUD
-            );
-
-            this._handleReset();
-        },
-
-        /**
-         * Returns the currently copied style object
-         *
-         * @return {object}
-         */
-        getClipboardStyle: function () {
-            return this._storedStyle;
-        },
-        
-        /**
-         * Returns the currently copied effects object
-         *
-         * @return {LayerEffectsMap}
-         */
-        getClipboardEffects: function () {
-            return this._storedEffects;
-        },
-
-        /**
-         * Returns the style types to be shown at the HUD, if any
-         *
-         * @return {?object}
-         */
-        getHUDStyles: function () {
-            return this._sampleTypes;
-        },
-
-        /**
-         * Returns canvas coordinates where sampler was started
-         *
-         * @return {{x: number, y: number}}
-         */
-        getSamplePoint: function () {
-            return this._samplePoint;
-        },
-
-        /**
-         * Reset or initialize the store state
-         *
-         * @private
-         */
-        _handleReset: function () {
-            this._storedStyle = null;
-            this._storedEffects = null;
+    /**
+     * Clears the showable sample types, and emits a change event so
+     * Sampler overlay can clear up the HUD
+     * @private
+     */
+    _hideHUD: function () {
+        if (this._sampleTypes) {
             this._sampleTypes = null;
-        },
-
-        /**
-         * Saves the passed in style internally for pasting
-         *
-         * @private
-         * @param {object} payload
-         */
-        _copyStyle: function (payload) {
-            this._storedStyle = payload.style;
+            this._samplePoint = null;
 
             this.emit("change");
-        },
-        
-        /**
-         * Saves the passed in effects internally for pasting
-         *
-         * @private
-         * @param {object} payload
-         */
-        _copyEffects: function (payload) {
-            this._storedEffects = payload.effects;
-
-            this.emit("change");
-        },
-
-        /**
-         * Sets the showable sample types, and emits a change event for 
-         * Sampler overlay to pick up
-         *
-         * @private
-         * @param {object} payload
-         */
-        _showHUD: function (payload) {
-            this._sampleTypes = payload.sampleTypes;
-            this._samplePoint = { x: payload.x, y: payload.y };
-            
-            this.emit("change");
-        },
-
-        /**
-         * Clears the showable sample types, and emits a change event so
-         * Sampler overlay can clear up the HUD
-         * @private
-         */
-        _hideHUD: function () {
-            if (this._sampleTypes) {
-                this._sampleTypes = null;
-                this._samplePoint = null;
-
-                this.emit("change");
-            }
         }
-    });
-
-    module.exports = StyleStore;
+    }
 });

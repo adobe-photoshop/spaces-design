@@ -21,62 +21,58 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
 
-    var Promise = require("bluebird");
+import { lib, ps } from "adapter";
 
-    var descriptor = require("adapter").ps.descriptor,
-        toolLib = require("adapter").lib.tool,
-        UI = require("adapter").ps.ui,
-        vectorMaskLib = require("adapter").lib.vectorMask;
+import * as toolActions from "js/actions/tools";
+import * as locks from "js/locks";
 
-    var toolActions = require("js/actions/tools"),
-        locks = require("js/locks");
+var UI = ps.ui,
+    descriptor = ps.descriptor,
+    toolLib = lib.tool,
+    vectorMaskLib = lib.vectorMask;
 
-    /**
-     * Sets the tool into either path or shape mode and calls the approprate PS actions based on that mode
-     *
-     * @private
-     */
-    var select = function () {
-        var toolStore = this.flux.store("tool"),
-            vectorMode = toolStore.getVectorMode(),
-            toolMode = toolLib.toolModes.SHAPE,
-            firstLaunch = true;
+/**
+ * Sets the tool into either path or shape mode and calls the approprate PS actions based on that mode
+ *
+ * @private
+ */
+export var select = function () {
+    var toolStore = this.flux.store("tool"),
+        vectorMode = toolStore.getVectorMode(),
+        toolMode = toolLib.toolModes.SHAPE,
+        firstLaunch = true;
 
-        if (vectorMode) {
-            toolMode = toolLib.toolModes.PATH;
-        }
+    if (vectorMode) {
+        toolMode = toolLib.toolModes.PATH;
+    }
 
-        var setObj = toolLib.setShapeToolMode(toolMode);
+    var setObj = toolLib.setShapeToolMode(toolMode);
 
-        var setPromise = descriptor.batchPlayObjects([setObj]);
+    var setPromise = descriptor.batchPlayObjects([setObj]);
 
-        if (!vectorMode && firstLaunch) {
-            var defaultPromise = this.transfer(toolActions.installShapeDefaults,
-                "rectangleTool");
+    if (!vectorMode && firstLaunch) {
+        var defaultPromise = this.transfer(toolActions.installShapeDefaults,
+            "rectangleTool");
 
-            firstLaunch = false;
-            return Promise.join(defaultPromise, setPromise);
-        } else if (!vectorMode) {
-            return Promise.join(setPromise);
-        } else {
-            return setPromise
-                .then(function () {
-                    return UI.setSuppressTargetPaths(false);
-                })
-                .then(function () {
-                    return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
-                });
-        }
-    };
-    select.action = {
-        reads: [locks.JS_TOOL],
-        writes: [locks.PS_TOOL, locks.PS_APP],
-        transfers: ["tools.installShapeDefaults"],
-        modal: true
-    };
-
-    exports.select = select;
-});
+        firstLaunch = false;
+        return Promise.join(defaultPromise, setPromise);
+    } else if (!vectorMode) {
+        return Promise.join(setPromise);
+    } else {
+        return setPromise
+            .then(function () {
+                return UI.setSuppressTargetPaths(false);
+            })
+            .then(function () {
+                return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+            });
+    }
+};
+select.action = {
+    reads: [locks.JS_TOOL],
+    writes: [locks.PS_TOOL, locks.PS_APP],
+    transfers: ["tools.installShapeDefaults"],
+    modal: true
+};

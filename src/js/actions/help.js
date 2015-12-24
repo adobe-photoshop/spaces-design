@@ -21,65 +21,56 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
 
-    var Promise = require("bluebird");
+import * as dialog from "./dialog";
+import * as locks from "js/locks";
 
-    var dialog = require("./dialog"),
-        locks = require("js/locks");
+/**
+ * Open the First Launch dialog
+ *
+ * @return {Promise}
+ */
+export var openFirstLaunch = function () {
+    return this.transfer(dialog.openDialog, "first-launch-dialog");
+};
+openFirstLaunch.action = {
+    reads: [],
+    writes: [],
+    transfers: [dialog.openDialog]
+};
 
-    /**
-     * Open the First Launch dialog
-     *
-     * @return {Promise}
-     */
-    var openFirstLaunch = function () {
-        return this.transfer(dialog.openDialog, "first-launch-dialog");
-    };
-    openFirstLaunch.action = {
-        reads: [],
-        writes: [],
-        transfers: [dialog.openDialog]
-    };
+/**
+ * Open the keyboard shortcuts dialog.
+ *
+ * @return {Promise}
+ */
+export var openKeyboardShortcuts = function () {
+    return this.transfer(dialog.openDialog, "keyboard-shortcut-dialog");
+};
+openKeyboardShortcuts.action = {
+    reads: [],
+    writes: [],
+    transfers: [dialog.openDialog]
+};
 
-    /**
-     * Open the keyboard shortcuts dialog.
-     *
-     * @return {Promise}
-     */
-    var openKeyboardShortcuts = function () {
-        return this.transfer(dialog.openDialog, "keyboard-shortcut-dialog");
-    };
-    openKeyboardShortcuts.action = {
-        reads: [],
-        writes: [],
-        transfers: [dialog.openDialog]
-    };
+/**
+ * After startup, display the "first launch" dialog, 
+ * based on "showFirstLaunch" preference
+ * 
+ * @return {Promise}
+ */
+export var afterStartup = function () {
+    var preferences = this.flux.store("preferences").getState();
 
-    /**
-     * After startup, display the "first launch" dialog, 
-     * based on "showFirstLaunch" preference
-     * 
-     * @return {Promise}
-     */
-    var afterStartup = function () {
-        var preferences = this.flux.store("preferences").getState();
-
-        if (preferences.get("showFirstLaunch", true)) {
-            return this.transfer(openFirstLaunch);
-        } else {
-            return Promise.resolve();
-        }
-    };
-    afterStartup.action = {
-        reads: [locks.JS_PREF],
-        writes: [],
-        transfers: [openFirstLaunch]
-    };
-
-    exports.openFirstLaunch = openFirstLaunch;
-    exports.openKeyboardShortcuts = openKeyboardShortcuts;
-
-    exports.afterStartup = afterStartup;
-});
+    if (preferences.get("showFirstLaunch", true)) {
+        return this.transfer(openFirstLaunch);
+    } else {
+        return Promise.resolve();
+    }
+};
+afterStartup.action = {
+    reads: [locks.JS_PREF],
+    writes: [],
+    transfers: [openFirstLaunch]
+};

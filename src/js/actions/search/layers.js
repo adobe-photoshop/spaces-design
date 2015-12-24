@@ -21,235 +21,227 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
+import * as Immutable from "immutable";
 
-    var Promise = require("bluebird"),
-        Immutable = require("immutable");
+import * as events from "js/events";
+import * as locks from "js/locks";
+import * as mathUtil from "js/util/math";
+import * as svgUtil from "js/util/svg";
+import * as Layer from "js/models/layer";
 
-    var events = require("js/events"),
-        locks = require("js/locks"),
-        mathUtil = require("js/util/math"),
-        svgUtil = require("js/util/svg"),
-        Layer = require("js/models/layer");
+/**
+ * Get the layer type and if it is linked or an artboard, as an array of strings.
+ * This is used for comparison against any search filters.
+ *
+ * @private
+ * @param {Layer} layer
+ * @param {string} type
+ * @return {Array.<string>}
+*/
+var _getLayerCategory = function (layer, type) {
+    var layerType = [type + "_LAYER"];
+
+    if (layer.isGroup && layer.isArtboard) {
+        layerType.push("ARTBOARD");
+    } else {
+        layerType.push(layer.kind);
+    }
+
+    if (layer.isLinked) {
+        layerType.push("LINKED");
+    }
+
+    return layerType;
+};
+
+/**
+ * Get the layer ancestry
+ *
+ * @private
+ * @param {Layer} layer
+ * @return {string}
+*/
+var _formatLayerAncestry = function (layer, appStore) {
+    var layerTree = appStore.getCurrentDocument().layers,
+        ancestors = layerTree.strictAncestors(layer),
+        ancestorNames = ancestors.isEmpty() ? "" : ancestors.first().name;
+        
+    return ancestors.skip(1).reduce(function (ancestors, ancestor) {
+        return ancestorNames += ("/" + ancestor.name);
+    }, ancestorNames);
+};
+
+/**
+ * Get the layer options from the specified document
+ *
+ * @private
+ * @param {Document} document
+ * @param {string} type Type of layer search, for finding correct layer category
+ * @return {Immutable.List.<object>}
+*/
+var _getLayerOptionsFromDoc = function (document, type) {
+    var appStore = this.flux.store("application"),
+        currentID = appStore.getCurrentDocumentID(),
+        layers = document.layers.allVisibleReversed,
+        layerItems = [];
     
-    /**
-     * Get the layer type and if it is linked or an artboard, as an array of strings.
-     * This is used for comparison against any search filters.
-     *
-     * @private
-     * @param {Layer} layer
-     * @param {string} type
-     * @return {Array.<string>}
-    */
-    var _getLayerCategory = function (layer, type) {
-        var layerType = [type + "_LAYER"];
+    layers.forEach(function (layer) {
+        var ancestry,
+            layerType = _getLayerCategory(layer, type),
+            iconID = svgUtil.getSVGClassFromLayer(layer);
 
-        if (layer.isGroup && layer.isArtboard) {
-            layerType.push("ARTBOARD");
+        // Layers from current, active document should display layer ancestry
+        // Layers from other open documents should display document name
+        if (document.id === currentID) {
+            ancestry = _formatLayerAncestry(layer, appStore);
         } else {
-            layerType.push(layer.kind);
+            ancestry = document.name;
         }
 
-        if (layer.isLinked) {
-            layerType.push("LINKED");
-        }
-
-        return layerType;
-    };
-
-    /**
-     * Get the layer ancestry
-     *
-     * @private
-     * @param {Layer} layer
-     * @return {string}
-    */
-    var _formatLayerAncestry = function (layer, appStore) {
-        var layerTree = appStore.getCurrentDocument().layers,
-            ancestors = layerTree.strictAncestors(layer),
-            ancestorNames = ancestors.isEmpty() ? "" : ancestors.first().name;
-            
-        return ancestors.skip(1).reduce(function (ancestors, ancestor) {
-            return ancestorNames += ("/" + ancestor.name);
-        }, ancestorNames);
-    };
-
-    /**
-     * Get the layer options from the specified document
-     *
-     * @private
-     * @param {Document} document
-     * @param {string} type Type of layer search, for finding correct layer category
-     * @return {Immutable.List.<object>}
-    */
-    var _getLayerOptionsFromDoc = function (document, type) {
-        var appStore = this.flux.store("application"),
-            currentID = appStore.getCurrentDocumentID(),
-            layers = document.layers.allVisibleReversed,
-            layerItems = [];
-        
-        layers.forEach(function (layer) {
-            var ancestry,
-                layerType = _getLayerCategory(layer, type),
-                iconID = svgUtil.getSVGClassFromLayer(layer);
-
-            // Layers from current, active document should display layer ancestry
-            // Layers from other open documents should display document name
-            if (document.id === currentID) {
-                ancestry = _formatLayerAncestry(layer, appStore);
-            } else {
-                ancestry = document.name;
-            }
-
-            layerItems.push({
-                id: document.id.toString() + "_" + layer.id.toString(),
-                name: layer.name,
-                pathInfo: ancestry,
-                iconID: iconID,
-                category: layerType
-            });
+        layerItems.push({
+            id: document.id.toString() + "_" + layer.id.toString(),
+            name: layer.name,
+            pathInfo: ancestry,
+            iconID: iconID,
+            category: layerType
         });
-        return layerItems;
-    };
+    });
+    return layerItems;
+};
 
-    /**
-     * Make list of certain layer info from current document only so search store can create search options
-     *
-     * @private
-     * @return {Immutable.List.<object>}
-    */
-    var _getLayerSearchOptions = function () {
-        // Get list of layers
-        var appStore = this.flux.store("application"),
-            document = appStore.getCurrentDocument();
+/**
+ * Make list of certain layer info from current document only so search store can create search options
+ *
+ * @private
+ * @return {Immutable.List.<object>}
+*/
+var _getLayerSearchOptions = function () {
+    // Get list of layers
+    var appStore = this.flux.store("application"),
+        document = appStore.getCurrentDocument();
 
-        return _getLayerOptionsFromDoc.call(this, document, "CURRENT");
-    };
+    return _getLayerOptionsFromDoc.call(this, document, "CURRENT");
+};
 
-    /**
-     * Make list of certain layer info from all documents so search store can create search options
-     *
-     * @private
-     * @return {Immutable.List.<object>}
-    */
-    var _getAllLayerSearchOptions = function () {
-        // Get list of layers
-        var appStore = this.flux.store("application"),
-            currDoc = appStore.getCurrentDocument(),
-            allLayerMaps = [];
+/**
+ * Make list of certain layer info from all documents so search store can create search options
+ *
+ * @private
+ * @return {Immutable.List.<object>}
+*/
+var _getAllLayerSearchOptions = function () {
+    // Get list of layers
+    var appStore = this.flux.store("application"),
+        currDoc = appStore.getCurrentDocument(),
+        allLayerMaps = [];
 
-        if (currDoc) {
-            var documents = appStore.getOpenDocuments();
-            // add layers from current document first, then skip it in the loop
-            allLayerMaps = allLayerMaps.concat(_getLayerOptionsFromDoc.call(this, currDoc, "ALL"));
+    if (currDoc) {
+        var documents = appStore.getOpenDocuments();
+        // add layers from current document first, then skip it in the loop
+        allLayerMaps = allLayerMaps.concat(_getLayerOptionsFromDoc.call(this, currDoc, "ALL"));
 
-            documents.forEach(function (document) {
-                if (document !== currDoc) {
-                    var layerMap = _getLayerOptionsFromDoc.call(this, document, "ALL");
-                    allLayerMaps = allLayerMaps.concat(layerMap);
-                }
-            }.bind(this));
-        }
-        return Immutable.List(allLayerMaps);
-    };
+        documents.forEach(function (document) {
+            if (document !== currDoc) {
+                var layerMap = _getLayerOptionsFromDoc.call(this, document, "ALL");
+                allLayerMaps = allLayerMaps.concat(layerMap);
+            }
+        }.bind(this));
+    }
+    return Immutable.List(allLayerMaps);
+};
 
-    /**
-     * Select layer when its item is confirmed in search
-     *
-     * @private
-     * @param {string} id ID of layer to select
-    */
-    var _confirmSearch = function (id) {
-        var appStore = this.flux.store("application"),
-            docStore = this.flux.store("document"),
-            splitID = id.split("_"),
-            docID = mathUtil.parseNumber(splitID[0]),
-            layerID = mathUtil.parseNumber(splitID[1]),
-            document = docStore.getDocument(docID),
-            selected = document.layers.byID(layerID);
+/**
+ * Select layer when its item is confirmed in search
+ *
+ * @private
+ * @param {string} id ID of layer to select
+*/
+var _confirmSearch = function (id) {
+    var appStore = this.flux.store("application"),
+        docStore = this.flux.store("document"),
+        splitID = id.split("_"),
+        docID = mathUtil.parseNumber(splitID[0]),
+        layerID = mathUtil.parseNumber(splitID[1]),
+        document = docStore.getDocument(docID),
+        selected = document.layers.byID(layerID);
 
-        if (selected) {
-            var currentDoc = appStore.getCurrentDocument(),
-                selectPromise = document.equals(currentDoc) ?
-                    Promise.resolve() :
-                    this.flux.actions.documents.selectDocument(document);
+    if (selected) {
+        var currentDoc = appStore.getCurrentDocument(),
+            selectPromise = document.equals(currentDoc) ?
+                Promise.resolve() :
+                this.flux.actions.documents.selectDocument(document);
 
-            selectPromise
-                .bind(this)
-                .then(function () {
-                    this.flux.actions.layers.select(document, selected);
-                });
-        }
-    };
+        selectPromise
+            .bind(this)
+            .then(function () {
+                this.flux.actions.layers.select(document, selected);
+            });
+    }
+};
 
-    /**
-     * Register layer info to search.
-     * FIXME: This should be a private action.
-     *
-     * @param {boolean} searchAllDocuments Whether to search all documents or not (just the current one)
-     * @return {Promise}
-     */
-    var registerLayerSearch = function (searchAllDocuments) {
-        var type = searchAllDocuments ? "ALL" : "CURRENT",
-            filters = Immutable.List.of(
-                (type + "_LAYER"),
-                "ARTBOARD",
-                Layer.KINDS.PIXEL,
-                Layer.KINDS.TEXT,
-                Layer.KINDS.ADJUSTMENT,
-                Layer.KINDS.SMARTOBJECT,
-                Layer.KINDS.GROUP,
-                Layer.KINDS.VECTOR
-            ),
-            options = searchAllDocuments ? _getAllLayerSearchOptions.bind(this) : _getLayerSearchOptions.bind(this);
+/**
+ * Register layer info to search.
+ * FIXME: This should be a private action.
+ *
+ * @param {boolean} searchAllDocuments Whether to search all documents or not (just the current one)
+ * @return {Promise}
+ */
+export var registerLayerSearch = function (searchAllDocuments) {
+    var type = searchAllDocuments ? "ALL" : "CURRENT",
+        filters = Immutable.List.of(
+            (type + "_LAYER"),
+            "ARTBOARD",
+            Layer.KINDS.PIXEL,
+            Layer.KINDS.TEXT,
+            Layer.KINDS.ADJUSTMENT,
+            Layer.KINDS.SMARTOBJECT,
+            Layer.KINDS.GROUP,
+            Layer.KINDS.VECTOR
+        ),
+        options = searchAllDocuments ? _getAllLayerSearchOptions.bind(this) : _getLayerSearchOptions.bind(this);
 
-        var payload = {
-            "type": type + "_LAYER",
-            "getOptions": options,
-            "filters": filters,
-            "handleExecute": _confirmSearch.bind(this),
-            "shortenPaths": false,
-            "haveDocument": true,
-            "getSVGClass": svgUtil.getSVGClassFromLayerCategories
-        };
-        
-        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, payload);
-    };
-    registerLayerSearch.action = {
-        reads: [],
-        writes: [locks.JS_SEARCH]
-    };
-
-    /**
-     * Register layer info to search for layers in all current documents
-     *
-     * @return {Promise}
-     */
-    var registerAllLayerSearch = function () {
-        return this.transfer(registerLayerSearch, true);
-    };
-    registerAllLayerSearch.action = {
-        reads: [],
-        writes: [],
-        transfers: [registerLayerSearch]
+    var payload = {
+        "type": type + "_LAYER",
+        "getOptions": options,
+        "filters": filters,
+        "handleExecute": _confirmSearch.bind(this),
+        "shortenPaths": false,
+        "haveDocument": true,
+        "getSVGClass": svgUtil.getSVGClassFromLayerCategories
     };
     
-    /**
-     * Register layer info to search for layers just in current document
-     *
-     * @return {Promise}
-     */
-    var registerCurrentLayerSearch = function () {
-        return this.transfer(registerLayerSearch, false);
-    };
-    registerCurrentLayerSearch.action = {
-        reads: [],
-        writes: [],
-        transfers: [registerLayerSearch]
-    };
+    return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, payload);
+};
+registerLayerSearch.action = {
+    reads: [],
+    writes: [locks.JS_SEARCH]
+};
 
-    exports.registerLayerSearch = registerLayerSearch;
-    exports.registerCurrentLayerSearch = registerCurrentLayerSearch;
-    exports.registerAllLayerSearch = registerAllLayerSearch;
-});
+/**
+ * Register layer info to search for layers in all current documents
+ *
+ * @return {Promise}
+ */
+export var registerAllLayerSearch = function () {
+    return this.transfer(registerLayerSearch, true);
+};
+registerAllLayerSearch.action = {
+    reads: [],
+    writes: [],
+    transfers: [registerLayerSearch]
+};
+
+/**
+ * Register layer info to search for layers just in current document
+ *
+ * @return {Promise}
+ */
+export var registerCurrentLayerSearch = function () {
+    return this.transfer(registerLayerSearch, false);
+};
+registerCurrentLayerSearch.action = {
+    reads: [],
+    writes: [],
+    transfers: [registerLayerSearch]
+};

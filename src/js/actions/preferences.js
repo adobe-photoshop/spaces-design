@@ -21,81 +21,72 @@
  *
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as events from "../events";
+import * as locks from "js/locks";
 
-    var events = require("../events"),
-        locks = require("js/locks");
+/**
+ * Set a single preference.
+ *
+ * @param {string} key
+ * @param {*} value Must be JSON.stringifyable
+ * @return {Promise}
+ */
+export var setPreference = function (key, value) {
+    return this.dispatchAsync(events.preferences.SET_PREFERENCE, {
+        key: key,
+        value: value
+    });
+};
+setPreference.action = {
+    reads: [],
+    writes: [locks.JS_PREF],
+    modal: true
+};
 
-    /**
-     * Set a single preference.
-     *
-     * @param {string} key
-     * @param {*} value Must be JSON.stringifyable
-     * @return {Promise}
-     */
-    var setPreference = function (key, value) {
-        return this.dispatchAsync(events.preferences.SET_PREFERENCE, {
-            key: key,
-            value: value
-        });
-    };
-    setPreference.action = {
-        reads: [],
-        writes: [locks.JS_PREF],
-        modal: true
-    };
+/**
+ * Bulk set preferences.
+ *
+ * @param {Object.<string, *>} prefs Values must be JSON.stringifyable
+ * @return {Promise}
+ */
+export var setPreferences = function (prefs) {
+    return this.dispatchAsync(events.preferences.SET_PREFERENCES, {
+        prefs: prefs
+    });
+};
+setPreferences.action = {
+    reads: [],
+    writes: [locks.JS_PREF],
+    modal: true
+};
 
-    /**
-     * Bulk set preferences.
-     *
-     * @param {Object.<string, *>} prefs Values must be JSON.stringifyable
-     * @return {Promise}
-     */
-    var setPreferences = function (prefs) {
-        return this.dispatchAsync(events.preferences.SET_PREFERENCES, {
-            prefs: prefs
-        });
-    };
-    setPreferences.action = {
-        reads: [],
-        writes: [locks.JS_PREF],
-        modal: true
-    };
+/**
+ * Delete a single preference.
+ *
+ * @param {string} key
+ * @return {Promise}
+ */
+export var deletePreference = function (key) {
+    return this.dispatchAsync(events.preferences.DELETE_PREFERENCE, {
+        key: key
+    });
+};
+deletePreference.action = {
+    reads: [],
+    writes: [locks.JS_PREF],
+    modal: true
+};
 
-    /**
-     * Delete a single preference.
-     *
-     * @param {string} key
-     * @return {Promise}
-     */
-    var deletePreference = function (key) {
-        return this.dispatchAsync(events.preferences.DELETE_PREFERENCE, {
-            key: key
-        });
-    };
-    deletePreference.action = {
-        reads: [],
-        writes: [locks.JS_PREF],
-        modal: true
-    };
-
-    /**
-     * Clear all preferences.
-     *
-     * @return {Promise}
-     */
-    var clearPreferences = function () {
-        return this.dispatchAsync(events.preferences.CLEAR_PREFERENCES);
-    };
-    clearPreferences.action = {
-        reads: [],
-        writes: [locks.JS_PREF],
-        modal: true
-    };
-
-    exports.setPreference = setPreference;
-    exports.setPreferences = setPreferences;
-    exports.deletePreference = deletePreference;
-    exports.clearPreferences = clearPreferences;
-});
+/**
+ * Clear all preferences.
+ *
+ * @return {Promise}
+ */
+export var clearPreferences = function () {
+    return this.dispatchAsync(events.preferences.CLEAR_PREFERENCES);
+};
+clearPreferences.action = {
+    reads: [],
+    writes: [locks.JS_PREF],
+    modal: true
+};

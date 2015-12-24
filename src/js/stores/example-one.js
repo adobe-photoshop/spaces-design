@@ -21,58 +21,52 @@
  * 
  */
 
-define(function (require, exports, module) {
-    "use strict";
+import * as Fluxxor from "fluxxor";
+import * as events from "../events";
 
-    var Fluxxor = require("fluxxor"),
-        events = require("../events");
+export default Fluxxor.createStore({
+    initialize: function () {
+        this.bindActions(
+            events.example.ASYNC_ACTION_START, this.start,
+            events.example.ASYNC_ACTION_SUCCESS, this.success,
+            events.example.ASYNC_ACTION_FAIL, this.fail,
+            events.example.SYNC_ACTION, this.setCounter
+        );
+    },
 
-    var ExampleStoreOne = Fluxxor.createStore({
-        initialize: function () {
-            this.bindActions(
-                events.example.ASYNC_ACTION_START, this.start,
-                events.example.ASYNC_ACTION_SUCCESS, this.success,
-                events.example.ASYNC_ACTION_FAIL, this.fail,
-                events.example.SYNC_ACTION, this.setCounter
-            );
-        },
+    getState: function () {
+        return {
+            time: this.elapsedTime
+        };
+    },
+    
+    /** @ignore */
+    start: function () {
+        this.elapsedTime = null;
+        this.startTime = new Date().getTime();
+    },
+    
+    /** @ignore */
+    success: function () {
+        var stopTime = new Date().getTime();
 
-        getState: function () {
-            return {
-                time: this.elapsedTime
-            };
-        },
-        
-        /** @ignore */
-        start: function () {
-            this.elapsedTime = null;
-            this.startTime = new Date().getTime();
-        },
-        
-        /** @ignore */
-        success: function () {
-            var stopTime = new Date().getTime();
-
-            this.elapsedTime = stopTime - this.startTime;
-            this.startTime = null;
-            this.emit("change");
-        },
-        
-        /** @ignore */
-        fail: function () {
-            this.elapsedTime = null;
-            this.startTime = null;
-            this.emit("change");
-        },
-        startTime: null,
-        elapsedTime: null,
-        
-        /** @ignore */
-        setCounter: function (payload) {
-            var counter = payload.count;
-            this.counter = counter;
-        }
-    });
-
-    module.exports = ExampleStoreOne;
+        this.elapsedTime = stopTime - this.startTime;
+        this.startTime = null;
+        this.emit("change");
+    },
+    
+    /** @ignore */
+    fail: function () {
+        this.elapsedTime = null;
+        this.startTime = null;
+        this.emit("change");
+    },
+    startTime: null,
+    elapsedTime: null,
+    
+    /** @ignore */
+    setCounter: function (payload) {
+        var counter = payload.count;
+        this.counter = counter;
+    }
 });

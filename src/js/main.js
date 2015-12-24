@@ -21,165 +21,163 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import * as ReactPerf from "react-addons-perf";
+import Promise from "bluebird";
+import * as adapter from "adapter";
 
-    var React = require("react"),
-        ReactDOM = require("react-dom"),
-        ReactPerf = require("react-addons-perf"),
-        Promise = require("bluebird"),
-        adapter = require("adapter");
+import * as MainCl from "js/jsx/Main";
+import FluxController from "./fluxcontroller";
+import * as log from "js/util/log";
+import * as performanceUtil from "js/util/performance";
+import * as nls from "js/util/nls";
+import * as global from "js/util/global";
 
-    var MainCl = require("js/jsx/Main"),
-        FluxController = require("./fluxcontroller"),
-        log = require("js/util/log"),
-        performanceUtil = require("js/util/performance"),
-        nls = require("js/util/nls"),
-        global = require("js/util/global");
+/**
+ * The application controller. Holds the internal Fluxxor.Flux instance.
+ *
+ * @private
+ * @type {?FluxController}
+ */
+var _controller;
 
-    /**
-     * The application controller. Holds the internal Fluxxor.Flux instance.
-     *
-     * @private
-     * @type {?FluxController}
-     */
-    var _controller;
+/**
+ * @private
+ * @type {function}
+ */
+var _handleControllerError;
 
-    /**
-     * Handle error events from the FluxController instance. These errors are
-     * fatal, so they're handled by aborting and returning to Classic.
-     *
-     * @private
-     * @param {{cause: Error}} event
-     */
-    var _handleControllerError = function (event) {
-        var err = event.cause,
-            message = err instanceof Error ? (err.stack || err.message) : err;
+/**
+ * Shut down the application.
+ */
+export var shutdown = function () {
+    _controller.off("error", _handleControllerError);
+    _controller.stop();
+};
 
-        log.error("Unrecoverable error:", message);
+/**
+ * Handle error events from the FluxController instance. These errors are
+ * fatal, so they're handled by aborting and returning to Classic.
+ *
+ * @private
+ * @param {{cause: Error}} event
+ */
+_handleControllerError = function (event) {
+    var err = event.cause,
+        message = err instanceof Error ? (err.stack || err.message) : err;
 
-        if (global.debug) {
-            shutdown();
-        } else {
-            var dialogMessage = nls.localize("strings.ERR.UNRECOVERABLE");
-            adapter.abort({ message: dialogMessage }, function (err) {
-                var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                log.error("Abort failed:", message);
-            });
-        }
-    };
-
-    /**
-     * Format a version object a string.
-     *
-     * @private
-     * @param {{major: number=, minor: number=, patch: number=}} version
-     * @return {string}
-     */
-    var _formatVersion = function (version) {
-        return [version.major, version.minor, version.patch].join(".");
-    };
-
-    /**
-     * Start up the application.
-     *
-     * @param {string} stop The initial UI color stop.
-     */
-    var startup = function (stop) {
-        var startTime = Date.now(),
-            version = adapter.version;
-
-        log.info("Spaces plugin version: %d.%d.%d",
-            version.major, version.minor, version.patch);
-
-        // Assert plugin compatibility
-        if (!adapter.isPluginCompatible()) {
-            var message = "Plugin version " + _formatVersion(adapter.version) +
-                " is incompatible with the required version, " +
-                 _formatVersion(adapter.compatiblePluginVersion);
-
-            if (global.debug) {
-                log.error(message);
-            } else {
-                throw new Error(message);
-            }
-        }
-
-        var Main = React.createFactory(MainCl);
-
-        _controller = new FluxController();
-        _controller.on("error", _handleControllerError);
-
-        var props = {
-            controller: _controller,
-            flux: _controller.flux,
-            initialColorStop: stop
-        };
-        
-        if (__PG_DEBUG__) {
-            // Expose these for snippet usage, only available in debug builds
-            window.__PS_ADAPTER__ = adapter;
-            window.__FLUX_CONTROLLER__ = _controller;
-            window.__LOG_UTIL__ = log;
-            window.__PERF_UTIL = performanceUtil;
-        }
-
-        var startupPromises = _controller.start()
-            .then(function () {
-                log.debug("Actions loaded: %dms", Date.now() - startTime);
-            });
-
-        var renderPromise = new Promise(function (resolve) {
-            ReactDOM.render(new Main(props), window.document.querySelector(".app"), function () {
-                log.debug("Main component mounted: %dms", Date.now() - startTime);
-                resolve();
-            });
-        });
-
-        Promise.join(renderPromise, startupPromises, function () {
-            log.info("Startup complete: %dms", Date.now() - startTime);
-        });
-    };
-
-    /**
-     * Shut down the application.
-     */
-    var shutdown = function () {
-        _controller.off("error", _handleControllerError);
-        _controller.stop();
-    };
-
-    /**
-     * Get a reference to the FluxController instance.
-     *
-     * @return {FluxController}
-     */
-    var getController = function () {
-        return _controller;
-    };
-
-    // TODO: Currently it is VERY hard to pinpoint the origin of Bluebird
-    // warnings. When that improves, we should enable this and then fix the
-    // sources of the warnings.
-    Promise.config({
-        warnings: false,
-        cancellation: true
-    });
+    log.error("Unrecoverable error:", message);
 
     if (global.debug) {
-        Promise.longStackTraces();
-        Promise.onPossiblyUnhandledRejection(function (err) {
-            throw err;
+        shutdown();
+    } else {
+        var dialogMessage = nls.localize("strings.ERR.UNRECOVERABLE");
+        adapter.abort({ message: dialogMessage }, function (err) {
+            var message = err instanceof Error ? (err.stack || err.message) : err;
+
+            log.error("Abort failed:", message);
         });
+    }
+};
 
-        ReactPerf.start();
+/**
+ * Format a version object a string.
+ *
+ * @private
+ * @param {{major: number=, minor: number=, patch: number=}} version
+ * @return {string}
+ */
+var _formatVersion = function (version) {
+    return [version.major, version.minor, version.patch].join(".");
+};
 
-        /* global _spaces */
-        _spaces._debug.enableDebugContextMenu(true, function () {});
+/**
+ * Start up the application.
+ *
+ * @param {string} stop The initial UI color stop.
+ */
+export var startup = function (stop) {
+    var startTime = Date.now(),
+        version = adapter.version;
+
+    log.info("Spaces plugin version: %d.%d.%d",
+        version.major, version.minor, version.patch);
+
+    // Assert plugin compatibility
+    if (!adapter.isPluginCompatible()) {
+        var message = "Plugin version " + _formatVersion(adapter.version) +
+            " is incompatible with the required version, " +
+             _formatVersion(adapter.compatiblePluginVersion);
+
+        if (global.debug) {
+            log.error(message);
+        } else {
+            throw new Error(message);
+        }
     }
 
-    exports.startup = startup;
-    exports.shutdown = shutdown;
-    exports.getController = getController;
+    var Main = React.createFactory(MainCl);
+
+    _controller = new FluxController();
+    _controller.on("error", _handleControllerError);
+
+    var props = {
+        controller: _controller,
+        flux: _controller.flux,
+        initialColorStop: stop
+    };
+    
+    if (__PG_DEBUG__) {
+        // Expose these for snippet usage, only available in debug builds
+        window.__PS_ADAPTER__ = adapter;
+        window.__FLUX_CONTROLLER__ = _controller;
+        window.__LOG_UTIL__ = log;
+        window.__PERF_UTIL = performanceUtil;
+    }
+
+    var startupPromises = _controller.start()
+        .then(function () {
+            log.debug("Actions loaded: %dms", Date.now() - startTime);
+        });
+
+    var renderPromise = new Promise(function (resolve) {
+        ReactDOM.render(new Main(props), window.document.querySelector(".app"), function () {
+            log.debug("Main component mounted: %dms", Date.now() - startTime);
+            resolve();
+        });
+    });
+
+    Promise.join(renderPromise, startupPromises, function () {
+        log.info("Startup complete: %dms", Date.now() - startTime);
+    });
+};
+
+/**
+ * Get a reference to the FluxController instance.
+ *
+ * @return {FluxController}
+ */
+export var getController = function () {
+    return _controller;
+};
+
+// TODO: Currently it is VERY hard to pinpoint the origin of Bluebird
+// warnings. When that improves, we should enable this and then fix the
+// sources of the warnings.
+Promise.config({
+    warnings: false,
+    cancellation: true
 });
+
+if (global.debug) {
+    Promise.longStackTraces();
+    Promise.onPossiblyUnhandledRejection(function (err) {
+        throw err;
+    });
+
+    ReactPerf.start();
+
+    /* global _spaces */
+    _spaces._debug.enableDebugContextMenu(true, function () {});
+}

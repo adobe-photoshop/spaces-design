@@ -21,149 +21,143 @@
  * 
  */
 
-define(function (require, exports, module) {
-    "use strict";
+import * as Fluxxor from "fluxxor";
 
-    var Fluxxor = require("fluxxor");
+import * as events from "js/events";
+import * as keyUtil from "js/util/key";
 
-    var events = require("js/events"),
-        keyUtil = require("js/util/key");
+/**
+ * 
+ * @constructor
+ */
+export default Fluxxor.createStore({
+    /**
+     * @private
+     * @type {Array.<object>}
+     */
+    _shortcuts: null,
+
+    initialize: function () {
+        this.bindActions(
+            events.RESET, this._handleReset,
+            events.shortcut.ADD_SHORTCUT, this._handleAddShortcut,
+            events.shortcut.ADD_SHORTCUTS, this._handleAddShortcuts,
+            events.shortcut.REMOVE_SHORTCUT, this._handleRemoveShortcut
+        );
+
+        this._handleReset();
+    },
 
     /**
-     * 
-     * @constructor
+     * Reset or initialize store state.
+     *
+     * @private
      */
-    var ShortcutStore = Fluxxor.createStore({
-        /**
-         * @private
-         * @type {Array.<object>}
-         */
-        _shortcuts: null,
+    _handleReset: function () {
+        this._shortcuts = [];
+    },
 
-        initialize: function () {
-            this.bindActions(
-                events.RESET, this._handleReset,
-                events.shortcut.ADD_SHORTCUT, this._handleAddShortcut,
-                events.shortcut.ADD_SHORTCUTS, this._handleAddShortcuts,
-                events.shortcut.REMOVE_SHORTCUT, this._handleRemoveShortcut
-            );
-
-            this._handleReset();
-        },
-
-        /**
-         * Reset or initialize store state.
-         *
-         * @private
-         */
-        _handleReset: function () {
-            this._shortcuts = [];
-        },
-
-        /**
-         * Handler for the ADD_SHORTCUT event.
-         * 
-         * @private
-         * @param {Shortcut} payload Where the Shortcut object has the following type:
-         *  { id: string,
-         *    key: number|string,
-         *    modifiers: object,
-         *    fn: function,
-         *    capture: boolean,
-         *    policy: number }
-         */
-        _handleAddShortcut: function (payload) {
-            if (!payload.id) {
-                payload.id = window.Symbol();
-            }
-
-            this._shortcuts.push(payload);
-        },
-
-        /**
-         * Handler for the ADD_SHORTCUTS event.
-         * 
-         * @private
-         * @param {{specs: Array.<Shortcut>}} payload 
-         */
-        _handleAddShortcuts: function (payload) {
-            payload.specs.forEach(this._handleAddShortcut, this);
-        },
-
-        /**
-         * Handler for the REMOVE_SHORTCUT event.
-         * 
-         * @private
-         * @param {{id: string}} payload
-         */
-        _handleRemoveShortcut: function (payload) {
-            var id = payload.id,
-                found = -1;
-
-            this._shortcuts.some(function (shortcut, index) {
-                if (shortcut.id === id) {
-                    found = index;
-                    return true;
-                }
-            });
-
-            if (found < 0) {
-                throw new Error("Failed to remove shortcut: unknown ID " + id);
-            }
-
-            this._shortcuts.splice(found, 1);
-        },
-
-        /**
-         * Find a matching keyboard shortcut command for the given KeyboardEvent.
-         * 
-         * @param {ExternalKeyEvent} event
-         * @param {boolean} capture Whether to match bubble or capture phase shortcuts
-         * @return {Array.<function>} Matching keyboard shortcut commands
-         */
-        matchShortcuts: function (event, capture) {
-            var keyCode = event.keyCode,
-                keyChar = event.keyChar;
-
-            return this._shortcuts.reduce(function (handlers, shortcut) {
-                if ((shortcut.key !== keyCode && shortcut.key !== keyChar) ||
-                    shortcut.capture !== capture) {
-                    return handlers;
-                }
-
-                var shortcutModifierBits = keyUtil.modifiersToBits(shortcut.modifiers);
-                if (event.modifierBits !== shortcutModifierBits) {
-                    return handlers;
-                }
-
-                handlers.push(shortcut.fn);
-                return handlers;
-            }, []);
-        },
-
-        /**
-         * Get a shortcut by a ID.
-         *
-         * @param {string} id
-         * @return {?Shortcut}
-         */
-        getByID: function (id) {
-            var found;
-            this._shortcuts.some(function (shortcut) {
-                if (shortcut.id === id) {
-                    found = shortcut;
-                    return true;
-                }
-            });
-            return found;
-        },
-
-        getState: function () {
-            return {
-                shortcuts: this._shortcuts
-            };
+    /**
+     * Handler for the ADD_SHORTCUT event.
+     * 
+     * @private
+     * @param {Shortcut} payload Where the Shortcut object has the following type:
+     *  { id: string,
+     *    key: number|string,
+     *    modifiers: object,
+     *    fn: function,
+     *    capture: boolean,
+     *    policy: number }
+     */
+    _handleAddShortcut: function (payload) {
+        if (!payload.id) {
+            payload.id = window.Symbol();
         }
-    });
 
-    module.exports = ShortcutStore;
+        this._shortcuts.push(payload);
+    },
+
+    /**
+     * Handler for the ADD_SHORTCUTS event.
+     * 
+     * @private
+     * @param {{specs: Array.<Shortcut>}} payload 
+     */
+    _handleAddShortcuts: function (payload) {
+        payload.specs.forEach(this._handleAddShortcut, this);
+    },
+
+    /**
+     * Handler for the REMOVE_SHORTCUT event.
+     * 
+     * @private
+     * @param {{id: string}} payload
+     */
+    _handleRemoveShortcut: function (payload) {
+        var id = payload.id,
+            found = -1;
+
+        this._shortcuts.some(function (shortcut, index) {
+            if (shortcut.id === id) {
+                found = index;
+                return true;
+            }
+        });
+
+        if (found < 0) {
+            throw new Error("Failed to remove shortcut: unknown ID " + id);
+        }
+
+        this._shortcuts.splice(found, 1);
+    },
+
+    /**
+     * Find a matching keyboard shortcut command for the given KeyboardEvent.
+     * 
+     * @param {ExternalKeyEvent} event
+     * @param {boolean} capture Whether to match bubble or capture phase shortcuts
+     * @return {Array.<function>} Matching keyboard shortcut commands
+     */
+    matchShortcuts: function (event, capture) {
+        var keyCode = event.keyCode,
+            keyChar = event.keyChar;
+
+        return this._shortcuts.reduce(function (handlers, shortcut) {
+            if ((shortcut.key !== keyCode && shortcut.key !== keyChar) ||
+                shortcut.capture !== capture) {
+                return handlers;
+            }
+
+            var shortcutModifierBits = keyUtil.modifiersToBits(shortcut.modifiers);
+            if (event.modifierBits !== shortcutModifierBits) {
+                return handlers;
+            }
+
+            handlers.push(shortcut.fn);
+            return handlers;
+        }, []);
+    },
+
+    /**
+     * Get a shortcut by a ID.
+     *
+     * @param {string} id
+     * @return {?Shortcut}
+     */
+    getByID: function (id) {
+        var found;
+        this._shortcuts.some(function (shortcut) {
+            if (shortcut.id === id) {
+                found = shortcut;
+                return true;
+            }
+        });
+        return found;
+    },
+
+    getState: function () {
+        return {
+            shortcuts: this._shortcuts
+        };
+    }
 });

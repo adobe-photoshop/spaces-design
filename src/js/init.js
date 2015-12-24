@@ -21,25 +21,21 @@
  * 
  */
 
-define(function (require) {
-    "use strict";
+import Promise from "bluebird";
 
-    var Promise = require("bluebird");
+import * as ui from "./util/ui";
+import * as main from "./main";
 
-    var ui = require("./util/ui"),
-        main = require("./main");
-
-    var stylesReady = ui.getPSColorStop(),
-        windowReady = new Promise(function (resolve) {
-            if (window.document.readyState === "complete") {
-                resolve();
-            } else {
-                window.addEventListener("load", resolve);
-            }
-        });
-
-    Promise.join(stylesReady, windowReady, function (stop) {
-        main.startup(stop);
-        window.addEventListener("beforeunload", main.shutdown.bind(main));
+var stylesReady = ui.getPSColorStop(),
+    windowReady = new Promise(function (resolve) {
+        if (window.document.readyState === "complete") {
+            resolve();
+        } else {
+            window.addEventListener("load", resolve);
+        }
     });
+
+Promise.join(stylesReady, windowReady, function (stop) {
+    main.startup(stop);
+    window.addEventListener("beforeunload", main.shutdown.bind(main));
 });

@@ -21,66 +21,60 @@
  * 
  */
 
-define(function (require, exports, module) {
-    "use strict";
+import * as Fluxxor from "fluxxor";
 
-    var Fluxxor = require("fluxxor");
+import * as events from "js/events";
 
-    var events = require("js/events");
+/**
+ * 
+ * @constructor
+ */
+export default Fluxxor.createStore({
+    /**
+     * @private
+     * @type {{alt: boolean, command: boolean, control: boolean, shift: boolean}}
+     */
+    _modifiers: null,
+
+    initialize: function () {
+        this.bindActions(
+            events.RESET, this._handleReset,
+            events.modifiers.MODIFIERS_CHANGED, this._handleModifiersChanged
+        );
+
+        this._handleReset();
+    },
 
     /**
-     * 
-     * @constructor
+     * Reset or initialize store state.
+     *
+     * @private
      */
-    var ModifierStore = Fluxxor.createStore({
-        /**
-         * @private
-         * @type {{alt: boolean, command: boolean, control: boolean, shift: boolean}}
-         */
-        _modifiers: null,
+    _handleReset: function () {
+        this._modifiers = {
+            alt: false,
+            command: false,
+            control: false,
+            shift: false
+        };
+    },
 
-        initialize: function () {
-            this.bindActions(
-                events.RESET, this._handleReset,
-                events.modifiers.MODIFIERS_CHANGED, this._handleModifiersChanged
-            );
+    /**
+     * Handler for the MODIFIERS_CHANGED event.
+     * 
+     * @private
+     * @param {{alt: boolean, command: boolean, control: boolean, shift: boolean}} payload
+     */
+    _handleModifiersChanged: function (payload) {
+        this._modifiers.alt = !!payload.alt;
+        this._modifiers.command = !!payload.command;
+        this._modifiers.control = !!payload.control;
+        this._modifiers.shift = !!payload.shift;
 
-            this._handleReset();
-        },
+        this.emit("change");
+    },
 
-        /**
-         * Reset or initialize store state.
-         *
-         * @private
-         */
-        _handleReset: function () {
-            this._modifiers = {
-                alt: false,
-                command: false,
-                control: false,
-                shift: false
-            };
-        },
-
-        /**
-         * Handler for the MODIFIERS_CHANGED event.
-         * 
-         * @private
-         * @param {{alt: boolean, command: boolean, control: boolean, shift: boolean}} payload
-         */
-        _handleModifiersChanged: function (payload) {
-            this._modifiers.alt = !!payload.alt;
-            this._modifiers.command = !!payload.command;
-            this._modifiers.control = !!payload.control;
-            this._modifiers.shift = !!payload.shift;
-
-            this.emit("change");
-        },
-
-        getState: function () {
-            return this._modifiers;
-        }
-    });
-
-    module.exports = ModifierStore;
+    getState: function () {
+        return this._modifiers;
+    }
 });

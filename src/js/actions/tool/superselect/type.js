@@ -21,87 +21,82 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
 
-    var Promise = require("bluebird");
+import { ps } from "adapter";
 
-    var descriptor = require("adapter").ps.descriptor;
+var descriptor = ps.descriptor;
 
-    /**
-     * Handler for updateTextProperties events, which are emitted turing modal
-     * text editing.
-     *
-     * @private
-     * @type {?function}
-     */
-    var _typeChangedHandler;
+/**
+ * Handler for updateTextProperties events, which are emitted turing modal
+ * text editing.
+ *
+ * @private
+ * @type {?function}
+ */
+var _typeChangedHandler;
 
-    /**
-     * Re-activates the select tool when exiting the modal tool state.
-     *
-     * @private
-     * @type {?function}
-     */
-    var _toolModalStateChangedHandler;
+/**
+ * Re-activates the select tool when exiting the modal tool state.
+ *
+ * @private
+ * @type {?function}
+ */
+var _toolModalStateChangedHandler;
 
-    /**
-     * Resets the tool to select after the modal tool state is committed, and listens
-     * for updated text properties while in the modal state.
-     *
-     * @private
-     */
-    var select = function () {
-        if (_toolModalStateChangedHandler) {
-            descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
-        }
-        _toolModalStateChangedHandler = function (event) {
-            if (event.kind._value === "tool" && event.tool.ID === "txBx" &&
-                event.state._value === "exit") {
-                var flux = this.flux,
-                    toolStore = flux.store("tool");
-
-                flux.actions.tools.select(toolStore.getToolByID("newSelect"));
-            }
-        }.bind(this);
-        descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
-
-        if (_typeChangedHandler) {
-            descriptor.removeListener("updateTextProperties", _typeChangedHandler);
-        }
-        _typeChangedHandler = this.flux.actions.toolType.updateTextPropertiesHandlerThrottled.bind(this);
-        descriptor.addListener("updateTextProperties", _typeChangedHandler);
-
-        return Promise.resolve();
-    };
-    select.action = {
-        reads: [],
-        writes: [],
-        transfers: [],
-        modal: true
-    };
-
-    /**
-     * Removes event listeners installed on activation.
-     *
-     * @private
-     */
-    var deselect = function () {
-        descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+/**
+ * Resets the tool to select after the modal tool state is committed, and listens
+ * for updated text properties while in the modal state.
+ *
+ * @private
+ */
+export var select = function () {
+    if (_toolModalStateChangedHandler) {
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
+    }
+    _toolModalStateChangedHandler = function (event) {
+        if (event.kind._value === "tool" && event.tool.ID === "txBx" &&
+            event.state._value === "exit") {
+            var flux = this.flux,
+                toolStore = flux.store("tool");
 
-        _typeChangedHandler = null;
-        _toolModalStateChangedHandler = null;
+            flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+        }
+    }.bind(this);
+    descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
-        return Promise.resolve();
-    };
-    deselect.action = {
-        reads: [],
-        writes: [],
-        transfers: [],
-        modal: true
-    };
+    if (_typeChangedHandler) {
+        descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+    }
+    _typeChangedHandler = this.flux.actions.toolType.updateTextPropertiesHandlerThrottled.bind(this);
+    descriptor.addListener("updateTextProperties", _typeChangedHandler);
 
-    exports.select = select;
-    exports.deselect = deselect;
-});
+    return Promise.resolve();
+};
+select.action = {
+    reads: [],
+    writes: [],
+    transfers: [],
+    modal: true
+};
+
+/**
+ * Removes event listeners installed on activation.
+ *
+ * @private
+ */
+export var deselect = function () {
+    descriptor.removeListener("updateTextProperties", _typeChangedHandler);
+    descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
+
+    _typeChangedHandler = null;
+    _toolModalStateChangedHandler = null;
+
+    return Promise.resolve();
+};
+deselect.action = {
+    reads: [],
+    writes: [],
+    transfers: [],
+    modal: true
+};

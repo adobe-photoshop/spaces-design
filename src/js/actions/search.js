@@ -21,58 +21,52 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
 
-    var Promise = require("bluebird");
+import * as Promise from "bluebird";
 
-    var dialog = require("./dialog"),
-        search = require("../stores/search"),
-        locks = require("../locks");
+import * as dialog from "./dialog";
+import * as search from "../stores/search";
+import * as locks from "../locks";
 
-    /**
-     * The search bar dialog ID
-     * 
-     * @const
-     * @type {string} 
-     */
-    var ID = search.SEARCH_BAR_DIALOG_ID;
+/**
+ * The search bar dialog ID
+ * 
+ * @const
+ * @type {string} 
+ */
+var ID = search.SEARCH_BAR_DIALOG_ID;
 
-    /**
-     * Open the Search dialog
-     *
-     * @return {Promise}
-     */
-    var toggleSearchBar = function () {
-        var dialogState = this.flux.stores.dialog.getState(),
-            open = dialogState.openDialogs.contains(ID);
+/**
+ * Open the Search dialog
+ *
+ * @return {Promise}
+ */
+export var toggleSearchBar = function () {
+    var dialogState = this.flux.stores.dialog.getState(),
+        open = dialogState.openDialogs.contains(ID);
 
-        if (open) {
-            return this.transfer(dialog.closeDialog, ID);
-        }
+    if (open) {
+        return this.transfer(dialog.closeDialog, ID);
+    }
 
-        return this.transfer(dialog.openDialog, ID);
-    };
-    toggleSearchBar.action = {
-        reads: [locks.JS_DIALOG],
-        writes: [],
-        transfers: [dialog.openDialog, dialog.closeDialog]
-    };
+    return this.transfer(dialog.openDialog, ID);
+};
+toggleSearchBar.action = {
+    reads: [locks.JS_DIALOG],
+    writes: [],
+    transfers: [dialog.openDialog, dialog.closeDialog]
+};
 
-    var beforeStartup = function () {
-        var searchStore = this.flux.store("search");
+export var beforeStartup = function () {
+    var searchStore = this.flux.store("search");
 
-        searchStore.registerSearch(ID,
-            ["CURRENT_DOC", "RECENT_DOC", "ALL_LAYER", "MENU_COMMAND", "LIBRARY", "GLOBAL_SHORTCUT"]);
+    searchStore.registerSearch(ID,
+        ["CURRENT_DOC", "RECENT_DOC", "ALL_LAYER", "MENU_COMMAND", "LIBRARY", "GLOBAL_SHORTCUT"]);
 
-        return Promise.resolve();
-    };
-    beforeStartup.action = {
-        reads: [],
-        writes: [locks.JS_SEARCH],
-        transfers: []
-    };
-
-    exports.toggleSearchBar = toggleSearchBar;
-    exports.beforeStartup = beforeStartup;
-});
+    return Promise.resolve();
+};
+beforeStartup.action = {
+    reads: [],
+    writes: [locks.JS_SEARCH],
+    transfers: []
+};

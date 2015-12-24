@@ -21,9 +21,7 @@
  * 
  */
 
-/* jshint node: true */
-
-"use strict";
+/* eslint-env node */
 
 var path = require("path"),
     webpack = require("webpack"),
@@ -57,12 +55,15 @@ var buildConfigs = languages.map(function (lang) {
                 // TODO: Right now, js files don't get babelified correctly
                 // For es6 support, we need this fixed
                 {
-                    test: /\.(jsx)$/,
+                    test: /src\/js\/.*\.(jsx?)$/,
                     exclude: /(node_modules)/,
                     loader: "babel",
                     query: {
                         cacheDirectory: true,
-                        presets: ["react"]
+                        presets: ["react"],
+                        plugins: [
+                            "transform-es2015-modules-commonjs"
+                        ]
                     }
                 },
                 // JSON files are parsed and directly loaded into the bundle

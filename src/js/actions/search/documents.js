@@ -21,140 +21,133 @@
  *
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Immutable from "immutable";
 
-    var Immutable = require("immutable");
+import * as events from "js/events";
+import * as locks from "js/locks";
+import * as pathUtil from "js/util/path";
 
-    var events = require("js/events"),
-        locks = require("js/locks"),
-        pathUtil = require("js/util/path");
+/**
+ * Make list of current documents info so search store can create search options
+ * 
+ * @private
+ * @return {Immutable.List.<object>}
+ */
+var _currDocSearchOptions = function () {
+    var appStore = this.flux.store("application"),
+        docStore = this.flux.store("document"),
+        openDocs = appStore.getOpenDocumentIDs(),
+        docMap = openDocs.map(function (doc) {
+            return {
+                id: doc.toString(),
+                name: docStore.getDocument(doc).name,
+                category: ["CURRENT_DOC"],
+                iconID: "document"
+            };
+        });
 
-    /**
-     * Make list of current documents info so search store can create search options
-     * 
-     * @private
-     * @return {Immutable.List.<object>}
-     */
-    var _currDocSearchOptions = function () {
-        var appStore = this.flux.store("application"),
-            docStore = this.flux.store("document"),
-            openDocs = appStore.getOpenDocumentIDs(),
-            docMap = openDocs.map(function (doc) {
-                return {
-                    id: doc.toString(),
-                    name: docStore.getDocument(doc).name,
-                    category: ["CURRENT_DOC"],
-                    iconID: "document"
-                };
-            });
+    return docMap;
+};
 
-        return docMap;
-    };
-
-    /**
-     * Make list of recent documents info so search store can create search options
-     * 
-     * @private
-     * @return {Immutable.List.<object>}
-     */
-    var _recentDocSearchOptions = function () {
-        var appStore = this.flux.store("application"),
-            recentFiles = appStore.getRecentFiles(),
-            recentDocMap = recentFiles.map(function (doc, index) {
-                return {
-                    id: index.toString(),
-                    name: pathUtil.getShortestUniquePaths(Immutable.List.of(doc)).toJS()[0],
-                    category: ["RECENT_DOC"],
-                    pathInfo: doc,
-                    iconID: "document"
-                };
-            });
-        
-        return recentDocMap;
-    };
+/**
+ * Make list of recent documents info so search store can create search options
+ * 
+ * @private
+ * @return {Immutable.List.<object>}
+ */
+var _recentDocSearchOptions = function () {
+    var appStore = this.flux.store("application"),
+        recentFiles = appStore.getRecentFiles(),
+        recentDocMap = recentFiles.map(function (doc, index) {
+            return {
+                id: index.toString(),
+                name: pathUtil.getShortestUniquePaths(Immutable.List.of(doc)).toJS()[0],
+                category: ["RECENT_DOC"],
+                pathInfo: doc,
+                iconID: "document"
+            };
+        });
     
-    /**
-     * Switch to document when its item is confirmed in search
-     *
-     * @private
-     * @param {number} idInt ID of document to switch to
-     */
-    var _confirmCurrDocSearch = function (idInt) {
-        var selectedDoc = this.flux.store("document").getDocument(idInt);
-        if (selectedDoc) {
-            this.flux.actions.documents.selectDocument(selectedDoc);
-        }
-    };
-    
-    /**
-     * Open recent document when its item is confirmed in search
-     *
-     * @private
-     * @param {number} idInt ID of recent document to switch to
-     */
-    var _confirmRecentDocSearch = function (idInt) {
-        var recentFiles = this.flux.store("application").getRecentFiles(),
-            fileName = recentFiles.get(idInt);
-        this.flux.actions.documents.open(fileName);
+    return recentDocMap;
+};
+
+/**
+ * Switch to document when its item is confirmed in search
+ *
+ * @private
+ * @param {number} idInt ID of document to switch to
+ */
+var _confirmCurrDocSearch = function (idInt) {
+    var selectedDoc = this.flux.store("document").getDocument(idInt);
+    if (selectedDoc) {
+        this.flux.actions.documents.selectDocument(selectedDoc);
+    }
+};
+
+/**
+ * Open recent document when its item is confirmed in search
+ *
+ * @private
+ * @param {number} idInt ID of recent document to switch to
+ */
+var _confirmRecentDocSearch = function (idInt) {
+    var recentFiles = this.flux.store("application").getRecentFiles(),
+        fileName = recentFiles.get(idInt);
+    this.flux.actions.documents.open(fileName);
+};
+
+/**
+ * Find SVG class for documents
+ * If this needs to vary based on the item, use category list as parameter 
+ * (see getSVGCallback type in search store)
+ * 
+ * @return {string}
+ */
+var _getSVGClass = function () {
+    return "document";
+};
+
+/**
+ * Register current document info for search
+ *
+ * @return {Promise}
+ */
+export var registerCurrentDocumentSearch = function () {
+    var currentDocPayload = {
+        "type": "CURRENT_DOC",
+        "getOptions": _currDocSearchOptions.bind(this),
+        "filters": Immutable.List.of("CURRENT_DOC"),
+        "handleExecute": _confirmCurrDocSearch.bind(this),
+        "shortenPaths": false,
+        "haveDocument": true,
+        "getSVGClass": _getSVGClass
     };
 
-    /**
-     * Find SVG class for documents
-     * If this needs to vary based on the item, use category list as parameter 
-     * (see getSVGCallback type in search store)
-     * 
-     * @return {string}
-     */
-    var _getSVGClass = function () {
-        return "document";
+    return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, currentDocPayload);
+};
+registerCurrentDocumentSearch.action = {
+    reads: [],
+    writes: [locks.JS_SEARCH]
+};
+
+/**
+ * Register recent document info for search
+ *
+ * @return {Promise}     
+ */
+export var registerRecentDocumentSearch = function () {
+    var recentDocPayload = {
+        "type": "RECENT_DOC",
+        "getOptions": _recentDocSearchOptions.bind(this),
+        "filters": Immutable.List.of("RECENT_DOC"),
+        "handleExecute": _confirmRecentDocSearch.bind(this),
+        "shortenPaths": true,
+        "getSVGClass": _getSVGClass
     };
 
-    /**
-     * Register current document info for search
-     *
-     * @return {Promise}
-     */
-    var registerCurrentDocumentSearch = function () {
-        var currentDocPayload = {
-            "type": "CURRENT_DOC",
-            "getOptions": _currDocSearchOptions.bind(this),
-            "filters": Immutable.List.of("CURRENT_DOC"),
-            "handleExecute": _confirmCurrDocSearch.bind(this),
-            "shortenPaths": false,
-            "haveDocument": true,
-            "getSVGClass": _getSVGClass
-        };
-
-        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, currentDocPayload);
-    };
-    registerCurrentDocumentSearch.action = {
-        reads: [],
-        writes: [locks.JS_SEARCH]
-    };
-    
-    /**
-     * Register recent document info for search
-     *
-     * @return {Promise}     
-     */
-    var registerRecentDocumentSearch = function () {
-        var recentDocPayload = {
-            "type": "RECENT_DOC",
-            "getOptions": _recentDocSearchOptions.bind(this),
-            "filters": Immutable.List.of("RECENT_DOC"),
-            "handleExecute": _confirmRecentDocSearch.bind(this),
-            "shortenPaths": true,
-            "getSVGClass": _getSVGClass
-        };
-
-        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, recentDocPayload);
-    };
-    registerRecentDocumentSearch.action = {
-        reads: [],
-        writes: [locks.JS_SEARCH]
-    };
-
-    exports.registerCurrentDocumentSearch = registerCurrentDocumentSearch;
-    exports.registerRecentDocumentSearch = registerRecentDocumentSearch;
-});
+    return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, recentDocPayload);
+};
+registerRecentDocumentSearch.action = {
+    reads: [],
+    writes: [locks.JS_SEARCH]
+};

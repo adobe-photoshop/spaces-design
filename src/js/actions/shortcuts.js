@@ -21,289 +21,279 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
+import * as _ from "lodash";
 
-    var Promise = require("bluebird"),
-        _ = require("lodash");
+import * as adapter from "adapter";
 
-    var os = require("adapter").os,
-        ui = require("adapter").ps.ui;
+var os = adapter.os,
+    ui = adapter.ps.ui;
 
-    var events = require("js/events"),
-        locks = require("js/locks"),
-        policy = require("js/actions/policy"),
-        EventPolicy = require("js/models/eventpolicy"),
-        KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        dom = require("js/util/dom");
+import * as events from "js/events";
+import * as locks from "js/locks";
+import * as policy from "js/actions/policy";
+import * as EventPolicy from "js/models/eventpolicy";
+import * as dom from "js/util/dom";
 
-    /**
-     * Add a keyboard shortcut command. Registers the handler function and sets
-     * the appropriate keyboard propagation policy.
-     * 
-     * @param {string|number} key Single character string or number representing keyCode
-     * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
-     * @param {function()} fn Nullary function triggered by the keyboard shortcut
-     * @param {string=} id Named identifier of this shortcut, used for later removal
-     * @param {boolean=} capture Whether the shortcut should be handled during
-     *  bubble (default) or capture phase
-     * @param {string=} name of the shortcut
-     * @return {Promise}
-     */
-    var addShortcut = function (key, modifiers, fn, id, capture, name) {
-        var shortcutStore = this.flux.store("shortcut");
-        if (shortcutStore.getByID(id)) {
-            return Promise.reject("Shortcut already exists: " + id);
-        }
+var KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
-        if (typeof key === "string") {
-            key = key.toLowerCase();
-        }
+/**
+ * Add a keyboard shortcut command. Registers the handler function and sets
+ * the appropriate keyboard propagation policy.
+ * 
+ * @param {string|number} key Single character string or number representing keyCode
+ * @param {{shift: boolean=, control: boolean=, alt: boolean=, command: boolean=}} modifiers
+ * @param {function()} fn Nullary function triggered by the keyboard shortcut
+ * @param {string=} id Named identifier of this shortcut, used for later removal
+ * @param {boolean=} capture Whether the shortcut should be handled during
+ *  bubble (default) or capture phase
+ * @param {string=} name of the shortcut
+ * @return {Promise}
+ */
+export var addShortcut = function (key, modifiers, fn, id, capture, name) {
+    var shortcutStore = this.flux.store("shortcut");
+    if (shortcutStore.getByID(id)) {
+        return Promise.reject("Shortcut already exists: " + id);
+    }
 
-        return this.transfer(policy.addKeydownPolicy, false, key, modifiers)
-            .bind(this)
-            .then(function (policyID) {
-                var payload = {
-                    id: id,
-                    capture: !!capture,
-                    key: key,
-                    modifiers: modifiers,
-                    fn: fn,
-                    policy: policyID,
-                    name: name ? name : null
-                };
+    if (typeof key === "string") {
+        key = key.toLowerCase();
+    }
 
-                this.dispatch(events.shortcut.ADD_SHORTCUT, payload);
-
-                return policyID;
-            });
-    };
-    addShortcut.action = {
-        reads: [],
-        writes: [locks.JS_SHORTCUT],
-        transfers: [policy.addKeydownPolicy],
-        modal: true
-    };
-
-    /**
-     * Add keyboard shortcuts in bulk.
-     *
-     * @see addShortcut
-     * @param {Array.<{key: number|string, modifiers: object, fn: function, id: string=, capture: boolean=}>} specs
-     * @return {Promise}
-     */
-    var addShortcuts = function (specs) {
-        var shortcutStore = this.flux.store("shortcut");
-
-        var duplicateShortcut = _.find(specs, function (spec) {
-            if (shortcutStore.getByID(spec.id)) {
-                return spec.id;
-            }
-        });
-
-        if (duplicateShortcut) {
-            return Promise.reject("Shortcut already exists: " + duplicateShortcut);
-        }
-
-        var keyboardPolicies = specs.map(function (spec) {
-            var policyAction = ui.policyAction.PROPAGATE_TO_BROWSER,
-                eventKind = os.eventKind.KEY_DOWN,
-                modifiers = spec.modifiers,
-                key = spec.key;
-
-            spec.capture = !!spec.capture;
-
-            return new KeyboardEventPolicy(policyAction, eventKind, modifiers, key);
-        });
-
-        return this.transfer(policy.addKeyboardPolicies, keyboardPolicies)
-            .bind(this)
-            .then(function (policyID) {
-                var payload = {
-                    specs: specs
-                };
-
-                this.dispatch(events.shortcut.ADD_SHORTCUTS, payload);
-
-                return policyID;
-            });
-    };
-    addShortcuts.action = {
-        reads: [],
-        writes: [locks.JS_SHORTCUT],
-        transfers: [policy.addKeyboardPolicies],
-        modal: true
-    };
-
-    /**
-     * Remove a keyboard shortcut command. Unregisters the handler function and unsets
-     * the appropriate keyboard propagation policy.
-     * 
-     * @param {!string} id Name of shortcut to remove
-     * @return {Promise}
-     */
-    var removeShortcut = function (id) {
-        var shortcutStore = this.flux.store("shortcut"),
-            shortcut = shortcutStore.getByID(id);
-
-        if (!shortcut) {
-            return Promise.reject(new Error("Shortcut does not exist: " + id));
-        }
-
-        return this.transfer(policy.removeKeyboardPolicies, shortcut.policy)
-            .bind(this)
-            .then(function () {
-                this.dispatch(events.shortcut.REMOVE_SHORTCUT, {
-                    id: id
-                });
-            });
-    };
-    removeShortcut.action = {
-        reads: [],
-        writes: [locks.JS_SHORTCUT],
-        transfers: [policy.removeKeyboardPolicies],
-        modal: true
-    };
-
-    /**
-     * Executes a given shortcut given an id of some sort
-     * 
-     * @param {string} id of shortcut clicked
-     * @return {Promise}
-     */
-    var _executeShortcut = function (id) {
-        var shortcutStore = this.flux.store("shortcut"),
-            shortcuts = shortcutStore.getState().shortcuts;
-
-        var shortcutFilter = shortcuts.filter(function (shortcut) {
-            return (shortcut.name && shortcut.name.toLowerCase() === id.toLowerCase());
-        });
-
-        if (shortcutFilter.length === 1) {
-            shortcutFilter[0].fn();
-        } else {
-            return Promise.reject(new Error("Shortcut was not unique in store " + id));
-        }
-    };
-
-    /**
-     * Blur the active element on KEYBOARDFOCUS_CHANGED adapter events.
-     *
-     * @private
-     * @param {object} event
-     */
-    var _keyboardFocusChangedHandler = function (event) {
-        // Our keyboard shortcuts ONLY work when there is no active HTML
-        // element. So we have to be careful to ensure that HTML elements
-        // are only active while they're in active use. This blurs the active
-        // element whenever the CEF application loses focus so that shortcuts
-        // still work even when that happens.
-        if (event.isActive === false) {
-            window.document.activeElement.blur();
-        }
-    };
-
-    /**
-     * Event handlers initialized in beforeStartup.
-     *
-     * @private
-     * @type {function()}
-     */
-    var _keydownHandlerBubble,
-        _keydownHandlerCapture;
-
-    /**
-     * Registers a keydown event handlers on the browser window in order to
-     * dispatch shortcut commands.
-     * 
-     * @return {Promise}
-     */
-    var beforeStartup = function () {
-        var shortcutStore = this.flux.store("shortcut"),
-            controller = this.controller;
-
-        var _getKeyDownHandlerForPhase = function (capture) {
-            return function (event) {
-                // Disable shortcuts when the controller is inactive
-                if (!controller.active) {
-                    return;
-                }
-
-                // If an HTML text input is focused, only attempt to match the shortcut
-                // if there are modifiers other than shift.
-                if (event.target !== window.document.body &&
-                    dom.isTextInput(event.target) &&
-                    (event.detail.modifierBits === os.eventModifiers.NONE ||
-                        event.detail.modifierBits === os.eventModifiers.SHIFT)) {
-                    return;
-                }
-
-                var handlers = shortcutStore.matchShortcuts(event.detail, capture);
-                if (handlers.length > 0) {
-                    event.target.blur();
-                    handlers.forEach(function (handler) {
-                        handler(event);
-                    });
-                }
+    return this.transfer(policy.addKeydownPolicy, false, key, modifiers)
+        .bind(this)
+        .then(function (policyID) {
+            var payload = {
+                id: id,
+                capture: !!capture,
+                key: key,
+                modifiers: modifiers,
+                fn: fn,
+                policy: policyID,
+                name: name ? name : null
             };
+
+            this.dispatch(events.shortcut.ADD_SHORTCUT, payload);
+
+            return policyID;
+        });
+};
+addShortcut.action = {
+    reads: [],
+    writes: [locks.JS_SHORTCUT],
+    transfers: [policy.addKeydownPolicy],
+    modal: true
+};
+
+/**
+ * Add keyboard shortcuts in bulk.
+ *
+ * @see addShortcut
+ * @param {Array.<{key: number|string, modifiers: object, fn: function, id: string=, capture: boolean=}>} specs
+ * @return {Promise}
+ */
+export var addShortcuts = function (specs) {
+    var shortcutStore = this.flux.store("shortcut");
+
+    var duplicateShortcut = _.find(specs, function (spec) {
+        if (shortcutStore.getByID(spec.id)) {
+            return spec.id;
+        }
+    });
+
+    if (duplicateShortcut) {
+        return Promise.reject("Shortcut already exists: " + duplicateShortcut);
+    }
+
+    var keyboardPolicies = specs.map(function (spec) {
+        var policyAction = ui.policyAction.PROPAGATE_TO_BROWSER,
+            eventKind = os.eventKind.KEY_DOWN,
+            modifiers = spec.modifiers,
+            key = spec.key;
+
+        spec.capture = !!spec.capture;
+
+        return new KeyboardEventPolicy(policyAction, eventKind, modifiers, key);
+    });
+
+    return this.transfer(policy.addKeyboardPolicies, keyboardPolicies)
+        .bind(this)
+        .then(function (policyID) {
+            var payload = {
+                specs: specs
+            };
+
+            this.dispatch(events.shortcut.ADD_SHORTCUTS, payload);
+
+            return policyID;
+        });
+};
+addShortcuts.action = {
+    reads: [],
+    writes: [locks.JS_SHORTCUT],
+    transfers: [policy.addKeyboardPolicies],
+    modal: true
+};
+
+/**
+ * Remove a keyboard shortcut command. Unregisters the handler function and unsets
+ * the appropriate keyboard propagation policy.
+ * 
+ * @param {!string} id Name of shortcut to remove
+ * @return {Promise}
+ */
+export var removeShortcut = function (id) {
+    var shortcutStore = this.flux.store("shortcut"),
+        shortcut = shortcutStore.getByID(id);
+
+    if (!shortcut) {
+        return Promise.reject(new Error("Shortcut does not exist: " + id));
+    }
+
+    return this.transfer(policy.removeKeyboardPolicies, shortcut.policy)
+        .bind(this)
+        .then(function () {
+            this.dispatch(events.shortcut.REMOVE_SHORTCUT, {
+                id: id
+            });
+        });
+};
+removeShortcut.action = {
+    reads: [],
+    writes: [locks.JS_SHORTCUT],
+    transfers: [policy.removeKeyboardPolicies],
+    modal: true
+};
+
+/**
+ * Executes a given shortcut given an id of some sort
+ * 
+ * @param {string} id of shortcut clicked
+ * @return {Promise}
+ */
+export var _executeShortcut = function (id) {
+    var shortcutStore = this.flux.store("shortcut"),
+        shortcuts = shortcutStore.getState().shortcuts;
+
+    var shortcutFilter = shortcuts.filter(function (shortcut) {
+        return (shortcut.name && shortcut.name.toLowerCase() === id.toLowerCase());
+    });
+
+    if (shortcutFilter.length === 1) {
+        shortcutFilter[0].fn();
+    } else {
+        return Promise.reject(new Error("Shortcut was not unique in store " + id));
+    }
+};
+
+/**
+ * Blur the active element on KEYBOARDFOCUS_CHANGED adapter events.
+ *
+ * @private
+ * @param {object} event
+ */
+var _keyboardFocusChangedHandler = function (event) {
+    // Our keyboard shortcuts ONLY work when there is no active HTML
+    // element. So we have to be careful to ensure that HTML elements
+    // are only active while they're in active use. This blurs the active
+    // element whenever the CEF application loses focus so that shortcuts
+    // still work even when that happens.
+    if (event.isActive === false) {
+        window.document.activeElement.blur();
+    }
+};
+
+/**
+ * Event handlers initialized in beforeStartup.
+ *
+ * @private
+ * @type {function()}
+ */
+var _keydownHandlerBubble,
+    _keydownHandlerCapture;
+
+/**
+ * Registers a keydown event handlers on the browser window in order to
+ * dispatch shortcut commands.
+ * 
+ * @return {Promise}
+ */
+export var beforeStartup = function () {
+    var shortcutStore = this.flux.store("shortcut"),
+        controller = this.controller;
+
+    var _getKeyDownHandlerForPhase = function (capture) {
+        return function (event) {
+            // Disable shortcuts when the controller is inactive
+            if (!controller.active) {
+                return;
+            }
+
+            // If an HTML text input is focused, only attempt to match the shortcut
+            // if there are modifiers other than shift.
+            if (event.target !== window.document.body &&
+                dom.isTextInput(event.target) &&
+                (event.detail.modifierBits === os.eventModifiers.NONE ||
+                    event.detail.modifierBits === os.eventModifiers.SHIFT)) {
+                return;
+            }
+
+            var handlers = shortcutStore.matchShortcuts(event.detail, capture);
+            if (handlers.length > 0) {
+                event.target.blur();
+                handlers.forEach(function (handler) {
+                    handler(event);
+                });
+            }
         };
-
-        _keydownHandlerCapture = _getKeyDownHandlerForPhase(true);
-        _keydownHandlerBubble = _getKeyDownHandlerForPhase(false);
-
-        window.addEventListener("adapterKeydown", _keydownHandlerCapture, true);
-        window.addEventListener("adapterKeydown", _keydownHandlerBubble, false);
-
-        os.on(os.notifierKind.KEYBOARDFOCUS_CHANGED, _keyboardFocusChangedHandler);
-
-        return Promise.resolve();
-    };
-    beforeStartup.action = {
-        reads: [locks.JS_SHORTCUT],
-        writes: [],
-        modal: true
     };
 
-    /**
-     * Send info about menu commands to search store
-     *
-     * @return {Promise}
-     */
-    var afterStartup = function () {
-        return this.transfer("searchCommands.registerGlobalShortcutSearch");
-    };
-    afterStartup.action = {
-        reads: [],
-        writes: [],
-        transfers: ["searchCommands.registerGlobalShortcutSearch"]
-    };
+    _keydownHandlerCapture = _getKeyDownHandlerForPhase(true);
+    _keydownHandlerBubble = _getKeyDownHandlerForPhase(false);
 
-    /**
-     * Remove event handlers.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var onReset = function () {
-        os.removeListener(os.notifierKind.KEYBOARDFOCUS_CHANGED, _keyboardFocusChangedHandler);
+    window.addEventListener("adapterKeydown", _keydownHandlerCapture, true);
+    window.addEventListener("adapterKeydown", _keydownHandlerBubble, false);
 
-        window.removeEventListener("adapterKeydown", _keydownHandlerCapture, true);
-        window.removeEventListener("adapterKeydown", _keydownHandlerBubble, false);
+    os.on(os.notifierKind.KEYBOARDFOCUS_CHANGED, _keyboardFocusChangedHandler);
 
-        return Promise.resolve();
-    };
-    onReset.action = {
-        reads: [],
-        writes: [],
-        modal: true
-    };
+    return Promise.resolve();
+};
+beforeStartup.action = {
+    reads: [locks.JS_SHORTCUT],
+    writes: [],
+    modal: true
+};
 
-    exports.addShortcut = addShortcut;
-    exports.addShortcuts = addShortcuts;
-    exports.removeShortcut = removeShortcut;
-    exports._executeShortcut = _executeShortcut;
+/**
+ * Send info about menu commands to search store
+ *
+ * @return {Promise}
+ */
+export var afterStartup = function () {
+    return this.transfer("searchCommands.registerGlobalShortcutSearch");
+};
+afterStartup.action = {
+    reads: [],
+    writes: [],
+    transfers: ["searchCommands.registerGlobalShortcutSearch"]
+};
 
-    exports.beforeStartup = beforeStartup;
-    exports.afterStartup = afterStartup;
-    exports.onReset = onReset;
-});
+/**
+ * Remove event handlers.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var onReset = function () {
+    os.removeListener(os.notifierKind.KEYBOARDFOCUS_CHANGED, _keyboardFocusChangedHandler);
+
+    window.removeEventListener("adapterKeydown", _keydownHandlerCapture, true);
+    window.removeEventListener("adapterKeydown", _keydownHandlerBubble, false);
+
+    return Promise.resolve();
+};
+onReset.action = {
+    reads: [],
+    writes: [],
+    modal: true
+};

@@ -21,34 +21,28 @@
  * 
  */
 
-define(function (require, exports, module) {
-    "use strict";
+import * as Fluxxor from "fluxxor";
+import * as events from "../events";
 
-    var Fluxxor = require("fluxxor"),
-        events = require("../events");
-
-    var ExampleStoreOne = Fluxxor.createStore({
-        initialize: function () {
-            this.bindActions(
-                events.example.SYNC_ACTION, this.setCounter
-            );
-        },
-        getState: function () {
-            return {
-                counter: this.counter
-            };
-        },
-        counter: null,
-        
-        /** @ignore */
-        setCounter: function () {
-            this.waitFor(["example-one"], function (exampleOneStore) {
-                var counter = exampleOneStore.counter;
-                this.counter = counter * 2;
-                this.emit("change");
-            });
-        }
-    });
-
-    module.exports = ExampleStoreOne;
+export default Fluxxor.createStore({
+    initialize: function () {
+        this.bindActions(
+            events.example.SYNC_ACTION, this.setCounter
+        );
+    },
+    getState: function () {
+        return {
+            counter: this.counter
+        };
+    },
+    counter: null,
+    
+    /** @ignore */
+    setCounter: function () {
+        this.waitFor(["example-one"], function (exampleOneStore) {
+            var counter = exampleOneStore.counter;
+            this.counter = counter * 2;
+            this.emit("change");
+        });
+    }
 });

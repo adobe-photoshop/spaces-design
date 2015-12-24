@@ -21,69 +21,67 @@
  * 
  */
 
-define(function (require, exports, module) {
-    "use strict";
+import * as _ from "lodash";
 
-    var _ = require("lodash");
+/**
+ * The set of available locks, each of which corresponds to a distinct
+ * resource.
+ * 
+ * @const
+ * @type {{string: string}}
+ */
+const LOCKS = {
+    PS_APP: "psApp",
+    JS_APP: "jsApp",
+    PS_DOC: "psDoc",
+    JS_DOC: "jsDoc",
+    PS_TOOL: "psTool",
+    JS_TOOL: "jsTool",
+    PS_MENU: "psMenu",
+    JS_MENU: "jsMenu",
+    JS_DIALOG: "jsDialog",
+    JS_TYPE: "jsType",
+    JS_POLICY: "jsPolicy",
+    JS_SHORTCUT: "jsShortcut",
+    JS_UI: "jsUI",
+    JS_PANEL: "jsPanel",
+    JS_PREF: "jsPref",
+    JS_HISTORY: "jsHistory",
+    JS_STYLE: "jsStyle",
+    JS_LIBRARIES: "jsLibraries",
+    JS_EXPORT: "jsExport",
+    JS_SEARCH: "jsSearch",
+    CC_LIBRARIES: "ccLibraries",
+    OS_CLIPBOARD: "osClipboard"
+};
+export default LOCKS;
 
-    /**
-     * The set of available locks, each of which corresponds to a distinct
-     * resource.
-     * 
-     * @const
-     * @type {{string: string}}
-     */
-    var LOCKS = {
-        PS_APP: "psApp",
-        JS_APP: "jsApp",
-        PS_DOC: "psDoc",
-        JS_DOC: "jsDoc",
-        PS_TOOL: "psTool",
-        JS_TOOL: "jsTool",
-        PS_MENU: "psMenu",
-        JS_MENU: "jsMenu",
-        JS_DIALOG: "jsDialog",
-        JS_TYPE: "jsType",
-        JS_POLICY: "jsPolicy",
-        JS_SHORTCUT: "jsShortcut",
-        JS_UI: "jsUI",
-        JS_PANEL: "jsPanel",
-        JS_PREF: "jsPref",
-        JS_HISTORY: "jsHistory",
-        JS_STYLE: "jsStyle",
-        JS_LIBRARIES: "jsLibraries",
-        JS_EXPORT: "jsExport",
-        JS_SEARCH: "jsSearch",
-        CC_LIBRARIES: "ccLibraries",
-        OS_CLIPBOARD: "osClipboard"
-    };
+/**
+ * An array of all available locks. If an action does not specify a
+ * particular set of locks, all locks are assumed.
+ * 
+ * @const
+ * @type {Array.<string>}
+ */
+export var ALL_LOCKS = _.values(LOCKS);
 
-    /**
-     * An array of all available locks. If an action does not specify a
-     * particular set of locks, all locks are assumed.
-     * 
-     * @const
-     * @type {Array.<string>}
-     */
-    var ALL_LOCKS = _.values(LOCKS);
+/**
+ * An array of all Photoshop-specific locks.
+ *
+ * @const
+ * @type {Array.<string>}
+ */
+export var ALL_PS_LOCKS = [
+    LOCKS.PS_APP,
+    LOCKS.PS_DOC,
+    LOCKS.PS_TOOL,
+    LOCKS.PS_MENU
+];
 
-    /**
-     * An array of all Photoshop-specific locks.
-     *
-     * @const
-     * @type {Array.<string>}
-     */
-    var ALL_PS_LOCKS = [
-        LOCKS.PS_APP,
-        LOCKS.PS_DOC,
-        LOCKS.PS_TOOL,
-        LOCKS.PS_MENU
-    ];
-
-    var ALL_NATIVE_LOCKS = ALL_PS_LOCKS.concat(LOCKS.CC_LIBRARIES, LOCKS.OS_CLIPBOARD);
-
-    module.exports = LOCKS;
-    module.exports.ALL_LOCKS = ALL_LOCKS;
-    module.exports.ALL_PS_LOCKS = ALL_PS_LOCKS;
-    module.exports.ALL_NATIVE_LOCKS = ALL_NATIVE_LOCKS;
-});
+/**
+ * An array of all native (Photoshop and OS) locks.
+ *
+ * @const
+ * @type {Array.<string>}
+ */
+export var ALL_NATIVE_LOCKS = ALL_PS_LOCKS.concat(LOCKS.CC_LIBRARIES, LOCKS.OS_CLIPBOARD);

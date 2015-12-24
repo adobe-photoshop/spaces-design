@@ -50,7 +50,6 @@
     "disallowTrailingComma": true,
     "disallowTrailingWhitespaceInSource": true,
     "esnext": true,
-    "esprima": "esprima-fb",
     "excludeFiles": [
         ".jscsrc",
         ".jshintrc",

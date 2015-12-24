@@ -21,224 +21,218 @@
  *
  */
 
-define(function (require, exports, module) {
-    "use strict";
+import * as Fluxxor from "fluxxor";
+import * as Immutable from "immutable";
 
-    var Fluxxor = require("fluxxor"),
-        Immutable = require("immutable");
+import * as events from "../events";
+import * as log from "js/util/log";
 
-    var events = require("../events"),
-        log = require("js/util/log");
+/**
+ * The key at which the preferences index is stored.
+ * 
+ * @const
+ * @type {string} 
+ */
+var PREF_INDEX = "com.adobe.photoshop.prefs.index";
 
+/**
+ * The prefix with which preference keys are qualified.
+ * 
+ * @const
+ * @type {string} 
+ */
+var PREF_PREFIX = "com.adobe.photoshop.prefs.keys.";
+
+/**
+ * @private
+ * @type {Storage}
+ */
+var _storage = window.localStorage;
+
+/**
+ * Gets a key name qualified with a unique prefix.
+ *
+ * @private
+ * @param {string} key
+ * @return {string}
+ */
+var _getQualifiedKey = function (key) {
+    return PREF_PREFIX + key;
+};
+
+/**
+ * Manages the set of preferences, including persistent loading and storing.
+ */
+export default Fluxxor.createStore({
     /**
-     * The key at which the preferences index is stored.
+     * The preferences map. Values can be any JSON.stringifyable type.
      * 
-     * @const
-     * @type {string} 
-     */
-    var PREF_INDEX = "com.adobe.photoshop.prefs.index";
-
-    /**
-     * The prefix with which preference keys are qualified.
-     * 
-     * @const
-     * @type {string} 
-     */
-    var PREF_PREFIX = "com.adobe.photoshop.prefs.keys.";
-
-    /**
      * @private
-     * @type {Storage}
+     * @type {Immutable.Map.<string, *>}
      */
-    var _storage = window.localStorage;
+    _preferences: null,
+
+    /** 
+     * Loads saved preferences from local storage and binds flux actions.
+     */
+    initialize: function () {
+        this._loadPreferences();
+
+        this.bindActions(
+            events.RESET, this._loadPreferences,
+            events.preferences.SET_PREFERENCE, this._setPreference,
+            events.preferences.SET_PREFERENCES, this._setPreferences,
+            events.preferences.DELETE_PREFERENCE, this._deletePreference,
+            events.preferences.CLEAR_PREFERENCES, this._clearPreferences
+        );
+    },
 
     /**
-     * Gets a key name qualified with a unique prefix.
+     * Get the preferences table.
+     *
+     * @return {Immutable.Map.<string, *>}
+     */
+    getState: function () {
+        return this._preferences;
+    },
+
+    /**
+    * Directly get the value for the given preference key, or an unsetValue if the key does not exist.
+    * 
+    * @param {string} key
+    * @param {?string} unsetValue
+    * @return {?string} 
+    */
+    get: function (key, unsetValue) {
+        return this._preferences.get(key, unsetValue);
+    },
+
+    /**
+     * Load persisted preferences and initialize the preferences table.
      *
      * @private
-     * @param {string} key
-     * @return {string}
      */
-    var _getQualifiedKey = function (key) {
-        return PREF_PREFIX + key;
-    };
+    _loadPreferences: function () {
+        var keysJSON = _storage.getItem(PREF_INDEX);
+        if (keysJSON === null) {
+            this._preferences = Immutable.Map();
+            return;
+        }
+
+        try {
+            var keys = JSON.parse(keysJSON),
+                prefs = keys.reduce(function (map, key) {
+                    var qualifiedKey = _getQualifiedKey(key),
+                        valueJSON = _storage.getItem(qualifiedKey),
+                        value = JSON.parse(valueJSON);
+
+                    return map.set(key, value);
+                }.bind(this), new Map());
+
+            this._preferences = Immutable.Map(prefs);
+        } catch (e) {
+            log.debug("Failed to load preferences index", e);
+            this._saveIndex(Immutable.Map());
+        }
+    },
 
     /**
-     * Manages the set of preferences, including persistent loading and storing.
+     * Save and new set of preferences and persist its index.
+     *
+     * @param {Immutable.Map.<string, *>} newPrefs
      */
-    var PreferencesStore = Fluxxor.createStore({
-        /**
-         * The preferences map. Values can be any JSON.stringifyable type.
-         * 
-         * @private
-         * @type {Immutable.Map.<string, *>}
-         */
-        _preferences: null,
+    _saveIndex: function (newPrefs) {
+        var keys = newPrefs.keySeq().toArray(),
+            keysJSON = JSON.stringify(keys);
 
-        /** 
-         * Loads saved preferences from local storage and binds flux actions.
-         */
-        initialize: function () {
-            this._loadPreferences();
+        this._preferences = newPrefs;
+        _storage.setItem(PREF_INDEX, keysJSON);
+        this.emit("change");
+    },
 
-            this.bindActions(
-                events.RESET, this._loadPreferences,
-                events.preferences.SET_PREFERENCE, this._setPreference,
-                events.preferences.SET_PREFERENCES, this._setPreferences,
-                events.preferences.DELETE_PREFERENCE, this._deletePreference,
-                events.preferences.CLEAR_PREFERENCES, this._clearPreferences
-            );
-        },
+    /**
+     * Set a single preference.
+     *
+     * @private
+     * @param {{key: string, value: *}} payload
+     */
+    _setPreference: function (payload) {
+        var key = payload.key,
+            value = payload.value;
 
-        /**
-         * Get the preferences table.
-         *
-         * @return {Immutable.Map.<string, *>}
-         */
-        getState: function () {
-            return this._preferences;
-        },
-
-        /**
-        * Directly get the value for the given preference key, or an unsetValue if the key does not exist.
-        * 
-        * @param {string} key
-        * @param {?string} unsetValue
-        * @return {?string} 
-        */
-        get: function (key, unsetValue) {
-            return this._preferences.get(key, unsetValue);
-        },
-
-        /**
-         * Load persisted preferences and initialize the preferences table.
-         *
-         * @private
-         */
-        _loadPreferences: function () {
-            var keysJSON = _storage.getItem(PREF_INDEX);
-            if (keysJSON === null) {
-                this._preferences = Immutable.Map();
+        try {
+            // Skip if the value remains unchanged, to avoid emitting unnecessary change event.
+            if (this._preferences.get(key) === value) {
                 return;
             }
+            
+            var valueJSON = JSON.stringify(value),
+                qualifiedKey = _getQualifiedKey(key);
 
-            try {
-                var keys = JSON.parse(keysJSON),
-                    prefs = keys.reduce(function (map, key) {
-                        var qualifiedKey = _getQualifiedKey(key),
-                            valueJSON = _storage.getItem(qualifiedKey),
-                            value = JSON.parse(valueJSON);
-
-                        return map.set(key, value);
-                    }.bind(this), new Map());
-
-                this._preferences = Immutable.Map(prefs);
-            } catch (e) {
-                log.debug("Failed to load preferences index", e);
-                this._saveIndex(Immutable.Map());
-            }
-        },
-
-        /**
-         * Save and new set of preferences and persist its index.
-         *
-         * @param {Immutable.Map.<string, *>} newPrefs
-         */
-        _saveIndex: function (newPrefs) {
-            var keys = newPrefs.keySeq().toArray(),
-                keysJSON = JSON.stringify(keys);
-
-            this._preferences = newPrefs;
-            _storage.setItem(PREF_INDEX, keysJSON);
+            _storage.setItem(qualifiedKey, valueJSON);
+            this._saveIndex(this._preferences.set(key, value));
             this.emit("change");
-        },
+        } catch (err) {
+            var message = err instanceof Error ? (err.stack || err.message) : err;
 
-        /**
-         * Set a single preference.
-         *
-         * @private
-         * @param {{key: string, value: *}} payload
-         */
-        _setPreference: function (payload) {
-            var key = payload.key,
-                value = payload.value;
+            log.error("Failed to set preference", key, value, message);
+        }
+    },
 
-            try {
-                // Skip if the value remains unchanged, to avoid emitting unnecessary change event.
-                if (this._preferences.get(key) === value) {
-                    return;
-                }
-                
-                var valueJSON = JSON.stringify(value),
+    /**
+     * Set a set of preferences.
+     *
+     * @private
+     * @param {Object.<string, *>} payload
+     */
+    _setPreferences: function (payload) {
+        var prefs = payload.prefs;
+
+        try {
+            Object.keys(prefs).forEach(function (key) {
+                var value = prefs[key],
+                    valueJSON = JSON.stringify(value),
                     qualifiedKey = _getQualifiedKey(key);
 
                 _storage.setItem(qualifiedKey, valueJSON);
-                this._saveIndex(this._preferences.set(key, value));
-                this.emit("change");
-            } catch (err) {
-                var message = err instanceof Error ? (err.stack || err.message) : err;
+            });
 
-                log.error("Failed to set preference", key, value, message);
-            }
-        },
-
-        /**
-         * Set a set of preferences.
-         *
-         * @private
-         * @param {Object.<string, *>} payload
-         */
-        _setPreferences: function (payload) {
-            var prefs = payload.prefs;
-
-            try {
-                Object.keys(prefs).forEach(function (key) {
-                    var value = prefs[key],
-                        valueJSON = JSON.stringify(value),
-                        qualifiedKey = _getQualifiedKey(key);
-
-                    _storage.setItem(qualifiedKey, valueJSON);
-                });
-
-                this._saveIndex(this._preferences.merge(prefs));
-                this.emit("change");
-            } catch (err) {
-                var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                log.error("Failed to set preferences", prefs, message);
-            }
-        },
-
-        /**
-         * Delete a single preference.
-         *
-         * @private
-         * @param {{key: string}} payload
-         */
-        _deletePreference: function (payload) {
-            var key = payload.key,
-                qualifiedKey = _getQualifiedKey(key);
-
-            _storage.removeItem(qualifiedKey);
-            this._saveIndex(this._preferences.delete(key));
+            this._saveIndex(this._preferences.merge(prefs));
             this.emit("change");
-        },
+        } catch (err) {
+            var message = err instanceof Error ? (err.stack || err.message) : err;
 
-        /**
-         * Clear all preferences.
-         *
-         * @private
-         */
-        _clearPreferences: function () {
-            this._preferences.keySeq().forEach(function (key) {
-                var qualifiedKey = _getQualifiedKey(key);
-                _storage.removeItem(qualifiedKey);
-            }, this);
-
-            this._saveIndex(Immutable.Map());
-            this.emit("change");
+            log.error("Failed to set preferences", prefs, message);
         }
-    });
+    },
 
-    module.exports = PreferencesStore;
+    /**
+     * Delete a single preference.
+     *
+     * @private
+     * @param {{key: string}} payload
+     */
+    _deletePreference: function (payload) {
+        var key = payload.key,
+            qualifiedKey = _getQualifiedKey(key);
+
+        _storage.removeItem(qualifiedKey);
+        this._saveIndex(this._preferences.delete(key));
+        this.emit("change");
+    },
+
+    /**
+     * Clear all preferences.
+     *
+     * @private
+     */
+    _clearPreferences: function () {
+        this._preferences.keySeq().forEach(function (key) {
+            var qualifiedKey = _getQualifiedKey(key);
+            _storage.removeItem(qualifiedKey);
+        }, this);
+
+        this._saveIndex(Immutable.Map());
+        this.emit("change");
+    }
 });

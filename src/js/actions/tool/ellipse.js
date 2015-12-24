@@ -21,62 +21,58 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
-  
-    var Promise = require("bluebird");
+import * as Promise from "bluebird";
 
-    var descriptor = require("adapter").ps.descriptor,
-        toolLib = require("adapter").lib.tool,
-        UI = require("adapter").ps.ui,
-        vectorMaskLib = require("adapter").lib.vectorMask;
+import { ps, lib } from "adapter";
 
-    var toolActions = require("js/actions/tools"),
-        locks = require("js/locks");
+import * as toolActions from "js/actions/tools";
+import * as locks from "js/locks";
 
-    /**
-     * Sets the tool into either path or shape mode and calls the approprate PS actions based on that mode
-     *
-     * @private
-     */
-    var select = function () {
-        var toolStore = this.flux.store("tool"),
-            vectorMode = toolStore.getVectorMode(),
-            toolMode = toolLib.toolModes.SHAPE,
-            firstLaunch = true;
+var UI = ps.ui,
+    descriptor = ps.descriptor,
+    toolLib = lib.tool,
+    vectorMaskLib = lib.vectorMask;
 
-        if (vectorMode) {
-            toolMode = toolLib.toolModes.PATH;
-        }
+/**
+ * Sets the tool into either path or shape mode and calls the approprate PS actions based on that mode
+ *
+ * @private
+ */
+export var select = function () {
+    var toolStore = this.flux.store("tool"),
+        vectorMode = toolStore.getVectorMode(),
+        toolMode = toolLib.toolModes.SHAPE,
+        firstLaunch = true;
 
-        var setObj = toolLib.setShapeToolMode(toolMode);
+    if (vectorMode) {
+        toolMode = toolLib.toolModes.PATH;
+    }
 
-        var setPromise = descriptor.playObject(setObj);
+    var setObj = toolLib.setShapeToolMode(toolMode);
 
-        if (!vectorMode && firstLaunch) {
-            var defaultPromise = this.transfer(toolActions.installShapeDefaults,
-                "ellipseTool");
+    var setPromise = descriptor.playObject(setObj);
 
-            firstLaunch = false;
-            return Promise.join(defaultPromise, setPromise);
-        } else if (!vectorMode) {
-            return setPromise;
-        } else {
-            return setPromise
-                .then(function () {
-                    return UI.setSuppressTargetPaths(false);
-                })
-                .then(function () {
-                    return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
-                });
-        }
-    };
-    select.action = {
-        reads: [locks.JS_TOOL],
-        writes: [locks.PS_TOOL, locks.PS_APP],
-        transfers: ["tools.installShapeDefaults"],
-        modal: true
-    };
+    if (!vectorMode && firstLaunch) {
+        var defaultPromise = this.transfer(toolActions.installShapeDefaults,
+            "ellipseTool");
 
-    exports.select = select;
-});
+        firstLaunch = false;
+        return Promise.join(defaultPromise, setPromise);
+    } else if (!vectorMode) {
+        return setPromise;
+    } else {
+        return setPromise
+            .then(function () {
+                return UI.setSuppressTargetPaths(false);
+            })
+            .then(function () {
+                return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+            });
+    }
+};
+select.action = {
+    reads: [locks.JS_TOOL],
+    writes: [locks.PS_TOOL, locks.PS_APP],
+    transfers: ["tools.installShapeDefaults"],
+    modal: true
+};

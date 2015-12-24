@@ -21,112 +21,106 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
 
-    var Promise = require("bluebird");
-    
-    var OS = require("adapter").os,
-        UI = require("adapter").ps.ui,
-        toolLib = require("adapter").lib.tool,
-        descriptor = require("adapter").ps.descriptor,
-        vectorMaskLib = require("adapter").lib.vectorMask;
+import { os as OS, ps, lib } from "adapter";
 
-    var shortcuts = require("js/actions/shortcuts"),
-        locks = require("js/locks");
+import * as shortcuts from "js/actions/shortcuts";
+import * as locks from "js/locks";
 
-    var _CLEAR_PATH = 106;
-    
-    /**
-     * Sets the tool into either path or shape mode and calls the approprate PS actions based on that mode
-     *
-     * @private
-     */
-    var select = function () {
-        var toolStore = this.flux.store("tool"),
-            vectorMode = toolStore.getVectorMode(),
-            toolMode = toolLib.toolModes.SHAPE;
-            
-        if (vectorMode) {
-            toolMode = toolLib.toolModes.PATH;
-        }
+var _CLEAR_PATH = 106;
 
-        var toolOptions = {
-            "$AAdd": true // Automatically creates a new layer if the current path is closed
-        };
+var toolLib = lib.tool,
+    UI = ps.ui,
+    descriptor = ps.descriptor,
+    vectorMaskLib = lib.vectorMask;
 
-        var optionsObj = toolLib.setToolOptions("penTool", toolOptions),
-            setPromise = descriptor.playObject(toolLib.setShapeToolMode(toolMode))
-                .then(function () {
-                    return descriptor.playObject(optionsObj);
-                });
+/**
+ * Sets the tool into either path or shape mode and calls the approprate PS actions based on that mode
+ *
+ * @private
+ */
+export var select = function () {
+    var toolStore = this.flux.store("tool"),
+        vectorMode = toolStore.getVectorMode(),
+        toolMode = toolLib.toolModes.SHAPE;
+        
+    if (vectorMode) {
+        toolMode = toolLib.toolModes.PATH;
+    }
 
-        var deleteFn = function (event) {
-            event.stopPropagation();
-            if (toolStore.getVectorMode()) {
-                this.flux.actions.mask.handleDeleteVectorMask();
-            } else {
-                // When path is selected, hitting DELETE key should delete the selected path, otherwise, 
-                // the selected layer(s) should be deleted. We don't know whether a path is selected or not, 
-                // so we try to delete a selected path (by running menu command) first. If nothing is deleted,
-                // we delete the selected layer(s).
-                this.flux.actions.menu.native({ commandID: _CLEAR_PATH })
-                    .bind(this)
-                    .then(function (pathCleared) {
-                        if (!pathCleared) {
-                            this.flux.actions.layers.deleteSelected();
-                        }
-                    });
-            }
-        }.bind(this);
+    var toolOptions = {
+        "$AAdd": true // Automatically creates a new layer if the current path is closed
+    };
 
-        var backspacePromise = this.transfer(shortcuts.addShortcut,
-                OS.eventKeyCode.BACKSPACE, {}, deleteFn, "penBackspace", true),
-            deletePromise = this.transfer(shortcuts.addShortcut,
-                OS.eventKeyCode.DELETE, {}, deleteFn, "penDelete", true),
-            disableSuppressionPromise = UI.setSuppressTargetPaths(false),
-            selectVectorMask;
+    var optionsObj = toolLib.setToolOptions("penTool", toolOptions),
+        setPromise = descriptor.playObject(toolLib.setShapeToolMode(toolMode))
+            .then(function () {
+                return descriptor.playObject(optionsObj);
+            });
 
-        if (vectorMode) {
-            selectVectorMask = descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+    var deleteFn = function (event) {
+        event.stopPropagation();
+        if (toolStore.getVectorMode()) {
+            this.flux.actions.mask.handleDeleteVectorMask();
         } else {
-            var applicationStore = this.flux.store("application"),
-                currentDocument = applicationStore.getCurrentDocument();
-            if (currentDocument) {
-                selectVectorMask = descriptor.playObject(vectorMaskLib.dropPathSelection());
-            } else {
-                selectVectorMask = Promise.resolve();
-            }
+            // When path is selected, hitting DELETE key should delete the selected path, otherwise, 
+            // the selected layer(s) should be deleted. We don't know whether a path is selected or not, 
+            // so we try to delete a selected path (by running menu command) first. If nothing is deleted,
+            // we delete the selected layer(s).
+            this.flux.actions.menu.native({ commandID: _CLEAR_PATH })
+                .bind(this)
+                .then(function (pathCleared) {
+                    if (!pathCleared) {
+                        this.flux.actions.layers.deleteSelected();
+                    }
+                });
         }
+    }.bind(this);
 
-        return Promise.join(setPromise, selectVectorMask, disableSuppressionPromise,
-            backspacePromise, deletePromise);
-    };
-    select.action = {
-        reads: [locks.JS_TOOL],
-        writes: [],
-        transfers: ["shortcuts.addShortcut", "layers.deleteSelected"],
-        modal: true
-    };
+    var backspacePromise = this.transfer(shortcuts.addShortcut,
+            OS.eventKeyCode.BACKSPACE, {}, deleteFn, "penBackspace", true),
+        deletePromise = this.transfer(shortcuts.addShortcut,
+            OS.eventKeyCode.DELETE, {}, deleteFn, "penDelete", true),
+        disableSuppressionPromise = UI.setSuppressTargetPaths(false),
+        selectVectorMask;
 
-    /**
-     * Remove pen tool shortcuts.
-     *
-     * @return {Promise}
-     */
-    var deselect = function () {
-        var backspacePromise = this.transfer(shortcuts.removeShortcut, "penBackspace"),
-            deletePromise = this.transfer(shortcuts.removeShortcut, "penDelete");
+    if (vectorMode) {
+        selectVectorMask = descriptor.playObject(vectorMaskLib.activateVectorMaskEditing());
+    } else {
+        var applicationStore = this.flux.store("application"),
+            currentDocument = applicationStore.getCurrentDocument();
+        if (currentDocument) {
+            selectVectorMask = descriptor.playObject(vectorMaskLib.dropPathSelection());
+        } else {
+            selectVectorMask = Promise.resolve();
+        }
+    }
 
-        return Promise.join(backspacePromise, deletePromise);
-    };
-    deselect.action = {
-        reads: [],
-        writes: [locks.PS_TOOL, locks.PS_APP],
-        transfers: ["shortcuts.removeShortcut"],
-        modal: true
-    };
+    return Promise.join(setPromise, selectVectorMask, disableSuppressionPromise,
+        backspacePromise, deletePromise);
+};
+select.action = {
+    reads: [locks.JS_TOOL],
+    writes: [],
+    transfers: ["shortcuts.addShortcut", "layers.deleteSelected"],
+    modal: true
+};
 
-    exports.select = select;
-    exports.deselect = deselect;
-});
+/**
+ * Remove pen tool shortcuts.
+ *
+ * @return {Promise}
+ */
+export var deselect = function () {
+    var backspacePromise = this.transfer(shortcuts.removeShortcut, "penBackspace"),
+        deletePromise = this.transfer(shortcuts.removeShortcut, "penDelete");
+
+    return Promise.join(backspacePromise, deletePromise);
+};
+deselect.action = {
+    reads: [],
+    writes: [locks.PS_TOOL, locks.PS_APP],
+    transfers: ["shortcuts.removeShortcut"],
+    modal: true
+};

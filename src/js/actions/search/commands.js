@@ -21,282 +21,275 @@
  *
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as _ from "lodash";
+import * as Immutable from "immutable";
 
-    var _ = require("lodash"),
-        Immutable = require("immutable"),
-        keyUtil = require("js/util/key"),
-        mathUtil = require("js/util/math"),
-        system = require("js/util/system"),
-        nls = require("js/util/nls");
+import * as keyUtil from "js/util/key";
+import * as mathUtil from "js/util/math";
+import * as system from "js/util/system";
+import * as nls from "js/util/nls";
+import * as events from "js/events";
+import * as locks from "js/locks";
+import * as menuActions from "js/actions/menu";
+import * as shortcutActions from "js/actions/shortcuts";
 
-    var events = require("js/events"),
-        locks = require("js/locks"),
-        menuActions = require("js/actions/menu"),
-        shortcutActions = require("js/actions/shortcuts");
+/**
+ * Get a localized label for the full path of the given menu entry ID
+ * inserting > character between parent names
+ *
+ * @private
+ * @param {string} id
+ * @return {string}
+ */
+var _getLabelForEntry = function (id) {
+    var parts = id.split("."),
+        resultPath = "",
+        nlsPath = "menu",
+        menuTree;
 
-    /**
-     * Get a localized label for the full path of the given menu entry ID
-     * inserting > character between parent names
-     *
-     * @private
-     * @param {string} id
-     * @return {string}
-     */
-    var _getLabelForEntry = function (id) {
-        var parts = id.split("."),
-            resultPath = "",
-            nlsPath = "menu",
-            menuTree;
+    parts.forEach(function (part) {
+        if (!_.isNumber(mathUtil.parseNumber(part, 10))) {
+            nlsPath = nlsPath + "." + part;
+            menuTree = nls.localize(nlsPath);
 
-        parts.forEach(function (part) {
-            if (!_.isNumber(mathUtil.parseNumber(part, 10))) {
-                nlsPath = nlsPath + "." + part;
-                menuTree = nls.localize(nlsPath);
+            if (menuTree === undefined) {
+                resultPath = null;
+                return false;
+            }
 
-                if (menuTree === undefined) {
-                    resultPath = null;
-                    return false;
-                }
+            if (menuTree.$MENU) {
+                resultPath += menuTree.$MENU + " > ";
+            } else {
+                resultPath += menuTree;
+            }
+        }
+    });
 
-                if (menuTree.$MENU) {
-                    resultPath += menuTree.$MENU + " > ";
-                } else {
-                    resultPath += menuTree;
-                }
+    return resultPath;
+};
+
+/**
+ * Get a shortcut as a string for themen menu entry shortcut object
+ *
+ * @private
+ * @param {object} fullShortcut
+ * @return {string}
+ */
+var _getMenuCommandString = function (fullShortcut) {
+    var modifierBits = fullShortcut.modifiers,
+        keyChar = fullShortcut.keyChar,
+        keyCode = fullShortcut.keyCode,
+        modifierStrings = nls.localize("strings.SEARCH.MODIFIERS"),
+        shortcut = "";
+
+    var modifierChars = {
+        "command": "\u2318",
+        "control": system.isMac ? "^" : modifierStrings.CONTROL,
+        "alt": system.isMac ? "\u2325" : modifierStrings.ALT,
+        "shift": "\u21E7"
+    };
+
+    if (modifierBits) {
+        var modifiers = keyUtil.bitsToModifiers(modifierBits);
+        
+        _.forEach(Object.keys(modifiers), function (key) {
+            if (modifiers[key]) {
+                shortcut += modifierChars[key];
             }
         });
+    }
 
-        return resultPath;
-    };
-    
-    /**
-     * Get a shortcut as a string for themen menu entry shortcut object
-     *
-     * @private
-     * @param {object} fullShortcut
-     * @return {string}
-     */
-    var _getMenuCommandString = function (fullShortcut) {
-        var modifierBits = fullShortcut.modifiers,
-            keyChar = fullShortcut.keyChar,
-            keyCode = fullShortcut.keyCode,
-            modifierStrings = nls.localize("strings.SEARCH.MODIFIERS"),
-            shortcut = "";
+    if (keyChar) {
+        shortcut += keyChar.toString().toUpperCase();
+    }
 
-        var modifierChars = {
-            "command": "\u2318",
-            "control": system.isMac ? "^" : modifierStrings.CONTROL,
-            "alt": system.isMac ? "\u2325" : modifierStrings.ALT,
-            "shift": "\u21E7"
-        };
+    if (keyCode) {
+        shortcut += nls.localize("strings.KEYCODE." + keyCode);
+    }
 
-        if (modifierBits) {
-            var modifiers = keyUtil.bitsToModifiers(modifierBits);
-            
-            _.forEach(Object.keys(modifiers), function (key) {
-                if (modifiers[key]) {
-                    shortcut += modifierChars[key];
+    return " " + shortcut + "\u00a0\u00a0\u00a0\u00a0";
+};
+
+/**
+ * Make list of recent documents info so search store can create search options
+ * 
+ * @private
+ * @return {Immutable.List.<object>}
+*/
+var _menuCommandSearchOptions = function () {
+    var menuStore = this.flux.store("menu"),
+        menu = menuStore.getApplicationMenu(),
+        roots = menu.roots.reverse();
+
+    var menuCommands = [];
+    roots.forEach(function (root) {
+        var nodes = [root],
+            currItem;
+
+        while (nodes.length > 0) {
+            currItem = nodes.pop();
+            if (currItem.submenu && currItem.enabled) {
+                nodes = nodes.concat(currItem.submenu.toArray());
+            } else if (currItem.enabled) {
+                var id = currItem.id,
+                    ancestry = _getLabelForEntry(id),
+                    shortcut = "";
+                
+                if (currItem.shortcut) {
+                    shortcut = _getMenuCommandString(currItem.shortcut);
                 }
+
+                if (ancestry) {
+                    menuCommands.push({
+                        id: currItem.id,
+                        name: currItem.label,
+                        pathInfo: shortcut + ancestry,
+                        iconID: "menu-commands",
+                        category: ["MENU_COMMAND"]
+                    });
+                }
+            }
+        }
+    });
+
+    return Immutable.List(menuCommands.reverse());
+};
+
+/**
+ * Perform menu command when its item is confirmed in search
+ *
+ * @private
+ * @param {string} id ID of menu command
+*/
+var _confirmMenuCommand = function (id) {
+    menuActions._playMenuCommand.call(this, id);
+};
+
+/**
+ * Translates the modifiers and key to a string for the UI
+ *
+ * @private
+ * @param {object} fullShortcut
+ * @return {string}
+ */
+var _getGlobalShortcutString = function (fullShortcut) {
+    var modifierBits = fullShortcut.modifiers,
+        key = fullShortcut.key,
+        modifierStrings = nls.localize("strings.SEARCH.MODIFIERS"),
+        shortcut = "";
+
+    if (modifierBits.command) {
+        shortcut += "\u2318";
+    }
+
+    if (modifierBits.control) {
+        shortcut += system.isMac ? "^" : modifierStrings.CONTROL;
+    }
+
+    if (modifierBits.alt) {
+        shortcut += system.isMac ? "\u2325" : modifierStrings.ALT;
+    }
+
+    if (modifierBits.shift) {
+        shortcut += "\u21E7";
+    }
+
+    if (key) {
+        shortcut += key.toString().toUpperCase();
+    }
+
+    return " " + shortcut + "\u00a0\u00a0\u00a0\u00a0";
+};
+
+/**
+ * Make list global shortcuts so search store can create search options
+ * 
+ * @private
+ * @return {Immutable.List.<object>}
+*/
+var _globalShortcutSearchOptions = function () {
+    var shortcutStore = this.flux.store("shortcut");
+    var shortcuts = shortcutStore.getState().shortcuts;
+    var shortcutCommands = [];
+
+    shortcuts.forEach(function (shortcut) {
+        var shortcutUI = _getGlobalShortcutString(shortcut);
+        // Presence of a name indicates it not a contextual global shortcut
+        if (shortcut.name) {
+            shortcutCommands.push({
+                // Symbol() is often used as the id for shortcuts if no id is explicitly dictated.
+                // The ids are used as keys in a flattened list of search results, therefore must be a unique string
+                id: shortcut.name,
+                // Shown in the UI
+                name: shortcut.name,
+                // Shown in the UI
+                pathInfo: shortcutUI,
+                iconID: "menu-commands",
+                category: ["GLOBAL_SHORTCUT"]
             });
         }
+    });
 
-        if (keyChar) {
-            shortcut += keyChar.toString().toUpperCase();
-        }
+    return Immutable.List(shortcutCommands);
+};
 
-        if (keyCode) {
-            shortcut += nls.localize("strings.KEYCODE." + keyCode);
-        }
+/**
+ * Perform menu command when its item is confirmed in search
+ *
+ * @private
+ * @param {string} id ID of menu command
+*/
+var _confirmShortcut = function (id) {
+    shortcutActions._executeShortcut.call(this, id);
+};
 
-        return " " + shortcut + "\u00a0\u00a0\u00a0\u00a0";
-    };
-    
-    /**
-     * Make list of recent documents info so search store can create search options
-     * 
-     * @private
-     * @return {Immutable.List.<object>}
-    */
-    var _menuCommandSearchOptions = function () {
-        var menuStore = this.flux.store("menu"),
-            menu = menuStore.getApplicationMenu(),
-            roots = menu.roots.reverse();
+/**
+ * Find SVG class for menu commands
+ * If this needs to vary based on the item, use category list as parameter 
+ * (see getSVGCallback type in search store)
+ * 
+ * @return {string}
+*/
+var _getSVGClass = function () {
+    return "menu-commands";
+};
 
-        var menuCommands = [];
-        roots.forEach(function (root) {
-            var nodes = [root],
-                currItem;
-
-            while (nodes.length > 0) {
-                currItem = nodes.pop();
-                if (currItem.submenu && currItem.enabled) {
-                    nodes = nodes.concat(currItem.submenu.toArray());
-                } else if (currItem.enabled) {
-                    var id = currItem.id,
-                        ancestry = _getLabelForEntry(id),
-                        shortcut = "";
-                    
-                    if (currItem.shortcut) {
-                        shortcut = _getMenuCommandString(currItem.shortcut);
-                    }
-
-                    if (ancestry) {
-                        menuCommands.push({
-                            id: currItem.id,
-                            name: currItem.label,
-                            pathInfo: shortcut + ancestry,
-                            iconID: "menu-commands",
-                            category: ["MENU_COMMAND"]
-                        });
-                    }
-                }
-            }
-        });
-
-        return Immutable.List(menuCommands.reverse());
-    };
- 
-    /**
-     * Perform menu command when its item is confirmed in search
-     *
-     * @private
-     * @param {string} id ID of menu command
-    */
-    var _confirmMenuCommand = function (id) {
-        menuActions._playMenuCommand.call(this, id);
+/**
+ * Register recent document info for search
+ */
+export var registerMenuCommandSearch = function () {
+    var menuCommandPayload = {
+        "type": "MENU_COMMAND",
+        "getOptions": _menuCommandSearchOptions.bind(this),
+        "filters": Immutable.List.of("MENU_COMMAND"),
+        "handleExecute": _confirmMenuCommand.bind(this),
+        "shortenPaths": false,
+        "getSVGClass": _getSVGClass
     };
 
-    /**
-     * Translates the modifiers and key to a string for the UI
-     *
-     * @private
-     * @param {object} fullShortcut
-     * @return {string}
-     */
-    var _getGlobalShortcutString = function (fullShortcut) {
-        var modifierBits = fullShortcut.modifiers,
-            key = fullShortcut.key,
-            modifierStrings = nls.localize("strings.SEARCH.MODIFIERS"),
-            shortcut = "";
+    return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, menuCommandPayload);
+};
+registerMenuCommandSearch.action = {
+    reads: [],
+    writes: [locks.JS_SEARCH]
+};
 
-        if (modifierBits.command) {
-            shortcut += "\u2318";
-        }
-
-        if (modifierBits.control) {
-            shortcut += system.isMac ? "^" : modifierStrings.CONTROL;
-        }
-
-        if (modifierBits.alt) {
-            shortcut += system.isMac ? "\u2325" : modifierStrings.ALT;
-        }
-
-        if (modifierBits.shift) {
-            shortcut += "\u21E7";
-        }
-
-        if (key) {
-            shortcut += key.toString().toUpperCase();
-        }
-
-        return " " + shortcut + "\u00a0\u00a0\u00a0\u00a0";
-    };
-    
-    /**
-     * Make list global shortcuts so search store can create search options
-     * 
-     * @private
-     * @return {Immutable.List.<object>}
-    */
-    var _globalShortcutSearchOptions = function () {
-        var shortcutStore = this.flux.store("shortcut");
-        var shortcuts = shortcutStore.getState().shortcuts;
-        var shortcutCommands = [];
-
-        shortcuts.forEach(function (shortcut) {
-            var shortcutUI = _getGlobalShortcutString(shortcut);
-            // Presence of a name indicates it not a contextual global shortcut
-            if (shortcut.name) {
-                shortcutCommands.push({
-                    // Symbol() is often used as the id for shortcuts if no id is explicitly dictated.
-                    // The ids are used as keys in a flattened list of search results, therefore must be a unique string
-                    id: shortcut.name,
-                    // Shown in the UI
-                    name: shortcut.name,
-                    // Shown in the UI
-                    pathInfo: shortcutUI,
-                    iconID: "menu-commands",
-                    category: ["GLOBAL_SHORTCUT"]
-                });
-            }
-        });
-
-        return Immutable.List(shortcutCommands);
-    };
- 
-    /**
-     * Perform menu command when its item is confirmed in search
-     *
-     * @private
-     * @param {string} id ID of menu command
-    */
-    var _confirmShortcut = function (id) {
-        shortcutActions._executeShortcut.call(this, id);
+/**
+ * Register global shortcut info for search
+ */
+export var registerGlobalShortcutSearch = function () {
+    var globalShortcutPayload = {
+        "type": "GLOBAL_SHORTCUT",
+        "getOptions": _globalShortcutSearchOptions.bind(this),
+        "filters": Immutable.List.of("GLOBAL_SHORTCUT"),
+        "handleExecute": _confirmShortcut.bind(this),
+        "shortenPaths": false,
+        "getSVGClass": _getSVGClass
     };
 
-    /**
-     * Find SVG class for menu commands
-     * If this needs to vary based on the item, use category list as parameter 
-     * (see getSVGCallback type in search store)
-     * 
-     * @return {string}
-    */
-    var _getSVGClass = function () {
-        return "menu-commands";
-    };
-    
-    /**
-     * Register recent document info for search
-     */
-    var registerMenuCommandSearch = function () {
-        var menuCommandPayload = {
-            "type": "MENU_COMMAND",
-            "getOptions": _menuCommandSearchOptions.bind(this),
-            "filters": Immutable.List.of("MENU_COMMAND"),
-            "handleExecute": _confirmMenuCommand.bind(this),
-            "shortenPaths": false,
-            "getSVGClass": _getSVGClass
-        };
-
-        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, menuCommandPayload);
-    };
-    registerMenuCommandSearch.action = {
-        reads: [],
-        writes: [locks.JS_SEARCH]
-    };
-
-    /**
-     * Register global shortcut info for search
-     */
-    var registerGlobalShortcutSearch = function () {
-        var globalShortcutPayload = {
-            "type": "GLOBAL_SHORTCUT",
-            "getOptions": _globalShortcutSearchOptions.bind(this),
-            "filters": Immutable.List.of("GLOBAL_SHORTCUT"),
-            "handleExecute": _confirmShortcut.bind(this),
-            "shortenPaths": false,
-            "getSVGClass": _getSVGClass
-        };
-
-        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, globalShortcutPayload);
-    };
-    registerGlobalShortcutSearch.action = {
-        reads: [],
-        writes: [locks.JS_SEARCH]
-    };
-
-    exports.registerGlobalShortcutSearch = registerGlobalShortcutSearch;
-    exports.registerMenuCommandSearch = registerMenuCommandSearch;
-});
+    return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, globalShortcutPayload);
+};
+registerGlobalShortcutSearch.action = {
+    reads: [],
+    writes: [locks.JS_SEARCH]
+};

@@ -21,51 +21,90 @@
  * 
  */
 
-define(function (require, exports, module) {
-    "use strict";
+// namespaced raw (unsynchronized) actions
 
-    // namespaced raw (unsynchronized) actions
-    module.exports = {
-        application: require("./application"),
-        dialog: require("./dialog"),
-        documents: require("./documents"),
-        edit: require("./edit"),
-        example: require("./example"),
-        export: require("./export"),
-        groups: require("./groups"),
-        guides: require("./guides"),
-        help: require("./help"),
-        history: require("./history"),
-        keyevents: require("./keyevents"),
-        layers: require("./layers"),
-        layerEffects: require("./layereffects"),
-        libraries: require("./libraries"),
-        mask: require("./mask"),
-        menu: require("./menu"),
-        panel: require("./panel"),
-        policy: require("./policy"),
-        preferences: require("./preferences"),
-        sampler: require("./sampler"),
-        search: require("./search"),
-        searchCommands: require("./search/commands"),
-        searchDocuments: require("./search/documents"),
-        searchLayers: require("./search/layers"),
-        searchLibraries: require("./search/libraries"),
-        shapes: require("./shapes"),
-        shortcuts: require("./shortcuts"),
-        superselect: require("./superselect"),
-        toolEllipse: require("./tool/ellipse"),
-        toolPen: require("./tool/pen"),
-        toolRectangle: require("./tool/rectangle"),
-        toolSampler: require("./tool/sampler"),
-        toolSuperselect: require("./tool/superselect"),
-        toolSuperselectType: require("./tool/superselect/type"),
-        toolSuperselectVector: require("./tool/superselect/vector"),
-        toolType: require("./tool/type"),
-        tools: require("./tools"),
-        transform: require("./transform"),
-        type: require("./type"),
-        typetool: require("./typetool"),
-        ui: require("./ui")
-    };
-});
+import * as application from "./application";
+import * as dialog from "./dialog";
+import * as documents from "./documents";
+import * as edit from "./edit";
+import * as example from "./example";
+import * as exportActions from "./export";
+import * as groups from "./groups";
+import * as guides from "./guides";
+import * as help from "./help";
+import * as history from "./history";
+import * as keyevents from "./keyevents";
+import * as layerEffects from "./layereffects";
+import * as layers from "./layers";
+import * as libraries from "./libraries";
+import * as mask from "./mask";
+import * as menu from "./menu";
+import * as panel from "./panel";
+import * as policy from "./policy";
+import * as preferences from "./preferences";
+import * as sampler from "./sampler";
+import * as search from "./search";
+import * as searchCommands from "./search/commands";
+import * as searchDocuments from "./search/documents";
+import * as searchLayers from "./search/layers";
+import * as searchLibraries from "./search/libraries";
+import * as shapes from "./shapes";
+import * as shortcuts from "./shortcuts";
+import * as superselect from "./superselect";
+import * as toolEllipse from "./tool/ellipse";
+import * as toolPen from "./tool/pen";
+import * as toolRectangle from "./tool/rectangle";
+import * as tools from "./tools";
+import * as toolSampler from "./tool/sampler";
+import * as toolSuperselect from "./tool/superselect";
+import * as toolSuperselectType from "./tool/superselect/type";
+import * as toolSuperselectVector from "./tool/superselect/vector";
+import * as toolType from "./tool/type";
+import * as transform from "./transform";
+import * as typeActions from "./type";
+import * as typetool from "./typetool";
+import * as ui from "./ui";
+
+export default {
+    application: application,
+    dialog: dialog,
+    documents: documents,
+    edit: edit,
+    example: example,
+    export: exportActions,
+    groups: groups,
+    guides: guides,
+    help: help,
+    history: history,
+    keyevents: keyevents,
+    layerEffects: layerEffects,
+    layers: layers,
+    libraries: libraries,
+    mask: mask,
+    menu: menu,
+    panel: panel,
+    policy: policy,
+    preferences: preferences,
+    sampler: sampler,
+    search: search,
+    searchCommands: searchCommands,
+    searchDocuments: searchDocuments,
+    searchLayers: searchLayers,
+    searchLibraries: searchLibraries,
+    shapes: shapes,
+    shortcuts: shortcuts,
+    superselect: superselect,
+    toolEllipse: toolEllipse,
+    toolPen: toolPen,
+    toolRectangle: toolRectangle,
+    tools: tools,
+    toolSampler: toolSampler,
+    toolSuperselect: toolSuperselect,
+    toolSuperselectType: toolSuperselectType,
+    toolSuperselectVector: toolSuperselectVector,
+    toolType: toolType,
+    transform: transform,
+    type: typeActions,
+    typetool: typetool,
+    ui: ui
+};

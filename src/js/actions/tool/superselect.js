@@ -21,92 +21,87 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import { ps, lib } from "adapter";
 
-    var descriptor = require("adapter").ps.descriptor,
-        UI = require("adapter").ps.ui,
-        toolLib = require("adapter").lib.tool,
-        vectorMaskLib = require("adapter").lib.vectorMask;
+import * as layerActions from "js/actions/layers";
+import * as policy from "js/actions/policy";
+import * as PolicyStore from "js/stores/policy";
+import * as locks from "js/locks";
 
-    var layerActions = require("js/actions/layers"),
-        policy = require("js/actions/policy"),
-        PolicyStore = require("js/stores/policy"),
-        locks = require("js/locks");
+var descriptor = ps.descriptor,
+    UI = ps.ui,
+    toolLib = lib.tool,
+    vectorMaskLib = lib.vectorMask;
 
-    /**
-     * @private
-     */
-    var select = function () {
-        var toolOptions = {
-                "$AtSl": false, // Don't auto select on drag
-                "$ASGr": false, // Don't auto select Groups,
-                "$Abbx": true // Show transform controls
-            };
+/**
+ * @private
+ */
+export var select = function () {
+    var toolOptions = {
+        "$AtSl": false, // Don't auto select on drag
+        "$ASGr": false, // Don't auto select Groups,
+        "$Abbx": true // Show transform controls
+    };
 
-        var toolStore = this.flux.store("tool"),
-            applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument(),
-            vectorMode = toolStore.getVectorMode();
+    var toolStore = this.flux.store("tool"),
+        applicationStore = this.flux.store("application"),
+        currentDocument = applicationStore.getCurrentDocument(),
+        vectorMode = toolStore.getVectorMode();
 
-        if (!vectorMode || !currentDocument) {
-            return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
+    if (!vectorMode || !currentDocument) {
+        return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
+            .bind(this)
+            .then(function () {
+                return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
+                    UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_AND_NOTIFY);
+            });
+    } else {
+        var currentLayers = currentDocument.layers.selected;
+
+        if (currentLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var currentLayer = currentLayers.first();
+
+        if (currentLayer.vectorMaskEnabled) {
+            return this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
                 .bind(this)
                 .then(function () {
-                    return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
-                        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA_AND_NOTIFY);
+                    currentLayer = applicationStore.getCurrentDocument().layers.selected.first();
+                    if (!currentLayer.vectorMaskEmpty) {
+                        return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
+                            .bind(this)
+                            .then(function () {
+                                // We are not transferring here
+                                // because we actively want to end the use of our locks
+                                this.flux.actions.tools.enterPathModalState();
+                                return Promise.resolve();
+                            });
+                    }
                 });
         } else {
-            var currentLayers = currentDocument.layers.selected;
-
-            if (currentLayers.isEmpty()) {
-                return Promise.resolve();
-            }
-
-            var currentLayer = currentLayers.first();
-
-            if (currentLayer.vectorMaskEnabled) {
-                return this.transfer(layerActions.resetLayers, currentDocument, currentLayer)
-                    .bind(this)
-                    .then(function () {
-                        currentLayer = applicationStore.getCurrentDocument().layers.selected.first();
-                        if (!currentLayer.vectorMaskEmpty) {
-                            return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
-                                .bind(this)
-                                .then(function () {
-                                    // We are not transferring here
-                                    // because we actively want to end the use of our locks
-                                    this.flux.actions.tools.enterPathModalState();
-                                    return Promise.resolve();
-                                });
-                        }
-                    });
-            } else {
-                return Promise.resolve();
-            }
+            return Promise.resolve();
         }
-    };
-    select.action = {
-        reads: [locks.JS_APP, locks.JS_DOC],
-        writes: [],
-        transfers: ["policy.setMode", "layers.resetLayers"],
-        modal: true
-    };
+    }
+};
+select.action = {
+    reads: [locks.JS_APP, locks.JS_DOC],
+    writes: [],
+    transfers: ["policy.setMode", "layers.resetLayers"],
+    modal: true
+};
 
-    /**
-     * @private
-     */
-    var deselect = function () {
-        return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
-            UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
-    };
-    deselect.action = {
-        reads: [],
-        writes: [],
-        transfers: ["policy.setMode"],
-        modal: true
-    };
-
-    exports.select = select;
-    exports.deselect = deselect;
-});
+/**
+ * @private
+ */
+export var deselect = function () {
+    return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
+        UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
+};
+deselect.action = {
+    reads: [],
+    writes: [],
+    transfers: ["policy.setMode"],
+    modal: true
+};

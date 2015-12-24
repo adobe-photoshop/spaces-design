@@ -21,196 +21,190 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Immutable from "immutable";
 
-    var Immutable = require("immutable");
+import * as events from "js/events";
+import * as locks from "js/locks";
+import * as collection from "js/util/collection";
+import * as nls from "js/util/nls";
+import * as libraryActions from "js/actions/libraries";
+import * as librariesUtil from "js/util/libraries";
 
-    var events = require("js/events"),
-        locks = require("js/locks"),
-        collection = require("js/util/collection"),
-        nls = require("js/util/nls"),
-        libraryActions = require("js/actions/libraries"),
-        librariesUtil = require("js/util/libraries");
+/**
+ * Map from element IDs to corresponding element and type
+ *
+ * @private
+ * @type {object}
+*/
+var _idMap = {};
 
-    /**
-     * Map from element IDs to corresponding element and type
-     *
-     * @private
-     * @type {object}
-    */
-    var _idMap = {};
+/**
+ * Make list of certain library info so search store can create search options
+ *
+ * @private
+ * @return {Immutable.List.<object>}
+*/
+var _getLibrarySearchOptions = function () {
+    var libStore = this.flux.store("library"),
+        appStore = this.flux.store("application"),
+        libraries = libStore.getState().libraries,
+        currentDocument = appStore.getCurrentDocument();
 
-    /**
-     * Make list of certain library info so search store can create search options
-     *
-     * @private
-     * @return {Immutable.List.<object>}
-    */
-    var _getLibrarySearchOptions = function () {
-        var libStore = this.flux.store("library"),
-            appStore = this.flux.store("application"),
-            libraries = libStore.getState().libraries,
-            currentDocument = appStore.getCurrentDocument();
+    // Map from vnd.adobe.element type to library strings.SEARCH.CATEGORIES keys
+    var VALID_ASSET_TYPES = {
+        "image": "GRAPHIC",
+        "characterstyle": "CHARACTERSTYLE",
+        "layerstyle": "LAYERSTYLE"
+    };
 
-        // Map from vnd.adobe.element type to library strings.SEARCH.CATEGORIES keys
-        var VALID_ASSET_TYPES = {
-            "image": "GRAPHIC",
-            "characterstyle": "CHARACTERSTYLE",
-            "layerstyle": "LAYERSTYLE"
-        };
+    _idMap = {};
 
-        _idMap = {};
+    return libraries.reduce(function (allMaps, library) {
+        var libMap = Immutable.List();
+        library.elements.forEach(function (element) {
+            var id = element.id.replace(/-/g, "."),
+                title = element.displayName,
+                type = element.type,
+                category = type.substring("application/vnd.adobe.element.".length, type.indexOf("+"));
 
-        return libraries.reduce(function (allMaps, library) {
-            var libMap = Immutable.List();
-            library.elements.forEach(function (element) {
-                var id = element.id.replace(/-/g, "."),
-                    title = element.displayName,
-                    type = element.type,
-                    category = type.substring("application/vnd.adobe.element.".length, type.indexOf("+"));
-
-                var categoryKey = VALID_ASSET_TYPES[category];
-                
-                if (categoryKey) {
-                    // If there is no current document, don't add anything but graphics
-                    if (!currentDocument) {
-                        if (categoryKey !== "GRAPHIC") {
-                            return;
-                        }
-                        
-                        var representation = element.getPrimaryRepresentation();
-                        if (!representation ||
-                            !libraryActions.EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type)) {
-                            return;
-                        }
+            var categoryKey = VALID_ASSET_TYPES[category];
+            
+            if (categoryKey) {
+                // If there is no current document, don't add anything but graphics
+                if (!currentDocument) {
+                    if (categoryKey !== "GRAPHIC") {
+                        return;
                     }
-
-                    if (categoryKey === "CHARACTERSTYLE") {
-                        if (!title) {
-                            title = librariesUtil.formatCharStyle(element, ["fontFamily", "fontStyle"], " ");
-                        }
-                        
-                        title = title + " - " + librariesUtil.formatCharStyle(element, ["color", "fontSize"], ", ");
+                    
+                    var representation = element.getPrimaryRepresentation();
+                    if (!representation ||
+                        !libraryActions.EDITABLE_GRAPHIC_REPRESENTATION_TYPES.has(representation.type)) {
+                        return;
                     }
-
-                    _idMap[id] = { asset: element, type: categoryKey };
-
-                    libMap = libMap.push({
-                        id: id,
-                        name: title,
-                        pathInfo: library.name + ": " + nls.localize("strings.SEARCH.CATEGORIES." + categoryKey),
-                        iconID: _getSVGClass([categoryKey]),
-                        category: ["LIBRARY", library.id.replace(/-/g, "."), categoryKey]
-                    });
                 }
-            });
-            return allMaps.concat(libMap);
-        }, Immutable.List());
-    };
 
-    /**
-     * Find SVG class for library item based on what type of asset it is
-     *
-     * @private
-     * @param {Array.<string>} categories 
-     * @return {string}
-     */
-    var _getSVGClass = function (categories) {
-        var type = categories[categories.length - 1],
-            // map from item categories to svg icon class name
-            CATEGORY_MAP_ICON = {
-                "GRAPHIC": "libraries-addGraphic",
-                "CHARACTERSTYLE": "libraries-addCharStyle",
-                "LAYERSTYLE": "libraries-addLayerStyle"
-            };
-
-        return CATEGORY_MAP_ICON[type] || "libraries-cc";
-    };
-
-    /**
-     * Apply library element when its item is confirmed in search
-     *
-     * @private
-     * @param {string} id ID of layer to select
-     */
-    var _confirmSearch = function (id) {
-        var elementInfo = _idMap[id],
-            appStore = this.flux.store("application"),
-            currentDocument = appStore.getCurrentDocument();
-
-        if (elementInfo) {
-            var asset = elementInfo.asset,
-                selectPromise = this.flux.actions.libraries.selectLibrary(asset.library.id);
-
-            switch (elementInfo.type) {
-                case "GRAPHIC":
-                    var uiStore = this.flux.stores.ui,
-                        centerOffsets = uiStore.getState().centerOffsets,
-                        midX = (window.document.body.clientWidth + centerOffsets.left - centerOffsets.right) / 2,
-                        midY = (window.document.body.clientHeight + centerOffsets.top - centerOffsets.bottom) / 2,
-                        location = uiStore.transformWindowToCanvas(midX, midY);
+                if (categoryKey === "CHARACTERSTYLE") {
+                    if (!title) {
+                        title = librariesUtil.formatCharStyle(element, ["fontFamily", "fontStyle"], " ");
+                    }
                     
-                    selectPromise
-                        .bind(this)
-                        .then(function () {
-                            if (currentDocument) {
-                                this.flux.actions.libraries.createLayerFromElement(asset, location);
-                            } else {
-                                this.flux.actions.libraries.openGraphicForEdit(asset);
-                            }
-                        });
-                    
-                    break;
-                case "LAYERSTYLE":
-                    selectPromise
-                        .bind(this)
-                        .then(function () {
-                            this.flux.actions.libraries.applyLayerStyle(asset);
-                        });
-                    break;
-                case "CHARACTERSTYLE":
-                    selectPromise
-                        .bind(this)
-                        .then(function () {
-                            this.flux.actions.libraries.applyCharacterStyle(asset);
-                        });
-                    break;
+                    title = title + " - " + librariesUtil.formatCharStyle(element, ["color", "fontSize"], ", ");
+                }
+
+                _idMap[id] = { asset: element, type: categoryKey };
+
+                libMap = libMap.push({
+                    id: id,
+                    name: title,
+                    pathInfo: library.name + ": " + nls.localize("strings.SEARCH.CATEGORIES." + categoryKey),
+                    iconID: _getSVGClass([categoryKey]),
+                    category: ["LIBRARY", library.id.replace(/-/g, "."), categoryKey]
+                });
             }
-        }
-    };
+        });
+        return allMaps.concat(libMap);
+    }, Immutable.List());
+};
 
-    /**
-     * Register library info to search
-     *
-     * @param {Array.<AdobeLibraryComposite>} libraries
-     * @return {Promise}
-     */
-    var registerLibrarySearch = function (libraries) {
-        var libraryIDs = libraries.length > 0 ? collection.pluck(libraries, "id") : Immutable.List(),
-            libraryNames = libraries.length > 0 ? collection.pluck(libraries, "name") : Immutable.List(),
-            assetTypes = ["LIBRARY", "GRAPHIC", "LAYERSTYLE", "CHARACTERSTYLE"];
-        
-        var filters = libraryIDs.concat(assetTypes),
-            displayFilters = libraryNames.concat(assetTypes);
-
-        var payload = {
-            "type": "LIBRARY",
-            "getOptions": _getLibrarySearchOptions.bind(this),
-            "filters": filters,
-            "displayFilters": displayFilters,
-            "handleExecute": _confirmSearch.bind(this),
-            "shortenPaths": false,
-            "getSVGClass": _getSVGClass
+/**
+ * Find SVG class for library item based on what type of asset it is
+ *
+ * @private
+ * @param {Array.<string>} categories 
+ * @return {string}
+ */
+var _getSVGClass = function (categories) {
+    var type = categories[categories.length - 1],
+        // map from item categories to svg icon class name
+        CATEGORY_MAP_ICON = {
+            "GRAPHIC": "libraries-addGraphic",
+            "CHARACTERSTYLE": "libraries-addCharStyle",
+            "LAYERSTYLE": "libraries-addLayerStyle"
         };
-        
-        return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, payload);
-    };
-    registerLibrarySearch.action = {
-        reads: [],
-        writes: [locks.JS_SEARCH],
-        transfers: []
+
+    return CATEGORY_MAP_ICON[type] || "libraries-cc";
+};
+
+/**
+ * Apply library element when its item is confirmed in search
+ *
+ * @private
+ * @param {string} id ID of layer to select
+ */
+var _confirmSearch = function (id) {
+    var elementInfo = _idMap[id],
+        appStore = this.flux.store("application"),
+        currentDocument = appStore.getCurrentDocument();
+
+    if (elementInfo) {
+        var asset = elementInfo.asset,
+            selectPromise = this.flux.actions.libraries.selectLibrary(asset.library.id);
+
+        switch (elementInfo.type) {
+        case "GRAPHIC":
+            var uiStore = this.flux.stores.ui,
+                centerOffsets = uiStore.getState().centerOffsets,
+                midX = (window.document.body.clientWidth + centerOffsets.left - centerOffsets.right) / 2,
+                midY = (window.document.body.clientHeight + centerOffsets.top - centerOffsets.bottom) / 2,
+                location = uiStore.transformWindowToCanvas(midX, midY);
+            
+            selectPromise
+                .bind(this)
+                .then(function () {
+                    if (currentDocument) {
+                        this.flux.actions.libraries.createLayerFromElement(asset, location);
+                    } else {
+                        this.flux.actions.libraries.openGraphicForEdit(asset);
+                    }
+                });
+            
+            break;
+        case "LAYERSTYLE":
+            selectPromise
+                .bind(this)
+                .then(function () {
+                    this.flux.actions.libraries.applyLayerStyle(asset);
+                });
+            break;
+        case "CHARACTERSTYLE":
+            selectPromise
+                .bind(this)
+                .then(function () {
+                    this.flux.actions.libraries.applyCharacterStyle(asset);
+                });
+            break;
+        }
+    }
+};
+
+/**
+ * Register library info to search
+ *
+ * @param {Array.<AdobeLibraryComposite>} libraries
+ * @return {Promise}
+ */
+export var registerLibrarySearch = function (libraries) {
+    var libraryIDs = libraries.length > 0 ? collection.pluck(libraries, "id") : Immutable.List(),
+        libraryNames = libraries.length > 0 ? collection.pluck(libraries, "name") : Immutable.List(),
+        assetTypes = ["LIBRARY", "GRAPHIC", "LAYERSTYLE", "CHARACTERSTYLE"];
+    
+    var filters = libraryIDs.concat(assetTypes),
+        displayFilters = libraryNames.concat(assetTypes);
+
+    var payload = {
+        "type": "LIBRARY",
+        "getOptions": _getLibrarySearchOptions.bind(this),
+        "filters": filters,
+        "displayFilters": displayFilters,
+        "handleExecute": _confirmSearch.bind(this),
+        "shortenPaths": false,
+        "getSVGClass": _getSVGClass
     };
     
-    exports.registerLibrarySearch = registerLibrarySearch;
-});
+    return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, payload);
+};
+registerLibrarySearch.action = {
+    reads: [],
+    writes: [locks.JS_SEARCH],
+    transfers: []
+};

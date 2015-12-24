@@ -21,113 +21,106 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
 
-    var Promise = require("bluebird");
+import { ps as PS, os as OS, lib } from "adapter";
 
-    var PS = require("adapter").ps,
-        OS = require("adapter").os,
-        UI = require("adapter").ps.ui,
-        descriptor = require("adapter").ps.descriptor,
-        toolLib = require("adapter").lib.tool;
+var UI = PS.ui,
+    descriptor = PS.descriptor,
+    toolLib = lib.tool;
+    
+import * as shortcuts from "js/actions/shortcuts";
+import * as locks from "js/locks";
+
+var _TOGGLE_TARGET_PATH = 3502,
+    _CLEAR_PATH = 106;
+
+/**
+ * Handler for pathComponentSelectionChanged events
+ */
+var _pathSelectionhandler;
+
+/**
+ * Sets the selection mode to only active layers for direct select tool
+ * @private
+ */
+export var select = function () {
+    var deleteFn = function (event) {
+        event.stopPropagation();
         
-    var shortcuts = require("js/actions/shortcuts"),
-        locks = require("js/locks");
+        var flux = this.flux,
+            toolStore = flux.store("tool");
 
-    var _TOGGLE_TARGET_PATH = 3502,
-        _CLEAR_PATH = 106;
+        if (toolStore.getVectorMode()) {
+            flux.actions.mask.handleDeleteVectorMask();
+        } else {
+            return PS.performMenuCommand(_CLEAR_PATH)
+                .catch(function () {
+                    // Silence the errors here
+                });
+        }
+    }.bind(this);
 
-    /**
-     * Handler for pathComponentSelectionChanged events
-     */
-    var _pathSelectionhandler;
+    _pathSelectionhandler = function (event) {
+        if (event.pathID && event.pathID.length === 0) {
+            var toolStore = this.flux.store("tool");
 
-    /**
-     * Sets the selection mode to only active layers for direct select tool
-     * @private
-     */
-    var select = function () {
-        var deleteFn = function (event) {
-            event.stopPropagation();
-            
-            var flux = this.flux,
-                toolStore = flux.store("tool");
+            this.flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+        }
+    }.bind(this);
+    descriptor.addListener("pathComponentSelectionChanged", _pathSelectionhandler);
+    
+    var optionsPromise = descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false)),
+        suppressionPromise = UI.setSuppressTargetPaths(false),
+        backspacePromise = this.transfer(shortcuts.addShortcut,
+            OS.eventKeyCode.BACKSPACE, {}, deleteFn, "vectorBackspace", true),
+        deletePromise = this.transfer(shortcuts.addShortcut,
+            OS.eventKeyCode.DELETE, {}, deleteFn, "vectorDelete", true),
+        getPathVisiblePromise = descriptor.getProperty("document", "targetPathVisibility");
 
-            if (toolStore.getVectorMode()) {
-                flux.actions.mask.handleDeleteVectorMask();
-            } else {
-                return PS.performMenuCommand(_CLEAR_PATH)
-                    .catch(function () {
-                        // Silence the errors here
-                    });
+    return Promise.join(getPathVisiblePromise,
+        optionsPromise,
+        suppressionPromise,
+        backspacePromise,
+        deletePromise,
+        function (visible) {
+            if (!visible) {
+                return PS.performMenuCommand(_TOGGLE_TARGET_PATH);
             }
-        }.bind(this);
+        });
+};
+select.action = {
+    reads: [],
+    writes: [locks.PS_APP, locks.PS_TOOL],
+    transfers: ["shortcuts.addShortcut"],
+    modal: true
+};
 
-        _pathSelectionhandler = function (event) {
-            if (event.pathID && event.pathID.length === 0) {
-                var toolStore = this.flux.store("tool");
+/**
+ * Updates current document because we may have changed bounds in Photoshop
+ *
+ * @return {Promise}
+ */
+export var deselect = function () {
+    var currentDocument = this.flux.store("application").getCurrentDocument();
 
-                this.flux.actions.tools.select(toolStore.getToolByID("newSelect"));
+    var backspacePromise = this.transfer(shortcuts.removeShortcut, "vectorBackspace"),
+        deletePromise = this.transfer(shortcuts.removeShortcut, "vectorDelete");
+
+    descriptor.removeListener("pathComponentSelectionChanged", _pathSelectionhandler);
+    _pathSelectionhandler = null;
+
+    return Promise.join(backspacePromise, deletePromise)
+        .bind(this)
+        .then(function () {
+            if (currentDocument) {
+                this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
             }
-        }.bind(this);
-        descriptor.addListener("pathComponentSelectionChanged", _pathSelectionhandler);
-        
-        var optionsPromise = descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false)),
-            suppressionPromise = UI.setSuppressTargetPaths(false),
-            backspacePromise = this.transfer(shortcuts.addShortcut,
-                OS.eventKeyCode.BACKSPACE, {}, deleteFn, "vectorBackspace", true),
-            deletePromise = this.transfer(shortcuts.addShortcut,
-                OS.eventKeyCode.DELETE, {}, deleteFn, "vectorDelete", true),
-            getPathVisiblePromise = descriptor.getProperty("document", "targetPathVisibility");
-
-        return Promise.join(getPathVisiblePromise,
-            optionsPromise,
-            suppressionPromise,
-            backspacePromise,
-            deletePromise,
-            function (visible) {
-                if (!visible) {
-                    return PS.performMenuCommand(_TOGGLE_TARGET_PATH);
-                }
-            });
-    };
-    select.action = {
-        reads: [],
-        writes: [locks.PS_APP, locks.PS_TOOL],
-        transfers: ["shortcuts.addShortcut"],
-        modal: true
-    };
-
-    /**
-     * Updates current document because we may have changed bounds in Photoshop
-     *
-     * @return {Promise}
-     */
-    var deselect = function () {
-        var currentDocument = this.flux.store("application").getCurrentDocument();
-
-        var backspacePromise = this.transfer(shortcuts.removeShortcut, "vectorBackspace"),
-            deletePromise = this.transfer(shortcuts.removeShortcut, "vectorDelete");
-
-        descriptor.removeListener("pathComponentSelectionChanged", _pathSelectionhandler);
-        _pathSelectionhandler = null;
-
-        return Promise.join(backspacePromise, deletePromise)
-            .bind(this)
-            .then(function () {
-                if (currentDocument) {
-                    this.flux.actions.layers.resetLayers(currentDocument, currentDocument.layers.selected);
-                }
-            });
-    };
-    deselect.action = {
-        reads: [locks.JS_APP],
-        writes: [],
-        transfers: ["shortcuts.removeShortcut"],
-        modal: true
-    };
-
-    exports.select = select;
-    exports.deselect = deselect;
-});
+        });
+};
+deselect.action = {
+    reads: [locks.JS_APP],
+    writes: [],
+    transfers: ["shortcuts.removeShortcut"],
+    modal: true
+};

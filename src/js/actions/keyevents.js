@@ -21,144 +21,139 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
 
-    var Promise = require("bluebird");
+import * as adapter from "adapter";
 
-    var os = require("adapter").os;
+var os = adapter.os;
 
-    var events = require("../events"),
-        log = require("js/util/log"),
-        keyUtil = require("js/util/key");
+import * as events from "../events";
+import * as log from "js/util/log";
+import * as keyUtil from "js/util/key";
 
-    /**
-     * Construct a semantic event from an adapter event.
-     * 
-     * @private
-     * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
-     * @return {{keyCode: number=, keyChar: string=, modifiers: object}}
-     */
-    var _getEventDetail = function (event) {
-        var detail = {
-            modifierBits: event.modifiers,
-            modifiers: keyUtil.bitsToModifiers(event.modifiers)
-        };
-
-        if (event.keyChar) {
-            detail.keyChar = event.keyChar;
-        } else if (event.hasOwnProperty("keyCode")) {
-            detail.keyCode = event.keyCode;
-        } else {
-            switch (event.eventKind) {
-            case os.eventKind.KEY_DOWN:
-            case os.eventKind.KEY_UP:
-                log.warn("Adapter key event has no key specification", event);
-            }
-        }
-
-        return detail;
+/**
+ * Construct a semantic event from an adapter event.
+ * 
+ * @private
+ * @param {{eventKind: number, keyCode: number=, keyChar: string=, modifiers: number}} event
+ * @return {{keyCode: number=, keyChar: string=, modifiers: object}}
+ */
+var _getEventDetail = function (event) {
+    var detail = {
+        modifierBits: event.modifiers,
+        modifiers: keyUtil.bitsToModifiers(event.modifiers)
     };
 
-    /**
-     * Handler for EXTERNAL_KEYEVENT, used in beforeStartup.
-     *
-     * @private
-     * @param {object} event
-     */
-    var _externalKeyEventHandler = function (event) {
-        var type;
+    if (event.keyChar) {
+        detail.keyChar = event.keyChar;
+    } else if (event.hasOwnProperty("keyCode")) {
+        detail.keyCode = event.keyCode;
+    } else {
         switch (event.eventKind) {
         case os.eventKind.KEY_DOWN:
-            type = "adapterKeydown";
-            break;
         case os.eventKind.KEY_UP:
-            type = "adapterKeyup";
-            break;
-        case os.eventKind.FLAGS_CHANGED:
-            type = "adapterFlagsChanged";
-            break;
-        default:
-            return;
+            log.warn("Adapter key event has no key specification", event);
         }
+    }
 
-        var domEvent = new window.CustomEvent(type, {
-            bubbles: true,
-            detail: _getEventDetail(event)
-        });
+    return detail;
+};
 
-        window.document.activeElement.dispatchEvent(domEvent);
-    };
+/**
+ * Handler for EXTERNAL_KEYEVENT, used in beforeStartup.
+ *
+ * @private
+ * @param {object} event
+ */
+var _externalKeyEventHandler = function (event) {
+    var type;
+    switch (event.eventKind) {
+    case os.eventKind.KEY_DOWN:
+        type = "adapterKeydown";
+        break;
+    case os.eventKind.KEY_UP:
+        type = "adapterKeyup";
+        break;
+    case os.eventKind.FLAGS_CHANGED:
+        type = "adapterFlagsChanged";
+        break;
+    default:
+        return;
+    }
 
-    /**
-     * Flags change handler that emits MODIFIERS_CHANGED.
-     *
-     * @private
-     * @type {function(SyntheticEvent)}
-     */
-    var _handleFlagsChanged;
+    var domEvent = new window.CustomEvent(type, {
+        bubbles: true,
+        detail: _getEventDetail(event)
+    });
 
-    /**
-     * Clears modifier state when the application becomes inactive.
-     *
-     * @private
-     * @type {function({{becameActive: boolean}})}
-     */
-    var _handleActivationChanged;
+    window.document.activeElement.dispatchEvent(domEvent);
+};
 
-    /**
-     * Registers a key event handler to reflect adapter events back to the DOM.
-     * 
-     * @return {Promise}
-     */
-    var beforeStartup = function () {
-        os.addListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
+/**
+ * Flags change handler that emits MODIFIERS_CHANGED.
+ *
+ * @private
+ * @type {function(SyntheticEvent)}
+ */
+var _handleFlagsChanged;
 
-        _handleActivationChanged = function (event) {
-            if (!event.becameActive) {
-                // The modifier state becomes invalid when the application becomes inactive.
-                // To avoid having stale modifier state when the application becomes active
-                // again, just reset the state immediately. Ideally, the adapter would also
-                // send another adapterFlagsChanged event whenever the application becomes
-                // active so that the modifier state can be updated immediately. If not, it
-                // will be null until the first new adapterFlagsChanged event, which is
-                // less bad than having stale modifier state. For details, see #2946.
-                this.dispatch(events.modifiers.MODIFIERS_CHANGED, {});
-            }
-        }.bind(this);
-        os.addListener("activationChanged", _handleActivationChanged);
+/**
+ * Clears modifier state when the application becomes inactive.
+ *
+ * @private
+ * @type {function({{becameActive: boolean}})}
+ */
+var _handleActivationChanged;
 
-        _handleFlagsChanged = function (event) {
-            this.dispatch(events.modifiers.MODIFIERS_CHANGED, event.detail.modifiers);
-        }.bind(this);
+/**
+ * Registers a key event handler to reflect adapter events back to the DOM.
+ * 
+ * @return {Promise}
+ */
+export var beforeStartup = function () {
+    os.addListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
 
-        window.addEventListener("adapterFlagsChanged", _handleFlagsChanged);
+    _handleActivationChanged = function (event) {
+        if (!event.becameActive) {
+            // The modifier state becomes invalid when the application becomes inactive.
+            // To avoid having stale modifier state when the application becomes active
+            // again, just reset the state immediately. Ideally, the adapter would also
+            // send another adapterFlagsChanged event whenever the application becomes
+            // active so that the modifier state can be updated immediately. If not, it
+            // will be null until the first new adapterFlagsChanged event, which is
+            // less bad than having stale modifier state. For details, see #2946.
+            this.dispatch(events.modifiers.MODIFIERS_CHANGED, {});
+        }
+    }.bind(this);
+    os.addListener("activationChanged", _handleActivationChanged);
 
-        return Promise.resolve();
-    };
-    beforeStartup.action = {
-        reads: [],
-        writes: []
-    };
+    _handleFlagsChanged = function (event) {
+        this.dispatch(events.modifiers.MODIFIERS_CHANGED, event.detail.modifiers);
+    }.bind(this);
 
-    /**
-     * Remove event handlers.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var onReset = function () {
-        os.removeListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
-        os.removeListener("activationChanged", _handleActivationChanged);
-        window.removeEventListener("adapterFlagsChanged", _handleFlagsChanged);
+    window.addEventListener("adapterFlagsChanged", _handleFlagsChanged);
 
-        return Promise.resolve();
-    };
-    onReset.action = {
-        reads: [],
-        writes: []
-    };
+    return Promise.resolve();
+};
+beforeStartup.action = {
+    reads: [],
+    writes: []
+};
 
-    exports.beforeStartup = beforeStartup;
-    exports.onReset = onReset;
-});
+/**
+ * Remove event handlers.
+ *
+ * @private
+ * @return {Promise}
+ */
+export var onReset = function () {
+    os.removeListener(os.notifierKind.EXTERNAL_KEYEVENT, _externalKeyEventHandler);
+    os.removeListener("activationChanged", _handleActivationChanged);
+    window.removeEventListener("adapterFlagsChanged", _handleFlagsChanged);
+
+    return Promise.resolve();
+};
+onReset.action = {
+    reads: [],
+    writes: []
+};

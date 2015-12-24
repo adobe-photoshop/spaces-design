@@ -21,85 +21,77 @@
  * 
  */
 
-define(function (require, exports) {
-    "use strict";
+import * as Promise from "bluebird";
 
-    var Promise = require("bluebird");
+import * as events from "../events";
+import * as locks from "js/locks";
 
-    var events = require("../events"),
-        locks = require("js/locks");
+/**
+ * Example synchronous command. Note that all commands must return a promise.
+ * 
+ * @param {number} count Example paramter
+ * @return {!Promise}
+ */
+export var syncAction = function (count) {
+    var payload = {
+        count: count
+    };
 
-    /**
-     * Example synchronous command. Note that all commands must return a promise.
-     * 
-     * @param {number} count Example paramter
-     * @return {!Promise}
-     */
-    var syncAction = function (count) {
+    this.dispatch(events.example.SYNC_ACTION, payload);
+
+    return Promise.resolve();
+};
+syncAction.action = {
+    writes: locks.ALL_LOCKS
+};
+
+/**
+ * Example asynchronous command. Returned promise does not resolve until all
+ * events have been dispatched.
+ * 
+ * @param {number} count Example paramter
+ * @return {!Promise}
+ */
+var async = function (count) {
+    return new Promise(function (resolve) {
         var payload = {
             count: count
         };
 
-        this.dispatch(events.example.SYNC_ACTION, payload);
+        this.dispatch(events.example.ASYNC_ACTION_START, payload);
 
-        return Promise.resolve();
-    };
-    syncAction.action = {
-        writes: locks.ALL_LOCKS
-    };
-    
-    /**
-     * Example asynchronous command. Returned promise does not resolve until all
-     * events have been dispatched.
-     * 
-     * @param {number} count Example paramter
-     * @return {!Promise}
-     */
-    var async = function (count) {
-        return new Promise(function (resolve) {
-            var payload = {
-                count: count
-            };
+        window.setTimeout(function () {
+            this.dispatch(events.example.ASYNC_ACTION_SUCCESS, payload);
+            resolve();
+        }.bind(this), 100);
+    }.bind(this));
+};
 
-            this.dispatch(events.example.ASYNC_ACTION_START, payload);
+/**
+ * Example asynchonous action. If the read set or write set is left unspecified
+ * then all locks are assumed to be required. Also, any write locks are assumed
+ * to also be included in the set of read locks.
+ * 
+ * This action acquires all write locks before executing. Hence, this action
+ * will never be executed concurrently with any other action.
+ *
+ * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
+ */
+export var asyncActionReadWrite = function () { return async.apply(this, arguments); };
+asyncActionReadWrite.action = {
+    writes: locks.ALL_LOCKS
+};
 
-            window.setTimeout(function () {
-                this.dispatch(events.example.ASYNC_ACTION_SUCCESS, payload);
-                resolve();
-            }.bind(this), 100);
-        }.bind(this));
-    };
-
-    /**
-     * Example asynchonous action. If the read set or write set is left unspecified
-     * then all locks are assumed to be required. Also, any write locks are assumed
-     * to also be included in the set of read locks.
-     * 
-     * This action acquires all write locks before executing. Hence, this action
-     * will never be executed concurrently with any other action.
-     *
-     * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
-     */
-    var asyncActionReadWrite = function () { return async.apply(this, arguments); };
-    asyncActionReadWrite.action = {
-        writes: locks.ALL_LOCKS
-    };
-
-    /**
-     * Example asynchonous action. This action acquires all read locks but no
-     * write locks before executing. Hence, this action may be executed concurrently
-     * with other actions that only require read locks, but will never be executed
-     * concurrently with other actions that require any write locks.
-     *
-     * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
-     */
-    var asyncActionReadOnly = function () { return async.apply(this, arguments); };
-    asyncActionReadOnly.action = {
-        reads: locks.ALL_LOCKS,
-        writes: []
-    };
-
-    exports.syncAction = syncAction;
-    exports.asyncActionReadOnly = asyncActionReadOnly;
-    exports.asyncActionReadWrite = asyncActionReadWrite;
-});
+/**
+ * Example asynchonous action. This action acquires all read locks but no
+ * write locks before executing. Hence, this action may be executed concurrently
+ * with other actions that only require read locks, but will never be executed
+ * concurrently with other actions that require any write locks.
+ *
+ * @type {{command: function, reads: Array.<string>=, writes: Array.<string>=}}
+ */
+export var asyncActionReadOnly = function () { return async.apply(this, arguments); };
+asyncActionReadOnly.action = {
+    reads: locks.ALL_LOCKS,
+    writes: []
+};

@@ -21,246 +21,240 @@
  *
  */
 
-define(function (require, exports, module) {
-    "use strict";
+import * as Fluxxor from "fluxxor";
+import * as Promise from "bluebird";
+import * as Immutable from "immutable";
 
-    var Fluxxor = require("fluxxor"),
-        Promise = require("bluebird"),
-        Immutable = require("immutable");
+import * as events from "../events";
 
-    var events = require("../events");
+/**
+ * @typedef {object} DropTarget
+ * @property {number} id
+ * @property {string} accept
+ * @property {ReactComponent} component
+ * @property {function} onDrop
+ * @property {function} handleDragTargetEnter
+ * @property {function} handleDragTargetMove
+ * @property {function} handleDragTargetLeave
+ */
+
+/**
+ * Holds global state needed by view components to implement drag-and-drop.
+ *
+ * @constructor
+ */
+export default Fluxxor.createStore({
+
+    /**
+     * Currently Active drag targets
+     * 
+     * @private
+     * @type {Immutable.Iterable.<object>} 
+     */
+    _dragTargets: null,
+
+    /**
+     * Currently Active drop target. Use _hasValidDropTarget to know whether it is valid for the dragged targets.
+     * 
+     * @private
+     * @type {object}
+     */
+    _dropTarget: null,
     
     /**
-     * @typedef {object} DropTarget
-     * @property {number} id
-     * @property {string} accept
-     * @property {ReactComponent} component
-     * @property {function} onDrop
-     * @property {function} handleDragTargetEnter
-     * @property {function} handleDragTargetMove
-     * @property {function} handleDragTargetLeave
+     * Map from the id to the DropTarget.
+     * 
+     * @private
+     * @type {Immutable.Map.<string, DropTarget>}
      */
-
+    _idToDropTarget: null,
+    
     /**
-     * Holds global state needed by view components to implement drag-and-drop.
+     * Whether the store is processing a drop event.
      *
-     * @constructor
+     * @private
+     * @type {boolean}
      */
-    var DragAndDropStore = Fluxxor.createStore({
-
-        /**
-         * Currently Active drag targets
-         * 
-         * @private
-         * @type {Immutable.Iterable.<object>} 
-         */
-        _dragTargets: null,
-
-        /**
-         * Currently Active drop target. Use _hasValidDropTarget to know whether it is valid for the dragged targets.
-         * 
-         * @private
-         * @type {object}
-         */
-        _dropTarget: null,
+    _isDropping: null,
+    
+    /**
+     * The initial mouse position when a drag event is triggered.
+     *
+     * @private
+     * @type {{x: number, y: number}}
+     */
+    _initialDragPosition: null,
+    
+    /**
+     * The last mouse position of a drag event.
+     *
+     * @private
+     * @type {{x: number, y: number}}
+     */
+    _dragPosition: null,
+    
+    /**
+     * Initializes the by-zone maps.
+     */
+    initialize: function () {
+        this.bindActions(
+            events.RESET, this._handleReset
+        );
         
-        /**
-         * Map from the id to the DropTarget.
-         * 
-         * @private
-         * @type {Immutable.Map.<string, DropTarget>}
-         */
-        _idToDropTarget: null,
+        // These setting attributes should be initialized once.
+        this._idToDropTarget = new Map();
+
+        this._handleReset();
+    },
+    
+    /**
+     * Reset or initialize store state.
+     *
+     * @private
+     */
+    _handleReset: function () {
+        var hasDragTargets = !!this._dragTargets;
         
-        /**
-         * Whether the store is processing a drop event.
-         *
-         * @private
-         * @type {boolean}
-         */
-        _isDropping: null,
+        this._dragTargetType = null;
+        this._dragTargets = Immutable.List();
+        this._dropTarget = null;
+        this._hasValidDropTarget = false;
+        this._dragPosition = null;
+        this._isDropping = false;
         
-        /**
-         * The initial mouse position when a drag event is triggered.
-         *
-         * @private
-         * @type {{x: number, y: number}}
-         */
-        _initialDragPosition: null,
-        
-        /**
-         * The last mouse position of a drag event.
-         *
-         * @private
-         * @type {{x: number, y: number}}
-         */
-        _dragPosition: null,
-        
-        /**
-         * Initializes the by-zone maps.
-         */
-        initialize: function () {
-            this.bindActions(
-                events.RESET, this._handleReset
-            );
-            
-            // These setting attributes should be initialized once.
-            this._idToDropTarget = new Map();
-
-            this._handleReset();
-        },
-        
-        /**
-         * Reset or initialize store state.
-         *
-         * @private
-         */
-        _handleReset: function () {
-            var hasDragTargets = !!this._dragTargets;
-            
-            this._dragTargetType = null;
-            this._dragTargets = Immutable.List();
-            this._dropTarget = null;
-            this._hasValidDropTarget = false;
-            this._dragPosition = null;
-            this._isDropping = false;
-            
-            if (hasDragTargets) {
-                this.emit("change");
-            }
-        },
-        
-        /**
-         * Find the DropTarget associated with the mouseover HTML element, by comparing the "droppabled" attribute 
-         * of the HTML element and the id of the DropTarget. The "droppablid" attribute is maintained by Droppable 
-         * component. See "Droppable.componentDidMount" for details.
-         *
-         * @private
-         * @param  {HTMLElement} element
-         * @return {?DropTarget}
-         */
-        _findDropTarget: function (element) {
-            do {
-                if (element.dataset) {
-                    var droppablID = element.dataset.droppablid,
-                        dropTarget = this._idToDropTarget[droppablID];
-                    
-                    if (dropTarget) {
-                        return dropTarget;
-                    }
-                }
-
-                element = element.parentNode;
-            } while (element);
-
-            return null;
-        },
-
-        getState: function () {
-            return {
-                dragTargets: this._dragTargets,
-                dropTarget: this._dropTarget,
-                initialDragPosition: this._initialDragPosition,
-                dragPosition: this._dragPosition
-            };
-        },
-
-        /**
-         * Add a drop target to the given drop zone.
-         *
-         * @param {DropTarget} dropTarget
-         */
-        registerDroppable: function (dropTarget) {
-            this._idToDropTarget[dropTarget.id] = dropTarget;
-        },
-
-        /**
-         * Remove a drop target by id
-         *
-         * @param {number} dropTargetID
-         */
-        deregisterDroppable: function (dropTargetID) {
-            this._idToDropTarget[dropTargetID] = null;
-        },
-        
-        /**
-         * Begin a drag operation with the given drag targets.
-         *
-         * @param {string} type
-         * @param {Immutalbe.Iterable.<object>} dragTargets
-         */
-        startDrag: function (type, dragTargets, position) {
-            this._dragTargetType = type;
-            this._dragTargets = dragTargets;
-            this._dragPosition = position;
-            this._initialDragPosition = position;
-
-            // Provide optional way for listening on start-drag event only.
-            this.emit("start-drag");
-            this.emit("change");
-        },
-
-        /**
-         * End the current drag operation.
-         */
-        stopDrag: function () {
-            var onDropPromise = Promise.resolve();
-
-            if (this._dropTarget) {
-                onDropPromise = this._dropTarget.onDrop(this._dragTargets, this._dragPosition);
-            }
-            
-            this._isDropping = true;
-
-            onDropPromise
-                .bind(this)
-                .then(function () {
-                    this._dragTargetType = null;
-                    this._dragTargets = Immutable.List();
-                    this._dropTarget = null;
-                    this._hasValidDropTarget = false;
-                    this._dragPosition = null; // Removing this causes an offset
-                    this._initialDragPosition = null;
-                    this._isDropping = false;
-                    this.emit("stop-drag");
-                    this.emit("change");
-                });
-        },
-            
-        /**
-         * Update the DropTarget via the current mouseover HTML element, and call DropTarget callbacks.
-         *
-         * @param {{x: number, y: number}} position
-         * @param {HTMLElement} mouseOverElement
-         */
-        updateDrag: function (position, mouseOverElement) {
-            if (this._isDropping) {
-                return;
-            }
-            
-            this._dragPosition = position;
-            
-            var nextDropTarget = this._findDropTarget(mouseOverElement);
-
-            if (this._dropTarget) {
-                if (this._dropTarget !== nextDropTarget) {
-                    this._dropTarget.handleDragTargetLeave(this._dragTargets, this._dragPosition);
-                    this._dropTarget = null;
-                }
-            }
-
-            if (nextDropTarget && nextDropTarget.accept === this._dragTargetType) {
-                if (!this._dropTarget) {
-                    nextDropTarget.handleDragTargetEnter(this._dragTargets, this._dragPosition);
-                }
-
-                this._dropTarget = nextDropTarget;
-                this._dropTarget.handleDragTargetMove(this._dragTargets, this._dragPosition);
-            }
-
+        if (hasDragTargets) {
             this.emit("change");
         }
-    });
+    },
+    
+    /**
+     * Find the DropTarget associated with the mouseover HTML element, by comparing the "droppabled" attribute 
+     * of the HTML element and the id of the DropTarget. The "droppablid" attribute is maintained by Droppable 
+     * component. See "Droppable.componentDidMount" for details.
+     *
+     * @private
+     * @param  {HTMLElement} element
+     * @return {?DropTarget}
+     */
+    _findDropTarget: function (element) {
+        do {
+            if (element.dataset) {
+                var droppablID = element.dataset.droppablid,
+                    dropTarget = this._idToDropTarget[droppablID];
+                
+                if (dropTarget) {
+                    return dropTarget;
+                }
+            }
 
-    module.exports = DragAndDropStore;
+            element = element.parentNode;
+        } while (element);
+
+        return null;
+    },
+
+    getState: function () {
+        return {
+            dragTargets: this._dragTargets,
+            dropTarget: this._dropTarget,
+            initialDragPosition: this._initialDragPosition,
+            dragPosition: this._dragPosition
+        };
+    },
+
+    /**
+     * Add a drop target to the given drop zone.
+     *
+     * @param {DropTarget} dropTarget
+     */
+    registerDroppable: function (dropTarget) {
+        this._idToDropTarget[dropTarget.id] = dropTarget;
+    },
+
+    /**
+     * Remove a drop target by id
+     *
+     * @param {number} dropTargetID
+     */
+    deregisterDroppable: function (dropTargetID) {
+        this._idToDropTarget[dropTargetID] = null;
+    },
+    
+    /**
+     * Begin a drag operation with the given drag targets.
+     *
+     * @param {string} type
+     * @param {Immutalbe.Iterable.<object>} dragTargets
+     */
+    startDrag: function (type, dragTargets, position) {
+        this._dragTargetType = type;
+        this._dragTargets = dragTargets;
+        this._dragPosition = position;
+        this._initialDragPosition = position;
+
+        // Provide optional way for listening on start-drag event only.
+        this.emit("start-drag");
+        this.emit("change");
+    },
+
+    /**
+     * End the current drag operation.
+     */
+    stopDrag: function () {
+        var onDropPromise = Promise.resolve();
+
+        if (this._dropTarget) {
+            onDropPromise = this._dropTarget.onDrop(this._dragTargets, this._dragPosition);
+        }
+        
+        this._isDropping = true;
+
+        onDropPromise
+            .bind(this)
+            .then(function () {
+                this._dragTargetType = null;
+                this._dragTargets = Immutable.List();
+                this._dropTarget = null;
+                this._hasValidDropTarget = false;
+                this._dragPosition = null; // Removing this causes an offset
+                this._initialDragPosition = null;
+                this._isDropping = false;
+                this.emit("stop-drag");
+                this.emit("change");
+            });
+    },
+        
+    /**
+     * Update the DropTarget via the current mouseover HTML element, and call DropTarget callbacks.
+     *
+     * @param {{x: number, y: number}} position
+     * @param {HTMLElement} mouseOverElement
+     */
+    updateDrag: function (position, mouseOverElement) {
+        if (this._isDropping) {
+            return;
+        }
+        
+        this._dragPosition = position;
+        
+        var nextDropTarget = this._findDropTarget(mouseOverElement);
+
+        if (this._dropTarget) {
+            if (this._dropTarget !== nextDropTarget) {
+                this._dropTarget.handleDragTargetLeave(this._dragTargets, this._dragPosition);
+                this._dropTarget = null;
+            }
+        }
+
+        if (nextDropTarget && nextDropTarget.accept === this._dragTargetType) {
+            if (!this._dropTarget) {
+                nextDropTarget.handleDragTargetEnter(this._dragTargets, this._dragPosition);
+            }
+
+            this._dropTarget = nextDropTarget;
+            this._dropTarget.handleDragTargetMove(this._dragTargets, this._dragPosition);
+        }
+
+        this.emit("change");
+    }
 });
