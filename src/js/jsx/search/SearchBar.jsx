@@ -65,7 +65,6 @@ define(function (require, exports, module) {
                 searchStore = flux.store("search"),
                 searchState = searchStore.getState(this.props.searchID),
                 options = searchState.searchItems,
-
                 filterItems = options.filter(function (opt) {
                     return opt.type === "filter";
                 }),
@@ -104,7 +103,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {
                 // The currently applied filter
-                filter: [],
+                filters: [],
                 // SVG class for icon for the currently applied filter
                 icon: null,
                 hasInputValue: null
@@ -171,8 +170,8 @@ define(function (require, exports, module) {
                 this.refs.datalist.focus();
             }
 
-            if (prevState.filter !== this.state.filter && this.refs.datalist) {
-                this._updateDatalistInput(this.state.filter);
+            if (prevState.filters !== this.state.filters && this.refs.datalist) {
+                this._updateDatalistInput(this.state.filters);
                 // Force update because Datalist's state might not change at all
                 this.refs.datalist.forceUpdate();
             }
@@ -198,12 +197,12 @@ define(function (require, exports, module) {
             var idArray = id ? id.split("-") : [],
                 filterValues = _.drop(idArray);
 
-            var updatedFilter = id ? _.uniq(this.state.filter.concat(filterValues)) : [],
+            var updatedFilter = id ? _.uniq(this.state.filters.concat(filterValues)) : [],
                 filterIcon = id && this.getFlux().store("search").getSVGClass(updatedFilter),
                 nextHasInputValue = id !== null;
             
             this.setState({
-                filter: updatedFilter,
+                filters: updatedFilter,
                 icon: filterIcon,
                 hasInputValue: nextHasInputValue
             });
@@ -212,12 +211,11 @@ define(function (require, exports, module) {
         /**
          * Removes words from Datalist input that are contained in the ID
          *
-         * @param {Array.<string>} id ID of selected item
+         * @param {Array.<string>} idArray of selected items
          */
-        _updateDatalistInput: function (id) {
-            if (id) {
-                var currFilter = this.refs.datalist.getInputValue().split(" "),
-                    idString = _.map(id, function (idWord) {
+        _updateDatalistInput: function (idArray) {
+            if (idArray) {
+                var idString = _.map(idArray, function (idWord) {
                         var toRemove;
                         
                         try {
@@ -229,10 +227,25 @@ define(function (require, exports, module) {
 
                         return toRemove ? toRemove.replace(" ", "") : idWord;
                     }, this).join("").toLowerCase(),
+                    partialMatch,
+                    currFilter = this.refs.datalist.getInputValue().split(" "),
                     nextFilterMap = _.map(currFilter, function (word) {
-                        return idString.includes(word.toLowerCase()) ? "" : word;
+                        // This allows the datalist to populate with all or partial string matches 
+                        // to the user inputted string.
+                        if (idString.includes(word.toLowerCase())) {
+                            partialMatch = true;
+                            return "";
+                        } else {
+                            return word;
+                        }
                     }),
+                    nextFilter;
+                    
+                if (partialMatch) {
+                    nextFilter = "";
+                } else {
                     nextFilter = nextFilterMap.join(" ").trim();
+                }
 
                 this.refs.datalist.updateFilter(nextFilter);
             } else {
@@ -282,7 +295,7 @@ define(function (require, exports, module) {
                     if (option.type === "filter") {
                         // If it is the filter option for something that we already have filtered, don't
                         // show that filter option
-                        if (_.isEqual(this.state.filter, category)) {
+                        if (_.isEqual(this.state.filters, category)) {
                             return;
                         }
 
@@ -292,9 +305,9 @@ define(function (require, exports, module) {
                         }
                     }
 
-                    // All terms in this.state.filter must be in the option's category
-                    if (this.state.filter && this.state.filter.length > 0) {
-                        var dontUseTerm = _.some(this.state.filter, function (filterValue) {
+                    // All terms in this.state.filters must be in the option's category
+                    if (this.state.filters && this.state.filters.length > 0) {
+                        var dontUseTerm = _.some(this.state.filters, function (filterValue) {
                             return (!_.contains(category, filterValue));
                         });
 
@@ -417,14 +430,19 @@ define(function (require, exports, module) {
          *
          * @private
          * @type {Datalist~onChange}
+         * @param {string=} id of the selected option
+         * @param {string} searchTerm user input
+         * @return {{dontCloseDialog: boolean=}};
          */
-        _handleChange: function (id) {
-            if (id === null) {
+        _handleChange: function (id, searchTerm) {
+            if (!id) {
                 this.props.dismissDialog();
                 return;
             }
 
-            var filters = this.state.filter,
+            // These category filters, e.g. Choosing to search items only within the filter "Pixel Layers"
+            var filters = this.state.filters,
+                lastFilter = filters[filters.length - 1],
                 filtersString,
                 idSplit = id.split("-"),
                 type = idSplit[0],
@@ -437,8 +455,16 @@ define(function (require, exports, module) {
             } else {
                 filtersString = "filter-active";
             }
-            
+
+            var flux = this.getFlux(),
+                searchStore = flux.store("search"),
+                // This payload will be used to dictate whether given the applied filters (0 or more), if 
+                // we want to take any action in the case the user input returns no search results
+                registeredSearchPayload = lastFilter ? searchStore.getPayloadFromFilter(lastFilter) : null;
+
             if (id !== PLACEHOLDER_ID) {
+                // This indicates there is a match to the user's input and they have selected an option
+                // from the datalist of options
                 if (_.contains(this.state.filterIDs, id)) {
                     this._updateFilter(id);
                     
@@ -447,6 +473,15 @@ define(function (require, exports, module) {
                 } else {
                     this.props.executeOption(id);
                     headlights.logEvent("search", filtersString, _.kebabCase(category));
+                }
+            } else {
+                // This indicates that the user has selected the default option when the datalist returns 
+                // no matching results to the user's input.
+                if (registeredSearchPayload && registeredSearchPayload.noOptionsDefault) {
+                    // Need to check if there is action to be taken when there are no options
+                    this.props.executeOption(searchTerm, registeredSearchPayload.noOptionsDefault().noOptionsExecute);
+                } else {
+                    return { dontCloseDialog: true };
                 }
             }
         },
@@ -462,20 +497,30 @@ define(function (require, exports, module) {
             var nextHasInputValue = value.length !== 0;
             
             if (nextHasInputValue !== this.state.hasInputValue) {
-                this.setState({ hasInputValue: nextHasInputValue });
+                this.setState({
+                    hasInputValue: nextHasInputValue
+                });
             }
         },
 
         /**
          * @private
          * @type {Datalist~onKeyDown}
+         * @param {SyntheticEvent} event
+         * @param {string} selectedID the id of the selected item in the datalist
+         * @param {Array.<Option>} optionsList of all the available filtered options
          */
-        _handleKeyDown: function (event, selectedID) {
+        _handleKeyDown: function (event, selectedID, optionsList) {
             switch (event.key) {
             case "Return":
+                var noOptionsExecute = optionsList ? optionsList.first().handleExecute : null;
+                if (!noOptionsExecute) {
+                    return { preventListDefault: true };
+                }
+                break;
             case "Enter":
-                if (selectedID === PLACEHOLDER_ID) {
-                    this._handleDialogClick(event);
+                if (selectedID === PLACEHOLDER_ID || !selectedID) {
+                    this._handleDialogClick(event, selectedID);
                 } else if (_.contains(this.state.filterIDs, selectedID)) {
                     this._updateFilter(selectedID);
 
@@ -493,7 +538,7 @@ define(function (require, exports, module) {
                 this.props.dismissDialog();
                 break;
             case "Backspace":
-                if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
+                if (this.refs.datalist.cursorAtBeginning() && this.state.filters.length > 0) {
                     // Clear filter and icon
                     this._updateFilter(null);
                 }
@@ -510,7 +555,7 @@ define(function (require, exports, module) {
 
         render: function () {
             var searchStrings = nls.localize("strings.SEARCH"),
-                filters = this.state.filter,
+                filters = this.state.filters,
                 placeholderText,
                 clearInputBtn;
 
@@ -519,20 +564,28 @@ define(function (require, exports, module) {
                 lastFilter = filters[filters.length - 1];
 
             var searchPayload = searchStore.getPayloadFromFilter(lastFilter),
-                noOptionsString = searchPayload ? searchPayload.noOptionsString : null,
-                defaultNoOptions = nls.localize("strings.SEARCH.NO_OPTIONS");
+                // This returns a function that when called will return an object with the various properties
+                // for the case when that filter has no options associated with it
+                noOptions = searchPayload ? searchPayload.noOptionsDefault : null,
+                noOptionsObject = noOptions ? noOptions() : null,
+                noOptionsString = noOptionsObject ? noOptionsObject.noOptionsString : null,
+                noOptionsExecute = noOptionsObject ? noOptionsObject.noOptionsExecute : null,
+                noOptionsType = noOptionsObject ? noOptionsObject.noOptionsType : "placeholder",
+                defaultNoOptionsString = nls.localize("strings.SEARCH.NO_OPTIONS");
 
             var noMatchesOption = {
                 id: PLACEHOLDER_ID,
-                title: noOptionsString ? noOptionsString : defaultNoOptions,
-                type: "placeholder"
+                title: noOptionsString ? noOptionsString : defaultNoOptionsString,
+                titleType: noOptionsString ? "custom" : "default",
+                handleExecute: noOptionsExecute,
+                type: noOptionsType
             };
 
             // If we have applied a filter, change the placeholder text
             if (filters.length > 0) {
                 var categoryString = searchStrings.CATEGORIES[lastFilter],
                     category = categoryString ?
-                        categoryString.toLowerCase() : this.state.safeFilterNameMap[lastFilter];
+                        categoryString : this.state.safeFilterNameMap[lastFilter];
                 placeholderText = searchStrings.PLACEHOLDER_FILTER + category;
             } else if (!this.state.ready) {
                 placeholderText = searchStrings.PLACEHOLDER_INITIALIZING;

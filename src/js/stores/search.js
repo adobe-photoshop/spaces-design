@@ -180,6 +180,7 @@ define(function (require, exports, module) {
          * Perform action for item
          *
          * @param {string} itemID Search item to handle
+         * @param {string=} lastFilter applied
          */
         handleExecute: function (itemID) {
             var idArray = itemID.split("-"),
@@ -235,7 +236,7 @@ define(function (require, exports, module) {
                 // Function to get properly named class for the svg icon
                 "getSVGClass": payload.getSVGClass,
                 // String to display if datalist does not have any options to present
-                "noOptionsString": payload.noOptionsString
+                "noOptionsDefault": payload.noOptionsDefault
             };
         },
 
@@ -271,38 +272,46 @@ define(function (require, exports, module) {
          */
         _getOptions: function (type) {
             var searchTypeInfo = this._registeredSearchTypes[type];
+            
             if (searchTypeInfo) {
                 var items = searchTypeInfo.getOptions();
-                
-                // Get shortest unique paths
-                var ancestors = collection.pluck(items, "pathInfo"),
-                    shortenedPaths = searchTypeInfo.shortenPaths ?
-                        pathUtil.getShortestUniquePaths(ancestors).toJS() : ancestors.toJS();
+                var itemMap;
 
-                var itemMap = items.map(function (item, index) {
-                    var newPathInfo = shortenedPaths[index] || "",
-                        name = item.name,
-                        style;
-                    // Don't show the path info if it is just the same as the item name 
-                    if (name === newPathInfo) {
-                        newPathInfo = "";
-                    }
+                if (items === null) {
+                    itemMap = [];
+                } else {
+                    // Get shortest unique paths
+                    var ancestors = collection.pluck(items, "pathInfo"),
+                        shortenedPaths = searchTypeInfo.shortenPaths ?
+                            pathUtil.getShortestUniquePaths(ancestors) : ancestors;
 
-                    if (name === "") {
-                        name = "Untitled";
-                        style = { "fontStyle": "italic" };
-                    }
+                    itemMap = items.map(function (item, index) {
+                        var newPathInfo = shortenedPaths.get(index) || "",
+                            name = item.name,
+                            untitledString = nls.localize("strings.SEARCH.UNTITLED"),
+                            style;
+                        
+                        // Don't show the path info if it is just the same as the item name 
+                        if (name === newPathInfo) {
+                            newPathInfo = "";
+                        }
 
-                    return {
-                        id: type + "-" + item.id.toString(),
-                        title: name,
-                        pathInfo: newPathInfo,
-                        svgType: item.iconID,
-                        category: item.category,
-                        style: style,
-                        type: "item"
-                    };
-                }.bind(this));
+                        if (name === "") {
+                            name = untitledString;
+                            style = { "fontStyle": "italic" };
+                        }
+
+                        return {
+                            id: type + "-" + item.id.toString(),
+                            title: name,
+                            pathInfo: newPathInfo,
+                            svgType: item.iconID,
+                            category: item.category,
+                            style: style,
+                            type: "item"
+                        };
+                    }, this);
+                }
 
                 // Label to separate groups of options
                 var headerLabel = {

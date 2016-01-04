@@ -60,11 +60,16 @@ define(function (require, exports) {
         transfers: [dialog.openDialog, dialog.closeDialog]
     };
 
+    /**
+     * Registers the search payloads to the search store to load the search bar
+     *
+     * @return {Promise}
+     */
     var beforeStartup = function () {
         var searchStore = this.flux.store("search");
 
         searchStore.registerSearch(ID,
-            ["CURRENT_DOC", "RECENT_DOC", "ALL_LAYER", "MENU_COMMAND", "LIBRARY", "GLOBAL_SHORTCUT"]);
+            ["ADOBE_STOCK", "CURRENT_DOC", "RECENT_DOC", "ALL_LAYER", "MENU_COMMAND", "LIBRARY", "GLOBAL_SHORTCUT"]);
 
         return Promise.resolve();
     };
