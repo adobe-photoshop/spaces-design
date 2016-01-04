@@ -66,7 +66,8 @@ define(function (require, exports, module) {
      * @const
      * @type {string}
      */
-    var SEARCH_BAR_DIALOG_ID = "search-bar-dialog";
+    var SEARCH_BAR_DIALOG_ID = "search-bar-dialog",
+        SEARCH_STOCK_URL = "https://stock.adobe.com/search?k=";
 
     /*
      * Properties used to make complete search options objects for SearchBar.jsx
@@ -180,11 +181,20 @@ define(function (require, exports, module) {
          * Perform action for item
          *
          * @param {string} itemID Search item to handle
+         * @param {string=} lastFilter applied
          */
-        handleExecute: function (itemID) {
+        handleExecute: function (itemID, lastFilter) {
             var idArray = itemID.split("-"),
-                type = idArray[0],
+                type,
+                parsedID;
+
+            if (typeof itemID === "string" && lastFilter) {
+                type = lastFilter;
+                parsedID = itemID;
+            } else {
+                type = idArray[0];
                 parsedID = mathUtil.parseNumber(idArray[1]) || idArray[1];
+            }
 
             if (this._registeredSearchTypes[type]) {
                 this._registeredSearchTypes[type].handleExecute(parsedID);
@@ -235,7 +245,7 @@ define(function (require, exports, module) {
                 // Function to get properly named class for the svg icon
                 "getSVGClass": payload.getSVGClass,
                 // String to display if datalist does not have any options to present
-                "noOptionsString": payload.noOptionsString
+                "noOptionsDefault": payload.noOptionsDefault
             };
         },
 
@@ -271,38 +281,46 @@ define(function (require, exports, module) {
          */
         _getOptions: function (type) {
             var searchTypeInfo = this._registeredSearchTypes[type];
+            
             if (searchTypeInfo) {
                 var items = searchTypeInfo.getOptions();
-                
-                // Get shortest unique paths
-                var ancestors = collection.pluck(items, "pathInfo"),
-                    shortenedPaths = searchTypeInfo.shortenPaths ?
-                        pathUtil.getShortestUniquePaths(ancestors).toJS() : ancestors.toJS();
+                var itemMap;
 
-                var itemMap = items.map(function (item, index) {
-                    var newPathInfo = shortenedPaths[index] || "",
-                        name = item.name,
-                        style;
-                    // Don't show the path info if it is just the same as the item name 
-                    if (name === newPathInfo) {
-                        newPathInfo = "";
-                    }
+                if (items === null) {
+                    itemMap = [];
+                } else {
+                    // Get shortest unique paths
+                    var ancestors = collection.pluck(items, "pathInfo"),
+                        shortenedPaths = searchTypeInfo.shortenPaths ?
+                            pathUtil.getShortestUniquePaths(ancestors).toJS() : ancestors.toJS();
 
-                    if (name === "") {
-                        name = "Untitled";
-                        style = { "fontStyle": "italic" };
-                    }
+                    itemMap = items.map(function (item, index) {
+                        var newPathInfo = shortenedPaths[index] || "",
+                            name = item.name,
+                            style,
+                            untitledString = nls.localize("strings.SEARCH.UNTITLED");
+                        
+                        // Don't show the path info if it is just the same as the item name 
+                        if (name === newPathInfo) {
+                            newPathInfo = "";
+                        }
 
-                    return {
-                        id: type + "-" + item.id.toString(),
-                        title: name,
-                        pathInfo: newPathInfo,
-                        svgType: item.iconID,
-                        category: item.category,
-                        style: style,
-                        type: "item"
-                    };
-                }.bind(this));
+                        if (name === "") {
+                            name = untitledString;
+                            style = { "fontStyle": "italic" };
+                        }
+
+                        return {
+                            id: type + "-" + item.id.toString(),
+                            title: name,
+                            pathInfo: newPathInfo,
+                            svgType: item.iconID,
+                            category: item.category,
+                            style: style,
+                            type: "item"
+                        };
+                    }.bind(this));
+                }
 
                 // Label to separate groups of options
                 var headerLabel = {
@@ -409,6 +427,7 @@ define(function (require, exports, module) {
     });
 
     SearchStore.SEARCH_BAR_DIALOG_ID = SEARCH_BAR_DIALOG_ID;
+    SearchStore.SEARCH_STOCK_URL = SEARCH_STOCK_URL;
 
     module.exports = SearchStore;
 });

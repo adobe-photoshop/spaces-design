@@ -51,6 +51,7 @@ define(function (require, exports, module) {
         searchDocuments: require("./search/documents"),
         searchLayers: require("./search/layers"),
         searchLibraries: require("./search/libraries"),
+        searchStock: require("./search/stock"),
         shapes: require("./shapes"),
         shortcuts: require("./shortcuts"),
         superselect: require("./superselect"),

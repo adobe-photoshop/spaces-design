@@ -53,14 +53,20 @@ define(function (require, exports, module) {
          * 
          * @private
          * @param {string} itemID ID of selected option
+         * @param {string=} lastFilter
+         * @param {string=} noOptionsFn function to execute if there are no options
          */
-        _handleOption: function (itemID) {
+        _handleOption: function (itemID, lastFilter, noOptionsFn) {
             this._closeSearchBar()
                 .bind(this)
                 .then(function () {
                     if (itemID) {
                         var searchStore = this.getFlux().store("search");
-                        searchStore.handleExecute(itemID);
+                        if (noOptionsFn) {
+                            noOptionsFn(itemID);
+                        } else {
+                            searchStore.handleExecute(itemID, lastFilter);
+                        }
                     }
                 });
         },

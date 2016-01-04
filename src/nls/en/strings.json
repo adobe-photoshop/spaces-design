@@ -468,7 +468,9 @@
         "PLACEHOLDER": "Search, open & select",
         "PLACEHOLDER_INITIALIZING": "Initializing…",
         "PLACEHOLDER_FILTER": "Search ",
+        "NO_OPTIONS_STOCK": "Search Adobe Stock",
         "NO_OPTIONS": "No results match your search",
+        "UNTITLED": "Untitled",
         "HEADERS": {
             "ALL_LAYER": "Layers",
             "CURRENT_LAYER": "Layers",
@@ -480,6 +482,7 @@
             "GLOBAL_SHORTCUT": "Global Shortcuts"
         },
         "CATEGORIES": {
+            "ADOBE_STOCK": "Adobe Stock",
             "CURRENT_DOC": "Open Documents",
             "RECENT_DOC": "Recent Documents",
             "MENU_COMMAND": "Menu Commands",

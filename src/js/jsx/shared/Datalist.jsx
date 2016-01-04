@@ -306,23 +306,6 @@ define(function (require, exports, module) {
             var dialog = this.refs.dialog,
                 select = this.refs.select;
 
-            if (!select) {
-                switch (event.key) {
-                case "Escape":
-                    this.props.onKeyDown(event, this.state.lastHighlightedID);
-                    return;
-                case "Tab":
-                    return;
-                case "Enter":
-                case "Return":
-                case "Space":
-                case "ArrowUp":
-                case "ArrowDown":
-                    this._handleInputClick(event);
-                    return;
-                }
-            }
-
             var cbOptions = this.props.onKeyDown(event, this.state.lastHighlightedID),
                 options = _.merge({ preventListDefault: false }, cbOptions);
 
@@ -379,7 +362,7 @@ define(function (require, exports, module) {
          */
         _handleSelectClick: function (event, action) {
             var selectedID = action !== "apply" ? null : this.state.lastHighlightedID,
-                options = _.merge({ dontCloseDialog: false }, this.props.onChange(selectedID));
+                options = _.merge({ dontCloseDialog: false }, this.props.onChange(selectedID, this.state.filter));
 
             if (!options.dontCloseDialog) {
                 var dialog = this.refs.dialog;
@@ -701,25 +684,26 @@ define(function (require, exports, module) {
                     </div>
                 );
             }
-
+           
             var dialog = searchableOptions && (
-                    <Dialog
-                        ref="dialog"
-                        id={"datalist-" + this.props.list + this._uniqkey}
-                        className={this.props.className}
-                        onOpen={this._handleDialogOpen}
-                        onClose={this._handleDialogClose}>
-                        <Select
-                            ref="select"
-                            options={searchableOptions}
-                            defaultSelected={selectedID}
-                            useAutofill={this.props.useAutofill}
-                            sorted={this.props.sorted}
-                            onChange={this._handleSelectChange}
-                            onClick={this._handleSelectClick}
-                            onClose={this._handleSelectClose} />
-                    </Dialog>
-                );
+                <Dialog
+                    ref="dialog"
+                    id={"datalist-" + this.props.list + this._uniqkey}
+                    className={this.props.className}
+                    onOpen={this._handleDialogOpen}
+                    onClose={this._handleDialogClose}>
+                    <Select
+                        ref="select"
+                        scrollToSearch={this.props.scrollToSearch}
+                        options={searchableOptions}
+                        defaultSelected={selectedID}
+                        useAutofill={this.props.useAutofill}
+                        sorted={this.props.sorted}
+                        onChange={this._handleSelectChange}
+                        onClick={this._handleSelectClick}
+                        onClose={this._handleSelectClose} />
+                </Dialog>
+            );
 
             var size = this.props.size,
                 svg = null;
