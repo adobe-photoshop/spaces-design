@@ -766,48 +766,50 @@ define(function (require, exports) {
         var flux = this.flux,
             documentID = typeof documentSpec === "number" ? documentSpec : documentSpec.id,
             document = flux.stores.document.getDocument(documentID),
-            documentRef = documentLib.referenceBy.id(documentID);
+            documentRef = documentLib.referenceBy.id(documentID),
+            uninitialized = !document.layers;
 
-        return this.transfer("panel.cloak")
+        var selectPromise = descriptor.playObject(documentLib.select(documentRef))
             .bind(this)
             .then(function () {
-                return descriptor.playObject(documentLib.select(documentRef));
-            })
-            .then(function () {
-                if (!document.layers) {
+                var updateTransformPromise = this.transfer(ui.updateTransform),
+                    initPromise;
+
+                if (uninitialized) {
                     // The now-active document has yet to be fully initialized.
-                    return this.transfer(updateDocument);
+                    initPromise = this.transfer(updateDocument);
                 } else {
-                    this.dispatch(events.document.SELECT_DOCUMENT, {
-                        selectedDocumentID: documentID
-                    });
+                    initPromise = Promise.resolve();
                 }
-            })
-            .then(function () {
-                return this.transfer(toolActions.changeVectorMaskMode, false);
-            })
-            .then(function () {
-                var toolStore = flux.store("tool");
 
-                if (toolStore.getCurrentTool() === toolStore.getToolByID("superselectVector")) {
-                    return this.transfer(toolActions.select, toolStore.getToolByID("newSelect"));
-                }
-            })
-            .then(function () {
-                return this.transfer(historyActions.queryCurrentHistory, documentID);
-            })
-            .then(function () {
-                var currentDocument = this.flux.store("document").getDocument(documentID),
-                    resetLinkedPromise = this.transfer(layerActions.resetLinkedLayers, currentDocument),
-                    guidesPromise = this.transfer(guideActions.queryCurrentGuides, currentDocument),
-                    updateTransformPromise = this.transfer(ui.updateTransform),
-                    deselectPromise = descriptor.playObject(selectionLib.deselectAll());
-
-                return Promise.join(resetLinkedPromise,
-                    guidesPromise,
-                    updateTransformPromise,
-                    deselectPromise);
+                return Promise.join(updateTransformPromise, initPromise);
             });
+
+        // If the document has already been initialized, dispatch the change event immediately
+        var initializedPromise;
+        if (!uninitialized) {
+            var resetPromise = this.transfer(layerActions.resetLinkedLayers, document),
+                dispatchPromise = this.dispatchAsync(events.document.SELECT_DOCUMENT, {
+                    selectedDocumentID: documentID
+                });
+
+            initializedPromise = Promise.join(resetPromise, dispatchPromise);
+        } else {
+            initializedPromise = Promise.resolve();
+        }
+
+        var maskPromise = this.transfer(toolActions.changeVectorMaskMode, false),
+            deselectPromise = descriptor.playObject(selectionLib.deselectAll()),
+            toolStore = flux.store("tool"),
+            toolPromise;
+
+        if (toolStore.getCurrentTool() === toolStore.getToolByID("superselectVector")) {
+            toolPromise = this.transfer(toolActions.select, toolStore.getToolByID("newSelect"));
+        } else {
+            toolPromise = Promise.resolve();
+        }
+
+        return Promise.join(maskPromise, deselectPromise, toolPromise, selectPromise, initializedPromise);
     };
     selectDocument.action = {
         reads: [locks.JS_TOOL],
