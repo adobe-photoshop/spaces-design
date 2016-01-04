@@ -31,7 +31,6 @@ define(function (require, exports) {
         ps = require("adapter").ps,
         documentLib = require("adapter").lib.document,
         historyLib = require("adapter").lib.history,
-        layerActions = require("./layers"),
         documentActions = require("./documents");
 
     var events = require("js/events"),
@@ -329,7 +328,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP],
         writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC],
         transfers: ["documents.updateDocument"],
-        post: [layerActions._verifyLayerIndex],
+        post: ["verifyLayers.verifyLayerIndex"],
         modal: true,
         hideOverlays: true
     };

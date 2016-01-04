@@ -467,7 +467,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetIndex],
-        post: [layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifySelectedBounds"]
     };
 
     /**
@@ -568,7 +568,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetIndex],
-        post: [layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifySelectedBounds"]
     };
 
     /**
@@ -691,7 +691,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetLayers],
-        post: [layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifySelectedBounds"]
     };
     
     /**
@@ -758,7 +758,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.JS_DOC, locks.PS_DOC],
         transfers: [historyActions.newHistoryState, layerActions.resetBounds],
-        post: [layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifySelectedBounds"]
     };
     
     /**
@@ -776,7 +776,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.JS_DOC, locks.JS_DOC],
         transfers: [historyActions.newHistoryState, layerActions.resetBounds],
-        post: [layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifySelectedBounds"]
     };
     
     /**
@@ -871,7 +871,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [historyActions.newHistoryState, layerActions.resetBounds],
-        post: [layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifySelectedBounds"]
     };
     
     /**
@@ -1062,7 +1062,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [historyActions.newHistoryState, layerActions.resetBounds],
-        post: [layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifySelectedBounds"]
     };
 
     /**
@@ -1084,7 +1084,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [historyActions.newHistoryState, layerActions.resetBounds],
-        post: [layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifySelectedBounds"]
     };
 
     /**
@@ -1216,7 +1216,7 @@ define(function (require, exports) {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
         transfers: [historyActions.newHistoryState, layerActions.resetBounds],
-        post: [layerActions._verifySelectedBounds]
+        post: ["verifyLayers.verifySelectedBounds"]
     };
 
     /**
@@ -1283,7 +1283,7 @@ define(function (require, exports) {
         writes: [],
         transfers: ["history.newHistoryStateRogueSafe", "layers.resetBounds", "layers.resetSelection",
             "layers.resetIndex"],
-        post: [layerActions._verifySelectedBounds],
+        post: ["verifyLayers.verifySelectedBounds"],
         hideOverlays: true
     };
 
@@ -1350,7 +1350,7 @@ define(function (require, exports) {
         transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds",
             "history.newHistoryStateRogueSafe"],
         modal: true,
-        post: [layerActions._verifySelectedBounds],
+        post: ["verifyLayers.verifySelectedBounds"],
         hideOverlays: true
     };
 

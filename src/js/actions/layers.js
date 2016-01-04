@@ -277,139 +277,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Verify the correctness of the list of layer IDs.
-     *
-     * @private
-     * @return {Promise} Rejects if the number or order of layer IDs in the
-     *  active document differs from Photoshop.
-     */
-    var _verifyLayerIndex = function () {
-        var applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
-
-        if (!currentDocument) {
-            return Promise.resolve();
-        }
-
-        return getLayerIDsForDocumentID(currentDocument.id)
-            .bind(this)
-            .then(function (payload) {
-                var layerIDs = payload.layerIDs;
-
-                if (currentDocument.layers.all.size !== layerIDs.length) {
-                    throw new Error("Incorrect layer count: " + currentDocument.layers.all.size +
-                        " instead of " + layerIDs.length);
-                } else {
-                    layerIDs.reverse();
-                    currentDocument.layers.index.forEach(function (layerID, index) {
-                        if (layerID !== layerIDs[index]) {
-                            throw new Error("Incorrect layer ID at index " + index + ": " + layerID +
-                                " instead of " + layerIDs[index]);
-                        }
-                    });
-                }
-            });
-    };
-
-    /**
-     * Verify the correctness of the layer selection.
-     *
-     * @private
-     * @return {Promise} Rejects if set of selected layer IDs differs from
-     *  Photoshop.
-     */
-    var _verifyLayerSelection = function () {
-        var applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
-
-        if (!currentDocument) {
-            return Promise.resolve();
-        }
-        
-        var documentRef = documentLib.referenceBy.current;
-        return documentActions._getDocumentByRef(documentRef, ["targetLayers"], [])
-            .bind(this)
-            .then(function (payload) {
-                var targetLayers = payload.targetLayers.map(function (targetLayer) {
-                    return targetLayer._index;
-                });
-
-                if (currentDocument.layers.selected.size !== targetLayers.length) {
-                    throw new Error("Incorrect selected layer count: " + currentDocument.layers.selected.size +
-                        " instead of " + targetLayers.length);
-                } else {
-                    targetLayers.forEach(function (targetLayerIndex) {
-                        var layer = currentDocument.layers.byIndex(targetLayerIndex + 1);
-                        if (!layer.selected) {
-                            throw new Error("Missing layer selection at index " + targetLayerIndex);
-                        }
-                    });
-                }
-            }, function () {
-                if (currentDocument.layers.selected.size > 0) {
-                    throw new Error("Incorrect selected layer count: " + currentDocument.layers.selected.size +
-                        " instead of " + 0);
-                }
-            });
-    };
-
-    /**
-     * Verify the bounds of the selected layers and their descendants.
-     *
-     * @return {Promise}
-     */
-    var _verifySelectedBounds = function () {
-        var applicationStore = this.flux.store("application"),
-            currentDocument = applicationStore.getCurrentDocument();
-
-        if (!currentDocument) {
-            return Promise.resolve();
-        }
-        
-        var docRef = documentLib.referenceBy.current,
-            layers = currentDocument.layers.allSelected.toList(),
-            propertyRefs = layers
-                .map(function (layer) {
-                    var property = _boundsPropertyForLayer(layer);
-
-                    return [
-                        docRef,
-                        layerLib.referenceBy.id(layer.id),
-                        {
-                            _ref: "property",
-                            _property: property
-                        }
-                    ];
-                })
-                .toArray();
-
-        return descriptor.batchGet(propertyRefs)
-            .bind(this)
-            .then(function (results) {
-                if (results.length !== propertyRefs.length) {
-                    throw new Error("Incorrect bounds count: " + propertyRefs.length + " instead of " + results.length);
-                }
-
-                results = results.map(function (descriptor, index) {
-                    var layer = layers.get(index);
-
-                    return {
-                        layerID: layer.id,
-                        descriptor: descriptor
-                    };
-                });
-
-                var currentDocument = applicationStore.getCurrentDocument(),
-                    currentLayers = currentDocument.layers,
-                    nextLayers = currentLayers.resetBounds(results);
-
-                if (!Immutable.is(currentLayers, nextLayers)) {
-                    throw new Error("Bounds mismatch");
-                }
-            });
-    };
-
-    /**
      * Get the ordered list of layer IDs for the given Document ID.
      *
      * @private
@@ -512,7 +379,7 @@ define(function (require, exports) {
         modal: true,
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1058,7 +925,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [revealLayers, resetSelection, initializeLayers, tools.changeVectorMaskMode],
-        post: [_verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1128,7 +995,7 @@ define(function (require, exports) {
     deselectAll.action = {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        post: [_verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1153,7 +1020,7 @@ define(function (require, exports) {
         reads: [locks.JS_DOC, locks.JS_APP],
         writes: [],
         transfers: [select],
-        post: [_verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1202,7 +1069,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
         transfers: ["history.queryCurrentHistory", initializeLayers],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1242,7 +1109,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.PS_DOC],
         transfers: [removeLayers],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1362,7 +1229,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [addLayers, unlockBackgroundLayer],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1512,7 +1379,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
         transfers: [initializeLayers, getLayerIDsForDocumentID],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1576,7 +1443,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [resetIndex, resetBounds, "history.newHistoryState"],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1607,7 +1474,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [reorderLayers],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1638,7 +1505,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [reorderLayers],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1669,7 +1536,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [reorderLayers],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1700,7 +1567,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [reorderLayers],
-        post: [_verifyLayerIndex, _verifyLayerSelection]
+        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
     };
 
     /**
@@ -1904,7 +1771,8 @@ define(function (require, exports) {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
         transfers: ["documents.updateDocument", addLayers, select],
-        post: [_verifySelectedBounds, _verifyLayerSelection, _verifyLayerIndex]
+        post: ["verifyLayers.verifySelectedBounds", "verifyLayers.verifyLayerSelection",
+            "verifyLayers.verifyLayerIndex"]
     };
 
     /**
@@ -1929,7 +1797,7 @@ define(function (require, exports) {
         writes: [],
         transfers: [resetBounds],
         modal: true,
-        post: [_verifySelectedBounds],
+        post: ["verifyLayers.verifySelectedBounds"],
         hideOverlays: true
     };
 
@@ -2240,9 +2108,7 @@ define(function (require, exports) {
     exports.onReset = onReset;
 
     exports._getLayersForDocument = _getLayersForDocument;
-    exports._verifyLayerIndex = _verifyLayerIndex;
-    exports._verifyLayerSelection = _verifyLayerSelection;
-    exports._verifySelectedBounds = _verifySelectedBounds;
+    exports._boundsPropertyForLayer = _boundsPropertyForLayer;
 
     exports.afterStartup = afterStartup;
 });

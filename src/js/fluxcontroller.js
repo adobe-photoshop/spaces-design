@@ -775,6 +775,10 @@ define(function (require, exports, module) {
                     log.debug("Verifying " + postTitle + " for " + actionTitle);
 
                     var postPromises = post.map(function (conjunct, index) {
+                        if (typeof conjunct === "string") {
+                            conjunct = this._actionsByName.get(conjunct);
+                        }
+
                         return conjunct.apply(this)
                             .catch(function (err) {
                                 var errMessage = err && err.message || "no error message";
