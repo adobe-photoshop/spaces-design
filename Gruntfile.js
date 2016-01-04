@@ -204,6 +204,9 @@ module.exports = function (grunt) {
                 options: {
                     compress: {
                         unused: false // This saves us about half an hour, losing 200 KB
+                    },
+                    define: {
+                        __PG_DEBUG__: false
                     }
                 },
                 files: ALL_LOCALES.reduce(function (map, locale) {

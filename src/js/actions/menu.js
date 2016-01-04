@@ -36,7 +36,6 @@ define(function (require, exports) {
         locks = require("js/locks"),
         system = require("js/util/system"),
         log = require("js/util/log"),
-        global = require("js/util/global"),
         headlights = require("js/util/headlights"),
         policyActions = require("./policy"),
         preferencesActions = require("./preferences");
@@ -99,7 +98,7 @@ define(function (require, exports) {
                 return ps.performMenuCommand(payload);
             })
             .then(function (success) {
-                if (global.debug && !success) {
+                if (__PG_DEBUG__ && !success) {
                     log.error("Menu command not available: " + payload.commandID);
                 }
                 
@@ -166,7 +165,7 @@ define(function (require, exports) {
      * window.
      */
     var runTests = function () {
-        if (global.debug) {
+        if (__PG_DEBUG__) {
             var href = window.location.href,
                 baseHref = href.substring(0, href.lastIndexOf("src/index.html")),
                 testHref = baseHref + "test/index.html";
@@ -339,7 +338,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var togglePolicyFrames = function () {
-        if (!global.debug) {
+        if (!__PG_DEBUG__) {
             return Promise.resolve();
         }
 
@@ -361,7 +360,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var togglePostconditions = function () {
-        if (!global.debug) {
+        if (!__PG_DEBUG__) {
             return Promise.resolve();
         }
 
@@ -404,7 +403,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var toggleActionTransferLogging = function () {
-        if (!global.debug) {
+        if (!__PG_DEBUG__) {
             return Promise.resolve();
         }
 

@@ -33,8 +33,7 @@ define(function (require, exports, module) {
     var MenuShortcut = require("./menushortcut"),
         object = require("js/util/object"),
         nls = require("js/util/nls"),
-        keyutil = require("js/util/key"),
-        global = require("js/util/global");
+        keyutil = require("js/util/key");
 
     /**
      * A model of a menu item
@@ -210,7 +209,7 @@ define(function (require, exports, module) {
             var rawSubMenu = rawMenu.submenu;
 
             // Filter out debug-only menu entries in non-debug mode
-            if (!global.debug) {
+            if (!__PG_DEBUG__) {
                 rawSubMenu = rawSubMenu.filter(function (subMenu) {
                     return !subMenu.debug;
                 });

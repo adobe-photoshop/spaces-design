@@ -24,9 +24,9 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird"),
-        adapterPS = require("adapter").ps,
-        global = require("./global");
+    var Promise = require("bluebird");
+
+    var adapterPS = require("adapter").ps;
 
     /**
      * Logs an event entry in Headlights for Photoshop
@@ -43,7 +43,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var logEvent = function (category, subcategory, event) {
-        if (global.debug) {
+        if (__PG_DEBUG__) {
             return Promise.resolve();
         } else {
             return adapterPS.logHeadlightsEvent(category, subcategory, String(event));

@@ -25,15 +25,6 @@ define(function (require, exports) {
     "use strict";
 
     /**
-     * Indicates whether the application is running in debug mode.
-     * __PG_DEBUG__ is defined through webpack
-     * 
-     * @const
-     * @type {boolean} 
-     */
-    var DEBUG = !!__PG_DEBUG__;
-
-    /**
      * Namespace used for photoshop extension data
      * 
      * @const
@@ -41,6 +32,5 @@ define(function (require, exports) {
      */
     var EXTENSION_DATA_NAMESPACE = "designSpace";
 
-    exports.debug = DEBUG;
     exports.EXTENSION_DATA_NAMESPACE = EXTENSION_DATA_NAMESPACE;
 });
