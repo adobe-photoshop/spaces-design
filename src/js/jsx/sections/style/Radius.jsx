@@ -45,16 +45,13 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            return this.state !== nextState;
+            return !Immutable.is(this.props.document.layers.selected, nextProps.document.layers.selected) ||
+                this.state !== nextState;
         },
 
         componentWillReceiveProps: function (nextProps) {
             var getRelevantProps = function (props) {
-                    var layers = props.document.layers.selected.filter(function (layer) {
-                        return layer.radii;
-                    });
-
-                    return collection.pluckAll(layers, ["id", "bounds", "radii"]);
+                    return collection.pluckAll(props.document.layers.selected, ["id", "bounds", "radii"]);
                 },
                 relevantProps = getRelevantProps(this.props),
                 nextRelevantProps = getRelevantProps(nextProps);
@@ -77,7 +74,10 @@ define(function (require, exports, module) {
          * @param {object} props
          */
         _calculateState: function (props) {
-            var layers = props.document.layers.selected.filter(function (layer) {
+            var disabled = props.disabled || props.document.layers.selected.every(function (layer) {
+                    return !layer.radii;
+                }),
+                layers = props.document.layers.selected.filter(function (layer) {
                     return layer.radii;
                 }),
                 scalars = layers.map(function (layer) {
@@ -94,6 +94,7 @@ define(function (require, exports, module) {
                     .min();
 
             this.setState({
+                disabled: disabled,
                 layers: layers,
                 scalars: scalars,
                 maxRadius: maxRadius,
@@ -177,14 +178,14 @@ define(function (require, exports, module) {
                     <div className="control-group__vertical">
                         <NumberInput
                             size="column-4"
-                            disabled={this.props.disabled}
+                            disabled={this.state.disabled}
                             min={0}
                             max={this.state.maxRadiusInput}
-                            value={this.props.disabled ? "" : this.state.scalars}
+                            value={this.state.disabled ? "" : this.state.scalars}
                             onChange={this._handleRadiusChange} />
                     </div>
                     <Range
-                        disabled={this.props.disabled}
+                        disabled={this.state.disabled}
                         min={0}
                         max={this.state.maxRadius}
                         value={this.state.scalars}
