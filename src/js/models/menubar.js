@@ -213,13 +213,18 @@ define(function (require, exports, module) {
                 (document !== null) &&
                 !document.unsupported &&
                 (document.layers !== null) &&
-                (document.layers.selectedNormalized.size === 2),
+                (document.layers.selected.size === 2),
             "layers-selected-2+":
                 (document !== null) &&
                 !document.unsupported &&
                 (document.layers !== null) &&
+                (document.layers.selected.size > 1),
+            "layers-selected-normalized-2+":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
                 (document.layers.selectedNormalized.size > 1),
-            "layers-selected-3+":
+            "layers-selected-normalized-3+":
                 (document !== null) &&
                 !document.unsupported &&
                 (document.layers !== null) &&
@@ -247,11 +252,12 @@ define(function (require, exports, module) {
                 (document !== null) &&
                 !document.unsupported &&
                 (document.layers !== null) &&
-                !(document.layers.selected.some(function (layer) {
-                    return document.layers.ancestors(layer).some(function (ancestor) {
-                        return layer !== ancestor && document.layers.selected.contains(ancestor);
-                    });
-                })),
+                !document.layers.selectedHasNesting,
+            "no-nesting-except-artboards":
+                (document !== null) &&
+                !document.unsupported &&
+                (document.layers !== null) &&
+                !document.layers.selectedHasNestingExceptArtboards,
             "have-linked":
                 (document !== null) &&
                 !document.unsupported &&
