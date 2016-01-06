@@ -35,7 +35,8 @@ define(function (require, exports, module) {
         application: {
             HOST_VERSION: "hostVersion",
             UPDATE_RECENT_FILES: "updateRecentFiles",
-            INITIALIZED: "appInitialized"
+            INITIALIZED: "appInitialized",
+            SET_HEADLESS: "setHeadlessMode"
         },
         document: {
             history: {

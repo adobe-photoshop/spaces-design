@@ -44,7 +44,7 @@ define(function (require, exports, module) {
         PROPERTIES_COL = "propertiesVisible";
 
     var Main = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("preferences", "panel")],
+        mixins: [FluxMixin, StoreWatchMixin("preferences", "panel", "application")],
 
         propTypes: {
             initialColorStop: React.PropTypes.string.isRequired
@@ -59,6 +59,7 @@ define(function (require, exports, module) {
 
         getStateFromFlux: function () {
             var flux = this.getFlux(),
+                headless = flux.store("application").getState().headless,
                 preferences = flux.store("preferences").getState(),
                 propertiesCol = preferences.get(PROPERTIES_COL, true) ? 1 : 0,
                 layersCol = preferences.get(LAYERS_LIBRARY_COL, true) ? 1 : 0,
@@ -68,7 +69,8 @@ define(function (require, exports, module) {
             return {
                 numberOfPanels: numPanels,
                 singleColumnModeEnabled: preferences.get("singleColumnModeEnabled", false),
-                colorStop: colorStop
+                colorStop: colorStop,
+                headless: headless
             };
         },
 
@@ -77,7 +79,8 @@ define(function (require, exports, module) {
                 this.state.active !== nextState.active ||
                 this.state.numberOfPanels !== nextState.numberOfPanels ||
                 this.state.singleColumnModeEnabled !== nextState.singleColumnModeEnabled ||
-                this.state.colorStop !== nextState.colorStop;
+                this.state.colorStop !== nextState.colorStop ||
+                this.state.headless !== nextState.headless;
         },
 
         /**
@@ -162,27 +165,37 @@ define(function (require, exports, module) {
                     hasDocument && this.state.numberOfPanels === 2 && !this.state.singleColumnModeEnabled
             }, stopClass);
 
-            return (
-                <div className={className}>
-                    <Guard
-                        disabled={this.state.ready && this.state.active} />
-                    <Scrim
-                        active={this.state.active} />
-                    <Toolbar
-                        ref="toolbar"
-                        active={this.state.active} />
-                    <DocumentHeader
-                        ref="docHeader"
-                        active={this.state.active} />
-                    <PanelSet
-                        ref="panelSet"
-                        active={this.state.active}
-                        singleColumnModeEnabled={this.state.singleColumnModeEnabled} />
-                    <Help />
-                    <Search />
-                    <ExportModal />
-                </div>
-            );
+            if (this.state.headless) {
+                return (
+                    <div className={className}>
+                        <Scrim
+                            active={this.state.active} />
+                        <Search />
+                    </div>
+                );
+            } else {
+                return (
+                    <div className={className}>
+                        <Guard
+                            disabled={this.state.ready && this.state.active} />
+                        <Scrim
+                            active={this.state.active} />
+                        <Toolbar
+                            ref="toolbar"
+                            active={this.state.active} />
+                        <DocumentHeader
+                            ref="docHeader"
+                            active={this.state.active} />
+                        <PanelSet
+                            ref="panelSet"
+                            active={this.state.active}
+                            singleColumnModeEnabled={this.state.singleColumnModeEnabled} />
+                        <Help />
+                        <Search />
+                        <ExportModal />
+                    </div>
+                );
+            }
         }
     });
 

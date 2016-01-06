@@ -36,6 +36,13 @@ define(function (require, exports, module) {
         _hostVersion: null,
 
         /**
+         * Whether the app is running headless or not
+         *
+         * @type {boolean}
+         */
+        _headless: null,
+
+        /**
          * Set of boolean values designating when portions of the application have been initialized
          *
          * @type {Immutable.Set.<string>}
@@ -63,6 +70,7 @@ define(function (require, exports, module) {
                 events.application.HOST_VERSION, this.setHostVersion,
                 events.application.INITIALIZED, this._setInitialized,
                 events.application.UPDATE_RECENT_FILES, this._updateRecentFileList,
+                events.application.SET_HEADLESS, this._setHeadless,
                 events.document.DOCUMENT_UPDATED, this._updateDocument,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.SELECT_DOCUMENT, this._documentSelected
@@ -77,6 +85,7 @@ define(function (require, exports, module) {
         _handleReset: function () {
             this._documentIndex = new DocumentIndex();
             this._hostVersion = null;
+            this._headless = false;
             this._recentFiles = Immutable.List();
             this._initialized = Immutable.Set();
         },
@@ -92,7 +101,8 @@ define(function (require, exports, module) {
                 recentFiles: this._recentFiles,
                 documentIDs: documentIndex.openDocumentIDs,
                 selectedDocumentIndex: documentIndex.activeDocumentIndex,
-                selectedDocumentID: documentIndex.activeDocumentID
+                selectedDocumentID: documentIndex.activeDocumentID,
+                headless: this._headless
             };
         },
 
@@ -293,6 +303,12 @@ define(function (require, exports, module) {
             var selectedDocumentID = payload.selectedDocumentID;
 
             this._documentIndex = this._documentIndex.setActive(selectedDocumentID);
+
+            this.emit("change");
+        },
+
+        _setHeadless: function (payload) {
+            this._headless = payload.headless;
 
             this.emit("change");
         }

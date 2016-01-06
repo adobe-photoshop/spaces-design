@@ -114,6 +114,7 @@ define(function (require, exports, module) {
         this._flux = new Fluxxor.Flux(allStores, actions);
         this._resetHelper = synchronization.throttle(this._resetWithDelay, this);
         this._actionReceivers = this._createActionReceivers(this._flux);
+        this._headless = false;
     };
     util.inherits(FluxController, EventEmitter);
 
@@ -202,6 +203,15 @@ define(function (require, exports, module) {
      * @type {Set.<Promise>}
      */
     FluxController.prototype._idleTasks = null;
+
+    /**
+     * Whether we're running in headless mode or not
+     * This will have various effects across the app
+     *
+     * @private
+     * @type {boolean}
+     */
+    FluxController.prototype._headless = null;
 
     Object.defineProperties(FluxController.prototype, {
         "flux": {
@@ -430,6 +440,17 @@ define(function (require, exports, module) {
             _reset: {
                 value: function () {
                     transferQueue.removeAll();
+                }
+            },
+
+            /**
+             * Whether we're running in headless more or not
+             *
+             * @type {boolean}
+             */
+            isHeadless: {
+                value: function () {
+                    return self._headless;
                 }
             },
 

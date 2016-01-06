@@ -33,6 +33,13 @@ define(function (require, exports) {
         ruler = require("adapter").lib.ruler;
 
     /**
+     * Handler for setHeadlessMode events
+     *
+     * @type {function}
+     */
+    var _headlessHandler = null;
+
+    /**
      * Gets the application version
      * @return {Promise}
      */
@@ -73,6 +80,33 @@ define(function (require, exports) {
     };
 
     /**
+     * Installs listener for headless mode switch events
+     */
+    var beforeStartup = function () {
+        _headlessHandler = function (event) {
+            this.dispatch(events.application.SET_HEADLESS, { headless: event.headless });
+        }.bind(this);
+        descriptor.addListener("setSpacesHeadlessMode", _headlessHandler);
+
+        return Promise.resolve();
+    };
+    beforeStartup.action = {
+        reads: [],
+        writes: []
+    };
+
+    /**
+     * Removes the listener for headless mode switch events
+     */
+    var onReset = function () {
+        descriptor.removeListener("setSpacesHeadlessMode", _headlessHandler);
+    };
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
+
+    /**
      * During init, grabs the recent file list for the menu
      *
      * @return {Promise}
@@ -95,5 +129,7 @@ define(function (require, exports) {
 
     exports.hostVersion = hostVersion;
     exports.updateRecentFiles = updateRecentFiles;
+    exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
     exports.afterStartup = afterStartup;
 });
