@@ -4,87 +4,87 @@
   "dependencies": {
     "bluebird": {
       "version": "3.1.1",
-      "from": "bluebird@>=3.0.5 <4.0.0",
+      "from": "https://registry.npmjs.org/bluebird/-/bluebird-3.1.1.tgz",
       "resolved": "https://registry.npmjs.org/bluebird/-/bluebird-3.1.1.tgz"
     },
     "classnames": {
       "version": "2.2.1",
-      "from": "classnames@>=2.2.0 <3.0.0",
+      "from": "https://registry.npmjs.org/classnames/-/classnames-2.2.1.tgz",
       "resolved": "https://registry.npmjs.org/classnames/-/classnames-2.2.1.tgz"
     },
     "d3": {
       "version": "3.5.12",
-      "from": "d3@>=3.5.9 <4.0.0",
+      "from": "https://registry.npmjs.org/d3/-/d3-3.5.12.tgz",
       "resolved": "https://registry.npmjs.org/d3/-/d3-3.5.12.tgz"
     },
     "fluxxor": {
       "version": "1.7.3",
-      "from": "fluxxor@>=1.7.3 <2.0.0",
+      "from": "https://registry.npmjs.org/fluxxor/-/fluxxor-1.7.3.tgz",
       "resolved": "https://registry.npmjs.org/fluxxor/-/fluxxor-1.7.3.tgz",
       "dependencies": {
         "eventemitter3": {
           "version": "0.1.6",
-          "from": "eventemitter3@>=0.1.5 <0.2.0",
+          "from": "https://registry.npmjs.org/eventemitter3/-/eventemitter3-0.1.6.tgz",
           "resolved": "https://registry.npmjs.org/eventemitter3/-/eventemitter3-0.1.6.tgz"
         },
         "object-path": {
           "version": "0.6.0",
-          "from": "object-path@>=0.6.0 <0.7.0",
+          "from": "https://registry.npmjs.org/object-path/-/object-path-0.6.0.tgz",
           "resolved": "https://registry.npmjs.org/object-path/-/object-path-0.6.0.tgz"
         }
       }
     },
     "generator-connection": {
       "version": "2.3.0",
-      "from": "git+https://github.com/adobe-photoshop/generator-connection.git#v2.4.0",
+      "from": "git+https://github.com/adobe-photoshop/generator-connection.git#ee383cad86ac4fceb2dc4211c4c2185302ec547d",
       "resolved": "git+https://github.com/adobe-photoshop/generator-connection.git#ee383cad86ac4fceb2dc4211c4c2185302ec547d"
     },
     "immutable": {
       "version": "3.7.6",
-      "from": "immutable@>=3.7.5 <4.0.0",
+      "from": "https://registry.npmjs.org/immutable/-/immutable-3.7.6.tgz",
       "resolved": "https://registry.npmjs.org/immutable/-/immutable-3.7.6.tgz"
     },
     "lodash": {
       "version": "3.10.1",
-      "from": "lodash@>=3.10.1 <4.0.0",
+      "from": "https://registry.npmjs.org/lodash/-/lodash-3.10.1.tgz",
       "resolved": "https://registry.npmjs.org/lodash/-/lodash-3.10.1.tgz"
     },
     "loglevel": {
       "version": "1.4.0",
-      "from": "loglevel@>=1.4.0 <2.0.0",
+      "from": "https://registry.npmjs.org/loglevel/-/loglevel-1.4.0.tgz",
       "resolved": "https://registry.npmjs.org/loglevel/-/loglevel-1.4.0.tgz"
     },
     "mathjs": {
       "version": "2.5.0",
-      "from": "mathjs@>=2.4.2 <3.0.0",
+      "from": "https://registry.npmjs.org/mathjs/-/mathjs-2.5.0.tgz",
       "resolved": "https://registry.npmjs.org/mathjs/-/mathjs-2.5.0.tgz",
       "dependencies": {
         "decimal.js": {
           "version": "4.0.3",
-          "from": "decimal.js@>=4.0.2 <5.0.0",
+          "from": "https://registry.npmjs.org/decimal.js/-/decimal.js-4.0.3.tgz",
           "resolved": "https://registry.npmjs.org/decimal.js/-/decimal.js-4.0.3.tgz"
         },
         "fraction.js": {
           "version": "3.0.0",
-          "from": "fraction.js@>=3.0.0 <4.0.0",
+          "from": "https://registry.npmjs.org/fraction.js/-/fraction.js-3.0.0.tgz",
           "resolved": "https://registry.npmjs.org/fraction.js/-/fraction.js-3.0.0.tgz"
         },
         "tiny-emitter": {
           "version": "1.0.2",
-          "from": "tiny-emitter@>=1.0.0 <2.0.0",
+          "from": "https://registry.npmjs.org/tiny-emitter/-/tiny-emitter-1.0.2.tgz",
           "resolved": "https://registry.npmjs.org/tiny-emitter/-/tiny-emitter-1.0.2.tgz"
         },
         "typed-function": {
           "version": "0.10.3",
-          "from": "typed-function@>=0.10.3 <0.11.0",
+          "from": "https://registry.npmjs.org/typed-function/-/typed-function-0.10.3.tgz",
           "resolved": "https://registry.npmjs.org/typed-function/-/typed-function-0.10.3.tgz"
         }
       }
     },
     "react": {
-      "version": "0.14.3",
-      "from": "react@>=0.14.2 <0.15.0",
-      "resolved": "https://registry.npmjs.org/react/-/react-0.14.3.tgz",
+      "version": "0.14.6",
+      "from": "react@>=0.14.6 <0.15.0",
+      "resolved": "https://registry.npmjs.org/react/-/react-0.14.6.tgz",
       "dependencies": {
         "envify": {
           "version": "3.4.0",
@@ -128,9 +128,9 @@
           }
         },
         "fbjs": {
-          "version": "0.3.2",
-          "from": "fbjs@>=0.3.1 <0.4.0",
-          "resolved": "https://registry.npmjs.org/fbjs/-/fbjs-0.3.2.tgz",
+          "version": "0.6.1",
+          "from": "fbjs@>=0.6.1 <0.7.0",
+          "resolved": "https://registry.npmjs.org/fbjs/-/fbjs-0.6.1.tgz",
           "dependencies": {
             "core-js": {
               "version": "1.2.6",
@@ -150,9 +150,9 @@
               }
             },
             "promise": {
-              "version": "7.0.4",
+              "version": "7.1.1",
               "from": "promise@>=7.0.3 <8.0.0",
-              "resolved": "https://registry.npmjs.org/promise/-/promise-7.0.4.tgz",
+              "resolved": "https://registry.npmjs.org/promise/-/promise-7.1.1.tgz",
               "dependencies": {
                 "asap": {
                   "version": "2.0.3",
@@ -175,41 +175,46 @@
         }
       }
     },
+    "react-addons-perf": {
+      "version": "0.14.6",
+      "from": "react-addons-perf@>=0.14.6 <0.15.0",
+      "resolved": "https://registry.npmjs.org/react-addons-perf/-/react-addons-perf-0.14.6.tgz"
+    },
     "react-addons-pure-render-mixin": {
-      "version": "0.14.3",
-      "from": "react-addons-pure-render-mixin@>=0.14.2 <0.15.0",
-      "resolved": "https://registry.npmjs.org/react-addons-pure-render-mixin/-/react-addons-pure-render-mixin-0.14.3.tgz"
+      "version": "0.14.6",
+      "from": "react-addons-pure-render-mixin@>=0.14.6 <0.15.0",
+      "resolved": "https://registry.npmjs.org/react-addons-pure-render-mixin/-/react-addons-pure-render-mixin-0.14.6.tgz"
     },
     "react-dom": {
-      "version": "0.14.3",
-      "from": "react-dom@>=0.14.2 <0.15.0",
-      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-0.14.3.tgz"
+      "version": "0.14.6",
+      "from": "react-dom@>=0.14.6 <0.15.0",
+      "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-0.14.6.tgz"
     },
     "scriptjs": {
       "version": "2.5.8",
-      "from": "scriptjs@>=2.5.8 <3.0.0",
+      "from": "https://registry.npmjs.org/scriptjs/-/scriptjs-2.5.8.tgz",
       "resolved": "https://registry.npmjs.org/scriptjs/-/scriptjs-2.5.8.tgz"
     },
     "spaces-adapter": {
       "version": "0.32.0",
-      "from": "git+https://github.com/adobe-photoshop/spaces-adapter.git#v0.32.0",
+      "from": "git+https://github.com/adobe-photoshop/spaces-adapter.git#165a74d3f06ca0b1ef6346d08e612063de108e1e",
       "resolved": "git+https://github.com/adobe-photoshop/spaces-adapter.git#165a74d3f06ca0b1ef6346d08e612063de108e1e",
       "dependencies": {
         "qunitjs": {
           "version": "1.20.0",
-          "from": "qunitjs@>=1.20.0 <2.0.0",
+          "from": "https://registry.npmjs.org/qunitjs/-/qunitjs-1.20.0.tgz",
           "resolved": "https://registry.npmjs.org/qunitjs/-/qunitjs-1.20.0.tgz"
         }
       }
     },
     "tinycolor2": {
       "version": "1.3.0",
-      "from": "tinycolor2@>=1.1.2 <2.0.0",
+      "from": "https://registry.npmjs.org/tinycolor2/-/tinycolor2-1.3.0.tgz",
       "resolved": "https://registry.npmjs.org/tinycolor2/-/tinycolor2-1.3.0.tgz"
     },
     "wolfy87-eventemitter": {
       "version": "4.3.0",
-      "from": "wolfy87-eventemitter@>=4.3.0 <5.0.0",
+      "from": "https://registry.npmjs.org/wolfy87-eventemitter/-/wolfy87-eventemitter-4.3.0.tgz",
       "resolved": "https://registry.npmjs.org/wolfy87-eventemitter/-/wolfy87-eventemitter-4.3.0.tgz"
     }
   }
