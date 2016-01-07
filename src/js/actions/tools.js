@@ -896,7 +896,11 @@ define(function (require, exports) {
         _toolModalStateChangedHandler = this.flux.actions.tools.handleToolModalStateChanged.bind(this);
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
-        return this.transfer(initTool); // Initialize the current tool
+        if (this.isHeadless) {
+            return Promise.resolve(); // We don't want any DS tools in headless mode
+        } else {
+            return this.transfer(initTool); // Initialize the current tool
+        }
     };
     beforeStartup.action = {
         modal: true,

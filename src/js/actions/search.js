@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
+    var Promise = require("bluebird"),
+        descriptor = require("adapter").ps.descriptor;
 
     var dialog = require("./dialog"),
         search = require("../stores/search"),
@@ -37,6 +38,8 @@ define(function (require, exports) {
      * @type {string} 
      */
     var ID = search.SEARCH_BAR_DIALOG_ID;
+
+    var _showSearchHandler = null;
 
     /**
      * Open the Search dialog
@@ -59,12 +62,29 @@ define(function (require, exports) {
         transfers: [dialog.openDialog, dialog.closeDialog]
     };
 
+    var onReset = function () {
+        descriptor.removeListener("showSuperSearch", _showSearchHandler);
+
+        return Promise.resolve();
+    };
+    onReset.action = {
+        reads: [],
+        writes: []
+    };
+
     var beforeStartup = function () {
         var searchStore = this.flux.store("search");
 
         searchStore.registerSearch(ID,
             ["CURRENT_DOC", "RECENT_DOC", "ALL_LAYER", "MENU_COMMAND", "LIBRARY", "GLOBAL_SHORTCUT"]);
 
+        if (this.isHeadless) {
+            _showSearchHandler = function () {
+                this.flux.actions.search.toggleSearchBar();
+            }.bind(this);
+
+            descriptor.addListener("showSuperSearch", _showSearchHandler);
+        }
         return Promise.resolve();
     };
     beforeStartup.action = {
@@ -75,4 +95,5 @@ define(function (require, exports) {
 
     exports.toggleSearchBar = toggleSearchBar;
     exports.beforeStartup = beforeStartup;
+    exports.onReset = onReset;
 });
