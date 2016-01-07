@@ -28,7 +28,8 @@ define(function (require, exports) {
         ReactDOM = require("react-dom"),
         ReactPerf = require("react-addons-perf"),
         Promise = require("bluebird"),
-        adapter = require("adapter");
+        adapter = require("adapter"),
+        descriptor = adapter.ps.descriptor;
 
     var MainCl = require("js/jsx/Main"),
         FluxController = require("./fluxcontroller"),
@@ -123,6 +124,11 @@ define(function (require, exports) {
             window.__LOG_UTIL__ = log;
             window.__PERF_UTIL = performanceUtil;
         }
+
+        // Listen to headless mode change events here to set the controller
+        descriptor.addListener("setSpacesHeadlessMode", function (event) {
+            _controller.setHeadless(event.headless);
+        });
 
         var startupPromises = _controller.start()
             .then(function () {

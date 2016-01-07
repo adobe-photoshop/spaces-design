@@ -449,7 +449,7 @@ define(function (require, exports, module) {
              * @type {boolean}
              */
             isHeadless: {
-                value: function () {
+                get: function () {
                     return self._headless;
                 }
             },
@@ -1018,6 +1018,15 @@ define(function (require, exports, module) {
         return this._invokeActionMethods("onShutdown");
     };
 
+    FluxController.prototype.setHeadless = function (headless) {
+        if (this._headless === headless) {
+            return;
+        }
+
+        this._headless = headless;
+        this._resetController();
+    };
+
     /**
      * Whether there is a reset pending
      * @private
@@ -1109,9 +1118,11 @@ define(function (require, exports, module) {
         this._resetActionReceivers();
 
         if (!this._running || this._resetRetryDelay > MAX_RETRY_WINDOW) {
-            this.emit("error", {
-                cause: err
-            });
+            if (err) {
+                this.emit("error", {
+                    cause: err
+                });
+            }
             this._resetPending = false;
             this._resetRetryDelay = this._resetRetryDelayInitial;
             return;

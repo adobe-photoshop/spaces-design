@@ -1832,6 +1832,7 @@ define(function (require, exports) {
             case "layer":
             case "contentLayer":
             case "textLayer":
+            case "artboardSection":
                 // A layer was added
                 currentDocument = applicationStore.getCurrentDocument();
                 if (!currentDocument) {
@@ -1855,6 +1856,7 @@ define(function (require, exports) {
                         }.bind(this), 100);
                     }
                 } else {
+                    // If target is artboardSection, this will be called
                     this.flux.actions.documents.updateDocument();
                 }
 
@@ -1877,6 +1879,7 @@ define(function (require, exports) {
 
             switch (target) {
             case "textLayer":
+            case "layer":
                 // A layer was added
                 currentDocument = applicationStore.getCurrentDocument();
                 if (!currentDocument) {

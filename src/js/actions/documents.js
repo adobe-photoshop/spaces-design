@@ -1006,9 +1006,10 @@ define(function (require, exports) {
 
         _selectHandler = function (event) {
             var nextDocument,
-                currentDocument;
+                currentDocument,
+                eventTarget = photoshopEvent.targetOf(event);
 
-            if (photoshopEvent.targetOf(event) === "document") {
+            if (eventTarget === "document") {
                 if (typeof event.documentID === "number") {
                     // FIXME: This event is incorrectly triggered even when the
                     // document selection is initiated internally. Ideally it
@@ -1027,6 +1028,15 @@ define(function (require, exports) {
                 } else {
                     throw new Error("Selected document has no ID");
                 }
+            } else if (eventTarget === "layer") {
+                currentDocument = applicationStore.getCurrentDocument();
+
+                var payload = {
+                    documentID: currentDocument.id,
+                    selectedIDs: event.layerID
+                };
+
+                this.dispatch(events.document.SELECT_LAYERS_BY_ID, payload);
             }
         }.bind(this);
         descriptor.addListener("select", _selectHandler);

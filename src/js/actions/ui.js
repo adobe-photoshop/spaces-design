@@ -389,13 +389,16 @@ define(function (require, exports) {
         adapterOS.addListener("displayConfigurationChanged", _displayConfigurationChangedHandler);
 
         // Enable over-scroll mode
-        var osPromise = adapterUI.setOverscrollMode(adapterUI.overscrollMode.ALWAYS_OVERSCROLL);
+        var osPromise = adapterUI.setOverscrollMode(this.isHeadless ?
+                adapterUI.overscrollMode.NORMAL_OVERSCROLL :
+                adapterUI.overscrollMode.ALWAYS_OVERSCROLL
+            );
 
         // Hide OWL UI, status bar and scroll bars
-        var owlPromise = adapterUI.setClassicChromeVisibility(false);
+        var owlPromise = adapterUI.setClassicChromeVisibility(this.isHeadless);
 
         // Enable target path suppression
-        var pathPromise = adapterUI.setSuppressTargetPaths(false);
+        var pathPromise = adapterUI.setSuppressTargetPaths(this.isHeadless);
 
         return Promise.join(osPromise, owlPromise, pathPromise);
     };

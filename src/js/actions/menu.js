@@ -436,23 +436,27 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartup = function () {
-        // We listen to menu store directly from this action
-        // and reload menus, menu store emits change events
-        // only when the menus actually have changed
-        _menuChangeHandler = function () {
-            var menuStore = this.flux.store("menu"),
-                appMenu = menuStore.getApplicationMenu();
+        if (this.isHeadless) {
+            ui.installMenu({});
+        } else {
+            // We listen to menu store directly from this action
+            // and reload menus, menu store emits change events
+            // only when the menus actually have changed
+            _menuChangeHandler = function () {
+                var menuStore = this.flux.store("menu"),
+                    appMenu = menuStore.getApplicationMenu();
 
-            if (appMenu !== null) {
-                var menuDescriptor = appMenu.getMenuDescriptor();
-                ui.installMenu(menuDescriptor)
-                    .catch(function (err) {
-                        log.warn("Failed to install menu: ", err, menuDescriptor);
-                    });
-            }
-        }.bind(this);
+                if (appMenu !== null) {
+                    var menuDescriptor = appMenu.getMenuDescriptor();
+                    ui.installMenu(menuDescriptor)
+                        .catch(function (err) {
+                            log.warn("Failed to install menu: ", err, menuDescriptor);
+                        });
+                }
+            }.bind(this);
 
-        this.flux.store("menu").on("change", _menuChangeHandler);
+            this.flux.store("menu").on("change", _menuChangeHandler);
+        }
 
         // Menu store waits for this event to parse descriptors
         this.dispatch(events.menus.INIT_MENUS, {

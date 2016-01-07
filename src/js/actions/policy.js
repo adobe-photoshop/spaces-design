@@ -44,7 +44,7 @@ define(function (require, exports) {
     var syncPolicies = function (kind) {
         var policyStore = this.flux.store("policy");
 
-        if (!policyStore.isDirty(kind)) {
+        if (this.isHeadless || !policyStore.isDirty(kind)) {
             return Promise.resolve();
         }
 
@@ -240,6 +240,10 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var setMode = function (kind, mode) {
+        if (this.isHeadless) {
+            return Promise.resolve();
+        }
+
         var setModeFn;
         switch (kind) {
         case PolicyStore.eventKind.KEYBOARD:
@@ -368,16 +372,25 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartup = function () {
-        var defaultKeyboardMode = adapterUI.keyboardPropagationMode.PROPAGATE_TO_BROWSER,
-            keyboardModePromise = this.transfer(setMode, PolicyStore.eventKind.KEYBOARD,
-                defaultKeyboardMode),
-            defaultPointerMode = adapterUI.pointerPropagationMode.PROPAGATE_BY_ALPHA,
-            // Alpha is the default pointer mode, but we set it here anyway so that we can reset 
-            // to the correct default mode when error occurs.
-            pointerModePromise = this.transfer(setMode, PolicyStore.eventKind.POINTER,
-                defaultPointerMode);
+        if (this.isHeadless) {
+            var keyboardPolicyPromise = adapterUI.setKeyboardEventPropagationPolicy([]),
+                pointerPolicyPromise = adapterUI.setPointerEventPropagationPolicy([]),
+                photoshopPropagateMode = adapterUI.keyboardPropagationMode.PROPAGATE_BY_FOCUS,
+                psKeyboardModePromise = adapterUI.setKeyboardPropagationMode({ defaultMode: photoshopPropagateMode });
 
-        return Promise.join(keyboardModePromise, pointerModePromise);
+            return Promise.join(keyboardPolicyPromise, pointerPolicyPromise, psKeyboardModePromise);
+        } else {
+            var defaultKeyboardMode = adapterUI.keyboardPropagationMode.PROPAGATE_TO_BROWSER,
+                keyboardModePromise = this.transfer(setMode, PolicyStore.eventKind.KEYBOARD,
+                    defaultKeyboardMode),
+                defaultPointerMode = adapterUI.pointerPropagationMode.PROPAGATE_BY_ALPHA,
+                // Alpha is the default pointer mode, but we set it here anyway so that we can reset 
+                // to the correct default mode when error occurs.
+                pointerModePromise = this.transfer(setMode, PolicyStore.eventKind.POINTER,
+                    defaultPointerMode);
+
+            return Promise.join(keyboardModePromise, pointerModePromise);
+        }
     };
     beforeStartup.action = {
         reads: [],

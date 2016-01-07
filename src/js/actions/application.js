@@ -100,6 +100,7 @@ define(function (require, exports) {
      */
     var onReset = function () {
         descriptor.removeListener("setSpacesHeadlessMode", _headlessHandler);
+        return Promise.resolve();
     };
     onReset.action = {
         reads: [],
