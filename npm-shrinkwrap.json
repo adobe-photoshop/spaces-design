@@ -185,6 +185,11 @@
       "from": "react-dom@>=0.14.2 <0.15.0",
       "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-0.14.3.tgz"
     },
+    "react-addons-perf": {
+      "version": "0.14.3",
+      "from": "react-dom@>=0.14.2 <0.15.0",
+      "resolved": "https://registry.npmjs.org/react-addons-perf/-/react-addons-perf-0.14.3.tgz"
+    },
     "scriptjs": {
       "version": "2.5.8",
       "from": "scriptjs@>=2.5.8 <3.0.0",
