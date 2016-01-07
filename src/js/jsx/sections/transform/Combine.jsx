@@ -89,7 +89,7 @@ define(function (require, exports, module) {
                 vectorMaskDisabled = this.props.disabled ||
                     vectorMaskLayers.isEmpty() ||
                     (this.props.document.layers.selected.size !== vectorMaskLayers.size),
-                disabled = shapeDisabled && vectorMaskDisabled;
+                disabled = shapeDisabled || vectorMaskDisabled;
 
             return (
                 <SplitButtonList className="button-radio__fixed vector-operations" size="column-16">
