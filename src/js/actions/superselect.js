@@ -641,37 +641,43 @@ define(function (require, exports) {
         }
 
         var uiStore = this.flux.store("ui"),
-            canvasCoords = uiStore.transformWindowToCanvas(x, y),
-            coveredLayers = _getContainingLayerBounds.call(this, doc.layers, canvasCoords.x, canvasCoords.y);
-
-        if (coveredLayers.isEmpty()) {
-            // This general bounds check on JS prevents a PS call and starts marquee faster
-            return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
-        }
-
-        // Hide transform controls
-        return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
+            canvasCoords = uiStore.transformWindowToCanvas(x, y);
+            
+        return uiUtil.hitTestLayers(doc.id, canvasCoords.x, canvasCoords.y)
             .bind(this)
-            .then(function () {
-                return this.transfer(click, doc, x, y, diveIn, false);
-            })
-            .then(function (anySelected) {
-                if (anySelected) {
-                    var dragEvent = {
-                        eventKind: eventKind,
-                        location: coordinates,
-                        modifiers: dragModifiers
-                    };
+            .then(function (hitLayerIDs) {
+                var coveredLayers = _getContainingLayerBounds.call(this, doc.layers, canvasCoords.x, canvasCoords.y),
+                    coveredLayerIDs = collection.pluck(coveredLayers, "id"),
+                    targetIDs = collection.intersection(coveredLayerIDs, hitLayerIDs);
 
-                    return adapterOS.postEvent(dragEvent);
+                if (targetIDs.isEmpty()) {
+                    return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
                 }
-            })
-            .catch(function () {}) // Move should silently fail if there are no selected layers
-            .finally(function () {
-                // Re show the transform controls, which will appear once we're out of the modal state
-                return descriptor.playObject(
-                    toolLib.setToolOptions("moveTool", { "$Abbx": true }),
-                    { canExecuteWhileModal: true });
+
+                // Hide transform controls
+                return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
+                    .bind(this)
+                    .then(function () {
+                        return this.transfer(click, doc, x, y, diveIn, false);
+                    })
+                    .then(function (anySelected) {
+                        if (anySelected) {
+                            var dragEvent = {
+                                eventKind: eventKind,
+                                location: coordinates,
+                                modifiers: dragModifiers
+                            };
+
+                            return adapterOS.postEvent(dragEvent);
+                        }
+                    })
+                    .catch(function () {}) // Move should silently fail if there are no selected layers
+                    .finally(function () {
+                        // Re show the transform controls, which will appear once we're out of the modal state
+                        return descriptor.playObject(
+                            toolLib.setToolOptions("moveTool", { "$Abbx": true }),
+                            { canExecuteWhileModal: true });
+                    });
             });
     };
     drag.action = {
