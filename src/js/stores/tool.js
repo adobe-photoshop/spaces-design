@@ -99,6 +99,14 @@ define(function (require, exports, module) {
         _inVectorMode: false,
 
         /**
+         * Flag indicating whether we're in vectormask mode
+         *
+         * @private
+         * @type {boolean}
+         */
+        _inVectorModeUnlinked: false,
+
+        /**
          * Stored ID of pointer policy created while in vector mask mode
          *
          * @private
@@ -123,6 +131,7 @@ define(function (require, exports, module) {
                 events.tool.SELECT_TOOL_END, this._handleSelectTool,
                 events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange,
                 events.tool.VECTOR_MASK_MODE_CHANGE, this._handleVectorMaskModeChange,
+                events.tool.VECTOR_MASK_UNLINK_CHANGE, this._handleVectorMaskUnlinkChange,
                 events.tool.VECTOR_MASK_POLICY_CHANGE, this._handleVectorMaskPolicyChange,
                 events.tool.SUPERSELECT_DRAG_UPDATE, this._handleSuperselectDragUpdate
             );
@@ -162,6 +171,7 @@ define(function (require, exports, module) {
             this._allTools = Object.defineProperties({}, toolSpec);
             this._inModalToolState = null;
             this._inVectorMode = false;
+            this._inVectorModeUnlinked = false;
             this._vectorMaskPolicyID = null;
             this._currentKeyboardPolicyID = null;
             this._currentPointerPolicyID = null;
@@ -179,6 +189,7 @@ define(function (require, exports, module) {
                 current: this._currentTool,
                 previous: this._previousTool,
                 vectorMaskMode: this._inVectorMode,
+                vectorMaskUnLinkMode: this._inVectorModeUnlinked,
                 draggedLayerIDs: this._draggedLayerIDs
             };
         },
@@ -199,6 +210,15 @@ define(function (require, exports, module) {
          */
         getVectorMode: function () {
             return this._inVectorMode;
+        },
+
+        /**
+         * Gets the tool vector mode linked flag
+         * 
+         * @return {boolean} 
+         */
+        getVectorUnlinkedMode: function () {
+            return this._inVectorModeUnlinked;
         },
 
         /**
@@ -247,6 +267,16 @@ define(function (require, exports, module) {
          */
         _handleVectorMaskModeChange: function (payload) {
             this._inVectorMode = payload;
+
+            this.emit("change");
+        },
+
+        /**
+         * @private
+         * @param {boolean} payload
+         */
+        _handleVectorMaskUnlinkChange: function (payload) {
+            this._inVectorModeUnlinked = payload;
 
             this.emit("change");
         },

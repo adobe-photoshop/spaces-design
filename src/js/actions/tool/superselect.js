@@ -25,14 +25,22 @@ define(function (require, exports) {
     "use strict";
 
     var descriptor = require("adapter").ps.descriptor,
+        PS = require("adapter").ps,
         UI = require("adapter").ps.ui,
+        OS = require("adapter").os,
         toolLib = require("adapter").lib.tool,
         vectorMaskLib = require("adapter").lib.vectorMask;
 
     var layerActions = require("js/actions/layers"),
         policy = require("js/actions/policy"),
         PolicyStore = require("js/stores/policy"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        events = require("js/events");
+
+    /**
+     * Handler for mouseDown events
+     */
+    var _mouseDownHandler;
 
     /**
      * @private
@@ -47,9 +55,17 @@ define(function (require, exports) {
         var toolStore = this.flux.store("tool"),
             applicationStore = this.flux.store("application"),
             currentDocument = applicationStore.getCurrentDocument(),
-            vectorMode = toolStore.getVectorMode();
+            vectorMode = toolStore.getVectorMode(),
+            vectorUnlinked = toolStore.getVectorUnlinkedMode();
 
-        if (!vectorMode || !currentDocument) {
+        _mouseDownHandler = function (event) {
+            if (event.clickCount === 2) {
+                this.flux.actions.tool.superselect.doubleclick();
+            }
+        }.bind(this);
+        OS.addListener("externalMouseDown", _mouseDownHandler);
+
+        if (!vectorMode || !currentDocument || vectorUnlinked) {
             return descriptor.playObject(toolLib.setToolOptions("moveTool", toolOptions))
                 .bind(this)
                 .then(function () {
@@ -97,6 +113,9 @@ define(function (require, exports) {
      * @private
      */
     var deselect = function () {
+        OS.removeListener("externalMouseDown", _mouseDownHandler);
+        _mouseDownHandler = null;
+
         return this.transfer(policy.setMode, PolicyStore.eventKind.POINTER,
             UI.pointerPropagationMode.PROPAGATE_BY_ALPHA);
     };
@@ -107,6 +126,62 @@ define(function (require, exports) {
         modal: true
     };
 
+    /**
+    * switch to vector tool, while linking the vector mask from the layer.  
+    *
+    * @return {Promise}
+    */
+    var doubleclick = function () {
+        var flux = this.flux,
+            toolStore = flux.store("tool"),
+            vectorMaskMode = toolStore.getVectorMode(),
+            appStore = flux.store("application"),
+            currentDocument = appStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var currentLayers = currentDocument.layers.selected,
+            currentLayer = currentLayers.first();
+
+        // vector mask mode requires an active layer
+        if (!currentLayer || !vectorMaskMode) {
+            return Promise.resolve();
+        } else {
+            return PS.endModalToolState(true)
+                .bind(this)
+                .then(function () {
+                    return descriptor.playObject(vectorMaskLib.setVectorMaskLinked(true))
+                })
+                .then(function () {
+                    return this.dispatchAsync(events.tool.VECTOR_MASK_UNLINK_CHANGE, false);
+                })
+                .then(function () {
+                    return this.transfer("tools.select", toolStore.getToolByID("superselectVector"));
+                })
+                .then(function () {
+                    currentLayer = appStore.getCurrentDocument().layers.selected.first();
+                    if (!currentLayer.vectorMaskEmpty) {
+                        return descriptor.playObject(vectorMaskLib.activateVectorMaskEditing())
+                            .bind(this)
+                            .then(function () {
+                                // We are not transferring here
+                                // because we actively want to end the use of our locks
+                                this.flux.actions.tools.enterPathModalState();
+                                return Promise.resolve();
+                            });
+                    }
+                });
+        }
+    };
+    doubleclick.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.PS_APP],
+        transfers: ["tools.select"]
+    };
+
+    exports.doubleclick = doubleclick;
     exports.select = select;
     exports.deselect = deselect;
 });

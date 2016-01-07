@@ -110,6 +110,7 @@ define(function (require, exports, module) {
             SELECT_TOOL_END: "selectToolEnd",
             MODAL_STATE_CHANGE: "modalStateChange",
             VECTOR_MASK_MODE_CHANGE: "vectorMaskModeChange",
+            VECTOR_MASK_UNLINK_CHANGE: "vectorMasUnlinkChange",
             VECTOR_MASK_POLICY_CHANGE: "vectorMaskPolicyChange",
             SUPERSELECT_DRAG_UPDATE: "superselectDragUpdate"
         },

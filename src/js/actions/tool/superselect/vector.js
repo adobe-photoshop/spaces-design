@@ -30,18 +30,21 @@ define(function (require, exports) {
         OS = require("adapter").os,
         UI = require("adapter").ps.ui,
         descriptor = require("adapter").ps.descriptor,
-        toolLib = require("adapter").lib.tool;
+        toolLib = require("adapter").lib.tool,
+        vectorMaskLib = require("adapter").lib.vectorMask;
         
     var shortcuts = require("js/actions/shortcuts"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        events = require("js/events");
 
     var _TOGGLE_TARGET_PATH = 3502,
         _CLEAR_PATH = 106;
 
     /**
-     * Handler for pathComponentSelectionChanged events
+     * Handler for pathComponentSelectionChanged and mouseDown events
      */
-    var _pathSelectionhandler;
+    var _pathSelectionhandler,
+        _mouseDownHandler;
 
     /**
      * Sets the selection mode to only active layers for direct select tool
@@ -72,6 +75,13 @@ define(function (require, exports) {
             }
         }.bind(this);
         descriptor.addListener("pathComponentSelectionChanged", _pathSelectionhandler);
+
+        _mouseDownHandler = function (event) {
+            if (event.clickCount === 2) {
+                this.flux.actions.tool.superselect.vector.doubleclick();
+            }
+        }.bind(this);
+        OS.addListener("externalMouseDown", _mouseDownHandler);
         
         var optionsPromise = descriptor.playObject(toolLib.setDirectSelectOptionForAllLayers(false)),
             suppressionPromise = UI.setSuppressTargetPaths(false),
@@ -111,7 +121,10 @@ define(function (require, exports) {
             deletePromise = this.transfer(shortcuts.removeShortcut, "vectorDelete");
 
         descriptor.removeListener("pathComponentSelectionChanged", _pathSelectionhandler);
+        OS.removeListener("externalMouseDown", _mouseDownHandler);
+        
         _pathSelectionhandler = null;
+        _mouseDownHandler = null;
 
         return Promise.join(backspacePromise, deletePromise)
             .bind(this)
@@ -128,6 +141,52 @@ define(function (require, exports) {
         modal: true
     };
 
+    /**
+    * switch to superselect tool, while unlinking the vector mask from the layer.  
+    *
+    * @return {Promise}
+    */
+    var doubleclick = function () {
+        var flux = this.flux,
+            toolStore = flux.store("tool"),
+            vectorMaskMode = toolStore.getVectorMode(),
+            appStore = flux.store("application"),
+            currentDocument = appStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var currentLayers = currentDocument.layers.selected,
+            currentLayer = currentLayers.first();
+
+        // vector mask mode requires an active layer
+        if (!currentLayer || !vectorMaskMode) {
+            return Promise.resolve();
+        } else {
+             return PS.endModalToolState(true) 
+                .bind(this)
+                .then(function () {
+                    return descriptor.playObject(vectorMaskLib.setVectorMaskLinked(false));
+                })
+                .then(function () {
+                    return this.dispatchAsync(events.tool.VECTOR_MASK_UNLINK_CHANGE, true);
+                })
+                .then(function () {
+                    return descriptor.playObject(vectorMaskLib.dropPathSelection());
+                })
+                .then(function () {
+                    return this.transfer("tools.select", toolStore.getToolByID("newSelect"));
+                });
+        }
+    };
+    doubleclick.action = {
+        reads: [locks.JS_APP],
+        writes: [locks.PS_APP],
+        transfers: ["tools.select"]
+    };
+
+    exports.doubleclick = doubleclick;
     exports.select = select;
     exports.deselect = deselect;
 });

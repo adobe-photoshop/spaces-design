@@ -108,7 +108,7 @@ define(function (require, exports, module) {
             flux.actions.tools.select(toolStore.getToolByID("newSelect"));
         }
     };
-    
+
     SuperSelectVectorTool.prototype.toolOverlays = [SuperselectVectorMaskOverlay];
 
     module.exports = SuperSelectVectorTool;

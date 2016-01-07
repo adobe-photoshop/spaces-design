@@ -52,9 +52,10 @@ define(function (require, exports, module) {
      */
     var _nativeToolName = function () {
         var toolStore = this.flux.store("tool"),
-            vectorMode = toolStore.getVectorMode();
+            vectorMode = toolStore.getVectorMode(),
+            vectorUnlinkedMode = toolStore.getVectorUnlinkedMode();
 
-        if (vectorMode) {
+        if (vectorMode === true && vectorUnlinkedMode === false) {
             return "directSelectTool";
         } else {
             return "moveTool";

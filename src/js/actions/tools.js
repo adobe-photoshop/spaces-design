@@ -733,8 +733,12 @@ define(function (require, exports) {
 
                                 return this.dispatchAsync(event, payload);
                             });
-                    } else {
-                        return Promise.resolve();
+                    } else if (!currentLayer.vectorMaskEmpty && currentLayer.vectorMaskEnabled) {
+                        return PS.endModalToolState(true)
+                            .bind(this)
+                            .then (function () {
+                                return descriptor.playObject(vectorMaskLib.setVectorMaskLinked(true));
+                            })
                     }
                 });
 
