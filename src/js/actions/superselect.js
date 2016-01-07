@@ -232,9 +232,10 @@ define(function (require, exports) {
      * @private
      * @param {LayerStructure} layerTree
      * @param {Immutable.Iterable.<Layer>} coveredLayers Layers under a certain point
+     * @param {Immutable.Iterable.<number>} hitLayerIDs Layer IDs that PS tells us we clicked on
      * @return {Immutable.Iterable.<number>} IDs of the subset of coveredLayers that do not own selected layers
      */
-    var _getLayersBelowCurrentSelection = function (layerTree, coveredLayers) {
+    var _getLayersBelowCurrentSelection = function (layerTree, coveredLayers, hitLayerIDs) {
         var selectedLayerAncestors = layerTree.selected
                 .reduce(function (layerSet, layer) {
                     layerTree.ancestors(layer).forEach(function (ancestor) {
@@ -245,7 +246,8 @@ define(function (require, exports) {
             selectableCoveredLayers = coveredLayers.filter(function (layer) {
                 return !layer.locked && // Only allow for unlocked layers
                     !layer.isGroupEnd &&
-                    !selectedLayerAncestors.has(layer);
+                    !selectedLayerAncestors.has(layer) &&
+                    hitLayerIDs.has(layer.id);
             });
 
         return collection.pluck(selectableCoveredLayers, "id");
@@ -508,7 +510,7 @@ define(function (require, exports) {
                 } else {
                     // We get in this situation if user double clicks in a group with nothing underneath.
                     // We "fall down" to the super selectable layer underneath the selection in these cases
-                    var underLayerIDs = _getLayersBelowCurrentSelection(layerTree, coveredLayers);
+                    var underLayerIDs = _getLayersBelowCurrentSelection(layerTree, coveredLayers, hitLayerIDs);
                     if (!underLayerIDs.isEmpty()) {
                         var topLayerID = underLayerIDs.last();
                         return this.transfer(layerActions.select, doc, layerTree.byID(topLayerID));
