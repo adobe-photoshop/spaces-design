@@ -161,6 +161,10 @@ define(function (require, exports) {
         var panelStore = this.flux.store("panel"),
             cloakRect = panelStore.getCloakRect();
 
+        if (this.isHeadless) {
+            return Promise.resolve();
+        }
+        
         return adapterUI.setOverlayCloaking(cloakRect, ["scroll"], "afterPaint");
     };
     setOverlayCloaking.action = {
@@ -179,6 +183,10 @@ define(function (require, exports) {
         var panelStore = this.flux.store("panel"),
             cloakRect = panelStore.getCloakRect();
 
+        if (this.isHeadless) {
+            return Promise.resolve();
+        }
+        
         return adapterUI.setOverlayCloaking(cloakRect, "immediate", "afterPaint");
     };
     cloak.action = {

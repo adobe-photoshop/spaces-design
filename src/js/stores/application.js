@@ -65,12 +65,14 @@ define(function (require, exports, module) {
         _documentIndex: new DocumentIndex(),
 
         initialize: function () {
+            this._headless = 
+
             this.bindActions(
                 events.RESET, this._handleReset,
+                events.SET_HEADLESS, this._setHeadless,
                 events.application.HOST_VERSION, this.setHostVersion,
                 events.application.INITIALIZED, this._setInitialized,
                 events.application.UPDATE_RECENT_FILES, this._updateRecentFileList,
-                events.application.SET_HEADLESS, this._setHeadless,
                 events.document.DOCUMENT_UPDATED, this._updateDocument,
                 events.document.CLOSE_DOCUMENT, this._closeDocument,
                 events.document.SELECT_DOCUMENT, this._documentSelected
@@ -85,7 +87,6 @@ define(function (require, exports, module) {
         _handleReset: function () {
             this._documentIndex = new DocumentIndex();
             this._hostVersion = null;
-            this._headless = false;
             this._recentFiles = Immutable.List();
             this._initialized = Immutable.Set();
         },

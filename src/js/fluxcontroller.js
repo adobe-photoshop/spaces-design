@@ -98,7 +98,7 @@ define(function (require, exports, module) {
      *
      * @constructor
      */
-    var FluxController = function (testStores) {
+    var FluxController = function (testStores, headless) {
         EventEmitter.call(this);
 
         this._actionQueue = new AsyncDependencyQueue(CORES);
@@ -1024,7 +1024,13 @@ define(function (require, exports, module) {
         }
 
         this._headless = headless;
-        this._resetController();
+
+        var flux = this._flux.dispatchBinder;
+        flux.dispatch.call(flux, events.SET_HEADLESS, { headless: headless });
+
+        if (this._running) {
+            this._resetController();
+        }
     };
 
     /**

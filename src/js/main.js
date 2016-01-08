@@ -125,11 +125,10 @@ define(function (require, exports) {
             window.__PERF_UTIL = performanceUtil;
         }
 
-        // Listen to headless mode change events here to set the controller
-        descriptor.addListener("setSpacesHeadlessMode", function (event) {
-            _controller.setHeadless(event.headless);
-        });
-
+        if (window.location.href.indexOf("headless=true") > 0) {
+            _controller.setHeadless(true);
+        }
+        
         var startupPromises = _controller.start()
             .then(function () {
                 log.debug("Actions loaded: %dms", Date.now() - startTime);

@@ -25,7 +25,8 @@ define(function (require, exports) {
     "use strict";
 
     var Promise = require("bluebird"),
-        descriptor = require("adapter").ps.descriptor;
+        descriptor = require("adapter").ps.descriptor,
+        adapterUI = require("adapter").ps.ui;
 
     var dialog = require("./dialog"),
         search = require("../stores/search"),
@@ -80,7 +81,27 @@ define(function (require, exports) {
 
         if (this.isHeadless) {
             _showSearchHandler = function () {
-                this.flux.actions.search.toggleSearchBar();
+                var photoshop_bounds = {
+                    left: 100,
+                    right: 1000,
+                    top: 100,
+                    bottom: 500
+                  };
+
+                _spaces.window.changeBounds({globalBounds: photoshop_bounds}, {}, function (err) {
+                    if (err) {
+                        console.log(err);
+                    }
+
+                    var photoshopPropagateMode = adapterUI.keyboardPropagationMode.PROPAGATE_TO_BROWSER,
+                    psKeyboardModePromise = adapterUI.setKeyboardPropagationMode({ defaultMode: photoshopPropagateMode });
+
+                    psKeyboardModePromise.bind(this).then(function () {
+                        this.flux.actions.search.toggleSearchBar();
+                    });
+                }.bind(this));
+
+
             }.bind(this);
 
             descriptor.addListener("showSuperSearch", _showSearchHandler);

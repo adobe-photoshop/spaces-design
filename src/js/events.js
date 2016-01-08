@@ -26,6 +26,7 @@ define(function (require, exports, module) {
 
     module.exports = {
         RESET: "reset",
+        SET_HEADLESS: "setHeadlessMode",
         example: {
             SYNC_ACTION: "syncAction",
             ASYNC_ACTION_START: "asyncActionStart",
@@ -35,8 +36,7 @@ define(function (require, exports, module) {
         application: {
             HOST_VERSION: "hostVersion",
             UPDATE_RECENT_FILES: "updateRecentFiles",
-            INITIALIZED: "appInitialized",
-            SET_HEADLESS: "setHeadlessMode"
+            INITIALIZED: "appInitialized"
         },
         document: {
             history: {
