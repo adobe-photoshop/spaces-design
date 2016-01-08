@@ -446,20 +446,17 @@ define(function (require, exports, module) {
                     </input>
                 );
             } else { // Used for cases like Libary assets and Layerfaces
+                className += " text-input__disabled";
+
                 return (
-                    <input
-                        type="text"
-                        tabIndex="-1"
+                    <span
                         ref="input"
-                        spellCheck="false"
                         title={this.props.title}
-                        value={this.state.value}
-                        disabled="disabled"
                         className={className}
                         onDoubleClick={this._handleDoubleClick}
-                        onClick={this._handleClick}
-                        onWheel={this._handleWheel}>
-                    </input>
+                        onClick={this._handleClick}>
+                        {this.state.value}
+                    </span>
                 );
             }
         },

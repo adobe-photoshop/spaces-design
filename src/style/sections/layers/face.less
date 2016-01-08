@@ -79,13 +79,10 @@
 
 .generate-depth(10);
 
-input[type="text"].face__name, input[type="text"]:disabled.face__name {
+.face__name {
     font-size: 1.2rem;
     color: @item-active;
     border-bottom: solid @hairline transparent;
-}
-
-.face__name {
     flex-grow: 1;
     flex-shrink: 100;
     -webkit-user-select: none;
@@ -127,22 +124,22 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     background-color: @list-hover-color;
     z-index: 99;
     
-    input[type="text"], input[type="text"]:disabled {
+    .face__name {
         color: @item-hover;
         border-bottom: solid @hairline transparent;
     }
 }
 
-.face__not-visible input[type="text"].face__name {
+.face__not-visible .face__name {
     color: @item-hover;
     opacity: @label-hidden-opacity;
 }
 
-.face__select_immediate input[type="text"].face__name {
+.face__select_immediate .face__name {
     color: @item;
 }
 
-.face__select_immediate:hover input[type="text"].face__name {
+.face__select_immediate:hover .face__name {
     color: @item;
 }
 
@@ -162,7 +159,7 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
 .face__select_descendant, .face__select_descendant:hover {
     background-color: @list-select-child-color;
     
-    input[type="text"], input[type="text"]:disabled {
+    .face__name {
         border-bottom: solid @hairline transparent;
     }
 }
@@ -180,7 +177,7 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     cursor: -webkit-grabbing;
 }
 
-.face__select_immediate input[type="text"].face__name {
+.face__select_immediate .face__name {
     border-bottom: solid @hairline transparent;
 }
 
