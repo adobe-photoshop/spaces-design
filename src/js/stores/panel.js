@@ -246,8 +246,10 @@ define(function (require, exports, module) {
          */
         getCloakRect: function () {
             var centerOffsets = this.getCenterOffsets(),
-                windowWidth = window.document.body.clientWidth,
-                windowHeight = window.document.body.clientHeight;
+                uiStore = this.flux.store("ui"),
+                uiState = uiStore.getState(),
+                windowWidth = uiState.clientWidth,
+                windowHeight = uiState.clientHeight;
             
             return {
                 left: centerOffsets.left,

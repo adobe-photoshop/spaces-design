@@ -26,6 +26,8 @@ define(function (require, exports, module) {
     
     var Fluxxor = require("fluxxor");
     
+    var os = require("adapter").os;
+
     var events = require("../events"),
         log = require("js/util/log"),
         math = require("js/util/math");
@@ -64,15 +66,42 @@ define(function (require, exports, module) {
          */
         _rootSize: null,
 
+        /**
+         * Cached copy of window.document.body.clientHeight.
+         *
+         * @type {number}
+         */
+        _clientHeight: null,
+
+        /**
+         * Cached copy of window.document.body.clientWidth.
+         *
+         * @type {number}
+         */
+        _clientWidth: null,
+
         initialize: function () {
             this.bindActions(
                 events.RESET, this._handleReset,
                 events.ui.TRANSFORM_UPDATED, this._transformUpdated,
                 events.ui.DISPLAY_CHANGED, this._handleDisplayChanged
             );
+            
+            this._handleResizeDebounced = _.debounce(this._handleResize.bind(this), 50);
+            window.addEventListener("resize", this._handleResizeDebounced);
+            os.addListener("displayConfigurationChanged", this._handleResize);
 
             this._handleReset();
         },
+
+        _handleResize: function () {
+            var body = window.document.body;
+
+            this._clientHeight = body.clientHeight;
+            this._clientWidth = body.clientWidth;
+        },
+
+        _handleResizeDebounced: null,
 
         /**
          * Reset or initialize store state.
@@ -81,6 +110,7 @@ define(function (require, exports, module) {
          */
         _handleReset: function () {
             this._setRootSize();
+            this._handleResize();
             this._zoom = null;
             this._transformMatrix = null;
             this._inverseTransformMatrix = null;
@@ -91,7 +121,9 @@ define(function (require, exports, module) {
             return {
                 transformMatrix: this._transformMatrix,
                 inverseTransformMatrix: this._inverseTransformMatrix,
-                zoomFactor: this._zoom
+                zoomFactor: this._zoom,
+                clientHeight: this._clientHeight,
+                clientWidth: this._clientWidth
             };
         },
         

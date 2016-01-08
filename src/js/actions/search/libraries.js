@@ -137,6 +137,8 @@ define(function (require, exports) {
     var _confirmSearch = function (id) {
         var elementInfo = _idMap[id],
             appStore = this.flux.store("application"),
+            uiStore = this.flux.store("ui"),
+            uiState = uiStore.getState(),
             currentDocument = appStore.getCurrentDocument();
 
         if (elementInfo) {
@@ -148,8 +150,9 @@ define(function (require, exports) {
                     var uiStore = this.flux.stores.ui,
                         panelStore = this.flux.stores.panel,
                         centerOffsets = panelStore.getState().centerOffsets,
-                        midX = (window.document.body.clientWidth + centerOffsets.left - centerOffsets.right) / 2,
-                        midY = (window.document.body.clientHeight + centerOffsets.top - centerOffsets.bottom) / 2,
+                        midX = (uiState.clientWidth + centerOffsets.left - centerOffsets.right) / 2,
+                        midY = (uiState.clientHeight + centerOffsets.top - centerOffsets.bottom) / 2,
+
                         location = uiStore.transformWindowToCanvas(midX, midY);
                     
                     selectPromise

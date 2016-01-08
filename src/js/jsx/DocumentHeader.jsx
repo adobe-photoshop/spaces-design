@@ -93,17 +93,25 @@ define(function (require, exports, module) {
          */
         _updatePanelSizes: function () {
             var node = ReactDOM.findDOMNode(this.refs.tabContainer),
-                headerHeight;
+                headerHeightPromise;
 
             if (node) {
-                headerHeight = node.getBoundingClientRect().height;
+                headerHeightPromise = new Promise(function (resolve) {
+                    window.requestAnimationFrame(function () {
+                        resolve(node.getBoundingClientRect().height);
+                    });
+                });
             } else {
-                headerHeight = 0;
+                headerHeightPromise = Promise.resolve(0);
             }
 
-            return this.getFlux().actions.panel.updatePanelSizes({
-                headerHeight: headerHeight
-            });
+            return headerHeightPromise
+                .bind(this)
+                .then(function (headerHeight) {
+                    return this.getFlux().actions.panel.updatePanelSizes({
+                        headerHeight: headerHeight
+                    });
+                });
         },
 
         /**
@@ -115,18 +123,20 @@ define(function (require, exports, module) {
 
         /** @ignore */
         _updateTabContainerScroll: function () {
-            var currentTab = window.document.querySelector(".document-title__current");
-            if (currentTab) {
-                var container = ReactDOM.findDOMNode(this.refs.tabs),
-                    containerBounds = container.getBoundingClientRect(),
-                    bounds = currentTab.getBoundingClientRect();
+            window.requestAnimationFrame(function () {
+                var currentTab = window.document.querySelector(".document-title__current");
+                if (currentTab) {
+                    var container = ReactDOM.findDOMNode(this.refs.tabs),
+                        containerBounds = container.getBoundingClientRect(),
+                        bounds = currentTab.getBoundingClientRect();
 
-                if (bounds.left < 0) {
-                    container.scrollLeft = 0;
-                } else if (bounds.right > containerBounds.right + 1) {
-                    container.scrollLeft = bounds.right;
+                    if (bounds.left < 0) {
+                        container.scrollLeft = 0;
+                    } else if (bounds.right > containerBounds.right + 1) {
+                        container.scrollLeft = bounds.right;
+                    }
                 }
-            }
+            }.bind(this));
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -176,16 +186,23 @@ define(function (require, exports, module) {
         },
         
         /**
-         * In the document header, we render the document title container twice, and the second container is always
-         * rendered with regular tab size and is invisible to the user. Then, we detect whether the second container 
+         * In the document header, we render the document title container twice,
+         * and the second container is always rendered with regular tab size and
+         * is invisible to the user. Then, we detect whether the second container
          * is packed. If so, we re-render the first container with small tab size.
          * 
          * @private
-         * @param  {function=} callback
+         * @return {Promise}
          */
-        _updateTabSize: function (callback) {
-            var hasEnoughRoomForRegularTab = this.refs.spaceStub.clientWidth > 0;
-            this.setState({ useSmallTab: !hasEnoughRoomForRegularTab }, callback);
+        _updateTabSize: function () {
+            return new Promise(function (resolve) {
+                var spaceStub = this.refs.spaceStub;
+                window.requestAnimationFrame(function () {
+                    var hasEnoughRoomForRegularTab = spaceStub.clientWidth > 0;
+
+                    this.setState({ useSmallTab: !hasEnoughRoomForRegularTab }, resolve);
+                }.bind(this));
+            }.bind(this))
         },
 
         /**
@@ -194,9 +211,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleWindowResize: function () {
-            return new Promise(function (resolve) {
-                this._updateTabSize(resolve);
-            }.bind(this));
+            return this._updateTabSize();
         },
 
         /**
