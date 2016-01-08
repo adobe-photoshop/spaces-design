@@ -749,14 +749,13 @@ define(function (require, exports, module) {
                         ref="textInput"
                         disabled={this.props.disabled}
                         size={size}
-                        continuous={true}
                         value={title}
                         placeholder={this.props.placeholderText}
                         neverSelectAll={this.props.neverSelectAllInput}
                         onFocus={this._handleInputFocus}
                         onBlur={this._handleInputBlur}
                         onKeyDown={this._handleInputKeyDown}
-                        onChange={this._handleInputChange}
+                        onInputChange={this._handleInputChange}
                         onDOMChange={this._handleInputDOMChange}
                         onClick={this._handleInputClick} />
                     {autocomplete}

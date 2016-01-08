@@ -49,39 +49,44 @@ define(function (require, exports, module) {
         propTypes: {
             // Value for the input
             value: React.PropTypes.string.isRequired,
-            // Event handler for changed value of the input. 
-            // If props.continuous is true, TextInput will call props.onChange for every native change event
-            // If props.continuous is false, props.onChange will only be called when value is committed
-            onChange: React.PropTypes.func.isRequired,
+            // Event handler for changed value of the input. This is called whenever the input value is changed.
+            onInputChange: React.PropTypes.func,
+            // Event handler for committed value of the input. This is called when user hit Return/Enter or when 
+            // the input loses focus. (also look at the allowEmpty option for different behavior)
+            onChange: React.PropTypes.func,
             // Event handler for changed value of input, called regardless of continuous being true or not
             onDOMChange: React.PropTypes.func,
             // Event handler for when input receives focus
             onFocus: React.PropTypes.func,
+            // Event handler for when input loses focus
+            onBlur: React.PropTypes.func,
             // Disable editing and selection of the input
             disabled: React.PropTypes.bool,
             // Placeholder text for the input
             placeholder: React.PropTypes.string,
             // Disallow the element from being immediately (single click) focusable 
             doubleClickToEdit: React.PropTypes.bool,
-            // On every DOM change event, fire the TextInput onChange handler
-            continuous: React.PropTypes.bool,
             // prevent the text input from scrolling horizontally when it is not editable.
             preventHorizontalScrolling: React.PropTypes.bool,
             // never highlight text, regardless of this.state.selectDisabled
-            neverSelectAll: React.PropTypes.bool
+            neverSelectAll: React.PropTypes.bool,
+            // If true, input will allow committing empty value and onChange handler will be called. Otherwise 
+            // empty value is ignored and onChange handler is skipped.
+            allowEmpty: React.PropTypes.bool
         },
 
         getDefaultProps: function () {
             return {
                 value: "",
                 onChange: _.identity,
+                onInputChange: _.identity,
                 onDOMChange: _.identity,
                 onFocus: _.identity,
                 disabled: false,
                 doubleClickToEdit: false,
-                continuous: false,
                 placeholder: "",
                 neverSelectAll: false,
+                allowEmpty: true,
                 preventHorizontalScrolling: true
             };
         },
@@ -171,9 +176,7 @@ define(function (require, exports, module) {
                 selectDisabled: true
             });
 
-            if (!this.props.doubleClickToEdit && this.props.continuous) {
-                this.props.onChange(event, nextValue);
-            }
+            this.props.onInputChange(event, nextValue);
 
             // Only used by Datalist
             this.props.onDOMChange(event);
@@ -229,17 +232,22 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _commit: function (event) {
+            event.stopPropagation();
+
             var nextValue = event.target.value;
+
+            if (nextValue !== this.props.value) {
+                if (!this.props.allowEmpty && nextValue.length === 0) {
+                    nextValue = this.props.value;
+                } else {
+                    this.props.onChange(event, nextValue);
+                }
+            }
+            
             this.setState({
                 value: nextValue,
                 editing: false
             });
-
-            event.stopPropagation();
-
-            if (nextValue !== this.props.value) {
-                this.props.onChange(event, nextValue);
-            }
 
             if (!this.state.editing) {
                 this._releaseFocus();

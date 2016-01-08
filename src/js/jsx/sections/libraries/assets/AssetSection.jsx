@@ -91,13 +91,7 @@ define(function (require, exports, module) {
          * @param {string} newName
          */
         _handleRename: function (event, newName) {
-            if (newName.length !== 0) {
-                if (this.props.displayName !== newName) {
-                    this.getFlux().actions.libraries.renameAsset(this.props.element, newName);
-                }
-            } else {
-                this.refs.input.setValue(this.props.displayName);
-            }
+            this.getFlux().actions.libraries.renameAsset(this.props.element, newName);
         },
 
         /**
@@ -205,7 +199,8 @@ define(function (require, exports, module) {
                                 onClick={this._handleTitleClicked}
                                 onDoubleClick={this._handleStartEditingTitle}
                                 onChange={this._handleRename}
-                                onBlur={this._handleEndEditingTitle}/>
+                                onBlur={this._handleEndEditingTitle}
+                                allowEmpty={false}/>
                             {subTitle}
                         </div>
                         <SplitButtonItem
@@ -233,7 +228,8 @@ define(function (require, exports, module) {
                             onClick={this._handleTitleClicked}
                             onDoubleClick={this._handleStartEditingTitle}
                             onChange={this._handleRename}
-                            onBlur={this._handleEndEditingTitle}/>
+                            onBlur={this._handleEndEditingTitle}
+                            allowEmpty={false}/>
                         {subTitle}
                     </div>
                 );
