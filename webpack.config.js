@@ -91,9 +91,13 @@ var buildConfigs = languages.map(function (lang) {
             extensions: ["", ".js", ".jsx", ".json", ".less"]
         },
         plugins: [
-            // This passes __PG_DEBUG__ variable to the bundle
             new webpack.DefinePlugin({
-                __PG_DEBUG__: devMode
+                // This passes __PG_DEBUG__ variable to the bundle
+                __PG_DEBUG__: devMode,
+                // React uses this to enable production mode
+                "process.env": {
+                    NODE_ENV: devMode ? "\"development\"" : "\"production\""
+                }
             }),
             new WebpackNotifierPlugin({ alwaysNotify: true })
         ],
