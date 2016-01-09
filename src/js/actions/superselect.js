@@ -52,10 +52,9 @@ define(function (require, exports) {
      *
      * @private
      * @param {string} eventName
-     * @return {Promise}
      */
     var _logSuperselect = function (eventName) {
-        return headlights.logEvent("tools", "superselect", _.kebabCase(eventName));
+        headlights.logEvent("tools", "superselect", _.kebabCase(eventName));
     };
 
     /**

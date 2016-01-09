@@ -24,8 +24,6 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
-
     var adapterPS = require("adapter").ps;
 
     /**
@@ -39,14 +37,12 @@ define(function (require, exports) {
      * @param {string} category
      * @param {string} subcategory
      * @param {string} event
-     *
-     * @return {Promise}
      */
     var logEvent = function (category, subcategory, event) {
-        if (__PG_DEBUG__) {
-            return Promise.resolve();
-        } else {
-            return adapterPS.logHeadlightsEvent(category, subcategory, String(event));
+        if (!__PG_DEBUG__) {
+            window.requestIdleCallback(function () {
+                adapterPS.logHeadlightsEvent(category, subcategory, String(event));
+            });
         }
     };
 

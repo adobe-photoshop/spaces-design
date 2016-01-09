@@ -27,11 +27,11 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var BlendMode = require("./BlendMode"),
         nls = require("js/util/nls"),
-        synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
         collection = require("js/util/collection");
 
@@ -42,7 +42,7 @@ define(function (require, exports, module) {
      * @private
      * @type {function(*)}
      */
-    var logEventDebounced = synchronization.debounce(headlights.logEvent, null, 10000);
+    var logEventDebounced = _.debounce(headlights.logEvent, 10000);
 
     var LayerBlendMode = React.createClass({
         mixins: [FluxMixin],
