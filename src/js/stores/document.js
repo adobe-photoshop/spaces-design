@@ -38,6 +38,11 @@ define(function (require, exports, module) {
          * @type {Object.<number, Document>}
          */
         _openDocuments: null,
+        
+        /**
+         * @type {Map.<number, function>}
+         */
+        _layerIDToSelectionListenner: null,
 
         initialize: function () {
             this.bindActions(
@@ -106,6 +111,7 @@ define(function (require, exports, module) {
          */
         _handleReset: function () {
             this._openDocuments = {};
+            this._layerIDToSelectionListenner = {};
         },
 
         /**
@@ -165,6 +171,18 @@ define(function (require, exports, module) {
 
             if (suppressChange) {
                 return;
+            }
+
+            // Notify change of layer selection state.
+            if (oldDocument) {
+                oldDocument.layers.layers.forEach(function (layer) {
+                    var nextLayer = nextDocument.layers.byID(layer.id),
+                        callback = this._layerIDToSelectionListenner[layer.id];
+                    
+                    if (nextLayer && callback && layer.selected !== nextLayer.selected) {
+                        callback(nextLayer.selected);
+                    }
+                }, this);
             }
 
             // If some selected layer remains uninitialized, a new document will
@@ -1179,6 +1197,25 @@ define(function (require, exports, module) {
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Add Layer selection listener.
+         * 
+         * @param {number} layerID
+         * @param {Function} callback
+         */
+        addLayerSelectionListener: function (layerID, callback) {
+            this._layerIDToSelectionListenner[layerID] = callback;
+        },
+        
+        /**
+         * Remove Layer selection listener.
+         * 
+         * @param {number} layerID
+         */
+        removeLayerSelectionListener: function (layerID) {
+            this._layerIDToSelectionListenner[layerID] = null;
         }
     });
 

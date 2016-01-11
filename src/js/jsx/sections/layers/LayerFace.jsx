@@ -119,6 +119,9 @@ define(function (require, exports, module) {
             if (this.props.document.layers.selected.last() === this.props.layer) {
                 this._scrollIntoView(false);
             }
+            
+            this.getFlux().store("document").addLayerSelectionListener(this.props.layer.id,
+                this._handleSelectionChange);
         },
         
         componentDidUpdate: function (prevProps, prevState) {
@@ -128,6 +131,10 @@ define(function (require, exports, module) {
             }
 
             this._scrollIntoView(prevState.selected);
+        },
+
+        componentWillUnmount: function () {
+            this.getFlux().store("document").removeLayerSelectionListener(this.props.layer.id);
         },
         
         _scrollIntoView: function (prevSelected) {
@@ -223,39 +230,40 @@ define(function (require, exports, module) {
             event.stopPropagation();
             this._suppressNextScrollTo = true;
             
-            var nextSelectedState = true,
-                modifier = "select";
+            var modifier = "select";
 
             if (event.shiftKey) {
                 modifier = "addUpTo";
-                nextSelectedState = true;
             } else if (system.isMac ? event.metaKey : event.ctrlKey) {
                 if (this.state.selected) {
                     modifier = "deselect";
-                    nextSelectedState = true;
                 } else {
                     modifier = "add";
-                    nextSelectedState = false;
                 }
             }
+            
+            // The clicked layer may an have out-of-date document models due to
+            // the aggressive SCU method in LayersPanel.
+            var documentID = this.props.document.id,
+                documentStore = this.getFlux().store("document"),
+                currentDocument = documentStore.getDocument(documentID),
+                currentLayer = currentDocument.layers.byID(this.props.layer.id),
+                options = {
+                    modifier: modifier
+                };
 
-            if (this.state.selected !== nextSelectedState) {
-                this.setState({
-                    selected: nextSelectedState
-                });
-
-                // The clicked layer may an have out-of-date document models due to
-                // the aggressive SCU method in LayersPanel.
-                var documentID = this.props.document.id,
-                    documentStore = this.getFlux().store("document"),
-                    currentDocument = documentStore.getDocument(documentID),
-                    currentLayer = currentDocument.layers.byID(this.props.layer.id),
-                    options = {
-                        modifier: modifier
-                    };
-
-                this.getFlux().actions.layers.select(currentDocument, currentLayer, options);
-            }]
+            this.getFlux().actions.layers.select(currentDocument, currentLayer, options);
+        },
+        
+        /**
+         * Handle select/deselect event
+         * 
+         * @param {boolean} selected
+         */
+        _handleSelectionChange: function (selected) {
+            this.setState({
+                selected: selected
+            });
         },
 
         /**
@@ -578,7 +586,7 @@ define(function (require, exports, module) {
                 isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
-                hasChildren = this.props.childNodes,
+                hasChildren = this.props.hasChildren,
                 selected = this.state.selected,
                 expanded = this.state.expanded,
                 visible = this.state.visible;

@@ -37,7 +37,7 @@ define(function (require, exports) {
      * @return {string}
     */
     var getSVGClassFromLayer = function (layer, expanded) {
-        expanded = typeof expanded === 'boolean' ? expanded : layer.expanded;
+        expanded = typeof expanded === "boolean" ? expanded : layer.expanded;
 
         var iconID = "layer-";
         if (layer.isArtboard) {
