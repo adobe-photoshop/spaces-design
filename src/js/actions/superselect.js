@@ -363,9 +363,10 @@ define(function (require, exports) {
      * @param {number} y Offset from the top window edge
      * @param {boolean} deep Whether to choose all layers or not
      * @param {boolean} add Whether to add/remove layer to selection
+     * @param {boolean} quiet If true, select action will not cause any dispatches
      * @return {Promise.<boolean>} True if any layers are selected after this command, used for dragging
      */
-    var click = function (doc, x, y, deep, add) {
+    var click = function (doc, x, y, deep, add, quiet) {
         var uiStore = this.flux.store("ui"),
             coords = uiStore.transformWindowToCanvas(x, y),
             layerTree = doc.layers;
@@ -428,7 +429,7 @@ define(function (require, exports) {
                         _logSuperselect("click_" + modifier);
                     }
 
-                    return this.transfer(layerActions.select, doc, topLayer, modifier)
+                    return this.transfer(layerActions.select, doc, topLayer, modifier, quiet)
                         .return(true);
                 } else if (!doc.layers.selected.isEmpty()) {
                     _logSuperselect("deselect_all");
@@ -659,7 +660,7 @@ define(function (require, exports) {
                 return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
                     .bind(this)
                     .then(function () {
-                        return this.transfer(click, doc, x, y, diveIn, false);
+                        return this.transfer(click, doc, x, y, diveIn, false, true);
                     })
                     .then(function (anySelected) {
                         if (anySelected) {
@@ -670,6 +671,8 @@ define(function (require, exports) {
                             };
 
                             return adapterOS.postEvent(dragEvent);
+                        } else {
+                            return Promise.resolve();
                         }
                     })
                     .catch(function () {}) // Move should silently fail if there are no selected layers

@@ -821,10 +821,13 @@ define(function (require, exports) {
      * @param {string=} modifier Way of modifying the selection. Possible values
      *  are defined in `adapter/src/lib/layer.js` under `select.vals`.
      *  Default is similar to "select", but the pivot layer will always be cleared.
+     * @param {boolean?} quiet If set, will prevent dispatches as result of this select
+     *  Please use this sparingly, and making sure that you dispatch the correct events
+     *  so UI is updated at some point
      *
      * @returns {Promise}
      */
-    var select = function (document, layerSpec, modifier) {
+    var select = function (document, layerSpec, modifier, quiet) {
         if (layerSpec instanceof Layer) {
             layerSpec = Immutable.List.of(layerSpec);
         }
@@ -898,12 +901,24 @@ define(function (require, exports) {
             pivotID: nextPivot && nextPivot.id
         };
 
-        var dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
+        var dispatchPromise,
+            revealPromise;
+
+        // If quiet is set, we are doing a drag event, and don't want a UI update
+        // We dispatch the drag event with the selected layer IDs, so
+        // the actual dispatch can be done after a "move" event arrives from PS
+        if (quiet) {
+            dispatchPromise = this.dispatchAsync(events.tool.SELECT_TOOL_DRAG, payload);
+            revealPromise = Promise.resolve();
+        } else {
+            this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
                 .bind(this)
                 .then(function () {
                     return this.transfer(initializeLayers, document, nextSelected);
-                }),
+                });
             revealPromise = this.transfer(revealLayers, document, nextSelected);
+        }
+        
 
         var layerRef = (modifier === "deselect" ? layerSpec : nextSelected)
             .map(function (layer) {

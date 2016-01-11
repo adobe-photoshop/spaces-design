@@ -1317,16 +1317,36 @@ define(function (require, exports) {
 
             return Promise.join(modelPromise, transformPromise);
         } else {
+            var dragUpdatePromise,
+                dragLayerIDs = this.flux.store("tool").getState().draggedLayerIDs;
+
+            if (dragLayerIDs) {
+                var dragLayers = dragLayerIDs.map(currentDoc.layers.byID.bind(currentDoc.layers));
+                dragUpdatePromise = this.transfer("layers.select", currentDoc, dragLayers);
+            } else {
+                dragUpdatePromise = Promise.resolve();
+            }
+
             // short circuit based on this trackerEndedWithoutBreakingHysteresis event flag
             if (event.trackerEndedWithoutBreakingHysteresis) {
-                return Promise.resolve();
+                return dragUpdatePromise;
             } else {
-                // The history event may arrive before or after the transform event. The
-                // following ensures correct behavior w.r.t. history amendment by reset
-                // actions for either case.
-                return this.transfer("history.newHistoryStateRogueSafe", currentDoc.id)
+                return dragUpdatePromise
                     .bind(this)
                     .then(function () {
+                        // This doesn't cause a re-render
+                        this.dispatch(events.tool.SELECT_TOOL_DRAG, { selectedIDs: null });
+
+                        // The history event may arrive before or after the transform event. The
+                        // following ensures correct behavior w.r.t. history amendment by reset
+                        // actions for either case.
+                        return this.transfer("history.newHistoryStateRogueSafe", currentDoc.id);
+                    })
+                    .then(function () {
+                        // We need to get the updated document model since selection may have changed
+                        // due to drag optimization
+                        currentDoc = appStore.getCurrentDocument();
+
                         var textLayers = currentDoc.layers.allSelected.filter(function (layer) {
                                 // Reset these layers completely because their impliedFontSize may have changed
                                 // FIXME: does this need event for events like "move"?
@@ -1345,10 +1365,10 @@ define(function (require, exports) {
         }
     };
     handleTransformLayer.action = {
-        read: [locks.JS_APP, locks.JS_DOC],
+        read: [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL],
         writes: [],
         transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds",
-            "history.newHistoryStateRogueSafe"],
+            "history.newHistoryStateRogueSafe", "layers.select"],
         modal: true,
         post: ["verifyLayers.verifySelectedBounds"],
         hideOverlays: true
