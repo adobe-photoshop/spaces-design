@@ -30,13 +30,17 @@ define(function (require, exports, module) {
     if (__PG_DEBUG__) {
         // If the debug global is set, log messages at and below debug level
         loglevel.enableAll();
+
+        if (!loglevel.hasOwnProperty("table")) {
+            loglevel.table = console.table.bind(console);
+        }
+
+        if (!loglevel.hasOwnProperty("timeStamp")) {
+            loglevel.timeStamp = console.timeStamp.bind(console);
+        }
     } else {
         // Otherwise, only log information, warnings and errors
         loglevel.setLevel(loglevel.levels.INFO);
-    }
-
-    if (!loglevel.hasOwnProperty("table")) {
-        loglevel.table = console.table.bind(console);
     }
 
     module.exports = loglevel;
