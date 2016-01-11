@@ -628,10 +628,9 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function () {
                         var initPromise = this.transfer(initActiveDocument),
-                            uiPromise = this.transfer(ui.updateTransform),
-                            recentFilesPromise = this.transfer(application.updateRecentFiles);
+                            uiPromise = this.transfer(ui.updateTransform);
 
-                        return Promise.join(initPromise, uiPromise, recentFilesPromise);
+                        return Promise.join(initPromise, uiPromise);
                     }, function () {
                         // If file doesn't exist anymore, user will get an Open dialog
                         // If user cancels out of open dialog, PS will throw, so catch it here
