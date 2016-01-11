@@ -51,10 +51,10 @@ define(function (require, exports) {
      * @param {Document} document
      * @param {Layer|Immutable.Iterable.<Layer>} layers
      * @param {boolean} expand If true, expand the groups. Otherwise, collapse them.
-     * @param {boolean=} descendants Whether to expand all descendants of the given layers.
+     * @param {boolean=} recursive Whether to expand/collapse all descendants groups of the given layers.
      * @return {Promise}
      */
-    var setGroupExpansion = function (document, layers, expand, descendants) {
+    var setGroupExpansion = function (document, layers, expand, recursive) {
         if (layers instanceof Layer) {
             layers = Immutable.List.of(layers);
         }
@@ -68,7 +68,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        if (descendants) {
+        var targetLayers = layers;
+        if (recursive) {
             layers = layers.flatMap(document.layers.descendants, document.layers);
         }
 
@@ -121,14 +122,14 @@ define(function (require, exports) {
         }
 
         var documentRef = documentLib.referenceBy.id(document.id),
-            layerRefs = layers
+            layerRefs = targetLayers
                 .map(function (layer) {
                     return layerLib.referenceBy.id(layer.id);
                 })
                 .unshift(documentRef)
                 .toArray();
 
-        var expandPlayObject = layerLib.setGroupExpansion(layerRefs, !!expand);
+        var expandPlayObject = layerLib.setGroupExpansion(layerRefs, !!expand, recursive);
 
         playObjects.push(expandPlayObject);
 
