@@ -72,18 +72,26 @@ define(function (require, exports, module) {
                 dropPosition: null,
                 isDragging: false,
                 dragStyle: null,
-                isEditing: false
+                isEditing: false,
+                selected: this.props.layer.selected,
+                expanded: this.props.layer.expanded,
+                visible: this.props.layer.visible
             };
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            var layerFace = function (layer) {
+                // Exclude face attributes that are already represented by the component's state.
+                return layer.face.merge({ selected: null, expanded: null, visible: null });
+            };
+            
             // Drag states
             if (!_.eq(this.state, nextState)) {
                 return true;
             }
             
             // Face change
-            if (!Immutable.is(this.props.layer.face, nextProps.layer.face)) {
+            if (!Immutable.is(layerFace(this.props.layer), layerFace(nextProps.layer))) {
                 return true;
             }
 
@@ -94,6 +102,18 @@ define(function (require, exports, module) {
             return false;
         },
         
+        componentWillReceiveProps: function (nextProps) {
+            if (this.state.selected !== nextProps.layer.selected ||
+                this.state.expanded !== nextProps.layer.expanded ||
+                this.state.visible !== nextProps.layer.visible) {
+                this.setState({
+                    selected: nextProps.layer.selected,
+                    expanded: nextProps.layer.expanded,
+                    visible: nextProps.layer.visible
+                });
+            }
+        },
+        
         componentDidMount: function () {
             // Scroll into view if the current layer is the first selected layers.
             if (this.props.document.layers.selected.last() === this.props.layer) {
@@ -101,17 +121,17 @@ define(function (require, exports, module) {
             }
         },
         
-        componentDidUpdate: function (prevProps) {
+        componentDidUpdate: function (prevProps, prevState) {
             if (this._suppressNextScrollTo) {
                 this._suppressNextScrollTo = false;
                 return;
             }
 
-            this._scrollIntoView(prevProps.layer.selected);
+            this._scrollIntoView(prevState.selected);
         },
         
         _scrollIntoView: function (prevSelected) {
-            if (this.props.layer.selected && !prevSelected) {
+            if (this.state.selected && !prevSelected) {
                 var node = ReactDOM.findDOMNode(this);
 
                 if (node) {
@@ -134,6 +154,12 @@ define(function (require, exports, module) {
 
             // Suppress click propagation to avoid selection change
             event.stopPropagation();
+            
+            var nextExpandedState = !this.state.expanded;
+            
+            this.setState({
+                expanded: nextExpandedState
+            });
 
             // Presence of option/alt modifier determines whether all descendants are toggled
             var flux = this.getFlux(),
@@ -149,7 +175,7 @@ define(function (require, exports, module) {
                 currentLayer = currentDocument.layers.byID(this.props.layer.id);
 
             this.getFlux().actions.groups.setGroupExpansion(currentDocument, currentLayer,
-                !currentLayer.expanded, descendants);
+                nextExpandedState, descendants);
         },
         
         /**
@@ -196,31 +222,40 @@ define(function (require, exports, module) {
         _handleLayerClick: function (event) {
             event.stopPropagation();
             this._suppressNextScrollTo = true;
+            
+            var nextSelectedState = true,
+                modifier = "select";
 
-            var modifier = "select";
             if (event.shiftKey) {
                 modifier = "addUpTo";
+                nextSelectedState = true;
             } else if (system.isMac ? event.metaKey : event.ctrlKey) {
-                var selected = this.props.layer.selected;
-
-                if (selected) {
+                if (this.state.selected) {
                     modifier = "deselect";
+                    nextSelectedState = true;
                 } else {
                     modifier = "add";
+                    nextSelectedState = false;
                 }
             }
 
-            // The clicked layer may an have out-of-date document models due to
-            // the aggressive SCU method in LayersPanel.
-            var documentID = this.props.document.id,
-                documentStore = this.getFlux().store("document"),
-                currentDocument = documentStore.getDocument(documentID),
-                currentLayer = currentDocument.layers.byID(this.props.layer.id),
-                options = {
-                    modifier: modifier
-                };
+            if (this.state.selected !== nextSelectedState) {
+                this.setState({
+                    selected: nextSelectedState
+                });
 
-            this.getFlux().actions.layers.select(currentDocument, currentLayer, options);
+                // The clicked layer may an have out-of-date document models due to
+                // the aggressive SCU method in LayersPanel.
+                var documentID = this.props.document.id,
+                    documentStore = this.getFlux().store("document"),
+                    currentDocument = documentStore.getDocument(documentID),
+                    currentLayer = currentDocument.layers.byID(this.props.layer.id),
+                    options = {
+                        modifier: modifier
+                    };
+
+                this.getFlux().actions.layers.select(currentDocument, currentLayer, options);
+            }]
         },
 
         /**
@@ -231,9 +266,13 @@ define(function (require, exports, module) {
          * @param {boolean} toggled Flag for the ToggleButton, false means visible
          */
         _handleVisibilityToggle: function (event, toggled) {
-            // Invisible if toggled, visible if not
-            this.getFlux().actions.layers.setVisibility(this.props.document, this.props.layer, !toggled);
             event.stopPropagation();
+
+            // Invisible if toggled, visible if not
+            this.setState({
+                visible: !toggled
+            });
+            this.getFlux().actions.layers.setVisibility(this.props.document, this.props.layer, !toggled);
         },
 
         /**
@@ -405,7 +444,7 @@ define(function (require, exports, module) {
             // If we drag an unselected layer, only that layer will be reordered
             var draggedLayers = Immutable.List([this.props.layer]);
 
-            if (this.props.layer.selected) {
+            if (this.state.selected) {
                 draggedLayers = this.props.document.layers.selected.filter(function (layer) {
                     // For now, we only check for background layer, but we might prevent locked layers dragging later
                     return !layer.isBackground;
@@ -539,9 +578,10 @@ define(function (require, exports, module) {
                 isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
-                selected = layer.selected,
-                visible = layer.visible,
-                expanded = layer.expanded;
+                hasChildren = this.props.childNodes,
+                selected = this.state.selected,
+                expanded = this.state.expanded,
+                visible = this.state.visible;
             
             var layerClasses = classnames({
                 "layer": true,
@@ -571,7 +611,7 @@ define(function (require, exports, module) {
                 tooltipTitle = layer.isArtboard ?
                     nls.localize("strings.LAYER_KIND.ARTBOARD") :
                     nls.localize("strings.LAYER_KIND." + layer.kind),
-                iconID = svgUtil.getSVGClassFromLayer(layer),
+                iconID = svgUtil.getSVGClassFromLayer(layer, expanded),
                 showHideButton = layer.isBackground ? null : (
                     <ToggleButton
                         disabled={this.props.disabled}

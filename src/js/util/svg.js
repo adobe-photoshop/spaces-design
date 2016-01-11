@@ -33,9 +33,12 @@ define(function (require, exports) {
      *
      * @private
      * @param {Layer} layer
+     * @param {boolean=} expanded overwrite the default value from 'layer.expanded'
      * @return {string}
     */
-    var getSVGClassFromLayer = function (layer) {
+    var getSVGClassFromLayer = function (layer, expanded) {
+        expanded = typeof expanded === 'boolean' ? expanded : layer.expanded;
+
         var iconID = "layer-";
         if (layer.isArtboard) {
             iconID += "artboard";
@@ -55,7 +58,7 @@ define(function (require, exports) {
             iconID += layer.kind;
         }
 
-        if (layer.isGroup && !layer.expanded) {
+        if (layer.isGroup && !expanded) {
             iconID += "-collapsed";
         }
 
