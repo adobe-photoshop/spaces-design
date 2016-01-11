@@ -725,6 +725,10 @@ define(function (require, exports, module) {
             actionTitle = "action " + actionName;
         }
 
+        if (__PG_DEBUG__) {
+            log.timeStamp("Executing " + actionTitle);
+        }
+
         if (hideOverlays) {
             actionReceiver.dispatch(events.panel.START_CANVAS_UPDATE);
         }
@@ -765,6 +769,10 @@ define(function (require, exports, module) {
 
                 if (lockUI && !uiWasLocked) {
                     this._unlockUI();
+                }
+
+                if (__PG_DEBUG__) {
+                    log.timeStamp("Finished " + actionTitle);
                 }
 
                 if (__PG_DEBUG__ && post && post.length > 0 &&
