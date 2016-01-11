@@ -209,7 +209,8 @@ svg use {
     }
 }
 
-.layer-group__invisible {
+.layer__not-visible
+.layer__not-invisible + .layer-group {
     .face:hover .button-toggle,
     .face .button-toggle {
         svg {
@@ -312,7 +313,7 @@ svg use {
 }
 
 .face__not-visible,
-.layer-group__not-visible .face {
+.layer__not-visible + .layer-group .face {
     .face__kind,
     &:hover .face__kind
     &.face[data-kind="group"]:hover .face__kind,

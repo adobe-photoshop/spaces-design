@@ -532,6 +532,7 @@ define(function (require, exports, module) {
         render: function () {
             var doc = this.props.document,
                 layer = this.props.layer,
+                hasChildren = this.props.hasChildren,
                 layerIndex = doc.layers.indexOf(layer),
                 layerDepth = doc.layers.depth(layer),
                 nameEditable = !layer.isBackground,
@@ -539,10 +540,14 @@ define(function (require, exports, module) {
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
                 selected = layer.selected,
-                visible = layer.visible;
+                visible = layer.visible,
+                expanded = layer.expanded;
             
             var layerClasses = classnames({
                 "layer": true,
+                "layer__selected": hasChildren && selected,
+                "layer__collapsed": hasChildren && !expanded,
+                "layer__not-visible": hasChildren && !visible,
                 "layer__drag-target": isDragging
             });
 

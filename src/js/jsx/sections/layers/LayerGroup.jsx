@@ -103,10 +103,7 @@ define(function (require, exports, module) {
                     );
 
                     var className = classnames({
-                        "layer-group": layerGroup,
-                        "layer-group__selected": layerGroup && layer.selected,
-                        "layer-group__collapsed": layerGroup && !layer.expanded,
-                        "layer-group__not-visible": layerGroup && !layer.visible
+                        "layer-group": layerGroup
                     });
 
                     results.push(
@@ -116,7 +113,7 @@ define(function (require, exports, module) {
                                 disabled={this.props.disabled}
                                 document={this.props.document}
                                 layer={layer}
-                                childNodes={layerNode.children}/>
+                                hasChildren={!!layerNode.children}/>
                             {layerGroup}
                         </li>
                     );
