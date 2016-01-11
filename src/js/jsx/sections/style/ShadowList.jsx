@@ -34,8 +34,7 @@ define(function (require, exports) {
     var LayerEffect = require("js/models/effects/layereffect"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
-        nls = require("js/util/nls"),
-        synchronization = require("js/util/synchronization");
+        nls = require("js/util/nls");
 
     var Label = require("js/jsx/shared/Label"),
         NumberInput = require("js/jsx/shared/NumberInput"),
@@ -50,7 +49,7 @@ define(function (require, exports) {
      * @private
      * @type {function(*)}
      */
-    var logEventDebounced = synchronization.debounce(headlights.logEvent, null, 10000);
+    var logEventDebounced = _.debounce(headlights.logEvent, 10000);
 
     var MIN_SPREAD = 0,
         MAX_SPREAD = 100,
