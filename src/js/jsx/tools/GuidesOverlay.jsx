@@ -59,6 +59,13 @@ define(function (require, exports, module) {
          */
         _scrimGroup: null,
 
+        /**
+         * Throttled function that will eventually highlight an area
+         *
+         * @type {function}
+         */
+        _debouncedHighlight: null,
+
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
@@ -89,11 +96,14 @@ define(function (require, exports, module) {
             OS.removeListener("externalMouseMove", this.mouseMoveHandler);
             window.removeEventListener("mousemove", this.windowMouseMoveHandler);
             window.removeEventListener("resize", this.drawOverlay);
+            this._debouncedHighlight.cancel();
         },
 
         componentDidMount: function () {
             this._currentMouseX = null;
             this._currentMouseY = null;
+
+            this._debouncedHighlight = _.debounce(this.highlightArea, 30);
             
             this.drawOverlay();
             
@@ -225,6 +235,19 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Highlights the given area, is debounced
+         *
+         * @private
+         * @param {SVGElement} area
+         */
+        highlightArea: function (area) {
+            area.classed("guide-edges__hover", true);
+            // TODO: When we have core.getMousePosition API, 
+            // we will call it here to check to see if the mouse
+            // is still over the given area
+        },
+
+        /**
          * Goes through all layer bounds and highlights the top one the cursor is on
          *
          * @private
@@ -246,27 +269,33 @@ define(function (require, exports, module) {
                         guideTop < mouseY && guideBottom > mouseY;
 
                 if (!highlightFound && intersects) {
-                    guide.classed("guide-edges__hover", true)
-                        .on("mousedown", function () {
-                            d3.select(this)
-                                .classed("guide-edges__hover", false);
-                            
-                            self.getFlux().actions.guides.createGuideAndTrackThrottled(
-                                self.state.document, orientation, mouseX, mouseY
-                            );
+                    self._debouncedHighlight(guide);
 
-                            d3.event.stopPropagation();
-                        })
-                        .on("mouseout", function () {
-                            d3.select(this)
-                                .classed("guide-edges__hover", false);
-                        });
+                    guide.on("mousedown", function () {
+                        d3.select(this)
+                            .classed("guide-edges__hover", false);
+                        
+                        self.getFlux().actions.guides.createGuideAndTrackThrottled(
+                            self.state.document, orientation, mouseX, mouseY
+                        );
+
+                        d3.event.stopPropagation();
+                    })
+                    .on("mouseout", function () {
+                        d3.select(this)
+                            .classed("guide-edges__hover", false);
+                    });
 
                     highlightFound = true;
                 } else {
                     guide.classed("guide-edges__hover", false);
                 }
             });
+
+            // If we are no longer on an area, cancel the debounced highlight function
+            if (!highlightFound) {
+                self._debouncedHighlight.cancel();
+            }
         },
 
         render: function () {
