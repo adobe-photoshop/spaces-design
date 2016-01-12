@@ -121,7 +121,8 @@ define(function (require, exports) {
             window.__PS_ADAPTER__ = adapter;
             window.__FLUX_CONTROLLER__ = _controller;
             window.__LOG_UTIL__ = log;
-            window.__PERF_UTIL = performanceUtil;
+            window.__PERF_UTIL__ = performanceUtil;
+            window.__REACT_PERF__ = ReactPerf;
         }
 
         var startupPromises = _controller.start()
@@ -171,8 +172,6 @@ define(function (require, exports) {
         Promise.onPossiblyUnhandledRejection(function (err) {
             throw err;
         });
-
-        ReactPerf.start();
 
         /* global _spaces */
         _spaces._debug.enableDebugContextMenu(true, function () {});
