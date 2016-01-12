@@ -160,9 +160,17 @@ module.exports = function (grunt) {
             img: { expand: true, cwd: "src/img", src: "**", dest: "build/img/" }
         },
         watch: {
-            scripts: {
+            styles: {
                 files: ["src/style/**/*"],
                 tasks: ["less"],
+                options: {
+                    spawn: false,
+                    interrupt: true
+                }
+            },
+            dictionaries: {
+                files: ["src/nls/**/*"],
+                tasks: ["i18n"],
                 options: {
                     spawn: false,
                     interrupt: true
@@ -220,7 +228,7 @@ module.exports = function (grunt) {
         concurrent: {
             test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
             build: {
-                tasks: ["watch", "webpack:watch"],
+                tasks: ["watch:styles", "watch:dictionaries", "webpack:watch"],
                 options: {
                     logConcurrentOutput: true
                 }
