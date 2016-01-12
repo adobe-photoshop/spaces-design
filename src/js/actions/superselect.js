@@ -374,6 +374,7 @@ define(function (require, exports) {
         return uiUtil.hitTestLayers(doc.id, coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {
+                // Adds the artboard badges under the mouse to the total IDs 
                 var clickedSelectableLayerIDs,
                     coveredLayers = _getContainingLayerBounds.call(this, layerTree, coords.x, coords.y),
                     coveredLayerIDs = collection.pluck(coveredLayers, "id"),
@@ -429,7 +430,12 @@ define(function (require, exports) {
                         _logSuperselect("click_" + modifier);
                     }
 
-                    return this.transfer(layerActions.select, doc, topLayer, modifier, quiet)
+                    var selectOpts = {
+                        modifier: modifier,
+                        quiet: quiet
+                    };
+
+                    return this.transfer(layerActions.select, doc, topLayer, selectOpts)
                         .return(true);
                 } else if (!doc.layers.selected.isEmpty()) {
                     _logSuperselect("deselect_all");
@@ -625,45 +631,33 @@ define(function (require, exports) {
         var eventKind = adapterOS.eventKind.LEFT_MOUSE_DOWN,
             coordinates = [x, y],
             dragModifiers = keyUtil.modifiersToBits(modifiers),
-            diveIn = system.isMac ? modifiers.command : modifiers.control;
-
-        if (panning) {
-            var dragEvent = {
+            diveIn = system.isMac ? modifiers.command : modifiers.control,
+            dragEvent = {
                 eventKind: eventKind,
                 location: coordinates,
                 modifiers: dragModifiers
             };
 
+        if (panning) {
+            // If spacebar is being held down, we pass a mouse down event to PS
+            // to start panning
             return adapterOS.postEvent(dragEvent);
         }
         
-        var dontDeselect = modifiers.shift;
-        if (dontDeselect) {
+        // If shift is being held down, we immediately start marquee selecting
+        if (modifiers.shift) {
             return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
         }
 
-        var uiStore = this.flux.store("ui"),
-            canvasCoords = uiStore.transformWindowToCanvas(x, y);
-            
-        return uiUtil.hitTestLayers(doc.id, canvasCoords.x, canvasCoords.y)
+        // Otherwise, we first run a click event, with quiet flag set
+        // Saving the selection to tool store, which will be
+        // dispatched later for delaying render until after drag finishes
+        return this.transfer(click, doc, x, y, diveIn, false, true)
             .bind(this)
-            .then(function (hitLayerIDs) {
-                var coveredLayers = _getContainingLayerBounds.call(this, doc.layers, canvasCoords.x, canvasCoords.y),
-                    coveredLayerIDs = collection.pluck(coveredLayers, "id"),
-                    targetIDs = collection.intersection(coveredLayerIDs, hitLayerIDs);
-
-                if (targetIDs.isEmpty()) {
-                    return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
-                }
-
-                // Hide transform controls
-                return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
-                    .bind(this)
-                    .then(function () {
-                        return this.transfer(click, doc, x, y, diveIn, false, true);
-                    })
-                    .then(function (anySelected) {
-                        if (anySelected) {
+            .then(function (anySelected) {
+                if (anySelected) {
+                    return descriptor.playObject(toolLib.setToolOptions("moveTool", { "$Abbx": false }))
+                        .then(function () {
                             var dragEvent = {
                                 eventKind: eventKind,
                                 location: coordinates,
@@ -671,21 +665,20 @@ define(function (require, exports) {
                             };
 
                             return adapterOS.postEvent(dragEvent);
-                        } else {
-                            return Promise.resolve();
-                        }
-                    })
-                    .catch(function () {}) // Move should silently fail if there are no selected layers
-                    .finally(function () {
-                        // Re show the transform controls, which will appear once we're out of the modal state
-                        return descriptor.playObject(
-                            toolLib.setToolOptions("moveTool", { "$Abbx": true }),
-                            { canExecuteWhileModal: true });
-                    });
+                        })
+                        .then(function () {
+                            return descriptor.playObject(
+                                toolLib.setToolOptions("moveTool", { "$Abbx": true }),
+                                { canExecuteWhileModal: true }
+                            );
+                        });
+                } else {
+                    return this.dispatchAsync(events.panel.SUPERSELECT_MARQUEE, { x: x, y: y, enabled: true });
+                }
             });
     };
     drag.action = {
-        reads: [locks.JS_DOC, locks.JS_UI],
+        reads: [locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_PANEL],
         transfers: [click]
     };

@@ -121,10 +121,10 @@ define(function (require, exports, module) {
                 events.RESET, this._handleReset,
                 events.tool.SELECT_TOOL_START, this._handleSelectTool,
                 events.tool.SELECT_TOOL_END, this._handleSelectTool,
-                events.tool.SELECT_TOOL_DRAG, this._handleSelectToolDrag,
                 events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange,
                 events.tool.VECTOR_MASK_MODE_CHANGE, this._handleVectorMaskModeChange,
-                events.tool.VECTOR_MASK_POLICY_CHANGE, this._handleVectorMaskPolicyChange
+                events.tool.VECTOR_MASK_POLICY_CHANGE, this._handleVectorMaskPolicyChange,
+                events.tool.SUPERSELECT_DRAG_UPDATE, this._handleSuperselectDragUpdate
             );
 
             this._handleReset();
@@ -269,7 +269,7 @@ define(function (require, exports, module) {
          *
          * @param {{selectedIDs: Immutable.Iterable<number>}} payload Layers that are being moved by drag
          */
-        _handleSelectToolDrag: function (payload) {
+        _handleSuperselectDragUpdate: function (payload) {
             this._draggedLayerIDs = payload.selectedIDs;
         },
 

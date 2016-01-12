@@ -1317,12 +1317,12 @@ define(function (require, exports) {
 
             return Promise.join(modelPromise, transformPromise);
         } else {
-            var dragUpdatePromise,
-                dragLayerIDs = this.flux.store("tool").getState().draggedLayerIDs;
+            var draggedLayerIDs = this.flux.store("tool").getState().draggedLayerIDs,
+                dragUpdatePromise;
 
-            if (dragLayerIDs) {
-                var dragLayers = dragLayerIDs.map(currentDoc.layers.byID.bind(currentDoc.layers));
-                dragUpdatePromise = this.transfer("layers.select", currentDoc, dragLayers);
+            if (draggedLayerIDs) {
+                var draggedLayers = draggedLayerIDs.map(currentDoc.layers.byID.bind(currentDoc.layers));
+                dragUpdatePromise = this.transfer("layers.select", currentDoc, draggedLayers);
             } else {
                 dragUpdatePromise = Promise.resolve();
             }
@@ -1335,7 +1335,7 @@ define(function (require, exports) {
                     .bind(this)
                     .then(function () {
                         // This doesn't cause a re-render
-                        this.dispatch(events.tool.SELECT_TOOL_DRAG, { selectedIDs: null });
+                        this.dispatch(events.tool.SUPERSELECT_DRAG_UPDATE, { selectedIDs: null });
 
                         // The history event may arrive before or after the transform event. The
                         // following ensures correct behavior w.r.t. history amendment by reset
@@ -1365,8 +1365,8 @@ define(function (require, exports) {
         }
     };
     handleTransformLayer.action = {
-        read: [locks.JS_APP, locks.JS_DOC, locks.JS_TOOL],
-        writes: [],
+        read: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.JS_TOOL],
         transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds",
             "history.newHistoryStateRogueSafe", "layers.select"],
         modal: true,

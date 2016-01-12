@@ -818,16 +818,17 @@ define(function (require, exports) {
      * @param {Document} document Owner document
      * @param {Layer|Immutable.Iterable.<Layer>} layerSpec Either a single layer that
      *  the selection is based on, or a list of such layers.
-     * @param {string=} modifier Way of modifying the selection. Possible values
+     * @param {object=} options Object containins optional parameters
+     * @param {string=} options.modifier Way of modifying the selection. Possible values
      *  are defined in `adapter/src/lib/layer.js` under `select.vals`.
      *  Default is similar to "select", but the pivot layer will always be cleared.
-     * @param {boolean?} quiet If set, will prevent dispatches as result of this select
+     * @param {boolean=} options.quiet If set, will prevent dispatches as result of this select
      *  Please use this sparingly, and making sure that you dispatch the correct events
      *  so UI is updated at some point
      *
      * @returns {Promise}
      */
-    var select = function (document, layerSpec, modifier, quiet) {
+    var select = function (document, layerSpec, options) {
         if (layerSpec instanceof Layer) {
             layerSpec = Immutable.List.of(layerSpec);
         }
@@ -836,7 +837,9 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var setPivot = layerSpec.size === 1,
+        var modifier = options ? options.modifier : "selectNoPivot",
+            quiet = options ? options.quiet : false,
+            setPivot = layerSpec.size === 1,
             selected = document.layers.selected,
             pivot = document.layers.pivot,
             nextSelected,
@@ -890,9 +893,12 @@ define(function (require, exports) {
                 });
             }
             break;
-        default:
+        case "selectNoPivot":
             nextSelected = layerSpec;
             nextPivot = null;
+            break;
+        default:
+            throw new Error("Layers.select is passed an invalid modifier");
         }
 
         var payload = {
@@ -908,10 +914,10 @@ define(function (require, exports) {
         // We dispatch the drag event with the selected layer IDs, so
         // the actual dispatch can be done after a "move" event arrives from PS
         if (quiet) {
-            dispatchPromise = this.dispatchAsync(events.tool.SELECT_TOOL_DRAG, payload);
+            dispatchPromise = this.dispatchAsync(events.tool.SUPERSELECT_DRAG_UPDATE, payload);
             revealPromise = Promise.resolve();
         } else {
-            this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
+            dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
                 .bind(this)
                 .then(function () {
                     return this.transfer(initializeLayers, document, nextSelected);
@@ -919,7 +925,6 @@ define(function (require, exports) {
             revealPromise = this.transfer(revealLayers, document, nextSelected);
         }
         
-
         var layerRef = (modifier === "deselect" ? layerSpec : nextSelected)
             .map(function (layer) {
                 return layerLib.referenceBy.id(layer.id);
