@@ -53,6 +53,13 @@ define(function (require, exports, module) {
         _currentMouseY: null,
 
         /**
+         * Keeps track of whether the mouse was pressed down within the guide zones
+         *
+         * @type {boolean}
+         */
+        _currentMouseDown: null,
+
+        /**
          * Owner group for all the overlay svg elements
          *
          * @type {SVGElement}
@@ -94,6 +101,7 @@ define(function (require, exports, module) {
         componentDidMount: function () {
             this._currentMouseX = null;
             this._currentMouseY = null;
+            this._currentMouseDown = false;
             
             this.drawOverlay();
             
@@ -248,18 +256,33 @@ define(function (require, exports, module) {
                 if (!highlightFound && intersects) {
                     guide.classed("guide-edges__hover", true)
                         .on("mousedown", function () {
+                            // Instead of creating a guide on mouse down, we flip a flag
+                            // and start guide creation if user drags the pointer out
+                            // of the guide zone
+                            // This prevents guide creation under the zones / with clicks
                             d3.select(this)
                                 .classed("guide-edges__hover", false);
                             
-                            self.getFlux().actions.guides.createGuideAndTrackThrottled(
-                                self.state.document, orientation, mouseX, mouseY
-                            );
-
+                            self._currentMouseDown = true;
+                            
                             d3.event.stopPropagation();
                         })
                         .on("mouseout", function () {
                             d3.select(this)
                                 .classed("guide-edges__hover", false);
+
+                            // If the user held the mouse button down as they left the guide zone
+                            // we start a guide tracker
+                            if (self._currentMouseDown) {
+                                self.getFlux().actions.guides.createGuideAndTrackThrottled(
+                                    self.state.document, orientation, mouseX, mouseY
+                                );
+                            }
+
+                            self._currentMouseDown = false;
+                        })
+                        .on("mouseup", function () {
+                            self._currentMouseDown = false;
                         });
 
                     highlightFound = true;
