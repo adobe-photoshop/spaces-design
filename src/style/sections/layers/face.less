@@ -54,17 +54,10 @@
     flex-grow: 10;
     flex-shrink: 100;
     box-sizing: border-box;
-}
 
-.face__leash {
-    height: 100%;
-    align-tems: stretch;
-    flex-shrink: 0;
-    flex-grow: 0;
-
-    &.column-half {
-        width: 1.3rem;
-    }
+    // The following ensures that the face__name is correctly truncated.
+    // See: http://codepen.io/aj-foster/pen/emBYPW
+    min-width: 0;
 }
 
 .generate-depth(@n, @i: 0) when (@i =< @n) {
@@ -76,45 +69,35 @@
 
 .generate-depth(10);
 
-input[type="text"].face__name, input[type="text"]:disabled.face__name {
-    font-size: 1.2rem;
-    color: @item-active;
-    border-bottom: solid @hairline transparent;
-}
-
 .face__name {
     flex-grow: 1;
     flex-shrink: 100;
     -webkit-user-select: none;
-    overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    height: 1.2rem;
 }
 
-.face__name[disabled] {
-    cursor: inherit;
-}
-
-@media (resolution: 1dppx){
-    .face__name {
-        margin-top: -1px;
-    }
+input[type="text"].face__name {
+    font-size: 1.2rem;
+    color: @item-active;
+    margin-top: -0.2rem;
+    margin-left: -0.1rem;
 }
 
 // Selection state
 .face:hover {
     background-color: @list-hover-color;
     
-    input[type="text"], input[type="text"]:disabled {
+    .face__name {
         color: @item-hover;
-        border-bottom: solid @hairline transparent;
     }
 }
 
 // Layer visibility state
 .face__not-visible,
 .layer-group__not-visible {
-    input[type="text"].face__name {
+    .face__name {
         color: @item-hover;
         opacity: @label-hidden-opacity;
     }
@@ -129,6 +112,11 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
             border-bottom: solid @hairline transparent;
         }
     }
+}
+    
+.face__select_immediate .face__name,
+.face__select_immediate:hover .face__name {
+    color: @item;
 }
 
 // Layer direct selection state
@@ -164,6 +152,14 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     background-color: none;
     cursor: -webkit-grabbing;
 }
+
+.face__select_immediate input[type="text"].face__name:focus,
+input[type="text"].face__name:focus {
+    border-bottom: solid @hairline @focus-highlight;
+    color: @item;
+    -webkit-user-select: text;
+}
+
 
 // Drop state
 .face__drop_target_above:before {

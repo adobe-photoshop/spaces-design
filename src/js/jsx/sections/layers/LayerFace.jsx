@@ -620,7 +620,7 @@ define(function (require, exports, module) {
                                         CSSID={iconID}
                                         viewbox="0 0 24 24"/>
                                 </Button>
-                                <span className="face__separator">
+                                <div className="face__separator">
                                     <TextInput
                                         title={layer.name + tooltipPadding}
                                         className="face__name"
@@ -633,7 +633,7 @@ define(function (require, exports, module) {
                                         allowEmpty={false}>
                                     </TextInput>
                                     {showHideButton}
-                                </span>
+                                </div>
                                 <ToggleButton
                                     disabled={this.props.disabled}
                                     title={nls.localize("strings.TOOLTIPS.LOCK_LAYER") + tooltipPadding}

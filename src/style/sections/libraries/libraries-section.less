@@ -249,7 +249,7 @@
         padding-left: 0rem;
         -webkit-user-select: none;
         cursor: pointer;
-        
+
         &:hover {
             background-color: @list-hover-color;
             
@@ -261,11 +261,6 @@
         &-selected, &-selected:hover, &-selected:hover:disabled {
             background-color: @list-select-color;
             padding-right: 0;
-            .libraries__asset__title {
-                input[type="text"], input[type="text"]:disabled, input[type="text"]:hover, input[type="text"]:hover:disabled{
-                    color: @item-hover;
-                }
-            }
         }
 
         &__preview {
@@ -282,26 +277,33 @@
             justify-content: center;
             height: @libraries-preview-height;
 
-            input[type="text"], input[type="text"]:disabled {
+            // The following ensures that the face__name is correctly truncated.
+            // See: http://codepen.io/aj-foster/pen/emBYPW
+            min-width: 0;
+
+            &__main {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+            }
+
+            input[type="text"] {
                 font-size: @text-small;
                 color: @item-active;
                 -webkit-user-select: none;
                 border-bottom: @hairline solid transparent;
+                margin-left: -0.1rem;
 
-                &:focus, &:focus:hover, &:focus:disabled {
+                &:focus, &:focus:hover {
                     align-self: stretch;
                     color: @item;
                     -webkit-user-select: none;
                     border-bottom: @hairline solid @focus-highlight;
                 }
                 
-                &:hover, &:hover:disabled {
+                &:hover {
                     color: @item-hover;
                     border-bottom: @hairline solid transparent;
-                }
-                
-                &[disabled] {
-                    cursor: inherit;
                 }
             }
         }
@@ -394,7 +396,6 @@
         }
 
         &__buttons {
-            width: auto;
             flex-shrink: 1;
 
             .split-button__item {

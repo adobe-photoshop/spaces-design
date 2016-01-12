@@ -406,27 +406,6 @@ define(function (require, exports, module) {
                 this._suppressMouseUp = false;
             }
         },
-        
-        /**
-         * When TextInput is disabled, prevent it from scrolling horizontally 
-         * by preventing the default wheel action if there is a non-zero deltaX 
-         * and instead firing a new wheel action with deltaX set to 0.
-         *
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _handleWheel: function (event) {
-            if (this.props.preventHorizontalScrolling && event.deltaX) {
-                var nativeEvent = event.nativeEvent,
-                    domEvent = new window.WheelEvent(event.type, {
-                        deltaX: 0.0,
-                        deltaY: nativeEvent.deltaY
-                    });
-
-                event.preventDefault();
-                event.target.dispatchEvent(domEvent);
-            }
-        },
 
         render: function () {
             var className = classnames(this.props.className, this.props.size);
@@ -455,19 +434,14 @@ define(function (require, exports, module) {
                 );
             } else { // Used for cases like Libary assets and Layerfaces
                 return (
-                    <input
-                        type="text"
-                        tabIndex="-1"
+                    <div
                         ref="input"
-                        spellCheck="false"
                         title={this.props.title}
-                        value={this.state.value}
-                        disabled="disabled"
                         className={className}
                         onDoubleClick={this._handleDoubleClick}
-                        onClick={this._handleClick}
-                        onWheel={this._handleWheel}>
-                    </input>
+                        onClick={this._handleClick}>
+                        {this.state.value}
+                    </div>
                 );
             }
         },
