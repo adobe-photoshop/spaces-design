@@ -586,6 +586,17 @@ define(function (require, exports, module) {
                 !curLayer.isVector &&
                 !curLayer.isBackground &&
                 !curLayer.locked;
+        },
+
+        /**
+         * determine if there are only Shape layers in the current selection
+         *
+         * @return {boolean} if the layer selection contains only vector shapes
+         */
+        "selectedLayersContainOnlyShapeLayers": function () {
+            return this.selected.every(function (layer) {
+                return layer.isVector;
+            });
         }
     }));
 

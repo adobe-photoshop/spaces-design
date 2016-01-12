@@ -688,7 +688,11 @@ define(function (require, exports) {
         } else if (layers.size === 1) {
             return _playCombine.call(this, document, layers, pathLib.combinePathsUnion());
         } else {
-            return _playCombine.call(this, document, layers, pathLib.combineLayersUnion());
+            if (!document.layers.selectedLayersContainOnlyShapeLayers) {
+                return Promise.resolve();
+            } else {
+                return _playCombine.call(this, document, layers, pathLib.combineLayersUnion());
+            }
         }
     };
     combineUnion.action = {
@@ -716,7 +720,11 @@ define(function (require, exports) {
         } else if (layers.size === 1) {
             return _playCombine.call(this, document, layers, pathLib.combinePathsSubtract());
         } else {
-            return _playCombine.call(this, document, layers, pathLib.combineLayersSubtract());
+            if (!document.layers.selectedLayersContainOnlyShapeLayers) {
+                return Promise.resolve();
+            } else {
+                return _playCombine.call(this, document, layers, pathLib.combineLayersSubtract());
+            }
         }
     };
     combineSubtract.action = {
@@ -744,7 +752,11 @@ define(function (require, exports) {
         } else if (layers.size === 1) {
             return _playCombine.call(this, document, layers, pathLib.combinePathsIntersect());
         } else {
-            return _playCombine.call(this, document, layers, pathLib.combineLayersIntersect());
+            if (!document.layers.selectedLayersContainOnlyShapeLayers) {
+                return Promise.resolve();
+            } else {
+                return _playCombine.call(this, document, layers, pathLib.combineLayersIntersect());
+            }
         }
     };
     combineIntersect.action = {
@@ -772,7 +784,11 @@ define(function (require, exports) {
         } else if (layers.size === 1) {
             return _playCombine.call(this, document, layers, pathLib.combinePathsDifference());
         } else {
-            return _playCombine.call(this, document, layers, pathLib.combineLayersDifference());
+            if (!document.layers.selectedLayersContainOnlyShapeLayers) {
+                return Promise.resolve();
+            } else {
+                return _playCombine.call(this, document, layers, pathLib.combineLayersDifference());
+            }
         }
     };
     combineDifference.action = {
