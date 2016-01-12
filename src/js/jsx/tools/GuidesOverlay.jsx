@@ -66,6 +66,13 @@ define(function (require, exports, module) {
          */
         _scrimGroup: null,
 
+        /**
+         * Throttled function that will eventually highlight an area
+         *
+         * @type {function}
+         */
+        _debouncedHighlight: null,
+
         getStateFromFlux: function () {
             var flux = this.getFlux(),
                 applicationStore = flux.store("application"),
@@ -93,27 +100,29 @@ define(function (require, exports, module) {
         },
 
         componentWillUnmount: function () {
-            OS.removeListener("externalMouseMove", this.mouseMoveHandler);
-            window.removeEventListener("mousemove", this.windowMouseMoveHandler);
-            window.removeEventListener("resize", this.drawOverlay);
+            OS.removeListener("externalMouseMove", this._mouseMoveHandler);
+            window.removeEventListener("mousemove", this._windowMouseMoveHandler);
+            window.removeEventListener("resize", this._drawOverlay);
+            this._debouncedHighlight.cancel();
         },
 
         componentDidMount: function () {
             this._currentMouseX = null;
             this._currentMouseY = null;
             this._currentMouseDown = false;
+            this._debouncedHighlight = _.debounce(this._highlightZone, 30);
             
-            this.drawOverlay();
+            this._drawOverlay();
             
             // Marquee mouse handlers
-            OS.addListener("externalMouseMove", this.mouseMoveHandler);
-            window.addEventListener("mousemove", this.windowMouseMoveHandler);
-            window.addEventListener("resize", this.drawOverlay);
+            OS.addListener("externalMouseMove", this._mouseMoveHandler);
+            window.addEventListener("mousemove", this._windowMouseMoveHandler);
+            window.addEventListener("resize", this._drawOverlay);
         },
 
         componentDidUpdate: function () {
             // Redraw immediately when we're in a modal state
-            this.drawOverlay();
+            this._drawOverlay();
         },
 
         /**
@@ -125,11 +134,11 @@ define(function (require, exports, module) {
          * @private
          * @param {CustomEvent} event EXTERNAL_MOUSE_MOVE event coming from _spaces.OS
          */
-        mouseMoveHandler: function (event) {
+        _mouseMoveHandler: function (event) {
             this._currentMouseX = event.location[0];
             this._currentMouseY = event.location[1];
             
-            this.updateMouseOverHighlights();
+            this._updateMouseOverHighlights();
         },
 
         /**
@@ -140,11 +149,11 @@ define(function (require, exports, module) {
          * @private
          * @param {MouseEvent} event
          */
-        windowMouseMoveHandler: function (event) {
+        _windowMouseMoveHandler: function (event) {
             this._currentMouseX = event.x;
             this._currentMouseY = event.y;
 
-            this.updateMouseOverHighlights();
+            this._updateMouseOverHighlights();
         },
 
         /**
@@ -152,7 +161,7 @@ define(function (require, exports, module) {
          * Cleans it first
          * @private
          */
-        drawOverlay: function () {
+        _drawOverlay: function () {
             var currentDocument = this.state.document,
                 currentTool = this.state.tool,
                 svg = d3.select(ReactDOM.findDOMNode(this));
@@ -169,13 +178,13 @@ define(function (require, exports, module) {
             this._scrimGroup = svg.insert("g", ".transform-control-group")
                 .classed("guide-edges-group", true);
 
-            this.drawGuideEdges();
+            this._drawGuideEdges();
         },
 
         /**
          * Draws the guide edge areas
          */
-        drawGuideEdges: function () {
+        _drawGuideEdges: function () {
             var panelStore = this.getFlux().store("panel"),
                 canvasBounds = panelStore.getCloakRect();
                 
@@ -233,29 +242,59 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Returns true if the given D3 component is under the given mouse location
+         *
+         * @private
+         * @param {SVGElement} zone Guide zone being checked
+         * @param {number} x mouse X coordinate
+         * @param {number} y mouse Y coordinate
+         * @return {boolean} True if [x,y] is in the zone
+         */
+        _zoneUnderLocation: function (zone, x, y) {
+            var zoneLeft = mathUtil.parseNumber(zone.attr("x")),
+                zoneTop = mathUtil.parseNumber(zone.attr("y")),
+                zoneRight = zoneLeft + mathUtil.parseNumber(zone.attr("width")),
+                zoneBottom = zoneTop + mathUtil.parseNumber(zone.attr("height"));
+            
+            return zoneLeft <= x && zoneRight >= x &&
+                zoneTop <= y && zoneBottom >= y;
+        },
+
+        /**
+         * Highlights the given zone, is debounced at component mount
+         *
+         * @private
+         * @param {SVGElement} zone
+         */
+        _highlightZone: function (zone) {
+            var mouseLoc = OS.getMouseLocation(),
+                intersects = this._zoneUnderLocation(zone, mouseLoc[0], mouseLoc[1]);
+
+            if (intersects) {
+                zone.classed("guide-edges__hover", true);
+            }
+        },
+
+        /**
          * Goes through all layer bounds and highlights the top one the cursor is on
          *
          * @private
          */
-        updateMouseOverHighlights: function () {
+        _updateMouseOverHighlights: function () {
             var mouseX = this._currentMouseX,
                 mouseY = this._currentMouseY,
                 highlightFound = false,
                 self = this;
 
             d3.selectAll(".guide-edges").each(function () {
-                var guide = d3.select(this),
-                    guideLeft = mathUtil.parseNumber(guide.attr("x")),
-                    guideTop = mathUtil.parseNumber(guide.attr("y")),
-                    guideRight = guideLeft + mathUtil.parseNumber(guide.attr("width")),
-                    guideBottom = guideTop + mathUtil.parseNumber(guide.attr("height")),
-                    orientation = guide.attr("orientation"),
-                    intersects = guideLeft < mouseX && guideRight > mouseX &&
-                        guideTop < mouseY && guideBottom > mouseY;
+                var guideZone = d3.select(this),
+                    orientation = guideZone.attr("orientation"),
+                    intersects = self._zoneUnderLocation(guideZone, mouseX, mouseY);
 
                 if (!highlightFound && intersects) {
-                    guide.classed("guide-edges__hover", true)
-                        .on("mousedown", function () {
+                    self._debouncedHighlight(guideZone);
+
+                    guideZone.on("mousedown", function () {
                             // Instead of creating a guide on mouse down, we flip a flag
                             // and start guide creation if user drags the pointer out
                             // of the guide zone
@@ -287,9 +326,14 @@ define(function (require, exports, module) {
 
                     highlightFound = true;
                 } else {
-                    guide.classed("guide-edges__hover", false);
+                    guideZone.classed("guide-edges__hover", false);
                 }
             });
+
+            // If we are no longer on an area, cancel the debounced highlight function
+            if (!highlightFound) {
+                self._debouncedHighlight.cancel();
+            }
         },
 
         render: function () {
