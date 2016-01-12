@@ -1043,7 +1043,7 @@ define(function (require, exports, module) {
         var nextStructure = selected ? this.updateSelection(Immutable.Set()) : this,
             replaceLayer;
 
-        // Default replacement logic is to replace a single, empty, non-background, selected layer
+        // Default replacement logic is to replace a single, empty, non-background, selected layer without a vector mask
         // Allow explicit opt-in or opt-out via the replace param
         if (replace !== false && layerIDs.length === 1) {
             if (Number.isInteger(replace)) {
@@ -1056,10 +1056,9 @@ define(function (require, exports, module) {
             }
 
             // The selected layer should be empty and a non-background layer unless replace is explicitly provided true
-            replace = replaceLayer &&
-                (replace ||
-                (!replaceLayer.isBackground && replaceLayer.isPixel &&
-                replaceLayer.bounds && !replaceLayer.bounds.area));
+            var layerShouldBeReplaced = replaceLayer && (!replaceLayer.isBackground && replaceLayer.isPixel &&
+                    replaceLayer.bounds && !replaceLayer.bounds.area && !replaceLayer.vectorMaskEnabled);
+            replace = replaceLayer && (replace || layerShouldBeReplaced);
         }
 
         // Update the layers and index for each layerID
