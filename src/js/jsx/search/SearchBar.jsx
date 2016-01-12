@@ -36,6 +36,7 @@ define(function (require, exports, module) {
     var collection = require("js/util/collection"),
         nls = require("js/util/nls"),
         Datalist = require("js/jsx/shared/Datalist"),
+        SVGIcon = require("js/jsx/shared/SVGIcon"),
         headlights = require("js/util/headlights"),
         Button = require("js/jsx/shared/Button");
 
@@ -537,6 +538,8 @@ define(function (require, exports, module) {
             return (
                 <div
                     onClick={this._handleDialogClick}>
+                   <SVGIcon
+                        CSSID="layer-search-app" />
                    <Datalist
                         ref="datalist"
                         disabled={!this.state.ready}

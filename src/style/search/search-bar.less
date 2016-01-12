@@ -26,7 +26,7 @@
 @dialog-radius: .6rem;
 
 .search-bar__dialog {
-    background: url("img/ico-layer-search.svg") no-repeat left @bg-panel;
+    background: no-repeat left @bg-panel;
     background-size: @text-xxlarge;
     background-position: 1.7rem 1.5rem;
     top: 25%;
@@ -46,11 +46,27 @@
 
 .search-bar__dialog .drop-down {
     margin-top: 1rem;
-    margin-left: 3.3rem;
-
     border: none;
+    float: right;
     width: @drop-down-width;
     background: @bg-panel;
+}
+
+.search-bar__dialog svg {
+    margin-left: 1.1rem;
+    margin-top: 1.5rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    fill: @icon-active;
+}
+
+.search-bar__dialog .drop-down svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    margin-left: 0rem;
+    margin-top: 0rem;
+    margin-right: 1rem;
+    fill: @icon-active;
 }
 
 .search-bar__dialog .drop-down:hover {
@@ -105,11 +121,9 @@
     background-color: rgba(0,0,0,0.01);
 }
 
-.search-bar__dialog svg {
-    width: 1.8rem;
-    height: 1.8rem;
-    fill: @icon-active;
-    margin-right: 1rem;
+.search-bar__dialog .dialog__target.dialog-search-bar {
+    margin-left: -1.75rem;
+    width: 47.5rem;
 }
 
 .search-bar__dialog .select__option {
@@ -139,7 +153,7 @@
 
 .search-bar__dialog .select__option__selected {
     color: @text-highlight;
-    border-left: .2rem solid @focus-highlight;
+    border-left: .3rem solid @focus-highlight;
     background-color: @bg-app;
     
     svg {
@@ -151,7 +165,7 @@
 }
 
 .search-bar__dialog .select__header {
-    color: @item-inactive;
+    color: @item-disabled;
     border-top: @hairline solid @underlines;
     margin-top: 1rem;
     margin-bottom: .25rem;
