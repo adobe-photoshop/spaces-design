@@ -27,13 +27,17 @@ define(function (require, exports) {
     var Promise = require("bluebird"),
         Immutable = require("immutable");
 
+    var historyActions = require("./history"),
+        layerActions = require("./layers"),
+        locks = require("../locks");
+
     var descriptor = require("adapter").ps.descriptor,
         boundsLib = require("adapter").lib.bounds,
         vectorMaskLib = require("adapter").lib.vectorMask,
-        documentLib = require("adapter").lib.document;
+        documentLib = require("adapter").lib.document,
+        layerLib = require("adapter").lib.layer;
 
-    var locks = require("../locks"),
-        events = require("../events"),
+    var events = require("../events"),
         nls = require("js/util/nls"),
         layerActionsUtil = require("js/util/layeractions");
 
@@ -129,7 +133,7 @@ define(function (require, exports) {
         reads: [locks.JS_TOOL],
         writes: [locks.PS_DOC, locks.JS_DOC]
     };
-    
+
     /**
      * Handle escaping from vector mask for the selection-based vector mask tools.
      * Most tools can just call tools.changeVectorMaskMode directly.
@@ -336,6 +340,88 @@ define(function (require, exports) {
         transfers: ["tools.select"]
     };
 
+    /**
+     * if there are two selected layers create a vector mask on one of them from the path of the shape in the 
+     * other selected layer
+     *
+     * @return {Promise}
+     */
+    var createVectorMaskFromShape = function () {
+        var appStore = this.flux.store("application"),
+            currentDocument = appStore.getCurrentDocument();
+
+        if (!currentDocument) {
+            return Promise.resolve();
+        }
+
+        var currentLayers = currentDocument.layers.selected;
+
+        if (currentLayers.size !== 2) {
+            return Promise.resolve();
+        }
+
+        var shapeLayers = currentLayers.filter(function (layer) {
+                return layer.isVector;
+            }),
+            maskLayers = currentLayers.filter(function (layer) {
+                return currentDocument.layers.canSupportVectorMask(layer) &&
+                    !layer.vectorMaskEnabled;
+            });
+
+        if (shapeLayers.isEmpty() || maskLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+       
+        var shapeLayer = shapeLayers.first(),
+            maskLayer = maskLayers.first(),
+            shapeLayerRef = layerLib.referenceBy.id(shapeLayer.id);
+
+        var options = {
+            paintOptions: {
+                immediateUpdate: true,
+                quality: "draft"
+            },
+            historyStateInfo: {
+                name: nls.localize("strings.ACTIONS.ADD_VECTOR_MASK"),
+                target: documentLib.referenceBy.id(currentDocument.id)
+            }
+        },
+            playObjects = [layerLib.select(shapeLayerRef),
+                vectorMaskLib.createMaskFromShape(maskLayer.id)],
+            deleteShapeLayer = currentDocument.layers.all.some(function (layer) {
+                    return !layer.isGroupEnd && !layer.isGroup && layer.id !== shapeLayer.id;
+                });
+
+        if (deleteShapeLayer) {
+            playObjects.push(layerLib.delete(shapeLayerRef));
+        }
+        
+        var playPromise = descriptor.batchPlayObjects(playObjects, options),
+            historyPromise = this.transfer(historyActions.newHistoryState, currentDocument.id,
+                nls.localize("strings.ACTIONS.ADD_VECTOR_MASK"));
+
+        return Promise.join(historyPromise, playPromise)
+            .bind(this)
+            .then(function () {
+                return this.transfer(layerActions.resetLayers, currentDocument, maskLayer);
+            })
+            .then(function () {
+                if (deleteShapeLayer) {
+                    var payload = {
+                        documentID: currentDocument.id,
+                        layerIDs: Immutable.List.of(shapeLayer.id)
+                    };
+                    
+                    this.dispatch(events.document.history.DELETE_LAYERS, payload);
+                }
+            });
+    };
+    createVectorMaskFromShape.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [locks.PS_DOC],
+        transfers: [layerActions.resetLayers, layerActions.removeLayers, historyActions.newHistoryState]
+    };
+
     exports.editVectorMask = editVectorMask;
     exports.selectVectorMask = selectVectorMask;
     exports.deleteVectorMask = deleteVectorMask;
@@ -343,4 +429,5 @@ define(function (require, exports) {
     exports.handleEscapeVectorMask = handleEscapeVectorMask;
     exports.applyEllipse = applyEllipse;
     exports.applyRectangle = applyRectangle;
+    exports.createVectorMaskFromShape = createVectorMaskFromShape;
 });

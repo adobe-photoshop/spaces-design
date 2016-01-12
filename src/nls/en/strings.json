@@ -48,7 +48,8 @@
         "MODIFY_EXPORT_ASSETS": "Updated Export Asset Configurations",
         "APPLY_TEXT_STYLE": "Apply Text Style",
         "APPLY_LAYER_STYLE": "Apply Layer Style",
-        "CREATE_LAYER_FROM_ELEMENT": "Create Layer From Graphic Asset"
+        "CREATE_LAYER_FROM_ELEMENT": "Create Layer From Graphic Asset",
+        "NEW_VECTOR_MASK_FROM_SHAPE": "Create Vector Mask From Shape Layer"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {

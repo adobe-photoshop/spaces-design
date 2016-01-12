@@ -239,7 +239,12 @@
         },
         "NEW_ARTBOARD_FROM_TEMPLATE": {
             "$enable-rule": "supported-document,not-vector-mask-mode"
+        },
+        "NEW_VECTOR_MASK_FROM_SHAPE": {
+            "$action": "mask.createVectorMaskFromShape",
+            "$enable-rule": "vector-mask-from-shape"
         }
+
     },
     "ARRANGE": {
         "$enable-rule": "always",

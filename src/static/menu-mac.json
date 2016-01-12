@@ -356,6 +356,18 @@
                 {
                     "id": "NEW_ARTBOARD_FROM_TEMPLATE",
                     "submenu": []
+                },
+                {
+                    "separator": true
+                },
+                {
+                    "id": "NEW_VECTOR_MASK_FROM_SHAPE",
+                    "shortcut": {
+                        "keyChar": true,
+                        "modifiers": {
+                            "command": true
+                        }
+                    }
                 }
             ]
         },
