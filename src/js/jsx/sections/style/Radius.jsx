@@ -165,7 +165,7 @@ define(function (require, exports, module) {
 
         render: function () {
             return (
-                <div className="formline">
+                <div className="formline radius_input">
                     <Label
                         className="label__medium__left-aligned"
                         size="column-4"
