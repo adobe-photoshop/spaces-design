@@ -36,7 +36,9 @@ define(function (require, exports, module) {
 
     var system = require("js/util/system"),
         headlights = require("js/util/headlights"),
-        mathUtil = require("js/util/math");
+        mathUtil = require("js/util/math"),
+        uiUtil = require("js/util/ui"),
+        collection = require("js/util/collection");
 
     // Used for debouncing the overlay drawing
     var DEBOUNCE_DELAY = 200;
@@ -518,34 +520,49 @@ define(function (require, exports, module) {
                 canvasMouse = uiStore.transformWindowToCanvas(mouseX, mouseY),
                 highlightFound = false;
 
-            // Yuck, we gotta traverse the list backwards, and D3 doesn't offer reverse iteration
-            _.forEachRight(d3.selectAll(".sampler-bounds")[0], function (element) {
-                var layer = d3.select(element),
-                    layerID = mathUtil.parseNumber(layer.attr("layer-id")),
-                    layerSelected = layer.attr("layer-selected") === "true",
-                    layerModel = layerTree.byID(layerID);
+            uiUtil.hitTestLayers(this.state.document.id, canvasMouse.x, canvasMouse.y)
+                .bind(this)
+                .then(function (hitLayerIDs) {
+                    var selectableLayers = this.state.document.layers.selectable,
+                        selectableLayerIDs = collection.pluck(selectableLayers, "id"),
+                        considerIDs = collection.intersection(hitLayerIDs, selectableLayerIDs);
 
-                // Sometimes, the DOM elements may be out of date, and be of different documents
-                if (!layerModel) {
-                    return;
-                }
+                    return considerIDs.findLast(function (id) {
+                        var layer = this.state.document.layers.byID(id);
 
-                var visibleBounds = layerTree.boundsWithinArtboard(layerModel),
-                    intersects = visibleBounds &&
-                        visibleBounds.left <= canvasMouse.x && visibleBounds.right >= canvasMouse.x &&
-                        visibleBounds.top <= canvasMouse.y && visibleBounds.bottom >= canvasMouse.y;
+                        return layer && !layer.isArtboard;
+                    }, this);
+                })
+                .then(function (topID) {
+                    // Yuck, we gotta traverse the list backwards, and D3 doesn't offer reverse iteration
+                    _.forEachRight(d3.selectAll(".sampler-bounds")[0], function (element) {
+                        var layer = d3.select(element),
+                            layerID = mathUtil.parseNumber(layer.attr("layer-id")),
+                            layerSelected = layer.attr("layer-selected") === "true",
+                            layerModel = layerTree.byID(layerID);
 
-                if (!highlightFound && intersects) {
-                    if (!layerSelected) {
-                        layer.classed("sampler-bounds-hover", true)
-                            .style("stroke-width", 1.0 * scale);
-                    }
-                    highlightFound = true;
-                } else {
-                    layer.classed("sampler-bounds-hover", true)
-                        .style("stroke-width", 0.0);
-                }
-            });
+                        // Sometimes, the DOM elements may be out of date, and be of different documents
+                        if (!layerModel) {
+                            return;
+                        }
+
+                        var visibleBounds = layerTree.boundsWithinArtboard(layerModel),
+                            intersects = visibleBounds &&
+                                visibleBounds.left <= canvasMouse.x && visibleBounds.right >= canvasMouse.x &&
+                                visibleBounds.top <= canvasMouse.y && visibleBounds.bottom >= canvasMouse.y;
+
+                        if (!highlightFound && intersects && layerID === topID) {
+                            if (!layerSelected) {
+                                layer.classed("sampler-bounds-hover", true)
+                                    .style("stroke-width", 1.0 * scale);
+                            }
+                            highlightFound = true;
+                        } else {
+                            layer.classed("sampler-bounds-hover", true)
+                                .style("stroke-width", 0.0);
+                        }
+                    });
+                });
         },
 
         render: function () {
