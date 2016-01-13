@@ -24,8 +24,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Immutable = require("immutable"),
-        React = require("react"),
+    var React = require("react"),
         ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
@@ -93,8 +92,11 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            var visibilityChanged = (this.state.document && this.state.document.guidesVisible) !==
+                (nextState.document && nextState.document.guidesVisible);
+
             return !_.isEqual(this.state.overlaysEnabled, nextState.overlaysEnabled) ||
-                !Immutable.is(this.state.document, nextState.document) ||
+                visibilityChanged ||
                 this.state.tool !== nextState.tool ||
                 this.state.modalState !== nextState.modalState;
         },
