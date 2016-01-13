@@ -530,18 +530,12 @@ define(function (require, exports, module) {
                 isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
-                hasChildren = this.props.childNodes,
                 selected = layer.selected,
                 visible = layer.visible;
             
             var layerClasses = classnames({
                 "layer": true,
-                "layer__selected": selected,
-                "layer-group": hasChildren,
-                "layer-group__selected": hasChildren && selected,
-                "layer-group__collapsed": hasChildren && !layer.expanded,
-                "layer-group__not-visible": hasChildren && !visible,
-                "layer-group__drag-target": hasChildren && isDragging
+                "layer__drag-target": isDragging
             });
 
             // Set all the classes need to style this LayerFace

@@ -21,9 +21,17 @@
  *
  */
 
-.layer {
+// Default style for LayerFace components
+.face {
     min-height: 2.8rem;
     cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 2.8rem;
+    position: relative;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .layer__dummy {
@@ -34,17 +42,6 @@
 
 .layer__dummy_drop {
     border-top: .25rem inset @focus-highlight;
-}
-
-// Default style for LayerFace components
-.face {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    height: 2.8rem;
-    position: relative;
-    padding-left: 1rem;
-    padding-right: 1rem;
 }
 
 .face__separator {
@@ -116,7 +113,7 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
 
 // Layer visibility state
 .face__not-visible,
-.layer-group__not-visible + .layers-group {
+.layer-group__not-visible {
     input[type="text"].face__name {
         color: @item-hover;
         opacity: @label-hidden-opacity;
@@ -124,10 +121,10 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
 }
 
 // Layer descendents selection state
-.layer-group__selected + .layers-group {
+.layer-group__selected {
     .face, .face:hover {
         background-color: @list-select-child-color;
-        
+
         input[type="text"], input[type="text"]:disabled {
             border-bottom: solid @hairline transparent;
         }
@@ -135,8 +132,7 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
 }
 
 // Layer direct selection state
-.face__selected,
-.layer-group__selected + .layers-group .face__selected {
+.face__selected {
     &, &:hover {
         background-color: @list-select-color;
     }
@@ -150,7 +146,7 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     input[type="text"].face__name {
         border-bottom: solid @hairline transparent;
     }
-    
+
     input[type="text"].face__name:focus,
     input[type="text"].face__name:focus {
         border-bottom: solid @hairline @focus-highlight;
@@ -160,13 +156,8 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
 }
 
 // Layer Group collapsed state
-.layer-group__collapsed + .layers-group{
+.layer-group__collapsed > .layers-group{
     display: none;
-}
-
-.face__select_descendant .face__name,
-.face__select_descendant:hover .face__name {
-    color: @item-active;
 }
 
 .face__drop_target, .face__drop_target:hover {
@@ -211,6 +202,6 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     pointer-events: none;
 }
 
-.layer-group__drag-target {
+.layer__drag-target {
     padding-top: 2.8rem;
 }

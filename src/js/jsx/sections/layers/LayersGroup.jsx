@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2016 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"), 
@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var React = require("react"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React);
+        FluxMixin = Fluxxor.FluxMixin(React),
+        classnames = require("classnames");
 
     var DummyLayerFace = require("./DummyLayerFace"),
         LayerFace = require("./LayerFace");
@@ -53,9 +54,16 @@ define(function (require, exports, module) {
                             layerNodes={layerNode.children}
                             depth={this.props.depth + 1}/>
                     );
-                    
+
+                    var className = classnames({
+                        "layer-group": layersGroup,
+                        "layer-group__selected": layersGroup && layer.selected,
+                        "layer-group__collapsed": layersGroup && !layer.expanded,
+                        "layer-group__not-visible": layersGroup && !layer.visible
+                    });
+
                     results.push(
-                        <li key={layer.key}>
+                        <li key={layer.key} className={className}>
                             <LayerFace
                                 key={layer.key}
                                 disabled={this.props.disabled}
