@@ -588,7 +588,7 @@ define(function (require, exports, module) {
             var colorPickerID = "type-" + this.props.document.id,
                 typefaceListID = "typefaces-" + this.props.document.id,
                 weightListID = "weights-" + this.props.document.id,
-                fillClassNames = classnames("formline", {
+                fillClassNames = classnames("formline formline__space-between", {
                     "mixed-faces": familyName === nls.localize("strings.STYLE.TYPE.MIXED")
                 }),
                 fillBlendFormline;
@@ -636,6 +636,8 @@ define(function (require, exports, module) {
                                 document={this.props.document}
                                 containerType={"type"}
                                 layers={this.props.document.layers.selected} />
+                        </div>
+                        <div className="control-group__vertical control-group__no-label column-2">
                         </div>
                     </div>
                 );
