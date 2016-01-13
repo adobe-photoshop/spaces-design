@@ -133,7 +133,7 @@ define(function (require, exports, module) {
 
             // Select the dragged layers if they are not selected
             if (!Immutable.is(selectedLayers, draggedLayers)) {
-                promise = flux.actions.layers.select(document, draggedLayers, "select");
+                promise = flux.actions.layers.select(document, draggedLayers, { modifier: "select" });
             }
 
             return promise.then(function () {

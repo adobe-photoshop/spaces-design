@@ -198,9 +198,12 @@ define(function (require, exports, module) {
             var documentID = this.props.document.id,
                 documentStore = this.getFlux().store("document"),
                 currentDocument = documentStore.getDocument(documentID),
-                currentLayer = currentDocument.layers.byID(this.props.layer.id);
+                currentLayer = currentDocument.layers.byID(this.props.layer.id),
+                options = {
+                    modifier: modifier
+                };
 
-            this.getFlux().actions.layers.select(currentDocument, currentLayer, modifier);
+            this.getFlux().actions.layers.select(currentDocument, currentLayer, options);
         },
 
         /**

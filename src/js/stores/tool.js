@@ -99,12 +99,19 @@ define(function (require, exports, module) {
         _inVectorMode: false,
 
         /**
-         * stored ID of pointer policy created while in vector mask mode
+         * Stored ID of pointer policy created while in vector mask mode
          *
          * @private
          * @type {number}
          */
         _vectorMaskPolicyID: null,
+
+        /**
+         * IDs of layers that are being dragged by superselect tool drag
+         *
+         * @type {Immutable.Iterable<number>}
+         */
+        _draggedLayerIDs: null,
 
         /**
          * Initialize the ToolStore
@@ -116,7 +123,8 @@ define(function (require, exports, module) {
                 events.tool.SELECT_TOOL_END, this._handleSelectTool,
                 events.tool.MODAL_STATE_CHANGE, this._handleModalStateChange,
                 events.tool.VECTOR_MASK_MODE_CHANGE, this._handleVectorMaskModeChange,
-                events.tool.VECTOR_MASK_POLICY_CHANGE, this._handleVectorMaskPolicyChange
+                events.tool.VECTOR_MASK_POLICY_CHANGE, this._handleVectorMaskPolicyChange,
+                events.tool.SUPERSELECT_DRAG_UPDATE, this._handleSuperselectDragUpdate
             );
 
             this._handleReset();
@@ -170,7 +178,8 @@ define(function (require, exports, module) {
             return {
                 current: this._currentTool,
                 previous: this._previousTool,
-                vectorMaskMode: this._inVectorMode
+                vectorMaskMode: this._inVectorMode,
+                draggedLayerIDs: this._draggedLayerIDs
             };
         },
 
@@ -250,6 +259,18 @@ define(function (require, exports, module) {
             this._vectorMaskPolicyID = payload;
 
             this.emit("change");
+        },
+
+        /**
+         * Saves the layers that will be affected by drag so their selection event
+         * can be emitted afterwards
+         * 
+         * @private
+         *
+         * @param {{selectedIDs: Immutable.Iterable<number>}} payload Layers that are being moved by drag
+         */
+        _handleSuperselectDragUpdate: function (payload) {
+            this._draggedLayerIDs = payload.selectedIDs;
         },
 
         /**
