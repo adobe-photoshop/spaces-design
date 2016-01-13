@@ -286,6 +286,10 @@ define(function (require, exports, module) {
                 highlightFound = false,
                 self = this;
 
+            if (self._currentMouseDown) {
+                return;
+            }
+            
             d3.selectAll(".guide-edges").each(function () {
                 var guideZone = d3.select(this),
                     orientation = guideZone.attr("orientation"),
