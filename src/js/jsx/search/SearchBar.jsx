@@ -501,20 +501,27 @@ define(function (require, exports, module) {
 
         render: function () {
             var searchStrings = nls.localize("strings.SEARCH"),
-                noMatchesOption = {
-                    id: PLACEHOLDER_ID,
-                    title: nls.localize("strings.SEARCH.NO_OPTIONS"),
-                    type: "placeholder"
-                };
-
-            var filter = this.state.filter,
+                filters = this.state.filter,
                 placeholderText,
                 clearInputBtn;
 
+            var flux = this.getFlux(),
+                searchStore = flux.store("search"),
+                lastFilter = filters[filters.length - 1];
+
+            var searchPayload = searchStore.getPayloadFromFilter(lastFilter),
+                noOptionsString = searchPayload ? searchPayload.noOptionsString : null,
+                defaultNoOptions = nls.localize("strings.SEARCH.NO_OPTIONS");
+
+            var noMatchesOption = {
+                    id: PLACEHOLDER_ID,
+                    title: noOptionsString ? noOptionsString : defaultNoOptions,
+                    type: "placeholder"
+                };
+
             // If we have applied a filter, change the placeholder text
-            if (filter.length > 0) {
-                var lastFilter = filter[filter.length - 1],
-                    categoryString = searchStrings.CATEGORIES[lastFilter],
+            if (filters.length > 0) {
+                var categoryString = searchStrings.CATEGORIES[lastFilter],
                     category = categoryString ?
                         categoryString.toLowerCase() : this.state.safeFilterNameMap[lastFilter];
                 placeholderText = searchStrings.PLACEHOLDER_FILTER + category;

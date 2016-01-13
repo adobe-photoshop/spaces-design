@@ -233,7 +233,9 @@ define(function (require, exports, module) {
                 // If we need a document to have any options for the type, defaults to false
                 "haveDocument": payload.haveDocument,
                 // Function to get properly named class for the svg icon
-                "getSVGClass": payload.getSVGClass
+                "getSVGClass": payload.getSVGClass,
+                // String to display if datalist does not have any options to present
+                "noOptionsString": payload.noOptionsString
             };
         },
 
@@ -326,6 +328,17 @@ define(function (require, exports, module) {
                 searchInfo = this._registeredSearchTypes[header];
 
             return searchInfo.getSVGClass(categories);
+        },
+
+        /**
+         * Find the associated payload from a registered search module
+         * given the filter applied within the Search Bar 
+         * 
+         * @param {string} filter
+         * @return {payload=}
+         */
+        getPayloadFromFilter: function (filter) {
+            return this._registeredSearchTypes[filter];
         },
 
         /**

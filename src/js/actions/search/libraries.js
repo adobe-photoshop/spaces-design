@@ -201,7 +201,8 @@ define(function (require, exports) {
             "displayFilters": displayFilters,
             "handleExecute": _confirmSearch.bind(this),
             "shortenPaths": false,
-            "getSVGClass": _getSVGClass
+            "getSVGClass": _getSVGClass,
+            "noOptionsString": nls.localize("strings.SEARCH.NO_OPTIONS")
         };
         
         return this.dispatchAsync(events.search.REGISTER_SEARCH_PROVIDER, payload);
