@@ -939,6 +939,8 @@ define(function (require, exports, module) {
             }
         };
 
+        log.timeStamp("Executing controller " + methodName);
+
         var allMethodPromises = Object.keys(actionIndex)
                 .filter(function (moduleName) {
                     if (this._flux.actions[moduleName].hasOwnProperty(methodName)) {
@@ -957,7 +959,10 @@ define(function (require, exports, module) {
             .reduce(function (results, result) {
                 results[result[0]] = result[1];
                 return results;
-            }, {});
+            }, {})
+            .tap(function () {
+                log.timeStamp("Finished controller " + methodName);
+            });
     };
 
     /**

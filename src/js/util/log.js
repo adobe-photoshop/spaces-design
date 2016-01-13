@@ -34,13 +34,13 @@ define(function (require, exports, module) {
         if (!loglevel.hasOwnProperty("table")) {
             loglevel.table = console.table.bind(console);
         }
-
-        if (!loglevel.hasOwnProperty("timeStamp")) {
-            loglevel.timeStamp = console.timeStamp.bind(console);
-        }
     } else {
         // Otherwise, only log information, warnings and errors
         loglevel.setLevel(loglevel.levels.INFO);
+    }
+
+    if (!loglevel.hasOwnProperty("timeStamp")) {
+        loglevel.timeStamp = console.timeStamp.bind(console);
     }
 
     module.exports = loglevel;
