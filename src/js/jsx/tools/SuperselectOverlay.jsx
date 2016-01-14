@@ -128,18 +128,22 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            // We check for the cheaper flags before plucking layers from document models
+            if (this.state.marqueeEnabled !== nextState.marqueeEnabled ||
+                this.state.leafBounds !== nextState.leafBounds ||
+                this.state.vectorMaskMode !== nextState.vectorMaskMode ||
+                this.state.modalState !== nextState.modalState ||
+                this.props.transformString !== nextProps.transformString) {
+                return true;
+            }
+
             var lastLayers = this.state.document.layers.selected,
                 nextLayers = nextState.document.layers.selected,
                 lastLayerProps = collection.pluckAll(lastLayers, ["id", "bounds"]),
                 nextLayerProps = collection.pluckAll(nextLayers, ["id", "bounds"]),
                 layersChanged = !Immutable.is(lastLayerProps, nextLayerProps);
 
-            return layersChanged ||
-                this.state.marqueeEnabled !== nextState.marqueeEnabled ||
-                this.state.leafBounds !== nextState.leafBounds ||
-                this.state.vectorMaskMode !== nextState.vectorMaskMode ||
-                this.state.modalState !== nextState.modalState ||
-                this.props.transformString !== nextProps.transformString;
+            return layersChanged;
         },
 
         componentWillMount: function () {
