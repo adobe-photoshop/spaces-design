@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        Immutable = require("immutable"),
         d3 = require("d3"),
         _ = require("lodash");
 
@@ -124,6 +125,21 @@ define(function (require, exports, module) {
                 leafBounds: leafModifier,
                 vectorMaskMode: vectorMaskMode
             };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            var lastLayers = this.state.document.layers.selected,
+                nextLayers = nextState.document.layers.selected,
+                lastLayerProps = collection.pluckAll(lastLayers, ["id", "bounds"]),
+                nextLayerProps = collection.pluckAll(nextLayers, ["id", "bounds"]),
+                layersChanged = !Immutable.is(lastLayerProps, nextLayerProps);
+
+            return layersChanged ||
+                this.state.marqueeEnabled !== nextState.marqueeEnabled ||
+                this.state.leafBounds !== nextState.leafBounds ||
+                this.state.vectorMaskMode !== nextState.vectorMaskMode ||
+                this.state.modalState !== nextState.modalState ||
+                this.props.transformString !== nextProps.transformString;
         },
 
         componentWillMount: function () {

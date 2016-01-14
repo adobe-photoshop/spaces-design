@@ -29,6 +29,7 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
+        Immutable = require("immutable"),
         d3 = require("d3"),
         _ = require("lodash");
 
@@ -44,7 +45,7 @@ define(function (require, exports, module) {
     var DEBOUNCE_DELAY = 200;
 
     var SamplerOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui", "modifier", "style")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui", "style")],
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
@@ -91,20 +92,34 @@ define(function (require, exports, module) {
                 applicationStore = flux.store("application"),
                 toolStore = flux.store("tool"),
                 styleStore = flux.store("style"),
-                modifierStore = flux.store("modifier"),
                 modalState = toolStore.getModalToolState(),
+                currentTool = toolStore.getCurrentTool(),
                 currentDocument = applicationStore.getCurrentDocument(),
                 sampleTypes = styleStore.getHUDStyles(),
-                samplePoint = styleStore.getSamplePoint(),
-                modifiers = modifierStore.getState();
+                samplePoint = styleStore.getSamplePoint();
 
             return {
                 document: currentDocument,
+                tool: currentTool,
                 modalState: modalState,
-                modifiers: modifiers,
                 sampleTypes: sampleTypes,
                 samplePoint: samplePoint
             };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            var lastLayers = this.state.document.layers.selected,
+                nextLayers = nextState.document.layers.selected,
+                lastLayerProps = collection.pluck(lastLayers, "id"),
+                nextLayerProps = collection.pluck(nextLayers, "id"),
+                layersChanged = !Immutable.is(lastLayerProps, nextLayerProps);
+
+            return layersChanged ||
+                this.props.transformString !== nextProps.transformString ||
+                this.state.tool !== nextState.tool ||
+                this.state.modalState !== nextState.modalState ||
+                this.state.sampleTypes !== nextState.sampleTypes ||
+                this.state.samplePoint !== nextState.samplePoint;
         },
 
         componentWillMount: function () {
@@ -523,7 +538,7 @@ define(function (require, exports, module) {
             uiUtil.hitTestLayers(this.state.document.id, canvasMouse.x, canvasMouse.y)
                 .bind(this)
                 .then(function (hitLayerIDs) {
-                    var selectableLayers = this.state.document.layers.selectable,
+                    var selectableLayers = this.state.document.layers.leaves,
                         selectableLayerIDs = collection.pluck(selectableLayers, "id"),
                         considerIDs = collection.intersection(hitLayerIDs, selectableLayerIDs);
 

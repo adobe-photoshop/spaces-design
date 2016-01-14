@@ -44,6 +44,7 @@ define(function (require, exports) {
         shapeActions = require("./shapes"),
         historyActions = require("./history"),
         transformActions = require("./transform"),
+        collection = require("js/util/collection"),
         layerActionsUtil = require("js/util/layeractions"),
         headlights = require("js/util/headlights"),
         nls = require("js/util/nls");
@@ -420,18 +421,17 @@ define(function (require, exports) {
         return uiUtil.hitTestLayers(doc.id, coords.x, coords.y)
             .bind(this)
             .then(function (hitLayerIDs) {
-                var topLayer,
-                    selected = layerTree.selected;
-                
-                hitLayerIDs.forEach(function (layerID) {
-                    var layer = layerTree.byID(layerID);
-                    
-                    if (!layer.isArtboard) {
-                        topLayer = layer;
-                        return false;
-                    }
-                });
+                var selected = layerTree.selected,
+                    sampleLayers = layerTree.leaves,
+                    sampleLayerIDs = collection.pluck(sampleLayers, "id"),
+                    considerIDs = collection.intersection(hitLayerIDs, sampleLayerIDs),
+                    topLayerID = considerIDs.findLast(function (id) {
+                        var layer = layerTree.byID(id);
 
+                        return layer && !layer.isArtboard;
+                    }, this),
+                    topLayer = layerTree.byID(topLayerID);
+                
                 // If we're trying to sample the only selected layer, surely it's a no-op
                 if (!topLayer || selected.size === 1 && selected.first() === topLayer) {
                     return [];

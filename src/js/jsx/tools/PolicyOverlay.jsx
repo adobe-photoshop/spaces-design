@@ -37,19 +37,6 @@ define(function (require, exports, module) {
     var PolicyOverlay = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("policy", "panel")],
 
-        getStateFromFlux: function () {
-            var flux = this.getFlux(),
-                policyStore = flux.store("policy"),
-                panelStore = flux.store("panel"),
-                pointerPolicies = policyStore.getMasterPointerPolicyList(),
-                canvasBounds = panelStore.getCloakRect();
-
-            return {
-                policies: pointerPolicies,
-                canvasBounds: canvasBounds
-            };
-        },
-
         /**
          * D3 element where policies are being drawn
          *
@@ -63,6 +50,25 @@ define(function (require, exports, module) {
          * @type {function()}
          */
         _drawDebounced: null,
+
+        getStateFromFlux: function () {
+            var flux = this.getFlux(),
+                policyStore = flux.store("policy"),
+                panelStore = flux.store("panel"),
+                pointerPolicies = policyStore.getMasterPointerPolicyList(),
+                canvasBounds = panelStore.getCloakRect();
+
+            return {
+                policies: pointerPolicies,
+                canvasBounds: canvasBounds
+            };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.props.transformString !== nextProps.transformString ||
+                this.state.policies !== nextState.policies ||
+                this.state.canvasBounds !== nextState.canvasBounds;
+        },
 
         componentWillMount: function () {
             this._drawDebounced = _.debounce(this.drawOverlay, 100, false);
