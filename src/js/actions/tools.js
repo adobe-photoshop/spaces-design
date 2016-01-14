@@ -855,8 +855,10 @@ define(function (require, exports) {
             appStore = flux.store("application"),
             uiStore = this.flux.store("ui"),
             toolStore = this.flux.store("tool"),
+            panelStore = this.flux.store("panel"),
             documentLayerBounds,
             activeTool,
+            canvasRectangle,
             uiTransformMatrix;
 
         var throttledResetBorderPolicies =
@@ -871,14 +873,17 @@ define(function (require, exports) {
                 if (currentDocument) {
                     var nextDocumentLayerBounds = currentDocument.layers.selectedChildBounds,
                         newxUiTransformMatrix = uiStore.getCurrentTransformMatrix(),
+                        newCanvasRectangle = panelStore.getCloakRect(),
                         newTool = toolStore.getCurrentTool();
                     
                     if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds) ||
                             !_.isEqual(uiTransformMatrix, newxUiTransformMatrix) ||
+                            !_.isEqual(canvasRectangle, newCanvasRectangle) ||
                             activeTool !== newTool) {
                         documentLayerBounds = nextDocumentLayerBounds;
                         uiTransformMatrix = newxUiTransformMatrix;
                         activeTool = newTool;
+                        canvasRectangle = newCanvasRectangle;
                         throttledResetBorderPolicies();
                     }
                 } else {
@@ -891,6 +896,7 @@ define(function (require, exports) {
         this.flux.store("application").on("change", _borderPolicyChangeHandler);
         this.flux.store("ui").on("change", _borderPolicyChangeHandler);
         this.flux.store("tool").on("change", _borderPolicyChangeHandler);
+        this.flux.store("panel").on("change", _borderPolicyChangeHandler);
 
         // Listen for modal tool state entry/exit events
         _toolModalStateChangedHandler = this.flux.actions.tools.handleToolModalStateChanged.bind(this);

@@ -105,9 +105,11 @@ define(function (require, exports, module) {
          */
         drawPolicies: function (policies) {
             policies.forEach(function (policy) {
-                if (policy.area) {
-                    var area = policy.area,
-                        policyRect = this._scrimGroup
+                var area = policy.area,
+                    areaIsValid = area && area[2] > 0 && area[3] > 0;
+
+                if (areaIsValid) {
+                    var policyRect = this._scrimGroup
                         .append("rect")
                         .attr("x", area[0])
                         .attr("y", area[1])
