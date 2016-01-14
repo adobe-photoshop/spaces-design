@@ -709,7 +709,7 @@ define(function (require, exports) {
             return this.transfer(layerActions.deselectAll, doc);
         } else if (!layers.isEmpty()) {
             _logSuperselect("marqueeSelect");
-            return this.transfer(layerActions.select, doc, layers, modifier);
+            return this.transfer(layerActions.select, doc, layers, { modifier: modifier });
         } else {
             return Promise.resolve();
         }
