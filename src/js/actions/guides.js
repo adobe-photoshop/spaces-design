@@ -154,13 +154,13 @@ define(function (require, exports) {
                     x: canvasBounds.left,
                     y: Math.floor(guideTL.y - policyThickness - 1),
                     width: canvasBounds.right - canvasBounds.left,
-                    height: Math.ceil(policyThickness * 2 + 1)
+                    height: Math.ceil(policyThickness * 2 + 2)
                 };
             } else {
                 guideArea = {
                     x: Math.floor(guideTL.x - policyThickness - 1),
                     y: canvasBounds.top,
-                    width: Math.ceil(policyThickness * 2 + 1),
+                    width: Math.ceil(policyThickness * 2 + 2),
                     height: canvasBounds.bottom - canvasBounds.top
                 };
             }
