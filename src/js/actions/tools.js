@@ -893,6 +893,7 @@ define(function (require, exports) {
             }.bind(this);
 
         this.flux.store("document").on("change", _borderPolicyChangeHandler);
+        this.flux.store("document").on("guideChange", _borderPolicyChangeHandler);
         this.flux.store("application").on("change", _borderPolicyChangeHandler);
         this.flux.store("ui").on("change", _borderPolicyChangeHandler);
         this.flux.store("tool").on("change", _borderPolicyChangeHandler);

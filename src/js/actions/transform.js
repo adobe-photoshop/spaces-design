@@ -1398,7 +1398,7 @@ define(function (require, exports) {
         _moveToArtboardHandler = synchronization.debounce(function () {
             // Undefined makes it use the most recent document model
             return this.flux.actions.layers.resetIndex(undefined);
-        }, this);
+        }, this, 50);
 
         descriptor.addListener("transform", _layerTransformHandler);
         descriptor.addListener("move", _layerTransformHandler);

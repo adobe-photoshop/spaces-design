@@ -297,7 +297,7 @@ define(function (require, exports, module) {
                 nextDocument = document.merge(props),
                 guides = payload.guides;
 
-            this.setDocument(nextDocument, false, !!guides);
+            this.setDocument(nextDocument, false, !!guides, "guidesChange");
 
             if (guides) {
                 this._handleGuidesUpdated(payload);
@@ -333,6 +333,8 @@ define(function (require, exports, module) {
          * @param {{documentID: number, layers: Immutable.Iterable.<{layerID: number, descriptor: object}>}} payload
          */
         _handleBoundsReset: function (payload) {
+            console.profile("handleBoundsReset");
+
             var documentID = payload.documentID,
                 boundsObjs = payload.bounds,
                 document = this._openDocuments[documentID],
@@ -340,6 +342,7 @@ define(function (require, exports, module) {
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
+            console.profileEnd();
         },
 
         /**

@@ -140,6 +140,12 @@ define(function (require, exports, module) {
                 return false;
             }
 
+            var lastMaskDisabled = this.state.document &&
+                (this.state.document.layers.selected.isEmpty() || this.state.document.selectedLayersCanHaveVectorMask),
+                nextMaskDisabled = nextState.document &&
+                (nextState.document.layers.selected.isEmpty() || nextState.document.selectedLayersCanHaveVectorMask);
+                    
+
             return this.state.inactiveDocumentsInitialized !== nextState.inactiveDocumentsInitialized ||
                 this.state.count !== nextState.count ||
                 this.state.headerWidth !== nextState.headerWidth ||
@@ -150,7 +156,7 @@ define(function (require, exports, module) {
                 this.state.panelColumnCount !== nextState.panelColumnCount ||
                 this.state.useSmallTab !== nextState.useSmallTab ||
                 !Immutable.is(this.state.documentIDs, nextState.documentIDs) ||
-                !Immutable.is(this.state.document, nextState.document);
+                lastMaskDisabled !== nextMaskDisabled;
         },
 
         componentDidMount: function () {
