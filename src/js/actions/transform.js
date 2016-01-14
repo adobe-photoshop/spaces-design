@@ -60,6 +60,12 @@ define(function (require, exports) {
     };
 
     /**
+     * @const
+     * @type {number}
+     */
+    var EVENT_DEBOUNCE_DELAY = 100;
+
+    /**
      * Filter out layers that can't generally be transformed like empty,
      * adjustment and background layers.
      *
@@ -1398,7 +1404,7 @@ define(function (require, exports) {
         _moveToArtboardHandler = synchronization.debounce(function () {
             // Undefined makes it use the most recent document model
             return this.flux.actions.layers.resetIndex(undefined);
-        }, this);
+        }, this, EVENT_DEBOUNCE_DELAY);
 
         descriptor.addListener("transform", _layerTransformHandler);
         descriptor.addListener("move", _layerTransformHandler);
