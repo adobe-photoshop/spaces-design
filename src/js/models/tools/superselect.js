@@ -292,7 +292,7 @@ define(function (require, exports, module) {
         case OS.eventKeyCode.DELETE: // DELETE
         case OS.eventKeyCode.BACKSPACE: // BACKSPACE
             if (toolStore.getVectorMode()) {
-                flux.actions.groups.deleteVectorMask()
+                flux.actions.mask.deleteVectorMask()
                     .then(function () {
                         flux.actions.tools.changeVectorMaskMode(false);
                     });
