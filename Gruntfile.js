@@ -228,7 +228,7 @@ module.exports = function (grunt) {
         concurrent: {
             test: ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
             build: {
-                tasks: ["watch:styles", "watch:dictionaries", "webpack:watch"],
+                tasks: ["watch:styles", "watch:dictionaries", "watch:sources", "webpack:watch"],
                 options: {
                     logConcurrentOutput: true
                 }
