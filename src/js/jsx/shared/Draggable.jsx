@@ -154,6 +154,10 @@ define(function (require, exports, module) {
             window.removeEventListener("mouseup", this._handleMouseUp, true);
             
             this.getFlux().store("draganddrop").removeListener("start-drag", this._handleDNDStoreDrag);
+            
+            if (this._isDragging) {
+                this.getFlux().store("draganddrop").removeListener("change", this._handleDNDStoreChange);
+            }
         },
         
         /**

@@ -32,12 +32,19 @@ define(function (require, exports, module) {
     var DummyLayerFace = require("./DummyLayerFace"),
         LayerFace = require("./LayerFace");
 
-    var LayersGroup = React.createClass({
+    var LayerGroup = React.createClass({
         mixins: [FluxMixin],
+        
+        propTypes: {
+            /**
+             * True if the layer group is the root.
+             * @type {Boolean}
+             */
+            isRoot: React.PropTypes.bool
+        },
 
         getDefaultProps: function () {
             return {
-                depth: 0,
                 isRoot: false
             };
         },
@@ -47,19 +54,18 @@ define(function (require, exports, module) {
                 var layer = this.props.document.layers.byID(layerNode.id);
                 
                 if (!layer.isGroupEnd) {
-                    var layersGroup = layerNode.children && (
-                        <LayersGroup
+                    var layerGroup = layerNode.children && (
+                        <LayerGroup
                             disabled={this.props.disabled}
                             document={this.props.document}
-                            layerNodes={layerNode.children}
-                            depth={this.props.depth + 1}/>
+                            layerNodes={layerNode.children}/>
                     );
 
                     var className = classnames({
-                        "layer-group": layersGroup,
-                        "layer-group__selected": layersGroup && layer.selected,
-                        "layer-group__collapsed": layersGroup && !layer.expanded,
-                        "layer-group__not-visible": layersGroup && !layer.visible
+                        "layer-group": layerGroup,
+                        "layer-group__selected": layerGroup && layer.selected,
+                        "layer-group__collapsed": layerGroup && !layer.expanded,
+                        "layer-group__not-visible": layerGroup && !layer.visible
                     });
 
                     results.push(
@@ -68,10 +74,9 @@ define(function (require, exports, module) {
                                 key={layer.key}
                                 disabled={this.props.disabled}
                                 document={this.props.document}
-                                depth={this.props.depth}
                                 layer={layer}
                                 childNodes={layerNode.children}/>
-                            {layersGroup}
+                            {layerGroup}
                         </li>
                     );
                 }
@@ -99,5 +104,5 @@ define(function (require, exports, module) {
         }
     });
 
-    module.exports = LayersGroup;
+    module.exports = LayerGroup;
 });

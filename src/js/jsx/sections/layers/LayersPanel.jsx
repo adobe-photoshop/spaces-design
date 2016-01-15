@@ -33,7 +33,7 @@ define(function (require, exports, module) {
     var os = require("adapter").os;
 
     var TitleHeader = require("js/jsx/shared/TitleHeader"),
-        LayersGroup = require("./LayersGroup"),
+        LayerGroup = require("./LayerGroup"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         synchronization = require("js/util/synchronization");
@@ -150,7 +150,7 @@ define(function (require, exports, module) {
                         ref="container"
                         className={containerClasses}
                         onClick={this._handleContainerClick}>
-                        <LayersGroup
+                        <LayerGroup
                             isRoot={true}
                             disabled={this.props.disabled}
                             document={doc}

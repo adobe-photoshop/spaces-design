@@ -288,7 +288,7 @@ define(function (require, exports, module) {
 
             // Do not allow reordering to exceed the nesting limit.
             var doc = this.props.document,
-                targetDepth = this.props.depth;
+                targetDepth = doc.layers.depth(this.props.layer);
 
             // Target depth is incremented if we're dropping INTO a group
             switch (dropPosition) {
@@ -420,13 +420,11 @@ define(function (require, exports, module) {
                 this.getFlux().actions.panel.enableTooltips();
                 this._isDragEventTarget = false;
             }
-            
-            if (this.isMounted()) {
-                this.setState({
-                    isDragging: false,
-                    dragStyle: null
-                });
-            }
+
+            this.setState({
+                isDragging: false,
+                dragStyle: null
+            });
         },
         
         /**
@@ -526,6 +524,7 @@ define(function (require, exports, module) {
             var doc = this.props.document,
                 layer = this.props.layer,
                 layerIndex = doc.layers.indexOf(layer),
+                layerDepth = doc.layers.depth(layer),
                 nameEditable = !layer.isBackground,
                 isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
@@ -548,7 +547,7 @@ define(function (require, exports, module) {
                 "face__drop_target_above": isDropTarget && dropPosition === "above",
                 "face__drop_target_below": isDropTarget && dropPosition === "below",
                 "face__drop_target_on": isDropTarget && dropPosition === "on"
-            }, "face__depth-" + this.props.depth);
+            }, "face__depth-" + layerDepth);
 
             // Super Hack: If two tooltip regions are flush and have the same title,
             // the plugin does not invalidate the tooltip when moving the mouse from
