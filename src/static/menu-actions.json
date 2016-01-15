@@ -491,6 +491,10 @@
             "$action": "menu.corruptModel",
             "$enable-rule": "always-except-modal"
         },
+        "LAYER_PANEL_PERFORMANCE_TEST": {
+            "$action": "menu.layerPanelPerformanceTest",
+            "$enable-rule": "always-except-modal"
+        },
         "UPDATE_CURRENT_DOCUMENT": {
             "$action": "documents.updateDocument",
             "$enable-rule": "have-document"

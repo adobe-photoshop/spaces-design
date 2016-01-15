@@ -763,6 +763,10 @@
                     "debug": true
                 },
                 {
+                    "id": "LAYER_PANEL_PERFORMANCE_TEST",
+                    "debug": true
+                },
+                {
                     "separator": true,
                     "debug": true
                 },
