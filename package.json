@@ -68,7 +68,7 @@
     "webpack-notifier": "^1.2.1"
   },
   "dependencies": {
-    "bluebird": "^3.0.5",
+    "bluebird": "^3.1.1",
     "classnames": "^2.2.0",
     "d3": "^3.5.9",
     "fluxxor": "^1.7.3",
