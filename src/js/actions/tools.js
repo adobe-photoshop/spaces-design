@@ -40,6 +40,7 @@ define(function (require, exports) {
     var events = require("../events"),
         guides = require("./guides"),
         layers = require("./layers"),
+        mask = require("./mask"),
         locks = require("js/locks"),
         policy = require("./policy"),
         shortcuts = require("./shortcuts"),
@@ -619,6 +620,12 @@ define(function (require, exports) {
         var currentLayers = currentDocument.layers.selected,
             currentLayer = currentLayers.first();
 
+        if (currentLayers.size > 2) {
+            return Promise.resolve();
+        } else if (currentLayers.size === 2) {
+            return this.transfer(mask.createVectorMaskFromShape);
+        }
+
         // vector mask mode requires an active layer
         if (!currentLayer) {
             if (vectorMaskMode) {
@@ -814,7 +821,7 @@ define(function (require, exports) {
         writes: [locks.JS_TOOL, locks.PS_DOC],
         modal: true,
         transfers: [selectTool, policy.addPointerPolicies, policy.removePointerPolicies,
-            installShapeDefaults, "layers.resetLayers"]
+            installShapeDefaults, "layers.resetLayers", mask.createVectorMaskFromShape]
     };
 
     /**

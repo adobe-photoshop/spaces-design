@@ -29,7 +29,8 @@ define(function (require, exports) {
 
     var historyActions = require("./history"),
         layerActions = require("./layers"),
-        locks = require("../locks");
+        locks = require("../locks"),
+        toolActions = require("./tools");
 
     var descriptor = require("adapter").ps.descriptor,
         boundsLib = require("adapter").lib.bounds,
@@ -348,6 +349,8 @@ define(function (require, exports) {
      */
     var createVectorMaskFromShape = function () {
         var appStore = this.flux.store("application"),
+            toolStore = this.flux.store("tool"),
+            vectorMaskMode = toolStore.getVectorMode(),
             currentDocument = appStore.getCurrentDocument();
 
         if (!currentDocument) {
@@ -356,7 +359,9 @@ define(function (require, exports) {
 
         var currentLayers = currentDocument.layers.selected;
 
-        if (currentLayers.size !== 2) {
+        if (currentLayers.size === 1) {
+            return this.transfer(toolActions.changeVectorMaskMode, !vectorMaskMode);
+        } else if (currentLayers.size !== 2) {
             return Promise.resolve();
         }
 
@@ -419,7 +424,8 @@ define(function (require, exports) {
     createVectorMaskFromShape.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [layerActions.resetLayers, layerActions.removeLayers, historyActions.newHistoryState]
+        transfers: ["layers.resetLayers", "layers.removeLayers", historyActions.newHistoryState,
+            "tools.changeVectorMaskMode"]
     };
 
     exports.editVectorMask = editVectorMask;
