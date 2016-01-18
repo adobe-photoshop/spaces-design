@@ -27,14 +27,18 @@ define(function (require, exports, module) {
     var React = require("react"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        Immutable = require("immutable");
+
+    var Layer = require("js/models/layer"),
+        Document = require("js/models/document");
 
     var DummyLayerFace = require("./DummyLayerFace"),
         LayerFace = require("./LayerFace");
 
     var LayerGroup = React.createClass({
         mixins: [FluxMixin],
-        
+
         /**
          * True if the LayerGroup's components are rendered. Used to avoid
          * rendering layer group until it is first visible.
@@ -42,32 +46,32 @@ define(function (require, exports, module) {
          * @type {Boolean}
          */
         isRendered: false,
-        
+
         propTypes: {
             /**
              * List of Layer nodes in the same layer group.
-             * @type {Immutable.List.<LayerNode>}
+             * @type {Immutable.Iterable.<LayerNode>}
              */
-            layerNodes: React.PropTypes.object.isRequired,
+            layerNodes: React.PropTypes.instanceOf(Immutable.Iterable).isRequired,
 
             /**
              * The parent layer of the layer nodes.
              * @type {Layer}
              */
-            parentLayer: React.PropTypes.object,
-            
+            parentLayer: React.PropTypes.instanceOf(Layer),
+
             /**
              * @type {Document}
              */
-            document: React.PropTypes.object.isRequired,
-            
+            document: React.PropTypes.instanceOf(Document).isRequired,
+
             /**
              * @type {Boolean}
              */
             disabled: React.PropTypes.bool
         },
         
-        shouldComponentUpdate: function() {
+        shouldComponentUpdate: function () {
             // TODO Currently we always render the entire LayerGroup tree and let the LayerFace components
             // to run their own shouldComponentUpdate validation. In the future, we may consider 
             // consolidating the validations in one place (e.g. in the LayerPanel or the root LayerGroup),
@@ -119,7 +123,7 @@ define(function (require, exports, module) {
                 }
                 
                 return results;
-            }.bind(this), []);
+            }, [], this);
 
             if (isRoot) {
                 var bottomLayer = this.props.document.layers.byIndex(1);
