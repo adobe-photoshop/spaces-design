@@ -76,6 +76,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     height: 1.2rem;
+    overflow-x: hidden;
 }
 
 input[type="text"].face__name {
@@ -85,12 +86,51 @@ input[type="text"].face__name {
     margin-left: -0.1rem;
 }
 
-// Selection state
+input[type="text"].face__name:focus {
+    border-bottom: solid @hairline @focus-highlight;
+    color: @item;
+    -webkit-user-select: text;
+}
+
 .face:hover {
     background-color: @list-hover-color;
     
     .face__name {
         color: @item-hover;
+    }
+}
+
+// Layer direct selection state
+.face__selected {
+    &, &:hover {
+        background-color: @list-select-color;
+    }
+
+    .face__name, 
+    &:hover .face__name {
+        color: @item;
+    }
+    
+    input[type="text"].face__name {
+        border-bottom: solid @hairline transparent;
+    }
+
+    input[type="text"].face__name:focus {
+        border-bottom: solid @hairline @focus-highlight;
+        color: @item;
+        -webkit-user-select: text;
+    }
+}
+
+
+// Layer group selection state
+.layer-group__selected {
+    .face, .face:hover {
+        background-color: @list-select-child-color;
+
+        input[type="text"] {
+            border-bottom: solid @hairline transparent;
+        }
     }
 }
 
@@ -103,65 +143,17 @@ input[type="text"].face__name {
     }
 }
 
-// Layer descendents selection state
-.layer-group__selected {
-    .face, .face:hover {
-        background-color: @list-select-child-color;
-
-        input[type="text"], input[type="text"]:disabled {
-            border-bottom: solid @hairline transparent;
-        }
-    }
-}
-    
-.face__select_immediate .face__name,
-.face__select_immediate:hover .face__name {
-    color: @item;
-}
-
-// Layer direct selection state
-.face__selected {
-    &, &:hover {
-        background-color: @list-select-color;
-    }
-
-    input[type="text"].face__name,
-    &:hover input[type="text"].face__name,
-    .face__name, &:hover .face__name {
-        color: @item;
-    }
-    
-    input[type="text"].face__name {
-        border-bottom: solid @hairline transparent;
-    }
-
-    input[type="text"].face__name:focus,
-    input[type="text"].face__name:focus {
-        border-bottom: solid @hairline @focus-highlight;
-        color: @item;
-        -webkit-user-select: text;
-    }
-}
-
 // Layer Group collapsed state
 .layer-group__collapsed > .layers-group{
     display: none;
 }
 
+// Drop state
 .face__drop_target, .face__drop_target:hover {
     background-color: none;
     cursor: -webkit-grabbing;
 }
 
-.face__select_immediate input[type="text"].face__name:focus,
-input[type="text"].face__name:focus {
-    border-bottom: solid @hairline @focus-highlight;
-    color: @item;
-    -webkit-user-select: text;
-}
-
-
-// Drop state
 .face__drop_target_above:before {
     content: "";
     position: absolute;
