@@ -31,9 +31,9 @@
   },
   "homepage": "https://github.com/adobe-photoshop/spaces-design",
   "devDependencies": {
-    "babel-core": "^6.1.2",
-    "babel-loader": "volfied/babel-loader",
-    "babel-preset-react": "^6.1.2",
+    "babel-core": "^6.4.0",
+    "babel-loader": "^6.2.1",
+    "babel-preset-react": "^6.3.13",
     "es6-promise": "^3.0.2",
     "esprima-fb": "^15001.1001.0-dev-harmony-fb",
     "expose-loader": "^0.7.1",
