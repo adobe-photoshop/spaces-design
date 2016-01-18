@@ -77,15 +77,20 @@ define(function (require, exports, module) {
             var document = nextProps.document,
                 layers = document.layers.selected,
                 bounds = document.layers.selectedRelativeChildBounds,
+                absoluteBounds = document.layers.selectedChildBounds,
                 disabled = this._disabled(document, layers),
                 positionKeys = uiUtil.getPositionKeysByRefPoint(nextProps.referencePoint),
                 xValues = collection.pluck(bounds, positionKeys.x),
-                yValues = collection.pluck(bounds, positionKeys.y);
+                yValues = collection.pluck(bounds, positionKeys.y),
+                absoluteXValues = collection.pluck(absoluteBounds, positionKeys.x),
+                absoluteYValues = collection.pluck(absoluteBounds, positionKeys.y);
 
             this.setState({
                 disabled: disabled,
                 xValues: xValues,
-                yValues: yValues
+                yValues: yValues,
+                absoluteXValues: absoluteXValues,
+                absoluteYValues: absoluteYValues
             });
         },
 
@@ -104,7 +109,7 @@ define(function (require, exports, module) {
                 };
             
             this.getFlux().actions.transform.setPositionThrottled(document, document.layers.selected,
-                positionObj, this.props.referencePoint);
+                positionObj, this.props.referencePoint, { translate: true });
         },
 
         /**
@@ -113,13 +118,13 @@ define(function (require, exports, module) {
          * @private
          */
         _handleXScrubBegin: function () {
-            var currentX = collection.uniformValue(this.state.xValues);
+            var currentX = collection.uniformValue(this.state.absoluteXValues);
+
+            this.setState({
+                scrubX: currentX
+            });
 
             if (currentX !== null) {
-                this.setState({
-                    scrubX: currentX
-                });
-
                 this.startCoalescing();
             }
         },
@@ -136,15 +141,14 @@ define(function (require, exports, module) {
             }
 
             var newX = this.state.scrubX + deltaX,
-                currentX = collection.uniformValue(this.state.xValues);
+                currentX = collection.uniformValue(this.state.absoluteXValues);
 
             if (newX !== currentX) {
                 var document = this.props.document,
                     positionObj = {
-                        x: newX,
-                        relative: true
+                        x: newX
                     };
-                
+
                 this.getFlux().actions.transform.setPositionThrottled(
                     document,
                     document.layers.selected,
@@ -174,13 +178,13 @@ define(function (require, exports, module) {
          * @private
          */
         _handleYScrubBegin: function () {
-            var currentY = collection.uniformValue(this.state.yValues);
+            var currentY = collection.uniformValue(this.state.absoluteYValues);
+            
+            this.setState({
+                scrubY: currentY
+            });
 
             if (currentY !== null) {
-                this.setState({
-                    scrubY: currentY
-                });
-
                 this.startCoalescing();
             }
         },
@@ -197,13 +201,12 @@ define(function (require, exports, module) {
             }
 
             var newY = this.state.scrubY + deltaX,
-                currentY = collection.uniformValue(this.state.yValues);
+                currentY = collection.uniformValue(this.state.absoluteYValues);
 
             if (newY !== currentY) {
                 var document = this.props.document,
                     positionObj = {
-                        y: newY,
-                        relative: true
+                        y: newY
                     };
 
                 this.getFlux().actions.transform.setPositionThrottled(
@@ -223,6 +226,7 @@ define(function (require, exports, module) {
          */
         _handleYScrubEnd: function () {
             this.setState({
+                scrubX: null,
                 scrubY: null
             });
 
@@ -245,7 +249,7 @@ define(function (require, exports, module) {
             
             this.getFlux().actions.transform
                 .setPositionThrottled(document, document.layers.selected,
-                    positionObj, this.props.referencePoint);
+                    positionObj, this.props.referencePoint, { translate: true });
         },
 
         /**
