@@ -37,6 +37,7 @@ define(function (require, exports, module) {
         system = require("js/util/system"),
         shortcuts = require("js/util/shortcuts"),
         SuperselectOverlay = require("js/jsx/tools/SuperselectOverlay"),
+        ArtboardAdderOverlay = require("js/jsx/tools/ArtboardAdderOverlay"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
@@ -318,7 +319,7 @@ define(function (require, exports, module) {
         }
     };
 
-    SuperSelectTool.prototype.toolOverlays = [SuperselectOverlay];
+    SuperSelectTool.prototype.toolOverlays = [SuperselectOverlay, ArtboardAdderOverlay];
 
     module.exports = SuperSelectTool;
 });
