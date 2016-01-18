@@ -702,7 +702,7 @@ define(function (require, exports) {
         }
         
         var layers = Immutable.List(ids.map(doc.layers.byID.bind(doc.layers))),
-            modifier = add ? "add" : undefined;
+            modifier = add ? "add" : "select";
 
         if (layers.isEmpty() && !add) {
             _logSuperselect("marqueeDeselect");
