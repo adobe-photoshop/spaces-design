@@ -151,10 +151,9 @@ define(function (require, exports, module) {
                         className={containerClasses}
                         onClick={this._handleContainerClick}>
                         <LayerGroup
-                            isRoot={true}
-                            disabled={this.props.disabled}
+                            layerNodes={doc.layers.roots}
                             document={doc}
-                            layerNodes={doc.layers.roots}/>
+                            disabled={this.props.disabled}/>
                     </div>
                 </section>
             );

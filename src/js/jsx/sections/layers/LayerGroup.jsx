@@ -35,30 +35,67 @@ define(function (require, exports, module) {
     var LayerGroup = React.createClass({
         mixins: [FluxMixin],
         
+        /**
+         * True if the LayerGroup's components are rendered. Used to avoid
+         * rendering layer group until it is first visible.
+         * 
+         * @type {Boolean}
+         */
+        isRendered: false,
+        
         propTypes: {
             /**
-             * True if the layer group is the root.
+             * List of Layer nodes in the same layer group.
+             * @type {Immutable.List.<LayerNode>}
+             */
+            layerNodes: React.PropTypes.object.isRequired,
+
+            /**
+             * The parent layer of the layer nodes.
+             * @type {Layer}
+             */
+            parentLayer: React.PropTypes.object,
+            
+            /**
+             * @type {Document}
+             */
+            document: React.PropTypes.object.isRequired,
+            
+            /**
              * @type {Boolean}
              */
-            isRoot: React.PropTypes.bool
+            disabled: React.PropTypes.bool
         },
-
-        getDefaultProps: function () {
-            return {
-                isRoot: false
-            };
+        
+        shouldComponentUpdate: function() {
+            // TODO Currently we always render the entire LayerGroup tree and let the LayerFace components
+            // to run their own shouldComponentUpdate validation. In the future, we may consider 
+            // consolidating the validations in one place (e.g. in the LayerPanel or the root LayerGroup),
+            // which allows us to skip rendering a subtree if its children remain unchanged.
+            return true;
         },
 
         render: function () {
+            var parentLayer = this.props.parentLayer,
+                isRoot = !parentLayer;
+
+            // Do not render layer group of collapsed layer to reduce document load time.
+            if (!isRoot && !parentLayer.expanded && !this.isRendered) {
+                return false;
+            } else {
+                this.isRendered = true;
+            }
+
             var layerFaces = this.props.layerNodes.reduce(function (results, layerNode) {
                 var layer = this.props.document.layers.byID(layerNode.id);
-                
+
                 if (!layer.isGroupEnd) {
                     var layerGroup = layerNode.children && (
                         <LayerGroup
-                            disabled={this.props.disabled}
+                            parentLayer={layer}
+                            layerNodes={layerNode.children}
                             document={this.props.document}
-                            layerNodes={layerNode.children}/>
+                            disabled={this.props.disabled}/>
                     );
 
                     var className = classnames({
@@ -84,7 +121,7 @@ define(function (require, exports, module) {
                 return results;
             }.bind(this), []);
 
-            if (this.props.isRoot) {
+            if (isRoot) {
                 var bottomLayer = this.props.document.layers.byIndex(1);
                 
                 if (bottomLayer.isGroupEnd) {
