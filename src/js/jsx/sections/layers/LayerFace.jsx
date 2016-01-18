@@ -57,6 +57,15 @@ define(function (require, exports, module) {
          */
         _isDragEventTarget: false,
 
+        /**
+         * Used to suppress scrolling into view when the selection is changed
+         * by clicking directly on a layer face.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _suppressNextScrollTo: false,
+
         getInitialState: function () {
             return {
                 isDropTarget: false,
@@ -65,7 +74,7 @@ define(function (require, exports, module) {
                 dragStyle: null
             };
         },
-        
+
         shouldComponentUpdate: function (nextProps, nextState) {
             // Drag states
             if (this.state.isDragging !== nextState.isDragging ||
@@ -84,35 +93,33 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            var document = this.props.document,
-                nextDocument = nextProps.document;
-
-            // Depth changes
-            var currentDepth = document.layers.depth(this.props.layer),
-                nextDepth = nextDocument.layers.depth(nextProps.layer);
-
-            if (currentDepth !== nextDepth) {
-                return true;
+            return false;
+        },
+        
+        componentDidMount: function () {
+            // Scroll into view if the current layer is the first selected layers.
+            if (this.props.document.layers.selected.last() === this.props.layer) {
+                this._scrollIntoView(false);
+            }
+        },
+        
+        componentDidUpdate: function (prevProps) {
+            if (this._suppressNextScrollTo) {
+                this._suppressNextScrollTo = false;
+                return;
             }
 
-            // Deeper selection changes
-            var childOfSelection = document.layers.hasSelectedAncestor(this.props.layer);
-            if (childOfSelection || nextDocument.layers.hasSelectedAncestor(nextProps.layer)) {
-                if (!Immutable.is(document.layers.allSelected, nextDocument.layers.allSelected)) {
-                    return true;
+            this._scrollIntoView(prevProps.layer.selected);
+        },
+        
+        _scrollIntoView: function (prevSelected) {
+            if (this.props.layer.selected && !prevSelected) {
+                var node = ReactDOM.findDOMNode(this);
+
+                if (node) {
+                    node.scrollIntoViewIfNeeded();
                 }
             }
-
-            // Given that the face hasn't changed and no selected ancestor has changed, this
-            // component only needs to re-render when going from having a collapsed ancestor
-            // (i.e., being hidden) to not having one (i.e., becoming newly visible).
-            var hadCollapsedAncestor = document.layers.hasCollapsedAncestor(this.props.layer),
-                willHaveCollapsedAncestor = nextDocument.layers.hasCollapsedAncestor(nextProps.layer),
-                hadInvisibleAncestor = document.layers.hasInvisibleAncestor(this.props.layer),
-                willHaveInvisibleAncestor = nextDocument.layers.hasInvisibleAncestor(nextProps.layer);
-
-            return hadCollapsedAncestor !== willHaveCollapsedAncestor ||
-                   hadInvisibleAncestor !== willHaveInvisibleAncestor;
         },
 
         /**
@@ -179,6 +186,7 @@ define(function (require, exports, module) {
          */
         _handleLayerClick: function (event) {
             event.stopPropagation();
+            this._suppressNextScrollTo = true;
 
             var modifier = "select";
             if (event.shiftKey) {
@@ -229,13 +237,14 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleLayerEdit: function (event) {
+            event.stopPropagation();
+
             var layer = this.props.layer;
             if (layer.locked || !layer.visible) {
                 return;
             }
 
             this.getFlux().actions.superselect.editLayer(this.props.document, this.props.layer);
-            event.stopPropagation();
         },
 
         /**
@@ -246,9 +255,10 @@ define(function (require, exports, module) {
          * @param {boolean} toggled Flag for the ToggleButton, true means locked
          */
         _handleLockToggle: function (event, toggled) {
+            event.stopPropagation();
+
             // Locked if toggled, visible if not
             this.getFlux().actions.layers.setLocking(this.props.document, this.props.layer, toggled);
-            event.stopPropagation();
         },
         
         /**
@@ -278,7 +288,7 @@ define(function (require, exports, module) {
 
             // Do not allow reordering to exceed the nesting limit.
             var doc = this.props.document,
-                targetDepth = doc.layers.depth(target);
+                targetDepth = doc.layers.depth(this.props.layer);
 
             // Target depth is incremented if we're dropping INTO a group
             switch (dropPosition) {
@@ -293,7 +303,7 @@ define(function (require, exports, module) {
             default:
                 break;
             }
-
+            
             // When dragging artboards, the nesting limit is 0 because artboard
             // nesting is forbidden.
             var draggingArtboard = draggedLayers.some(function (layer) {
@@ -348,7 +358,7 @@ define(function (require, exports, module) {
          */
         _getDropPosition: function (dragPosition) {
             var layer = this.props.layer,
-                bounds = ReactDOM.findDOMNode(this).getBoundingClientRect(),
+                bounds = ReactDOM.findDOMNode(this.refs.face).getBoundingClientRect(),
                 dropPosition;
 
             if (layer.isGroup) {
@@ -410,7 +420,7 @@ define(function (require, exports, module) {
                 this.getFlux().actions.panel.enableTooltips();
                 this._isDragEventTarget = false;
             }
-            
+
             this.setState({
                 isDragging: false,
                 dragStyle: null
@@ -490,7 +500,7 @@ define(function (require, exports, module) {
                 dropPosition = isDropTarget ? this._getDropPosition(dragPosition) : null,
                 canDropLayer = isDropTarget && this._validCompatibleDropTarget(
                     this.props.layer, draggedLayers, dropPosition);
-            
+
             this.setState({
                 isDropTarget: canDropLayer,
                 dropPosition: dropPosition
@@ -513,74 +523,31 @@ define(function (require, exports, module) {
         render: function () {
             var doc = this.props.document,
                 layer = this.props.layer,
-                layerStructure = doc.layers,
                 layerIndex = doc.layers.indexOf(layer),
+                layerDepth = doc.layers.depth(layer),
                 nameEditable = !layer.isBackground,
-                isSelected = layer.selected,
-                isChildOfSelected = !layer.selected &&
-                    layerStructure.parent(layer) &&
-                    layerStructure.parent(layer).selected,
-                isStrictDescendantOfSelected = !isChildOfSelected && layerStructure.hasStrictSelectedAncestor(layer),
                 isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
-                isGroupStart = layer.isGroup || layer.isArtboard;
-
-            var depth = layerStructure.depth(layer),
-                endOfGroupStructure = false,
-                isLastInGroup = false,
-                dragStyle;
-
-            if (isDragging && this.state.dragStyle) {
-                dragStyle = this.state.dragStyle;
-            } else {
-                // We can skip some rendering calculations if dragging
-                isLastInGroup = layerIndex > 0 &&
-                    isChildOfSelected &&
-                    layerStructure.byIndex(layerIndex - 1).isGroupEnd;
-                
-                // Check to see if this layer is the last in a bunch of nested groups
-                if (isStrictDescendantOfSelected &&
-                    layerStructure.byIndex(layerIndex - 1).isGroupEnd) {
-                    var nextVisibleLayer = doc.layers.allVisibleReversed.get(this.props.visibleLayerIndex + 1);
-                    if (nextVisibleLayer && !doc.layers.hasStrictSelectedAncestor(nextVisibleLayer)) {
-                        endOfGroupStructure = true;
-                    }
-                }
-
-                dragStyle = {};
-            }
+                selected = layer.selected,
+                visible = layer.visible;
             
-            var layerClasses = {
+            var layerClasses = classnames({
                 "layer": true,
-                "layer__group_start": isGroupStart,
-                "layer__select": isSelected,
-                "layer__select_child": isChildOfSelected,
-                "layer__select_descendant": isStrictDescendantOfSelected,
-                "layer__group_end": isLastInGroup,
-                "layer__nested_group_end": endOfGroupStructure,
-                "layer__group_collapsed": layer.isGroup && !layer.expanded,
-                "layer__ancestor_collapsed": doc.layers.hasCollapsedAncestor(layer)
-            };
+                "layer__drag-target": isDragging
+            });
 
             // Set all the classes need to style this LayerFace
-            var faceClasses = {
+            var faceClasses = classnames({
                 "face": true,
-                "face__select_immediate": isSelected,
-                "face__select_child": isChildOfSelected,
-                "face__select_descendant": isStrictDescendantOfSelected,
-                "face__drag_target": isDragging && this.state.dragStyle,
+                "face__selected": selected,
+                "face__not-visible": !visible,
+                "face__drag-target": isDragging,
                 "face__drop_target": isDropTarget,
                 "face__drop_target_above": isDropTarget && dropPosition === "above",
                 "face__drop_target_below": isDropTarget && dropPosition === "below",
-                "face__drop_target_on": isDropTarget && dropPosition === "on",
-                "face__group_start": isGroupStart,
-                "face__group_lastchild": isLastInGroup,
-                "face__group_lastchildgroup": endOfGroupStructure,
-                "face__not-visible": !layer.visible || layerStructure.hasInvisibleAncestor(layer)
-            };
-
-            faceClasses["face__depth-" + depth] = true;
+                "face__drop_target_on": isDropTarget && dropPosition === "on"
+            }, "face__depth-" + layerDepth);
 
             // Super Hack: If two tooltip regions are flush and have the same title,
             // the plugin does not invalidate the tooltip when moving the mouse from
@@ -597,8 +564,8 @@ define(function (require, exports, module) {
                         title={nls.localize("strings.TOOLTIPS.SET_LAYER_VISIBILITY") + tooltipPadding}
                         className="face__button_visibility"
                         size="column-2"
-                        buttonType={ layer.visible ? "layer-visible" : "layer-not-visible" }
-                        selected={!layer.visible}
+                        buttonType={ visible ? "layer-visible" : "layer-not-visible" }
+                        selected={!visible}
                         onClick={this._handleVisibilityToggle}>
                     </ToggleButton>
                 ),
@@ -634,10 +601,11 @@ define(function (require, exports, module) {
                         onDrop={this._handleDrop}
                         onDragTargetMove={this._handleDragTargetMove}
                         onDragTargetLeave={this._handleDragTargetLeave}>
-                        <li className={classnames(layerClasses)}>
+                        <div className={layerClasses}>
                             <div
-                                style={dragStyle}
-                                className={classnames(faceClasses)}
+                                ref="face"
+                                style={this.state.dragStyle}
+                                className={faceClasses}
                                 data-layer-id={layer.id}
                                 data-kind={layer.kind.toLowerCase()}
                                 onClick={!this.props.disabled && this._handleLayerClick}>
@@ -676,7 +644,7 @@ define(function (require, exports, module) {
                                     onClick={this._handleLockToggle}>
                                 </ToggleButton>
                             </div>
-                        </li>
+                        </div>
                     </Droppable>
                 </Draggable>
             );

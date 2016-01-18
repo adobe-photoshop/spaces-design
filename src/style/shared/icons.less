@@ -194,11 +194,23 @@ svg use {
     }
 }
 
-.face.face__select_immediate {
+.face__selected {
     .button-toggle,
     &:hover .button-toggle{
         svg {
             fill: @icon-hover;
+            stroke: none;
+            display: block;
+        }
+    }
+}
+
+.layer-group__invisible {
+    .face:hover .button-toggle,
+    .face .button-toggle {
+        svg {
+            fill: @icon-hover;
+            opacity: @label-hidden-opacity;
             stroke: none;
             display: block;
         }
@@ -295,8 +307,9 @@ svg use {
     }
 }
 
-.face__not-visible {
-    .face__kind, 
+.face__not-visible,
+.layer-group__not-visible .face {
+    .face__kind,
     &:hover .face__kind
     &.face[data-kind="group"]:hover .face__kind,
     &.face[data-kind="group"] .face__kind {
@@ -309,14 +322,14 @@ svg use {
 }
 
 // applies to the selected item
-.face__select_immediate .face__kind, .face__select_immediate:hover .face__kind {
+.face__selected .face__kind, .face__selected:hover .face__kind {
   svg {
       fill: @icon-hover;
       stroke: none;
   }
 }
 
-.face__select_immediate.face[data-kind="7"] .face__kind {
+.face__selected[data-kind="group"] .face__kind {
     svg {
         fill: @icon-hover;
         stroke: none;

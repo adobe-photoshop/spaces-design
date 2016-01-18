@@ -25,7 +25,6 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         Immutable = require("immutable"),
@@ -34,8 +33,7 @@ define(function (require, exports, module) {
     var os = require("adapter").os;
 
     var TitleHeader = require("js/jsx/shared/TitleHeader"),
-        LayerFace = require("./LayerFace"),
-        DummyLayerFace = require("./DummyLayerFace"),
+        LayerGroup = require("./LayerGroup"),
         nls = require("js/util/nls"),
         collection = require("js/util/collection"),
         synchronization = require("js/util/synchronization");
@@ -87,59 +85,8 @@ define(function (require, exports, module) {
          */
         _setTooltipThrottled: null,
 
-        /**
-         * Set of layer IDs with faces that have been mounted. Used to avoid
-         * rendering faces until they are first visible. Initialized when the
-         * panel is mounted.
-         *
-         * @private
-         * @type {Set.<number>}
-         */
-        _mountedLayerIDs: null,
-
-        /**
-         * The list of layers last scrolled to. Used by _scrollToSelection
-         * when determining whether to scroll.
-         *
-         * @private
-         * @type {Immutable.List.<Layer>}
-         */
-        _lastScrolledTo: Immutable.List(),
-
-        /**
-         * Used to suppress scrolling into view when the selection is changed
-         * by clicking directly on a layer face.
-         *
-         * @private
-         * @type {boolean}
-         */
-        _suppressNextScrollTo: false,
-
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
-            this._mountedLayerIDs = new Set();
-        },
-
-        /**
-         * A capture-phase click handler for the container. Used to suppress
-         * scrolling into view when clicking on the layers panel directly.
-         *
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _handleContainerClickCapture: function (event) {
-            var containerNode = ReactDOM.findDOMNode(this.refs.container);
-            if (event.target !== containerNode) {
-                this._suppressNextScrollTo = true;
-            }
-        },
-
-        componentDidMount: function () {
-            this._scrollToSelection(this.props.document.layers);
-        },
-
-        componentDidUpdate: function () {
-            this._scrollToSelection(this.props.document.layers);
         },
 
         shouldComponentUpdate: function (nextProps) {
@@ -155,44 +102,6 @@ define(function (require, exports, module) {
             return this.props.active !== nextProps.active ||
                 !Immutable.is(_getFaces(this.props), _getFaces(nextProps)) ||
                 !Immutable.is(_getDepths(this.props), _getDepths(nextProps));
-        },
-
-        /**
-         * Scrolls the layers panel to make (newly) selected layers visible.
-         *
-         * @param {LayerStructure} layerStructure
-         */
-        _scrollToSelection: function (layerStructure) {
-            // This is set when a face is clicked on initially. Suppressing the call
-            // to scrollIntoViewIfNeeded below prevents a forced synchronous layout.
-            if (this._suppressNextScrollTo) {
-                this._suppressNextScrollTo = false;
-                this._lastScrolledTo = Immutable.List();
-                return;
-            }
-
-            var selected = layerStructure.selected;
-            if (selected.isEmpty()) {
-                return;
-            }
-
-            var previous = this._lastScrolledTo,
-                next = collection.difference(selected, previous),
-                visible = next.filterNot(function (layer) {
-                    return layerStructure.hasCollapsedAncestor(layer);
-                });
-
-            if (visible.isEmpty()) {
-                return;
-            }
-
-            var focusLayer = visible.first(),
-                childNode = ReactDOM.findDOMNode(this.refs[focusLayer.key]);
-
-            if (childNode) {
-                childNode.scrollIntoViewIfNeeded();
-                this._lastScrolledTo = next;
-            }
         },
 
         /**
@@ -215,61 +124,17 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            var doc = this.props.document;
-
-            var layerComponents = doc.layers.allVisibleReversed
-                    .filter(function (layer) {
-                        // Do not render descendants of collapsed layers unless
-                        // they have been mounted previously
-                        if (this._mountedLayerIDs.has(layer.id)) {
-                            return true;
-                        } else if (doc.layers.hasCollapsedAncestor(layer)) {
-                            return false;
-                        } else {
-                            this._mountedLayerIDs.add(layer.id);
-                            return true;
-                        }
-                    }, this)
-                    .map(function (layer, visibleIndex) {
-                        return (
-                            <LayerFace
-                                ref={layer.key}
-                                key={layer.key}
-                                disabled={this.props.disabled}
-                                document={doc}
-                                layer={layer}
-                                visibleLayerIndex={visibleIndex}/>
-                        );
-                    }, this);
-
-            var bottomLayer = doc.layers.byIndex(1);
-            if (bottomLayer.isGroupEnd) {
-                layerComponents = layerComponents.push(
-                    <DummyLayerFace key="dummy" document={doc}/>
-                );
-            }
-
-            var layerListClasses = classnames({
-                "layer-list": true
-            });
-
-            var childComponents = (
-                <ul ref="parent" className={layerListClasses}>
-                    {layerComponents}
-                </ul>
-            );
-
-            var containerClasses = classnames({
-                "section-container": true,
-                "section-container__collapsed": !this.props.visible
-            });
-
-            var sectionClasses = classnames({
-                "layers": true,
-                "section": true,
-                "section__active": this.props.active,
-                "section__collapsed": !this.props.visible
-            });
+            var doc = this.props.document,
+                containerClasses = classnames({
+                    "section-container": true,
+                    "section-container__collapsed": !this.props.visible
+                }),
+                sectionClasses = classnames({
+                    "layers": true,
+                    "section": true,
+                    "section__active": this.props.active,
+                    "section__collapsed": !this.props.visible
+                });
 
             return (
                 <section
@@ -284,9 +149,11 @@ define(function (require, exports, module) {
                     <div
                         ref="container"
                         className={containerClasses}
-                        onClick={this._handleContainerClick}
-                        onClickCapture={this._handleContainerClickCapture}>
-                        {childComponents}
+                        onClick={this._handleContainerClick}>
+                        <LayerGroup
+                            layerNodes={doc.layers.roots}
+                            document={doc}
+                            disabled={this.props.disabled}/>
                     </div>
                 </section>
             );

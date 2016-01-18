@@ -21,9 +21,17 @@
  *
  */
 
-.layer {
+// Default style for LayerFace components
+.face {
     min-height: 2.8rem;
     cursor: pointer;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 2.8rem;
+    position: relative;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .layer__dummy {
@@ -34,17 +42,6 @@
 
 .layer__dummy_drop {
     border-top: .25rem inset @focus-highlight;
-}
-
-// Default style for LayerFace components
-.face {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    height: 2.8rem;
-    position: relative;
-    padding-left: 1rem;
-    padding-right: 1rem;
 }
 
 .face__separator {
@@ -104,24 +101,6 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     }
 }
 
-// lock state
-.face__locked {
-
-}
-
-// invisibility state
-.face__invisible {
-    
-}
-
-// Parity state
-.face__parity_odd {
-    
-}
-.face__parity_even {
-    
-}
-
 // Selection state
 .face:hover {
     background-color: @list-hover-color;
@@ -132,62 +111,58 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     }
 }
 
-.face__not-visible input[type="text"].face__name {
-    color: @item-hover;
-    opacity: @label-hidden-opacity;
-}
-
-.face__select_immediate input[type="text"].face__name {
-    color: @item;
-}
-
-.face__select_immediate:hover input[type="text"].face__name {
-    color: @item;
-}
-
-.face__select_immediate, .face__select_immediate:hover {
-    background-color: @list-select-color;
-}
-
-.face__select_immediate .face__name, .face__select_immediate:hover .face__name {
-    color: @item;
-}
-
-.face__group_start {
-    margin-bottom: 0;
-}
-
-.face__select_child, .face__select_child:hover,
-.face__select_descendant, .face__select_descendant:hover {
-    background-color: @list-select-child-color;
-    
-    input[type="text"], input[type="text"]:disabled {
-        border-bottom: solid @hairline transparent;
+// Layer visibility state
+.face__not-visible,
+.layer-group__not-visible {
+    input[type="text"].face__name {
+        color: @item-hover;
+        opacity: @label-hidden-opacity;
     }
 }
 
-.face__select_descendant .face__name, .face__select_descendant:hover .face__name {
-    color: @item-active;
+// Layer descendents selection state
+.layer-group__selected {
+    .face, .face:hover {
+        background-color: @list-select-child-color;
+
+        input[type="text"], input[type="text"]:disabled {
+            border-bottom: solid @hairline transparent;
+        }
+    }
 }
 
-.face__select_immediate .face__leash {
+// Layer direct selection state
+.face__selected {
+    &, &:hover {
+        background-color: @list-select-color;
+    }
 
+    input[type="text"].face__name,
+    &:hover input[type="text"].face__name,
+    .face__name, &:hover .face__name {
+        color: @item;
+    }
+    
+    input[type="text"].face__name {
+        border-bottom: solid @hairline transparent;
+    }
+
+    input[type="text"].face__name:focus,
+    input[type="text"].face__name:focus {
+        border-bottom: solid @hairline @focus-highlight;
+        color: @item;
+        -webkit-user-select: text;
+    }
+}
+
+// Layer Group collapsed state
+.layer-group__collapsed > .layers-group{
+    display: none;
 }
 
 .face__drop_target, .face__drop_target:hover {
     background-color: none;
     cursor: -webkit-grabbing;
-}
-
-.face__select_immediate input[type="text"].face__name {
-    border-bottom: solid @hairline transparent;
-}
-
-.face__select_immediate input[type="text"].face__name:focus,
-input[type="text"].face__name:focus {
-    border-bottom: solid @hairline @focus-highlight;
-    color: @item;
-    -webkit-user-select: text;
 }
 
 // Drop state
@@ -217,7 +192,7 @@ input[type="text"].face__name:focus {
 }
 
 // Drag state
-.face__drag_target {
+.face__drag-target {
     background-color: none;
     opacity: 0.5;
     position: fixed;
@@ -227,35 +202,6 @@ input[type="text"].face__name:focus {
     pointer-events: none;
 }
 
-// Group collapsed state
-.layer__ancestor_collapsed {
-    display: none;
-}
-
-.layer__group_start.layer__select.layer__group_collapsed {
-    background-color: inherit;
-}
-
-// Layer name focus/blur state
-.face__input_focus {
-
-}
-.face__input_none {
-    
-}
-
-// For unselected layers, whether the previous/next layer in the z-order is selected
-.face__transition_to_select {
-
-}
-.face__transition_from_select {
-
-}
-
-// Search match state
-.face__search_matched {
-    
-}
-.face__search_none {
-    
+.layer__drag-target {
+    padding-top: 2.8rem;
 }
