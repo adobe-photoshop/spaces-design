@@ -227,8 +227,7 @@ define(function (require, exports, module) {
 
             svg.selectAll(".superselect-bounds").remove();
             svg.selectAll(".superselect-marquee").remove();
-            svg.selectAll(".artboard-adder").remove();
-
+            
             if (!currentDocument || this.state.modalState) {
                 return null;
             }
@@ -251,8 +250,6 @@ define(function (require, exports, module) {
             this._scale = 1 / transformObj.scale[0];
             
             this.drawBoundRectangles(svg, layerTree);
-
-            this._drawArtboardAdders(svg, layerTree);
 
             if (this.state.marqueeEnabled) {
                 this.startSuperselectMarquee(svg);
@@ -611,158 +608,6 @@ define(function (require, exports, module) {
             });
 
             this._marqueeResult = highlightedIDs;
-        },
-
-        /**
-         * Calculates the new artboard bounds in the given direction
-         *
-         * @private
-         * @param {Bounds} bounds Artboard bounds to be copied
-         * @param {string} direction 
-         * @return {Bounds}
-         */
-        _getNewArtboardBounds: function (bounds, direction) {
-            var padding = 100,
-                newBounds;
-
-            switch (direction) {
-                case "n":
-                    newBounds = bounds.merge({
-                        top: bounds.top - bounds.height - padding,
-                        bottom: bounds.bottom - bounds.height - padding
-                    });
-                    break;
-                case "s":
-                    newBounds = bounds.merge({
-                        top: bounds.top + bounds.height + padding,
-                        bottom: bounds.bottom + bounds.height + padding
-                    });
-                    break;
-                case "w":
-                    newBounds = bounds.merge({
-                        left: bounds.left - bounds.width - padding,
-                        right: bounds.right - bounds.width - padding
-                    });
-                    break;
-                case "e":
-                    newBounds = bounds.merge({
-                        left: bounds.left + bounds.width + padding,
-                        right: bounds.right + bounds.width + padding
-                    });
-                    break;
-                default:
-                    throw new Error("Invalid direction passed to artboard bound calculation");
-            }
-
-            return newBounds;
-        },
-
-        /**
-         * Checks to see if any other artboards intersect with an artboard that would be
-         * drawn in that direction. If not, draws an adder
-         *
-         * @private
-         * @param {SVGElement} svg
-         * @param {Layer} artboard Currently selected artboard
-         * @param {Immutable.List<Layer>} otherArtboards All other artboards in the document
-         * @param {string} direction Direction to check for
-         */
-        _checkAndDrawArtboardAdder: function (svg, artboard, otherArtboards, direction) {
-            var bounds = artboard.bounds,
-                scale = this._scale,
-                remToPx = this.getFlux().store("ui").remToPx,
-                checkBounds = this._getNewArtboardBounds(bounds, direction),
-                intersects = otherArtboards.some(function (artboard) {
-                    return checkBounds.intersects(artboard.bounds);
-                });
-
-            if (intersects) {
-                return;
-            }
-
-            var adderXCenter, adderYCenter,
-                padding = remToPx(3.125) * scale,
-                crosshairLength = remToPx(0.4375) * scale,
-                circleRadius = remToPx(1.625) * scale;
-
-            switch (direction) {
-                case "n":
-                    adderXCenter = bounds.xCenter;
-                    adderYCenter = bounds.top - padding;
-                    break;
-                case "s":
-                    adderXCenter = bounds.xCenter;
-                    adderYCenter = bounds.bottom + padding;
-                    break;
-                case "w":
-                    adderXCenter = bounds.left - padding;
-                    adderYCenter = bounds.yCenter;
-                    break;
-                case "e":
-                    adderXCenter = bounds.right + padding;
-                    adderYCenter = bounds.yCenter;
-                    break;
-            }
-
-            var adder = this._scrimGroup.append("g")
-                .classed("artboard-adder", true)
-                .style("stroke-width", 1.0 * scale)
-                .on("mousedown", function () {
-                    d3.event.stopPropagation();
-                })
-                .on("mouseup", function () {
-                    d3.event.stopPropagation();
-                })
-                .on("click", function () {
-                    this.getFlux().actions.groups.createArtboard(checkBounds);
-                    d3.event.stopPropagation();
-                }.bind(this));
-
-            // Vertical line
-            adder.append("line")
-                .attr("x1", adderXCenter)
-                .attr("x2", adderXCenter)
-                .attr("y1", adderYCenter - crosshairLength)
-                .attr("y2", adderYCenter + crosshairLength);
-
-            // Horizontal line
-            adder.append("line")
-                .attr("x1", adderXCenter - crosshairLength)
-                .attr("x2", adderXCenter + crosshairLength)
-                .attr("y1", adderYCenter)
-                .attr("y2", adderYCenter);
-
-            // Encompassing circle
-            adder.append("circle")
-                .attr("cx", adderXCenter)
-                .attr("cy", adderYCenter)
-                .attr("r", circleRadius);
-        },
-
-        /**
-         * Draws artboard adders for the selected artboard if space is available
-         *
-         * @private
-         * @param {SVGElement} svg 
-         * @param {LayerTree} layerTree Layers of current document
-         */
-        _drawArtboardAdders: function (svg, layerTree) {
-            var layers = layerTree.selected;
-
-            // For now we draw only adders for one visible artboard
-            if (layers.size !== 1 || !layers.first().isArtboard || !layers.first().visible) {
-                return;
-            }
-
-            var currentArtboard = layers.first(),
-                otherArtboards = layerTree.all.filter(function (layer) {
-                    return layer.isArtboard && layer !== currentArtboard;
-                });
-
-            this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "n");
-            this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "e");
-            this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "s");
-            this._checkAndDrawArtboardAdder(svg, currentArtboard, otherArtboards, "w");
         },
 
         render: function () {
