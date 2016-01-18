@@ -71,19 +71,19 @@
 
 .face__name {
     flex-grow: 1;
-    flex-shrink: 100;
+    flex-shrink: 1;
     -webkit-user-select: none;
     white-space: nowrap;
     text-overflow: ellipsis;
-    height: 1.2rem;
     overflow-x: hidden;
+    padding: 0.2rem 0;
 }
 
 input[type="text"].face__name {
     font-size: 1.2rem;
     color: @item-active;
-    margin-top: -0.2rem;
-    margin-left: -0.1rem;
+    margin-top: -0.1rem;
+    width: 100%;
 }
 
 input[type="text"].face__name:focus {
@@ -100,8 +100,16 @@ input[type="text"].face__name:focus {
     }
 }
 
+// Layer group selection state
+.layer-group__selected {
+    .face, .face:hover {
+        background-color: @list-select-child-color;
+    }
+}
+
 // Layer direct selection state
-.face__selected {
+.face__selected,
+.layer-group__selected .face__selected {
     &, &:hover {
         background-color: @list-select-color;
     }
@@ -115,22 +123,10 @@ input[type="text"].face__name:focus {
         border-bottom: solid @hairline transparent;
     }
 
-    input[type="text"].face__name:focus {
+    input[type="text"].face__name:focus  {
         border-bottom: solid @hairline @focus-highlight;
         color: @item;
         -webkit-user-select: text;
-    }
-}
-
-
-// Layer group selection state
-.layer-group__selected {
-    .face, .face:hover {
-        background-color: @list-select-child-color;
-
-        input[type="text"] {
-            border-bottom: solid @hairline transparent;
-        }
     }
 }
 

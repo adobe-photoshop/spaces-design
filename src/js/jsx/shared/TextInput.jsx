@@ -413,12 +413,12 @@ define(function (require, exports, module) {
             if (this.state.editing || !this.props.doubleClickToEdit) {
                 return (
                     <input
+                        title={this.props.title}
+                        className={className}
                         type="text"
                         ref="input"
                         spellCheck="false"
                         value={this.state.value}
-                        title={this.props.title}
-                        className={className}
                         disabled={this.props.disabled}
                         placeholder={this.props.placeholder}
                         onClick={this.props.onClick}
@@ -435,7 +435,6 @@ define(function (require, exports, module) {
             } else { // Used for cases like Libary assets and Layerfaces
                 return (
                     <div
-                        ref="input"
                         title={this.props.title}
                         className={className}
                         onDoubleClick={this._handleDoubleClick}
