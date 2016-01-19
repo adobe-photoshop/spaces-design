@@ -54,17 +54,10 @@
     flex-grow: 10;
     flex-shrink: 100;
     box-sizing: border-box;
-}
 
-.face__leash {
-    height: 100%;
-    align-tems: stretch;
-    flex-shrink: 0;
-    flex-grow: 0;
-
-    &.column-half {
-        width: 1.3rem;
-    }
+    // The following ensures that the face__name is correctly truncated.
+    // See: http://codepen.io/aj-foster/pen/emBYPW
+    min-width: 0;
 }
 
 .generate-depth(@n, @i: 0) when (@i =< @n) {
@@ -76,82 +69,73 @@
 
 .generate-depth(10);
 
-input[type="text"].face__name, input[type="text"]:disabled.face__name {
-    font-size: 1.2rem;
-    color: @item-active;
-    border-bottom: solid @hairline transparent;
-}
-
 .face__name {
     flex-grow: 1;
-    flex-shrink: 100;
+    flex-shrink: 1;
     -webkit-user-select: none;
-    overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    overflow-x: hidden;
+    padding: 0.2rem 0;
 }
 
-.face__name[disabled] {
-    cursor: inherit;
+input[type="text"].face__name {
+    font-size: 1.2rem;
+    color: @item-active;
+    margin-top: -0.1rem;
+    width: 100%;
 }
 
-@media (resolution: 1dppx){
-    .face__name {
-        margin-top: -1px;
-    }
+input[type="text"].face__name:focus {
+    border-bottom: solid @hairline @focus-highlight;
+    color: @item;
+    -webkit-user-select: text;
 }
 
-// Selection state
 .face:hover {
     background-color: @list-hover-color;
     
-    input[type="text"], input[type="text"]:disabled {
+    .face__name {
         color: @item-hover;
+    }
+}
+
+// Layer group selection state
+.layer-group__selected {
+    .face, .face:hover {
+        background-color: @list-select-child-color;
+    }
+}
+
+// Layer direct selection state
+.face__selected,
+.layer-group__selected .face__selected {
+    &, &:hover {
+        background-color: @list-select-color;
+    }
+
+    .face__name, 
+    &:hover .face__name {
+        color: @item;
+    }
+    
+    input[type="text"].face__name {
         border-bottom: solid @hairline transparent;
+    }
+
+    input[type="text"].face__name:focus  {
+        border-bottom: solid @hairline @focus-highlight;
+        color: @item;
+        -webkit-user-select: text;
     }
 }
 
 // Layer visibility state
 .face__not-visible,
 .layer-group__not-visible {
-    input[type="text"].face__name {
+    .face__name {
         color: @item-hover;
         opacity: @label-hidden-opacity;
-    }
-}
-
-// Layer descendents selection state
-.layer-group__selected {
-    .face, .face:hover {
-        background-color: @list-select-child-color;
-
-        input[type="text"], input[type="text"]:disabled {
-            border-bottom: solid @hairline transparent;
-        }
-    }
-}
-
-// Layer direct selection state
-.face__selected {
-    &, &:hover {
-        background-color: @list-select-color;
-    }
-
-    input[type="text"].face__name,
-    &:hover input[type="text"].face__name,
-    .face__name, &:hover .face__name {
-        color: @item;
-    }
-    
-    input[type="text"].face__name {
-        border-bottom: solid @hairline transparent;
-    }
-
-    input[type="text"].face__name:focus,
-    input[type="text"].face__name:focus {
-        border-bottom: solid @hairline @focus-highlight;
-        color: @item;
-        -webkit-user-select: text;
     }
 }
 
@@ -160,12 +144,12 @@ input[type="text"].face__name, input[type="text"]:disabled.face__name {
     display: none;
 }
 
+// Drop state
 .face__drop_target, .face__drop_target:hover {
     background-color: none;
     cursor: -webkit-grabbing;
 }
 
-// Drop state
 .face__drop_target_above:before {
     content: "";
     position: absolute;

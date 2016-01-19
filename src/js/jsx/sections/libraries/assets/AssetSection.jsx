@@ -193,6 +193,7 @@ define(function (require, exports, module) {
                         <div className="libraries__asset__title">
                             <TextInput
                                 ref="input"
+                                className="libraries__asset__title__main"
                                 doubleClickToEdit={true}
                                 title={title}
                                 value={this.props.displayName}
@@ -211,7 +212,7 @@ define(function (require, exports, module) {
                             title={nls.localize("strings.TOOLTIPS.LIBRARY_VIEW_ON_WEBSITE")}
                             iconId="libraries-viewonsite"
                             onClick={this._handleElementButtonClicked.bind(this, "view-online", elementLink)} />
-                         <SplitButtonItem
+                        <SplitButtonItem
                             title={nls.localize("strings.TOOLTIPS.LIBRARY_DELETE")}
                             iconId="delete"
                             onClick={this._handleDelete} />
@@ -222,6 +223,7 @@ define(function (require, exports, module) {
                     <div className="libraries__asset__title">
                         <TextInput
                             ref="input"
+                            className="libraries__asset__title__main"
                             doubleClickToEdit={true}
                             title={title}
                             value={this.props.displayName}
