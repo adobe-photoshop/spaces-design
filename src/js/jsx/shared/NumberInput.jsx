@@ -36,7 +36,8 @@ define(function (require, exports, module) {
     var Focusable = require("../mixin/Focusable"),
         math = require("js/util/math"),
         collection = require("js/util/collection"),
-        headlights = require("js/util/headlights");
+        headlights = require("js/util/headlights"),
+        log = require("js/util/log");
 
     var NumberInput = React.createClass({
         mixins: [Focusable, FluxMixin],
@@ -187,14 +188,25 @@ define(function (require, exports, module) {
                 }
             }
 
+            var formattedValue;
             switch (typeof value) {
             case "number":
-                return String(mathjs.round(value, this.props.precision)) + this.props.suffix;
+                if (_.isFinite(value)) {
+                    formattedValue = String(mathjs.round(value, this.props.precision)) + this.props.suffix;
+                } else {
+                    formattedValue = "";
+                    log.warn("Non-finite value in NumberInput: ", value);
+                }
+                break;
             case "string":
-                return value + this.props.suffix;
+                formattedValue = value + this.props.suffix;
+                break;
             default:
-                return "";
+                formattedValue = "";
+                log.warn("Non-finite value in NumberInput: ", value);
             }
+
+            return formattedValue;
         },
 
         /**
