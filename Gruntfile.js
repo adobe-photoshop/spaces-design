@@ -165,7 +165,8 @@ module.exports = function (grunt) {
                 tasks: ["less"],
                 options: {
                     spawn: false,
-                    interrupt: true
+                    interrupt: true,
+                    reload: true
                 }
             },
             dictionaries: {
