@@ -267,6 +267,156 @@ define(function (require, exports) {
     };
 
     /**
+     * Run layer panel performance tests.   
+     *
+     * @private
+     * @return {Promise}
+     */
+    var layerPanelPerformanceTest = function () {
+        var flux = this.flux,
+            applicationStore = flux.store("application"),
+            document = applicationStore.getCurrentDocument(),
+            openDocuments = applicationStore.getOpenDocuments();
+
+        if (openDocuments.size !== 1 || !document.name.match(/vermilion/i)) {
+            window.alert(
+                "To run the performance test, the current document must be " +
+                "the Vermilion file, and there should be only one open document");
+            return Promise.resolve();
+        }
+
+        var continueTest = window.confirm("Please start the Timeline recording, and then hit OK to begin the test.");
+
+        if (!continueTest) {
+            return Promise.resolve();
+        }
+
+        // Mute the other time stamps to make the timeline cleaner.
+        var timeStamp = log.timeStamp;
+        log.timeStamp = _.noop;
+
+        var layerFaceElements,
+            artboardElement,
+            artboardIconElement,
+            artboardVisibilityElement,
+            delayBetweenTest = 1500,
+            artboards = document.layers.roots.map(function (root) {
+                return document.layers.byID(root.id);
+            });
+
+        return flux.actions.groups.setGroupExpansion(document, artboards, true, true)
+            .then(function () {
+                flux.actions.layers.deselectAll(document);
+            })
+            .then(function () {
+                layerFaceElements = window.document.querySelectorAll(".face__depth-6");
+                artboardElement = window.document.querySelector(".face__depth-0");
+                artboardIconElement = window.document.querySelector(".face__depth-0 .face__kind");
+                artboardVisibilityElement = window.document.querySelector(".face__depth-0 .face__button_visibility");
+                layerFaceElements[0].scrollIntoViewIfNeeded();
+            })
+            // Test Layer Selection
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Layer selection 1");
+                layerFaceElements[0].click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Layer selection 2");
+                layerFaceElements[1].click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Layer selection 3");
+                layerFaceElements[2].click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Layer selection 4");
+                layerFaceElements[3].click();
+            })
+            .delay(delayBetweenTest)
+            // Test Art board Selection
+            .then(function () {
+                artboardElement.scrollIntoViewIfNeeded();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board selection 1");
+                artboardElement.click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board deselection 1");
+                layerFaceElements[0].click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board selection 2");
+                artboardElement.click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board deselection 2");
+                layerFaceElements[0].click();
+            })
+            .delay(delayBetweenTest)
+            // Test Art board expand/collapse
+            .then(function () {
+                timeStamp("Art board collapse 1");
+                artboardIconElement.click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board expand 1");
+                artboardIconElement.click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board collapse 2");
+                artboardIconElement.click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board expand 2");
+                artboardIconElement.click();
+            })
+            .delay(delayBetweenTest)
+            // Test Art board visibility
+            .then(function () {
+                timeStamp("Art board not-visible 1");
+                artboardVisibilityElement.click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board visible 1");
+                artboardVisibilityElement.click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board not-visible 2");
+                artboardVisibilityElement.click();
+            })
+            .delay(delayBetweenTest)
+            .then(function () {
+                timeStamp("Art board visible 2");
+                artboardVisibilityElement.click();
+            })
+            .delay(delayBetweenTest)
+            // Done
+            .finally(function () {
+                timeStamp("End of test");
+                log.timeStamp = timeStamp;
+                window.alert("Please stop recording and check for the result");
+            });
+    };
+    layerPanelPerformanceTest.action = {
+        reads: [],
+        writes: []
+    };
+
+    /**
      * Resolve an action path into a callable action function
      *
      * @private
@@ -535,6 +685,7 @@ define(function (require, exports) {
     exports.transferFailure = transferFailure;
     exports.resetFailure = resetFailure;
     exports.corruptModel = corruptModel;
+    exports.layerPanelPerformanceTest = layerPanelPerformanceTest;
     exports.resetRecess = resetRecess;
     exports.handleExecutedPlaceCommand = handleExecutedPlaceCommand;
     exports._playMenuCommand = _playMenuCommand;
