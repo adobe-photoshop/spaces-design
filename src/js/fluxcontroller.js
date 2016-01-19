@@ -196,6 +196,15 @@ define(function (require, exports, module) {
     FluxController.prototype._uiLocked = false;
 
     /**
+     * Indicates whether or not failures in actions should 
+     * be silenced
+     *
+     * @private
+     * @type {boolean}
+     */
+    FluxController.prototype._allowFailure = false;
+
+    /**
      * The set of pending idle task promises.
      *
      * @private
@@ -508,7 +517,7 @@ define(function (require, exports, module) {
 
                                 log.error(message, errMessage);
 
-                                // Any failed transfer triggers a complete controller reset
+                                // Failed transfers trigger a controller reset (unless parent had allowFailure set)
                                 this._resetController(err);
                                 throw err;
                             });
@@ -683,6 +692,18 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Sets the allow failure flag
+     * While the flag is on, all errors will be quietly logged
+     * but not cause a reset
+     *
+     * @private
+     * @param {boolean} flag
+     */
+    FluxController.prototype._setAllowFailure = function (flag) {
+        this._allowFailure = flag;
+    };
+
+    /**
      * Unock the UI.
      *
      * @private
@@ -715,6 +736,7 @@ define(function (require, exports, module) {
 
         var lockUI = actionObject.lockUI,
             hideOverlays = actionObject.hideOverlays,
+            allowFailure = actionObject.allowFailure,
             post = actionObject.post,
             modal = actionObject.modal || false,
             actionTitle;
@@ -738,6 +760,11 @@ define(function (require, exports, module) {
             this._lockUI();
         }
 
+        var failuresWereAllowed = this._allowFailure;
+        if (allowFailure && !failuresWereAllowed) {
+            this._setAllowFailure(allowFailure);
+        }
+        
         var modalPromise;
         if (!modal && flux.store("tool").getModalToolState()) {
             log.warn("Killing modal state for " + actionTitle);
@@ -762,6 +789,11 @@ define(function (require, exports, module) {
 
                 return actionPromise;
             })
+            .catch(function (err) {
+                if (!this._allowFailure) {
+                    throw err;
+                }
+            })
             .tap(function () {
                 if (hideOverlays) {
                     actionReceiver.dispatch(events.panel.END_CANVAS_UPDATE);
@@ -771,6 +803,10 @@ define(function (require, exports, module) {
                     this._unlockUI();
                 }
 
+                if (allowFailure && !failuresWereAllowed) {
+                    this._setAllowFailure(false);
+                }
+        
                 if (__PG_DEBUG__) {
                     log.timeStamp("Finished " + actionTitle);
                 }
@@ -862,6 +898,7 @@ define(function (require, exports, module) {
 
                         // Reset all action modules on failure
                         this._resetController(err);
+
                         throw err;
                     });
             }.bind(self), reads, writes);
