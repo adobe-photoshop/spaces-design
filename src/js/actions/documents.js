@@ -956,6 +956,7 @@ define(function (require, exports) {
      */
     var _makeHandler,
         _openHandler,
+        _closeHandler,
         _selectHandler,
         _saveHandler,
         _pasteHandler,
@@ -1002,6 +1003,21 @@ define(function (require, exports) {
             }
         }.bind(this);
         descriptor.addListener("open", _openHandler);
+
+        _closeHandler = function (event) {
+            if (typeof event.documentID === "number") {
+                // If this document is saved during close, we get both a close event and a save event, 
+                // and then another close event for the closing of the non dirty document. So we ignore the first event
+                var documentSaved = (event.saving && event.saving._value === "yes");
+
+                if (!documentSaved) {
+                    this.flux.actions.documents.disposeDocument(event.documentID, false);
+                }
+            } else {
+                throw new Error("Document closed with no ID");
+            }
+        }.bind(this);
+        descriptor.addListener("close", _closeHandler);
 
         _selectHandler = function (event) {
             var nextDocument,
@@ -1142,6 +1158,7 @@ define(function (require, exports) {
     var onReset = function () {
         descriptor.removeListener("make", _makeHandler);
         descriptor.removeListener("open", _openHandler);
+        descriptor.removeListener("close", _closeHandler);
         descriptor.removeListener("select", _selectHandler);
         descriptor.removeListener("save", _saveHandler);
         descriptor.removeListener("paste", _pasteHandler);
