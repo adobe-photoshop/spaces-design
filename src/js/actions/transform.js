@@ -449,7 +449,7 @@ define(function (require, exports) {
         var dispatchPromise = this.dispatchAsync(events.document.history.REPOSITION_LAYERS, payload),
             translateLayerActions = layerSpec.reduce(function (actions, layer) {
                 var layerActions = _getMoveLayerActions.call(this,
-                        document, layer, position, refPoint, payload.positions, !options.coalesce);
+                        document, layer, position, refPoint, payload.positions, !!options.translate);
                 return actions.concat(layerActions);
             }, Immutable.List(), this);
 
