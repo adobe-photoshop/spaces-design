@@ -190,10 +190,20 @@ dialog::backdrop {
     width: 100%;
 }
 
-.dialog-pointer(@left) {
+.pointerMixin (@atTop) when (@atTop) {
+    top: -0.9rem;
+    transform: rotate(45deg);
+}
+
+.pointerMixin (@atTop) when (default()) {
+    bottom: -0.9rem;
+    transform: rotate(-135deg);
+}
+
+.dialog-pointer(@left, @atTop) {
+    .pointerMixin(@atTop);
     content: "";
     position: absolute;
-    top: -0.9rem;
     left: @left;
     width: 1.5rem;
     height: 1.5rem;
@@ -202,7 +212,6 @@ dialog::backdrop {
     border-left: @hairline*1.5 solid @underlines;
     border-top: @hairline*1.5 solid @underlines;
     border-top-left-radius: 0.2rem;
-    transform: rotate(45deg);
     -webkit-clip-path: polygon(0% 0%, 1.8rem 0%, 0% 1.8rem);
 }
 

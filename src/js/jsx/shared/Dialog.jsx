@@ -272,7 +272,7 @@ define(function (require, exports, module) {
 
                         // If there is space above the target, let's place the dialog above it
                         if (dialogBounds.height + dialogMarginTop + dialogMarginBottom < targetBounds.top) {
-                            bottomPosition = (clientHeight - targetBounds.top - dialogMarginBottom) + "px";
+                            topPosition = (targetBounds.top - dialogBounds.height) + "px";
                         } else {
                             topPosition = (clientHeight -
                                 dialogBounds.height - dialogMarginTop - dialogMarginBottom) + "px";
@@ -359,7 +359,8 @@ define(function (require, exports, module) {
             var children,
                 globalClass = (this.props.position === POSITION_METHODS.CENTER) ? "dialog__center" : "dialog__target",
                 classes = classnames(globalClass, this.props.className || "",
-                    { "placed-above": this.state.placedAbove }),
+                    { "placed-above": this.state.placedAbove },
+                    { "placed-below": !this.state.placedAbove }),
                 props = {
                     className: classes,
                     style: {
