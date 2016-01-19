@@ -746,7 +746,8 @@ define(function (require, exports) {
         reads: [locks.JS_DOC],
         writes: [],
         transfers: [initializeLayers],
-        modal: true
+        modal: true,
+        allowFailure: true
     };
 
     /**
