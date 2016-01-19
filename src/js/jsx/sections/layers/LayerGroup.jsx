@@ -138,7 +138,7 @@ define(function (require, exports, module) {
             }
             
             return (
-                <ul className="layers-group">
+                <ul className="layer-group">
                     {layerFaces}
                 </ul>
             );
