@@ -72,6 +72,7 @@ define(function (require, exports, module) {
             dismissOnWindowClick: React.PropTypes.bool,
             dismissOnWindowResize: React.PropTypes.bool,
             dismissOnCanvasClick: React.PropTypes.bool,
+            dismissOnScroll: React.PropTypes.bool,
             dismissOnKeys: React.PropTypes.arrayOf(React.PropTypes.object)
         },
 
@@ -87,7 +88,8 @@ define(function (require, exports, module) {
                 dismissOnSelectionTypeChange: false,
                 dismissOnWindowClick: true,
                 dismissOnWindowResize: true,
-                dismissOnCanvasClick: false
+                dismissOnCanvasClick: false,
+                dismissOnScroll: false
             };
         },
 
@@ -128,12 +130,13 @@ define(function (require, exports, module) {
                     dialogEl.showModal();
                 }
 
-                this._addListeners();
                 this._positionDialog(dialogEl);
+                this._addListeners();
                 this.props.onOpen();
             } else if (!this.state.open && prevState.open) {
                 // Dialog closing
                 this._removeListeners();
+                this._target = null;
                 
                 if (this.props.modal && dialogEl.open) {
                     dialogEl.close();
@@ -165,7 +168,6 @@ define(function (require, exports, module) {
                 id = this.props.id;
 
             if (this.state.open) {
-                this._target = null;
                 flux.actions.dialog.closeDialog(id);
             } else if (!this.props.disabled) {
                 this._target = event.currentTarget;
@@ -207,7 +209,7 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Dismiss the dialog on mouse wheel events.
+         * Dismiss the dialog on adapter mouse wheel events.
          *
          * @private
          */
@@ -219,7 +221,6 @@ define(function (require, exports, module) {
             var id = this.props.id,
                 flux = this.getFlux();
 
-            this._target = null;
             flux.actions.dialog.closeDialogThrottled(id);
         },
 
@@ -321,6 +322,10 @@ define(function (require, exports, module) {
                 window.addEventListener("resize", this._handleWindowResize);
             }
 
+            if (this.props.dismissOnScroll) {
+                this._target.addEventListener("wheel", this._handleMouseWheel);
+            }
+
             if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
                 var flux = this.getFlux();
                 this.props.dismissOnKeys.forEach(function (keyObj) {
@@ -345,6 +350,10 @@ define(function (require, exports, module) {
 
             if (this.props.dismissOnWindowResize) {
                 window.removeEventListener("resize", this._handleWindowResize);
+            }
+
+            if (this.props.dismissOnScroll) {
+                this._target.removeEventListener("wheel", this._handleMouseWheel);
             }
 
             if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {

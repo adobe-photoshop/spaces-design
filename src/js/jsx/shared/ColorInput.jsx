@@ -415,7 +415,8 @@ define(function (require, exports, module) {
                         dismissOnKeys={DISMISS_ON_KEYS}
                         dismissOnDocumentChange
                         dismissOnSelectionTypeChange
-                        dismissOnWindowClick>
+                        dismissOnWindowClick
+                        dismissOnScroll>
                         <ColorPicker
                             ref="colorpicker"
                             label={label}
