@@ -82,14 +82,10 @@
 
 input[type="text"].face__name {
     font-size: 1.2rem;
-    color: @item-active;
+    color: @item;
     margin-top: -0.1rem;
     width: 100%;
-}
-
-input[type="text"].face__name:focus {
     border-bottom: solid @hairline @focus-highlight;
-    color: @item;
     -webkit-user-select: text;
 }
 
@@ -118,16 +114,6 @@ input[type="text"].face__name:focus {
     .face__name, 
     &:hover .face__name {
         color: @item;
-    }
-    
-    input[type="text"].face__name {
-        border-bottom: solid @hairline transparent;
-    }
-
-    input[type="text"].face__name:focus  {
-        border-bottom: solid @hairline @focus-highlight;
-        color: @item;
-        -webkit-user-select: text;
     }
 }
 
