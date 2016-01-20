@@ -47,7 +47,12 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             // Calculations that are usually done here are done in
             // componentWillReceiveProps
-            return this.state !== nextState;
+            return !this.state ||
+                this.state.disabled !== nextState.disabled ||
+                !Immutable.is(this.state.layers, nextState.layers) ||
+                !Immutable.is(this.state.widths, nextState.widths) ||
+                !Immutable.is(this.state.heights, nextState.heights) ||
+                this.state.proportional !== nextState.proportional;
         },
 
         /**
@@ -87,9 +92,10 @@ define(function (require, exports, module) {
                 boundsShown = document.layers.selectedChildBounds,
                 hasArtboard = document.layers.hasArtboard,
                 disabled = this._disabled(document, layers, boundsShown),
-                proportional = layers.map(function (layer) {
+                proportionalFlags = layers.map(function (layer) {
                     return layer.proportionalScaling;
-                });
+                }),
+                proportional = collection.uniformValue(proportionalFlags);
                 
             if (layers.isEmpty()) {
                 boundsShown = documentBounds && !hasArtboard ?
