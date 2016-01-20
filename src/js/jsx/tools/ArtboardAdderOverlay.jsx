@@ -80,6 +80,22 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            var getProps = function (state) {
+                var document = state.document;
+                if (!document || !document.layers) {
+                    return null;
+                }
+
+                var selected = document.layers.selected,
+                    valid = selected.size === 1 && selected.first().isArtboard;
+
+                if (!valid) {
+                    return null;
+                }
+
+                return collection.pluckAll(selected, ["id", "bounds"]);
+            };
+
             // We check for the cheaper flags before plucking layers from document models
             if (this.state.vectorMaskMode !== nextState.vectorMaskMode ||
                 this.state.modalState !== nextState.modalState ||
@@ -87,21 +103,10 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            var lastLayers = this.state.document.layers.selected,
-                nextLayers = nextState.document.layers.selected,
-                lastValidity = lastLayers.size === 1 && lastLayers.first().isArtboard,
-                nextValidity = nextLayers.size === 1 && nextLayers.first().isArtboard;
+            var lastLayerProps = getProps(this.state),
+                nextLayerProps = getProps(nextState);
 
-            // Before checking for bounds/ID change, first check if we're going from no-draw to no-draw state
-            if (!lastValidity && !nextValidity) {
-                return false;
-            }
-
-            var lastLayerProps = collection.pluckAll(lastLayers, ["id", "bounds"]),
-                nextLayerProps = collection.pluckAll(nextLayers, ["id", "bounds"]),
-                layersChanged = !Immutable.is(lastLayerProps, nextLayerProps);
-
-            return layersChanged;
+            return !Immutable.is(lastLayerProps, nextLayerProps);
         },
 
         componentWillMount: function () {
