@@ -139,11 +139,11 @@ define(function (require, exports, module) {
         _handleWScrubBegin: function () {
             var currentWidth = collection.uniformValue(this.state.widths);
             
-            if (currentWidth !== null) {
-                this.setState({
-                    scrubWidth: currentWidth
-                });
+            this.setState({
+                scrubWidth: currentWidth
+            });
 
+            if (currentWidth !== null) {
                 this.startCoalescing();
             }
         },
@@ -190,11 +190,11 @@ define(function (require, exports, module) {
         _handleHScrubBegin: function () {
             var currentHeight = collection.uniformValue(this.state.heights);
             
-            if (currentHeight !== null) {
-                this.setState({
-                    scrubHeight: currentHeight
-                });
+            this.setState({
+                scrubHeight: currentHeight
+            });
 
+            if (currentHeight !== null) {
                 this.startCoalescing();
             }
         },
