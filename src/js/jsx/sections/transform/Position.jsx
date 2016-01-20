@@ -53,7 +53,12 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            return this.state !== nextState;
+            return !this.state ||
+                this.state.disabled !== nextState.disabled ||
+                !Immutable.is(this.state.xValues, nextState.xValues) ||
+                !Immutable.is(this.state.yValues, nextState.yValues) ||
+                !Immutable.is(this.state.absoluteXValues, nextState.absoluteXValues) ||
+                !Immutable.is(this.state.absoluteYValues, nextState.absoluteYValues);
         },
 
         componentWillReceiveProps: function (nextProps) {

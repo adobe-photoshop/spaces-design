@@ -46,7 +46,11 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps, nextState) {
             return !Immutable.is(this.props.document.layers.selected, nextProps.document.layers.selected) ||
-                this.state !== nextState;
+                this.state.disabled !== nextState.disabled ||
+                !Immutable.is(this.state.layers, nextState.layers) ||
+                !Immutable.is(this.state.scalars, nextState.scalars) ||
+                this.state.maxRadius !== nextState.maxRadius ||
+                this.state.maxRadiusInput !== nextState.maxRadiusInput;
         },
 
         componentWillReceiveProps: function (nextProps) {
