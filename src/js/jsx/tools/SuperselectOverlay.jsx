@@ -128,6 +128,15 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
+            var getProps = function (state) {
+                var document = state.document;
+                if (!document || !document.layers) {
+                    return null;
+                }
+
+                return collection.pluckAll(document.layers.selected, ["id", "bounds"]);
+            };
+
             // We check for the cheaper flags before plucking layers from document models
             if (this.state.marqueeEnabled !== nextState.marqueeEnabled ||
                 this.state.leafBounds !== nextState.leafBounds ||
@@ -137,13 +146,10 @@ define(function (require, exports, module) {
                 return true;
             }
 
-            var lastLayers = this.state.document.layers.selected,
-                nextLayers = nextState.document.layers.selected,
-                lastLayerProps = collection.pluckAll(lastLayers, ["id", "bounds"]),
-                nextLayerProps = collection.pluckAll(nextLayers, ["id", "bounds"]),
-                layersChanged = !Immutable.is(lastLayerProps, nextLayerProps);
+            var lastLayerProps = getProps(this.state),
+                nextLayerProps = getProps(nextState);
 
-            return layersChanged;
+            return !Immutable.is(lastLayerProps, nextLayerProps);
         },
 
         componentWillMount: function () {
