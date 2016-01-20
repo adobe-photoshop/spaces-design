@@ -71,16 +71,14 @@ define(function (require, exports, module) {
                 isDropTarget: false,
                 dropPosition: null,
                 isDragging: false,
-                dragStyle: null
+                dragStyle: null,
+                isEditing: false
             };
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
             // Drag states
-            if (this.state.isDragging !== nextState.isDragging ||
-                this.state.dragStyle !== nextState.dragStyle ||
-                this.state.dropPosition !== nextState.dropPosition ||
-                this.state.isDropTarget !== nextState.isDropTarget) {
+            if (!_.eq(this.state, nextState)) {
                 return true;
             }
             
@@ -152,6 +150,17 @@ define(function (require, exports, module) {
 
             this.getFlux().actions.groups.setGroupExpansion(currentDocument, currentLayer,
                 !currentLayer.expanded, descendants);
+        },
+        
+        /**
+         * Handle change of layer name input's focus state.
+         *
+         * @param {Boolean} hasFocus
+         */
+        _handleInputFocusChange: function (hasFocus) {
+            this.setState({
+                isEditing: hasFocus
+            });
         },
 
         /**
@@ -592,6 +601,7 @@ define(function (require, exports, module) {
                 <Draggable
                     type="layer"
                     target={this.props.layer}
+                    disabled={this.state.isEditing}
                     beforeDragStart={this._handleBeforeDragStart}
                     onDragStart={this._handleDragStart}
                     onDrag={this._handleDrag}
@@ -628,6 +638,8 @@ define(function (require, exports, module) {
                                         doubleClickToEdit={true}
                                         value={layer.name}
                                         disabled={this.props.disabled || !nameEditable}
+                                        onFocus={this._handleInputFocusChange.bind(this, true)}
+                                        onBlur={this._handleInputFocusChange.bind(this, false)}
                                         onKeyDown={this._skipToNextLayerName}
                                         onChange={this._handleLayerNameChange}
                                         allowEmpty={false}>

@@ -110,6 +110,9 @@ define(function (require, exports, module) {
             // The object passed to the Droppable component when dropped. This value can be overwritten by the 
             // optional callback "beforeDragStart".
             target: React.PropTypes.object.isRequired,
+            
+            // If true, the Draggable component will be disabled.
+            disabled: React.PropTypes.bool,
 
             /**
              * @callback Draggable~beforeDragStart
@@ -265,6 +268,10 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleMouseDown: function (event) {
+            if (this.props.disabled) {
+                return;
+            }
+            
             this._mousedownPosition = {
                 x: event.clientX,
                 y: event.clientY
