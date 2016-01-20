@@ -37,6 +37,9 @@
     }
 
     .split-button__item {
+        width: @libraries-button-size;
+        flex-grow: 0;
+        flex-shrink: 0;
         svg {
             width: @libraries-button-size;
             height: @libraries-button-size;
@@ -126,7 +129,6 @@
                 justify-content: flex-end;
                 margin: 0;
                 margin-left: 1.5rem;
-                flex-grow: 0;
             }
 
             .libraries__split-button-collaborate {
@@ -244,8 +246,7 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding-top: .3rem;
-        padding-bottom: .3rem;
+        padding: .3rem 0;
         padding-left: 0rem;
         -webkit-user-select: none;
         cursor: pointer;
@@ -271,7 +272,7 @@
 
         &__title {
             display: flex;
-            flex-grow: 1;
+            flex-grow: 100;
             flex-shrink: 1;
             flex-direction: column;
             justify-content: center;
@@ -282,34 +283,29 @@
             min-width: 0;
 
             &__main {
+                line-height: 2rem;
+                height: 2rem;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 overflow: hidden;
+                margin-right: 0.5rem;
+                margin-top: -@hairline;
+                white-space: pre;
             }
 
             input[type="text"] {
                 font-size: @text-small;
-                color: @item-active;
+                color: @item;
                 -webkit-user-select: none;
-                border-bottom: @hairline solid transparent;
-                margin-left: -0.1rem;
-
-                &:focus, &:focus:hover {
-                    align-self: stretch;
-                    color: @item;
-                    -webkit-user-select: none;
-                    border-bottom: @hairline solid @focus-highlight;
-                }
-                
-                &:hover {
-                    color: @item-hover;
-                    border-bottom: @hairline solid transparent;
-                }
+                padding: 0;
+                margin-right: 0.5rem;
+                border-bottom: @hairline solid @focus-highlight;
             }
         }
 
         &__subtitle {
-            margin: .3rem 0 0 .2rem;
+            margin-top: .3rem;
+            margin-right: 0.5rem;
             padding-bottom: .3rem;
             font-size: 1rem;
             color: @mid-bg-alt;
@@ -493,7 +489,37 @@
     }
 }
 
-.split-button__item__syncing {
-    width: 1.6rem;
-    height: 1.6rem;
+// Fix Chrome's rendering bug when asset has fractional pixel. 
+// The updated height is rounded to the nearest pixel.
+// TODO find better way to handle fractional pixel.
+// 
+// For non-retina @base-8
+@media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 801px) and (max-device-width: 1440){
+    .libraries__asset__preview, .libraries__asset__title {
+        height: 34px;
+    }
+    .libraries__asset {
+        padding: 3px 0;
+    }
+    .libraries__asset__title__main {
+        margin-top: 0;
+    }
+}
+// For retina @base-8/@base-9
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 801px) and (max-device-width: 1680) {
+    .libraries__asset__preview, .libraries__asset__title {
+        height: 34px;
+    }
+    .libraries__asset {
+        padding: 3px 0;
+    }
+}
+// For retina @base-11
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) {
+    .libraries__asset__preview, .libraries__asset__title {
+        height: 42px;
+    }
+    .libraries__asset {
+        padding: 3px 0;
+    }
 }
