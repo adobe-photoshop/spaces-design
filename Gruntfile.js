@@ -193,7 +193,8 @@ module.exports = function (grunt) {
                 options: {
                     sourceMap: grunt.option("DEV_MODE"),
                     sourceMapFileInline: true,
-                    outputSourceFiles: true
+                    outputSourceFiles: true,
+                    sourceMapRootpath: "../"
                 }
             }
         },
