@@ -79,6 +79,7 @@ define(function (require, exports, module) {
             this._hostVersion = null;
             this._recentFiles = Immutable.List();
             this._initialized = Immutable.Set();
+            this.emit("reset");
         },
         
         getState: function () {

@@ -95,6 +95,7 @@ define(function (require, exports, module) {
             window.document.addEventListener("touchmove", this._handleScrubMove);
             window.document.addEventListener("mouseup", this._stopScrubUpdates);
             window.document.addEventListener("touchend", this._stopScrubUpdates);
+            this.getFlux().store("application").on("reset", this._resetScrubbing);
         },
 
         /**
@@ -107,6 +108,19 @@ define(function (require, exports, module) {
             window.document.removeEventListener("touchmove", this._handleScrubMove);
             window.document.removeEventListener("mouseup", this._stopScrubUpdates);
             window.document.removeEventListener("touchend", this._stopScrubUpdates);
+            this.getFlux().store("application").off("reset", this._resetScrubbing);
+        },
+
+        /**
+         * Resets the scrubbing flag to avoid unwanted
+         * scrub calls after a reset
+         *
+         * @private
+         */
+        _resetScrubbing: function () {
+            this.setState({
+                scrubbing: false
+            });
         },
 
         /**
