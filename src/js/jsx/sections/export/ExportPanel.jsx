@@ -45,7 +45,7 @@ define(function (require, exports, module) {
 
     var ExportPanel = React.createClass({
 
-        mixins: [FluxMixin, StoreWatchMixin("export")],
+        mixins: [FluxMixin, StoreWatchMixin("export", "tool")],
 
         /**
          * A throttled version of os.setTooltip
@@ -58,21 +58,41 @@ define(function (require, exports, module) {
             var flux = this.getFlux(),
                 documentID = this.props.document.id,
                 exportStore = flux.store("export"),
+                toolStore = flux.store("tool"),
+                modal = toolStore.getModalToolState(),
                 documentExports = exportStore.getDocumentExports(documentID);
 
             return {
                 documentExports: documentExports,
-                exportState: exportStore.getState()
+                exportState: exportStore.getState(),
+                modal: modal
             };
+        },
+
+        /**
+         * Ensures that export is enabled by default.
+         *
+         * @private
+         */
+        _resetExportDisabled: function () {
+            this.setState({
+                exportDisabled: false
+            });
         },
 
         componentWillMount: function () {
             this._setTooltipThrottled = synchronization.throttle(os.setTooltip, os, 500);
+            this.getFlux().store("application").on("reset", this._resetExportDisabled);
         },
 
-        shouldComponentUpdate: function (nextProps) {
+        componentWillUnmount: function () {
+            this.getFlux().store("application").off("reset", this._resetExportDisabled);
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
             if (this.props.disabled !== nextProps.disabled ||
-                this.props.active !== nextProps.active) {
+                this.props.active !== nextProps.active ||
+                this.state.modal !== nextState.modal) {
                 return true;
             }
 
@@ -166,9 +186,7 @@ define(function (require, exports, module) {
             exportPromise
                 .bind(this)
                 .then(function () {
-                    this.setState({
-                        exportDisabled: false
-                    });
+                    this._resetExportDisabled();
                 });
 
             headlights.logEvent("export", "export-all", "in-panel");
@@ -313,7 +331,7 @@ define(function (require, exports, module) {
                             </Button>
                             <Button
                                 className={exportButtonClasses}
-                                disabled={exportDisabled || disabled}
+                                disabled={exportDisabled || disabled || this.state.modal}
                                 title={nls.localize("strings.TOOLTIPS.EXPORT_EXPORT_ASSETS")}
                                 onClick={this._exportAssetsClickHandler}>
                                 <SVGIcon
