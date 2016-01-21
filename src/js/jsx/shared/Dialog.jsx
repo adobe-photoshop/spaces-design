@@ -128,7 +128,12 @@ define(function (require, exports, module) {
                     dialogEl.showModal();
                 }
 
-                this._addListeners();
+                // Ensure that handlers are added asynchronously to avoid incorrectly
+                // handling the event that opened the dialog initially. See #3532.
+                window.setTimeout(function () {
+                    this._addListeners();
+                }.bind(this), 0);
+
                 this._positionDialog(dialogEl);
                 this.props.onOpen();
             } else if (!this.state.open && prevState.open) {
