@@ -118,8 +118,14 @@ define(function (require, exports, module) {
          * @param {{becameActive: boolean}} event
          */
         _handleActivationChanged: function (event) {
-            if (this.state.ready && event && event.becameActive) {
-                this.refs.datalist.focus();
+            if (event.becameActive) {
+                // SuperHack: Work around a Chromium bug in which activating the window
+                // blurs (at some point) the focused input. See #3519.
+                window.setTimeout(function () {
+                    if (this.state.ready) {
+                        this.refs.datalist.focus();
+                    }
+                }.bind(this), 100);
             }
         },
 
