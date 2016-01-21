@@ -537,7 +537,8 @@ define(function (require, exports, module) {
                         title="Clear Search Input"
                         className="button-clear-search"
                         onClick={this._clearInput} >
-                        &times;
+                        <SVGIcon
+                            CSSID="layer-search-clear" />
                     </Button>
                 );
             }

@@ -85,6 +85,7 @@
 }
 
 .search-bar__dialog .drop-down.hasIcon input {
+    margin-left: 3.2rem;
     width: 40rem;
 }
 
@@ -111,6 +112,9 @@
     visibility: hidden;
     white-space: pre;
 }
+.search-bar__dialog .drop-down.hasIcon .hidden-input {
+    margin-left: 3.2rem;
+}
 
 .search-bar__dialog::backdrop {
     position: fixed;
@@ -128,7 +132,7 @@
 
 .search-bar__dialog .select__option {
     padding: 0.5rem 0.8rem 0.7rem 0.8rem;
-    border-left: .2rem solid transparent;
+    border-left: .3rem solid transparent;
     display: flex;
     overflow: hidden;
     text-overflow:ellipsis;
@@ -181,13 +185,13 @@
     line-height:2.1rem;
 }
 
-.search-bar__dialog .datalist__svg {
-    width: 1.6rem;
-    height: 1.6rem;
-    margin-right: 0rem;
-    margin-left: 1rem;
-    margin-top: .6rem;
-    fill: white;
+.search-bar__dialog svg.datalist__svg {
+    position: absolute;
+    top: 1.6rem;
+    left: 3.6rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    fill: @item-active;
 }
 
 .search-bar__dialog .autocomplete {
@@ -204,7 +208,7 @@
 
 .button-simple.button-clear-search {
     position: absolute;
-    top: 1.2rem;
+    top: 0.3rem;
     right: 1.4rem;
     color: @item-active;
     font-size:1.6rem;
