@@ -608,7 +608,11 @@ define(function (require, exports) {
             currentDocument = appStore.getCurrentDocument();
 
         if (!currentDocument) {
-            return Promise.resolve();
+            if (vectorMaskMode) {
+                return Promise.resolve();
+            } else {
+                return this.dispatchAsync(events.tool.VECTOR_MASK_MODE_CHANGE, vectorMaskMode);
+            }
         }
 
         var currentLayers = currentDocument.layers.selected,

@@ -669,23 +669,26 @@ define(function (require, exports) {
                 interactionMode: descriptor.interactionMode.DISPLAY
             };
 
-        return this.transfer("panel.cloak")
-            .bind(this)
-            .then(function () {
-                return descriptor.playObject(closeObj, playOptions);
-            })
-            .then(function (result) {
-                var isDocumentSaved = result.saving && result.saving._value === "yes";
-                
-                return this.transfer(disposeDocument, document.id, isDocumentSaved);
-            }, function () {
-                // the play command fails if the user cancels the close dialog
-            });
+        var maskPromise = this.transfer(toolActions.changeVectorMaskMode, false),
+            closePromise = this.transfer("panel.cloak")
+                .bind(this)
+                .then(function () {
+                    return descriptor.playObject(closeObj, playOptions);
+                })
+                .then(function (result) {
+                    var isDocumentSaved = result.saving && result.saving._value === "yes";
+                    
+                    return this.transfer(disposeDocument, document.id, isDocumentSaved);
+                }, function () {
+                    // the play command fails if the user cancels the close dialog
+                });
+
+        return Promise.join(maskPromise, closePromise);
     };
     close.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.PS_APP, locks.PS_DOC],
-        transfers: ["panel.cloak", disposeDocument],
+        transfers: ["panel.cloak", disposeDocument, toolActions.changeVectorMaskMode],
         post: ["verifyDocuments.verifyActiveDocument", "verifyDocuments.verifyOpenDocuments"],
         lockUI: true,
         hideOverlays: true
