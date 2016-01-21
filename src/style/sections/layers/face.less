@@ -73,22 +73,19 @@
     flex-grow: 1;
     flex-shrink: 1;
     -webkit-user-select: none;
-    white-space: nowrap;
+    white-space: pre;
     text-overflow: ellipsis;
     overflow-x: hidden;
-    padding: 0.2rem 0;
+    height: 2rem;
+    padding: 0.4rem 0;
 }
 
 input[type="text"].face__name {
     font-size: 1.2rem;
-    color: @item-active;
-    margin-top: -0.1rem;
-    width: 100%;
-}
-
-input[type="text"].face__name:focus {
-    border-bottom: solid @hairline @focus-highlight;
     color: @item;
+    margin-top: -0.2rem;
+    width: 100%;
+    border-bottom: solid @hairline @focus-highlight;
     -webkit-user-select: text;
 }
 
@@ -117,16 +114,6 @@ input[type="text"].face__name:focus {
     .face__name, 
     &:hover .face__name {
         color: @item;
-    }
-    
-    input[type="text"].face__name {
-        border-bottom: solid @hairline transparent;
-    }
-
-    input[type="text"].face__name:focus  {
-        border-bottom: solid @hairline @focus-highlight;
-        color: @item;
-        -webkit-user-select: text;
     }
 }
 
@@ -188,4 +175,31 @@ input[type="text"].face__name:focus {
 
 .layer__drag-target {
     padding-top: 2.8rem;
+}
+
+// Fix Chrome's rendering bug when layer's height has decimal. 
+// The updated number is the nearest pixel to the original.
+// 
+// For non-retina @base-8, retina @base-8/@base-9
+@media (-webkit-min-device-pixel-ratio: 1) and (min-device-width: 801px) and (max-device-width: 1440),
+(-webkit-min-device-pixel-ratio: 2) and (min-device-width: 801px) and (max-device-width: 1680) {
+    .face {
+        height: 25px; // from 25.1875px to 25px
+        min-height: 25px;
+    }
+    
+    input[type="text"].face__name {
+        margin-top: -1px;
+    }
+}
+// For retina @base-11
+@media (-webkit-min-device-pixel-ratio: 2) and (min-device-width: 2561px) {
+    .face {
+        height: 31px; // from 30.815px to 31px
+        min-height: 31px;
+    }
+    
+    input[type="text"].face__name {
+        margin-top: -3px;
+    }
 }
