@@ -570,6 +570,135 @@ define(function (require, exports) {
         writes: [locks.JS_PREF],
         transfers: [preferencesActions.setPreference]
     };
+    
+    /**
+     * Debug-only method to toggle Descriptor Event logging
+     * 
+     * @param {Object} options
+     * @param {Object} options.toggle
+     * @return {Promise}
+     */
+    var logDescriptor = function (options) {
+        if (!__PG_DEBUG__) {
+            return Promise.resolve();
+        }
+
+        options = _.merge({ toggle: true }, options);
+
+        var preferencesStore = this.flux.store("preferences"),
+            preferences = preferencesStore.getState(),
+            enabled = preferences.get("descriptorLoggingEnabled"),
+            descriptor = require("adapter").ps.descriptor;
+
+        if (options.toggle) {
+            enabled = !enabled;
+        }
+        
+        var blockStyle = "color:gray;",
+            eventStyle = "font-weight:bold";
+        
+        descriptor.__play = descriptor.__play || descriptor.play;
+        descriptor.__batchPlay = descriptor.__batchPlay || descriptor.batchPlay;
+        descriptor.__get = descriptor.__get || descriptor.get;
+        descriptor.__eventHandler = descriptor.__eventHandler || function (eventID, obj) {
+            log.debug("[Descriptor] PS Event: %c%s\n%c%s", eventStyle, eventID, blockStyle,
+                JSON.stringify(obj, null, " "));
+        };
+
+        if (enabled) {
+            descriptor.play = function (name, descriptor, options) {
+                var str = "('" + name + "', " + JSON.stringify(descriptor, null, " ") + ", " +
+                    JSON.stringify(options, null, " ") + ");";
+                log.debug("[Descriptor] play: \n%c%s", blockStyle, str);
+                return descriptor.__play(name, descriptor, options).then(function (result) {
+                    log.debug("[Descriptor] play result:\n%c%s", blockStyle, JSON.stringify(result, null, "  "));
+                    return result;
+                });
+            };
+
+            descriptor.batchPlay = function (commands, options, batchOptions) {
+                var commandNames = commands.map(function (c) { return c.name; }).join(", "),
+                    isHitTest = commandNames === "hitTest";
+
+                if (!isHitTest) {
+                    var str = "(" + JSON.stringify(commands, null, " ") + ", " +
+                        JSON.stringify(options, null, " ") + ", " +
+                        JSON.stringify(batchOptions, null, " ") + ");";
+                    log.debug("[Descriptor] batchPlay: %c%s\n%c%s", eventStyle, commandNames, blockStyle, str);
+                }
+                return descriptor.__batchPlay(commands, options, batchOptions).then(function (result) {
+                    if (!isHitTest) {
+                        log.debug("[Descriptor] batchPlay result: \n%c%s", blockStyle,
+                            JSON.stringify(result, null, "  "));
+                    }
+                    return result;
+                });
+            };
+
+            descriptor.get = function (reference) {
+                log.debug("[Descriptor] get: \n%c%s", blockStyle, JSON.stringify(reference, null, ""));
+                return descriptor.__get(reference).then(function (result) {
+                    log.debug("[Descriptor] get result: \n%c%s", blockStyle, JSON.stringify(result, null, "  "));
+                    return result;
+                });
+            };
+            
+            descriptor.on("all", descriptor.__eventHandler);
+        } else {
+            descriptor.play = descriptor.__play;
+            descriptor.batchPlay = descriptor.__batchPlay;
+            descriptor.get = descriptor.__get;
+            descriptor.off("all", descriptor.__eventHandler);
+        }
+
+        return this.transfer(preferencesActions.setPreference, "descriptorLoggingEnabled", enabled);
+    };
+    logDescriptor.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        transfers: [preferencesActions.setPreference]
+    };
+    
+    /**
+     * Debug-only method to toggle Headlights logging
+     * 
+     * @param {Object} options
+     * @param {Object} options.toggle
+     * @return {Promise}
+     */
+    var logHeadlights = function (options) {
+        if (!__PG_DEBUG__) {
+            return Promise.resolve();
+        }
+        
+        options = _.merge({ toggle: true }, options);
+
+        var preferencesStore = this.flux.store("preferences"),
+            preferences = preferencesStore.getState(),
+            enabled = preferences.get("headlightsLoggingEnabled"),
+            headlights = require("js/util/headlights");
+        
+        if (options.toggle) {
+            enabled = !enabled;
+        }
+        
+        headlights._logEvent = headlights._logEvent || headlights.logEvent;
+        
+        headlights.logEvent = function (category, subcategory, event) {
+            if (enabled) {
+                log.debug("[Headlights] Logging: %s > %s > %s", category, subcategory, event);
+            }
+
+            return headlights._logEvent(category, subcategory, event);
+        };
+
+        return this.transfer(preferencesActions.setPreference, "headlightsLoggingEnabled", enabled);
+    };
+    logHeadlights.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        transfers: [preferencesActions.setPreference]
+    };
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -656,12 +785,16 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        return this.transfer("search.commands.registerMenuCommandSearch");
+        var registerSearchPromise = this.transfer("search.commands.registerMenuCommandSearch"),
+            logDescriptorPromise = this.transfer("menu.logDescriptor", { toggle: false }),
+            logHeadlightsPromise = this.transfer("menu.logHeadlights", { toggle: false });
+
+        return Promise.join(registerSearchPromise, logDescriptorPromise, logHeadlightsPromise);
     };
     afterStartup.action = {
         reads: [],
         writes: [],
-        transfers: ["search.commands.registerMenuCommandSearch"]
+        transfers: ["search.commands.registerMenuCommandSearch", "menu.logDescriptor", "menu.logHeadlights"]
     };
 
     /**
@@ -703,6 +836,8 @@ define(function (require, exports) {
     exports.togglePolicyFrames = togglePolicyFrames;
     exports.togglePostconditions = togglePostconditions;
     exports.toggleActionTransferLogging = toggleActionTransferLogging;
+    exports.logDescriptor = logDescriptor;
+    exports.logHeadlights = logHeadlights;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;

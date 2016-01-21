@@ -507,6 +507,14 @@
         "TOGGLE_ACTION_TRANSFER_LOGGING": {
             "$action": "menu.toggleActionTransferLogging",
             "$enable-rule": "always-except-modal"
+        },
+        "TOGGLE_DESCRIPTOR_LOGGING": {
+            "$action": "menu.logDescriptor",
+            "$enable-rule": "always-except-modal"
+        },
+        "TOGGLE_HEADLIGHTS_LOGGING": {
+            "$action": "menu.logHeadlights",
+            "$enable-rule": "always-except-modal"
         }
     },
     "HELP": {
