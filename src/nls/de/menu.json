@@ -232,9 +232,7 @@
         "OPEN_DOCUMENT_TWO": "Dokumentname 2",
         "OPEN_DOCUMENT_THREE": "…usw…"
     },
-    "HELP": {
-        "$MENU": "Hilfe",
-        "ABOUT_WIN": "Über Photoshop…",
+    "DEBUG": {
         "RUN_TESTS": "Tests ausführen...",
         "ACTION_FAILURE": "Test-Aktions-Fehler…",
         "TRANSFER_FAILURE": "Testübertragungsfehler…",
@@ -244,7 +242,11 @@
         "RESET_RECESS": "Design-Bereich zurücksetzen",
         "TOGGLE_POLICY_FRAMES": "Richtlinien-Rahmen anzeigen",
         "TOGGLE_POSTCONDITIONS": "Nachbedingungen überprüfen",
-        "TOGGLE_ACTION_TRANSFER_LOGGING": "Protokollaktionsübertragungen",
+        "TOGGLE_ACTION_TRANSFER_LOGGING": "Protokollaktionsübertragungen"    
+    },
+    "HELP": {
+        "$MENU": "Hilfe",
+        "ABOUT_WIN": "Über Photoshop…",
         "OPEN_FIRST_LAUNCH": "Design-Bereich – Einführung",
         "SHORTCUTS": "Tastaturbefehle",
         "TWITTER": "Design-Bereich auf Twitter",

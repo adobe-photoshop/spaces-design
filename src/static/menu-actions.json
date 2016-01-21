@@ -462,15 +462,8 @@
             "$enable-rule": "always"
         }
     },
-    "HELP": {
+    "DEBUG": {
         "$enable-rule": "always",
-        "ABOUT_WIN": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 1
-            },
-            "$enable-rule": "always-except-modal"
-        },
         "RUN_TESTS": {
             "$action": "menu.runTests",
             "$enable-rule": "always-except-modal"
@@ -513,6 +506,16 @@
         },
         "TOGGLE_ACTION_TRANSFER_LOGGING": {
             "$action": "menu.toggleActionTransferLogging",
+            "$enable-rule": "always-except-modal"
+        }
+    },
+    "HELP": {
+        "$enable-rule": "always",
+        "ABOUT_WIN": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1
+            },
             "$enable-rule": "always-except-modal"
         },
         "OPEN_FIRST_LAUNCH": {

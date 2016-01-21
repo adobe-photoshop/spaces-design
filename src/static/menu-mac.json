@@ -707,32 +707,8 @@
             ]
         },
         {
-            "id": "HELP",
-            "isOSHelpMenu": true,
+            "id": "DEBUG",
             "submenu": [
-                {
-                    "id": "HELPX"
-                },
-                {
-                    "id": "FORUM"
-                },
-                {
-                    "id": "TWITTER"
-                },
-
-                {
-                    "separator": true
-                },
-                {
-                    "id": "SHORTCUTS"
-                },
-                {
-                    "id": "OPEN_FIRST_LAUNCH"
-                },
-                {
-                    "separator": true,
-                    "debug": true
-                },
                 {
                     "id": "RUN_TESTS",
                     "shortcut": {
@@ -810,6 +786,31 @@
                 {
                     "id": "TOGGLE_ACTION_TRANSFER_LOGGING",
                     "debug": true
+                }
+            ]
+        },
+        {
+            "id": "HELP",
+            "isOSHelpMenu": true,
+            "submenu": [
+                {
+                    "id": "HELPX"
+                },
+                {
+                    "id": "FORUM"
+                },
+                {
+                    "id": "TWITTER"
+                },
+
+                {
+                    "separator": true
+                },
+                {
+                    "id": "SHORTCUTS"
+                },
+                {
+                    "id": "OPEN_FIRST_LAUNCH"
                 }
             ]
         }

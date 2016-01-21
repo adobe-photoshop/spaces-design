@@ -63,7 +63,7 @@
             "NEXT_DOCUMENT": "ß",
             "RETURN_TO_STANDARD": "ß"
         },
-        "HELP": {
+        "DEBUG": {
             "RUN_TESTS": "?",
             "UPDATE_CURRENT_DOCUMENT": "#",
             "RESET_RECESS": "ESCAPE"
