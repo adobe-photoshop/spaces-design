@@ -612,7 +612,7 @@ define(function (require, exports) {
         }
 
         var currentLayers = currentDocument.layers.selected,
-            currentLayer = currentLayers.first();
+            currentLayer = currentLayers.last();
 
         // vector mask mode requires an active layer
         if (!currentLayer) {
