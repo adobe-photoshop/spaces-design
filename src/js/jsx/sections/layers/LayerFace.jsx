@@ -120,8 +120,8 @@ define(function (require, exports, module) {
                 this._scrollIntoView(false);
             }
             
-            this.getFlux().store("document").addLayerSelectionListener(this.props.layer.id,
-                this._handleSelectionChange);
+            this.getFlux().store("document").addLayerStateListener(this.props.layer.id,
+                this._handleLayerStateChange);
         },
         
         componentDidUpdate: function (prevProps, prevState) {
@@ -134,7 +134,7 @@ define(function (require, exports, module) {
         },
 
         componentWillUnmount: function () {
-            this.getFlux().store("document").removeLayerSelectionListener(this.props.layer.id);
+            this.getFlux().store("document").removeLayerStateListener(this.props.layer.id);
         },
         
         _scrollIntoView: function (prevSelected) {
@@ -161,18 +161,13 @@ define(function (require, exports, module) {
 
             // Suppress click propagation to avoid selection change
             event.stopPropagation();
-            
-            var nextExpandedState = !this.state.expanded;
-            
-            this.setState({
-                expanded: nextExpandedState
-            });
 
             // Presence of option/alt modifier determines whether all descendants are toggled
             var flux = this.getFlux(),
                 modifierStore = flux.store("modifier"),
                 modifierState = modifierStore.getState(),
-                descendants = modifierState.alt;
+                descendants = modifierState.alt,
+                nextExpandedState = !this.state.expanded;
 
             // The clicked layer may an have out-of-date document models due to
             // the aggressive SCU method in LayersPanel.
@@ -229,7 +224,7 @@ define(function (require, exports, module) {
         _handleLayerClick: function (event) {
             event.stopPropagation();
             this._suppressNextScrollTo = true;
-            
+
             var modifier = "select";
 
             if (event.shiftKey) {
@@ -241,7 +236,7 @@ define(function (require, exports, module) {
                     modifier = "add";
                 }
             }
-            
+
             // The clicked layer may an have out-of-date document models due to
             // the aggressive SCU method in LayersPanel.
             var documentID = this.props.document.id,
@@ -260,9 +255,10 @@ define(function (require, exports, module) {
          * 
          * @param {boolean} selected
          */
-        _handleSelectionChange: function (selected) {
+        _handleLayerStateChange: function (selected, expanded) {
             this.setState({
-                selected: selected
+                selected: selected,
+                expanded: expanded
             });
         },
 
@@ -280,7 +276,14 @@ define(function (require, exports, module) {
             this.setState({
                 visible: !toggled
             });
-            this.getFlux().actions.layers.setVisibility(this.props.document, this.props.layer, !toggled);
+            
+            // Performance Hack: delay the visibility action to promote browser paint event.
+            Promise
+                .bind(this)
+                .delay(0)
+                .then(function () {
+                    this.getFlux().actions.layers.setVisibility(this.props.document, this.props.layer, !toggled);
+                });
         },
 
         /**
@@ -586,7 +589,6 @@ define(function (require, exports, module) {
                 isDragging = this.state.isDragging,
                 isDropTarget = this.state.isDropTarget,
                 dropPosition = this.state.dropPosition,
-                hasChildren = this.props.hasChildren,
                 selected = this.state.selected,
                 expanded = this.state.expanded,
                 visible = this.state.visible;
