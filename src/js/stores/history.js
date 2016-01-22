@@ -131,6 +131,16 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Checks to see if a history log exists for the given document
+         *
+         * @param {number} documentID
+         * @return {boolean}
+         */
+        hasInitializedHistory: function (documentID) {
+            return this._history.has(documentID);
+        },
+
+        /**
          * Is there a next state which has a valid document model
          * TODO this could use an isValid boolean on the HistoryState?
          *
@@ -644,7 +654,8 @@ define(function (require, exports, module) {
                     nextState;
 
                 if (!history || !currentState || current < 0) {
-                    throw new Error("Could not amend history, document not properly initialized: " + documentID);
+                    log.warn("[History] Could not amend history, document history not found: " + documentID);
+                    return;
                 }
 
                 nextState = currentState.merge(stateProps);

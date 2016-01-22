@@ -726,6 +726,7 @@ define(function (require, exports) {
      */
     var initFontList = function (force) {
         var fontStore = this.flux.store("font"),
+            historyStore = this.flux.store("history"),
             fontState = fontStore.getState(),
             initialized = fontState.initialized;
 
@@ -761,7 +762,7 @@ define(function (require, exports) {
                     .getOpenDocuments()
                     .filter(function (document) {
                         // Skip uninitialized documents
-                        return document.layers;
+                        return document.layers && historyStore.hasInitializedHistory(document.id);
                     })
                     .map(function (document) {
                         var layers = document.layers.all,
