@@ -203,7 +203,6 @@ define(function (require, exports, module) {
                 break;
             default:
                 formattedValue = "";
-                log.warn("Non-finite value in NumberInput: ", value);
             }
 
             return formattedValue;
