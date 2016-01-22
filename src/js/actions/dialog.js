@@ -31,6 +31,7 @@ define(function (require, exports) {
 
     var events = require("../events"),
         policy = require("./policy"),
+        toolActions = require("./tools"),
         locks = require("js/locks"),
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy;
@@ -60,6 +61,8 @@ define(function (require, exports) {
             isModal = this.flux.store("dialog").isModalDialog(id),
             dispatchPromise = this.dispatchAsync(events.dialog.OPEN_DIALOG, payload),
             policyPromise = Promise.resolve();
+        
+        this.transfer(toolActions.changeVectorMaskMode, false);
 
         if (isModal) {
             var neverPropagatePolicy = new PointerEventPolicy(
@@ -78,7 +81,7 @@ define(function (require, exports) {
     openDialog.action = {
         reads: [],
         writes: [locks.JS_DIALOG],
-        transfers: [policy.addPointerPolicies],
+        transfers: [policy.addPointerPolicies, toolActions.changeVectorMaskMode],
         modal: true
     };
 

@@ -264,8 +264,16 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var currentLayer = currentLayers.first(),
-            bounds = boundsLib.bounds(currentDocument.layers.childBounds(currentLayer)),
+        var currentLayer = currentLayers.last(),
+            deletePromise;
+            
+        if (currentLayer.vectorMaskEnabled) {
+            deletePromise = this.transfer("mask.deleteVectorMask");
+        } else {
+            deletePromise = Promise.resolve();
+        }
+
+        var bounds = boundsLib.bounds(currentDocument.layers.childBounds(currentLayer)),
             options = {
                 historyStateInfo: {
                     name: nls.localize("strings.ACTIONS.ADD_VECTOR_MASK"),
@@ -289,7 +297,7 @@ define(function (require, exports) {
     applyRectangle.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: ["tools.select"]
+        transfers: ["tools.select", "mask.deleteVectorMask"]
     };
 
     /**
@@ -312,8 +320,16 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var currentLayer = currentLayers.first(),
-            bounds = currentLayer.bounds,
+        var currentLayer = currentLayers.last(),
+            deletePromise;
+
+        if (currentLayer.vectorMaskEnabled) {
+            deletePromise = this.transfer("mask.deleteVectorMask");
+        } else {
+            deletePromise = Promise.resolve();
+        }
+
+        var bounds = currentLayer.bounds,
             options = {
                 historyStateInfo: {
                     name: nls.localize("strings.ACTIONS.ADD_VECTOR_MASK"),
@@ -328,8 +344,11 @@ define(function (require, exports) {
                 vectorMaskLib.makeVectorMaskFromWorkPath(),
                 vectorMaskLib.deleteWorkPath()];
 
-        return layerActionsUtil.playSimpleLayerActions(currentDocument, layerList, createActions, true, options)
+        return deletePromise
             .bind(this)
+            .then(function () {
+                layerActionsUtil.playSimpleLayerActions(currentDocument, layerList, createActions, true, options)
+            })
             .then(function () {
                 return this.transfer("tools.select", toolStore.getToolByID("newSelect"));
             });
@@ -337,7 +356,7 @@ define(function (require, exports) {
     applyEllipse.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: ["tools.select"]
+        transfers: ["tools.select", "mask.deleteVectorMask"]
     };
 
     /**
