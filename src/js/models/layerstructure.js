@@ -859,14 +859,14 @@ define(function (require, exports, module) {
      */
     Object.defineProperty(LayerStructure.prototype,
         "hasStrictSelectedAncestor", objUtil.cachedLookupSpec(function (layer) {
-        var parent = this.parent(layer);
+            var parent = this.parent(layer);
 
-        if (parent) {
-            return this.hasSelectedAncestor(parent);
-        } else {
-            return false;
-        }
-    }));
+            if (parent) {
+                return this.hasSelectedAncestor(parent);
+            } else {
+                return false;
+            }
+        }));
 
     /**
      * Determine whether some ancestors of the given layer are selected.
@@ -931,22 +931,22 @@ define(function (require, exports, module) {
      */
     Object.defineProperty(LayerStructure.prototype, "childBounds", objUtil.cachedLookupSpec(function (layer) {
         switch (layer.kind) {
-            case Layer.KINDS.GROUP:
-                if (layer.isArtboard) {
-                    return layer.bounds;
-                }
+        case Layer.KINDS.GROUP:
+            if (layer.isArtboard) {
+                return layer.bounds;
+            }
 
-                var childBounds = this.children(layer)
+            var childBounds = this.children(layer)
                     .map(this.childBounds, this)
                     .filter(function (bounds) {
                         return bounds && bounds.area > 0;
                     });
 
-                return Bounds.union(childBounds);
-            case Layer.KINDS.GROUPEND:
-                return null;
-            default:
-                return layer.bounds;
+            return Bounds.union(childBounds);
+        case Layer.KINDS.GROUPEND:
+            return null;
+        default:
+            return layer.bounds;
         }
     }));
 
@@ -960,30 +960,30 @@ define(function (require, exports, module) {
      */
     Object.defineProperty(LayerStructure.prototype, "relativeChildBounds", objUtil.cachedLookupSpec(function (layer) {
         switch (layer.kind) {
-            case Layer.KINDS.GROUP:
-                if (layer.isArtboard) {
-                    return layer.bounds;
-                }
+        case Layer.KINDS.GROUP:
+            if (layer.isArtboard) {
+                return layer.bounds;
+            }
 
-                var childBounds = this.children(layer)
+            var childBounds = this.children(layer)
                     .map(this.relativeChildBounds, this)
                     .filter(function (bounds) {
                         return bounds && bounds.area > 0;
                     });
 
-                return Bounds.union(childBounds);
-            case Layer.KINDS.GROUPEND:
-                return null;
-            default:
-                var topAncestor = this.topAncestor(layer);
+            return Bounds.union(childBounds);
+        case Layer.KINDS.GROUPEND:
+            return null;
+        default:
+            var topAncestor = this.topAncestor(layer);
                 
-                if (topAncestor.isArtboard) {
-                    var ancestorBounds = topAncestor.bounds;
+            if (topAncestor.isArtboard) {
+                var ancestorBounds = topAncestor.bounds;
 
-                    return layer.bounds.relativeTo(ancestorBounds);
-                }
+                return layer.bounds.relativeTo(ancestorBounds);
+            }
 
-                return layer.bounds;
+            return layer.bounds;
         }
     }));
 
@@ -1102,8 +1102,7 @@ define(function (require, exports, module) {
                 layers: nextLayers,
                 index: nextIndex
             };
-        }.bind(this),
-        {
+        }.bind(this), {
             layers: nextStructure.layers,
             index: nextStructure.index
         });
@@ -1224,8 +1223,8 @@ define(function (require, exports, module) {
      */
     LayerStructure.prototype.setProperties = function (layerIDs, properties) {
         var updatedLayers = Immutable.Map(layerIDs.map(function (layerID) {
-                return [layerID, this.byID(layerID).setProperties(properties)];
-            }, this));
+            return [layerID, this.byID(layerID).setProperties(properties)];
+        }, this));
 
         return this.mergeIn(["layers"], updatedLayers);
     };

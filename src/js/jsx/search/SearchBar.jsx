@@ -375,21 +375,23 @@ define(function (require, exports, module) {
                 // we can guarentee the filters are the last group in this.state.groupedOptions,
                 // they will be moved to the top of the list of options last
                 var sortedOptions = group.sortBy(function (opt) {
-                        var priority = opt[1];
+                    var priority = opt[1];
 
-                        // group contains the autofill suggestion
-                        if (priority === 0) {
-                            topGroup = true;
-                        }
-                        return priority;
-                    }).map(function (opt) {
-                        var option = opt[0];
-                        //  group contains the filters so should be at top of list.
-                        if (option.type === "filter") {
-                            topGroup = true;
-                        }
-                        return option;
-                    });
+                    // group contains the autofill suggestion
+                    if (priority === 0) {
+                        topGroup = true;
+                    }
+                    return priority;
+                }).map(function (opt) {
+                    var option = opt[0];
+                    
+                    //  group contains the filters so should be at top of list.
+                    if (option.type === "filter") {
+                        topGroup = true;
+                    }
+
+                    return option;
+                });
 
                 if (topGroup) {
                     return sortedOptions.concat(filteredOptions);
@@ -469,33 +471,32 @@ define(function (require, exports, module) {
          */
         _handleKeyDown: function (event, selectedID) {
             switch (event.key) {
-                case "Return":
-                case "Enter":
-                    if (selectedID === PLACEHOLDER_ID) {
-                        this._handleDialogClick(event);
-                    } else if (_.contains(this.state.filterIDs, selectedID)) {
-                        this._updateFilter(selectedID);
+            case "Return":
+            case "Enter":
+                if (selectedID === PLACEHOLDER_ID) {
+                    this._handleDialogClick(event);
+                } else if (_.contains(this.state.filterIDs, selectedID)) {
+                    this._updateFilter(selectedID);
 
-                        // Keep the list open for the new filtered results
-                        return { preventListDefault: true };
-                    }
-                    break;
-                case "Tab":
-                    event.preventDefault();
+                    // Keep the list open for the new filtered results
                     return { preventListDefault: true };
-                case "Escape":
-                    if (selectedID === PLACEHOLDER_ID) {
-                        headlights.logEvent("tools", "search", "failed-search");
-                    }
-                    this.props.dismissDialog();
-                    break;
-                case "Backspace": {
-                    if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
-                        // Clear filter and icon
-                        this._updateFilter(null);
-                    }
-                    break;
                 }
+                break;
+            case "Tab":
+                event.preventDefault();
+                return { preventListDefault: true };
+            case "Escape":
+                if (selectedID === PLACEHOLDER_ID) {
+                    headlights.logEvent("tools", "search", "failed-search");
+                }
+                this.props.dismissDialog();
+                break;
+            case "Backspace":
+                if (this.refs.datalist.cursorAtBeginning() && this.state.filter.length > 0) {
+                    // Clear filter and icon
+                    this._updateFilter(null);
+                }
+                break;
             }
         },
 
@@ -521,10 +522,10 @@ define(function (require, exports, module) {
                 defaultNoOptions = nls.localize("strings.SEARCH.NO_OPTIONS");
 
             var noMatchesOption = {
-                    id: PLACEHOLDER_ID,
-                    title: noOptionsString ? noOptionsString : defaultNoOptions,
-                    type: "placeholder"
-                };
+                id: PLACEHOLDER_ID,
+                title: noOptionsString ? noOptionsString : defaultNoOptions,
+                type: "placeholder"
+            };
 
             // If we have applied a filter, change the placeholder text
             if (filters.length > 0) {

@@ -377,20 +377,20 @@ define(function (require, exports) {
             shapeLayerRef = layerLib.referenceBy.id(shapeLayer.id);
 
         var options = {
-            paintOptions: {
-                immediateUpdate: true,
-                quality: "draft"
+                paintOptions: {
+                    immediateUpdate: true,
+                    quality: "draft"
+                },
+                historyStateInfo: {
+                    name: nls.localize("strings.ACTIONS.ADD_VECTOR_MASK"),
+                    target: documentLib.referenceBy.id(currentDocument.id)
+                }
             },
-            historyStateInfo: {
-                name: nls.localize("strings.ACTIONS.ADD_VECTOR_MASK"),
-                target: documentLib.referenceBy.id(currentDocument.id)
-            }
-        },
             playObjects = [layerLib.select(shapeLayerRef),
                 vectorMaskLib.createMaskFromShape(maskLayer.id)],
             deleteShapeLayer = currentDocument.layers.all.some(function (layer) {
-                    return !layer.isGroupEnd && !layer.isGroup && layer.id !== shapeLayer.id;
-                });
+                return !layer.isGroupEnd && !layer.isGroup && layer.id !== shapeLayer.id;
+            });
 
         if (deleteShapeLayer) {
             playObjects.push(layerLib.delete(shapeLayerRef));

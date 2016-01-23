@@ -84,14 +84,14 @@ define(function (require, exports) {
      */
     var _strokeChangeDispatch = function (document, layers, strokeProperties, eventName, coalesce) {
         var payload = {
-                documentID: document.id,
-                layerIDs: collection.pluck(layers, "id"),
-                strokeProperties: strokeProperties,
-                coalesce: coalesce,
-                history: {
-                    newState: true
-                }
-            };
+            documentID: document.id,
+            layerIDs: collection.pluck(layers, "id"),
+            strokeProperties: strokeProperties,
+            coalesce: coalesce,
+            history: {
+                newState: true
+            }
+        };
 
         return this.dispatchAsync(eventName, payload);
     };
@@ -110,14 +110,14 @@ define(function (require, exports) {
     var _fillChangeDispatch = function (document, layers, fillProperties, eventName, coalesce) {
         // TODO layers param needs to be made fa real
         var payload = {
-                documentID: document.id,
-                layerIDs: collection.pluck(layers, "id"),
-                fillProperties: fillProperties,
-                coalesce: coalesce,
-                history: {
-                    newState: true
-                }
-            };
+            documentID: document.id,
+            layerIDs: collection.pluck(layers, "id"),
+            fillProperties: fillProperties,
+            coalesce: coalesce,
+            history: {
+                newState: true
+            }
+        };
 
         return this.dispatchAsync(eventName, payload);
     };

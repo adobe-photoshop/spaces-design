@@ -35,27 +35,6 @@ define(function (require, exports, module) {
         nls = require("js/util/nls"),
         collection = require("js/util/collection");
 
-    /**
-     * The set of possible stroke alignment types
-     * 
-     * @private
-     * @type {Immutable.OrderedMap.<Select.OptionRec>}
-     */
-    var _alignmentModes = Immutable.OrderedMap({
-        "INSIDE": {
-            id: "INSIDE",
-            title: nls.localize("strings.STYLE.STROKE.ALIGNMENT_MODES.INSIDE")
-        },
-        "CENTER": {
-            id: "CENTER",
-            title: nls.localize("strings.STYLE.STROKE.ALIGNMENT_MODES.CENTER")
-        },
-        "OUTSIDE": {
-            id: "OUTSIDE",
-            title: nls.localize("strings.STYLE.STROKE.ALIGNMENT_MODES.OUTSIDE")
-        }
-    });
-
     var StrokeAlignment = React.createClass({
         mixins: [FluxMixin],
 
@@ -90,16 +69,9 @@ define(function (require, exports, module) {
         render: function () {
             var alignments = this.props.alignments,
                 alignment = collection.uniformValue(alignments),
-                alignmentTitle = _alignmentModes.has(alignment) ? _alignmentModes.get(alignment).title :
-                    (alignments.size > 1 ? nls.localize("strings.TRANSFORM.MIXED") : alignment),
                 insideValue = this.props.insideValue || "INSIDE",
                 centerValue = this.props.centerValue || "CENTER",
                 outsideValue = this.props.outsideValue || "OUTSIDE";
-
-            // Hack to disable the Fill BlendMode instance
-            if (this.props.disabled) {
-                alignmentTitle = null;
-            }
 
             return (
                 <SplitButtonList size="column-9" className={this.props.className}>

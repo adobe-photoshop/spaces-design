@@ -72,10 +72,10 @@ define(function (require, exports) {
      */
     var _getGuidesForDocumentRef = function (docRef) {
         var rangeOpts = {
-                range: "guide",
-                index: 1,
-                count: -1
-            };
+            range: "guide",
+            index: 1,
+            count: -1
+        };
 
         var requiredPromise = descriptor.getPropertiesRange(docRef, rangeOpts,
                 _guideProperties, { failOnMissingProperty: true }),

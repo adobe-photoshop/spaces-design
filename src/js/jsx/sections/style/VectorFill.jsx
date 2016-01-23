@@ -94,21 +94,21 @@ define(function (require, exports, module) {
         */
         _downsampleFills: function (fills) {
             var colors = fills.map(function (fill) {
-                if (!fill) {
-                    return null;
-                }
+                    if (!fill) {
+                        return null;
+                    }
 
-                if (fill.type === contentLayerLib.contentTypes.SOLID_COLOR) {
-                    return fill.color;
-                } else {
-                    return fill.type;
-                }
-            }),
-            opacityPercentages = collection.pluck(fills, "color")
+                    if (fill.type === contentLayerLib.contentTypes.SOLID_COLOR) {
+                        return fill.color;
+                    } else {
+                        return fill.type;
+                    }
+                }),
+                opacityPercentages = collection.pluck(fills, "color")
                 .map(function (color) {
                     return color && color.opacity;
                 }),
-            enabledFlags = collection.pluck(fills, "enabled", false);
+                enabledFlags = collection.pluck(fills, "enabled", false);
 
             return {
                 colors: colors,

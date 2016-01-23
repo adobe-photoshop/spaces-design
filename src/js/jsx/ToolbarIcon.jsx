@@ -56,7 +56,7 @@ define(function (require, exports, module) {
         render: function () {
             var toolID = this.props.toolID;
             if (!this.props.toolID) {
-                return (<li key={this.props.index} className='tool-spacer'/>);
+                return (<li key={this.props.index} className="tool-spacer"/>);
             }
 
             var toolStore = this.getFlux().store("tool"),

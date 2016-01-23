@@ -88,41 +88,41 @@ define(function (require, exports) {
         
         var strs = attrs.map(function (attr) {
             switch (attr) {
-                case "color":
-                    var color = getCharStyleColor(element);
-                    return color ? color.toHexString().toUpperCase() : null;
+            case "color":
+                var color = getCharStyleColor(element);
+                return color ? color.toHexString().toUpperCase() : null;
                     
-                case "fontFamily":
-                    return font ? font.family : null;
+            case "fontFamily":
+                return font ? font.family : null;
                 
-                case "fontSize":
-                    var fontSize = style && style.fontSize;
-                    return fontSize ? Math.ceil(fontSize.value * 10) / 10 + fontSize.type : null;
+            case "fontSize":
+                var fontSize = style && style.fontSize;
+                return fontSize ? Math.ceil(fontSize.value * 10) / 10 + fontSize.type : null;
 
-                case "fontStyle":
-                    return font ? font.style : null;
+            case "fontStyle":
+                return font ? font.style : null;
                 
-                case "leading":
-                    var leading;
+            case "leading":
+                var leading;
                     
-                    if (style && style.adbeAutoLeading) {
-                        leading = nls.localize("strings.LIBRARIES.LEADING_AUTO");
-                    } else if (style && style.lineHeight && style.lineHeight.value) {
-                        leading = (Math.round(style.lineHeight.value * 100) / 100) + style.lineHeight.type;
-                    }
+                if (style && style.adbeAutoLeading) {
+                    leading = nls.localize("strings.LIBRARIES.LEADING_AUTO");
+                } else if (style && style.lineHeight && style.lineHeight.value) {
+                    leading = (Math.round(style.lineHeight.value * 100) / 100) + style.lineHeight.type;
+                }
                     
-                    return leading ? nls.localize("strings.LIBRARIES.LEADING").replace("%s", leading) : null;
+                return leading ? nls.localize("strings.LIBRARIES.LEADING").replace("%s", leading) : null;
                 
-                case "tracking":
-                    var tracking;
+            case "tracking":
+                var tracking;
                     
-                    if (style && style.adbeTracking) {
-                        tracking = style.adbeTracking;
-                    } else if (style && style.letterSpacing) {
-                        tracking = style.letterSpacing.value * 1000;
-                    }
+                if (style && style.adbeTracking) {
+                    tracking = style.adbeTracking;
+                } else if (style && style.letterSpacing) {
+                    tracking = style.letterSpacing.value * 1000;
+                }
                     
-                    return tracking ? nls.localize("strings.LIBRARIES.TRACKING").replace("%s", tracking) : null;
+                return tracking ? nls.localize("strings.LIBRARIES.TRACKING").replace("%s", tracking) : null;
                 
             }
         });

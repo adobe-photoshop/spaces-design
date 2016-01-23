@@ -90,13 +90,13 @@ define(function (require, exports, module) {
             var key = event.key;
 
             switch (key) {
-                case "Escape":
-                    this.releaseFocus()
+            case "Escape":
+                this.releaseFocus()
                         .bind(this)
                         .then(function () {
                             ReactDOM.findDOMNode(this).blur();
                         });
-                    break;
+                break;
             }
 
             this.props.onKeyDown(event);
@@ -141,9 +141,9 @@ define(function (require, exports, module) {
         propTypes: {
             id: React.PropTypes.string.isRequired,
             defaultValue: React.PropTypes.oneOfType([
-                    React.PropTypes.instanceOf(Color),
-                    React.PropTypes.instanceOf(Immutable.Iterable)
-                ]),
+                React.PropTypes.instanceOf(Color),
+                React.PropTypes.instanceOf(Immutable.Iterable)
+            ]),
             onFocus: React.PropTypes.func,
             onChange: React.PropTypes.func.isRequired,
             onColorChange: React.PropTypes.func.isRequired,
@@ -281,10 +281,10 @@ define(function (require, exports, module) {
             var key = event.key;
 
             switch (key) {
-                case "Return":
-                case "Enter":
-                    this._toggleColorPicker(event);
-                    break;
+            case "Return":
+            case "Enter":
+                this._toggleColorPicker(event);
+                break;
             }
         },
 
@@ -380,9 +380,9 @@ define(function (require, exports, module) {
                 colorTiny = colorInfo.colorTiny;
 
             var swatchClassProps = {
-                    "color-input": true,
-                    "color-input__mixed": mixed
-                };
+                "color-input": true,
+                "color-input__mixed": mixed
+            };
 
             // setup text and swatch based on the mixed-ness of the inputs
             if (value) {

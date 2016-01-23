@@ -93,8 +93,7 @@ define(function (require, exports) {
      */
     var debounce = function (fn, receiver, delay, immediate) {
         var debounceTimer = null,
-            pending = null,
-            promise = null;
+            pending = null;
 
         // Handle omitted receiver
         if (typeof receiver === "number") {
@@ -120,16 +119,12 @@ define(function (require, exports) {
                 debounceTimer = null;
             } else if (immediate) {
                 immediate = false;
-                promise = fn.apply(self, pending)
-                    .finally(function () {
-                        promise = null;
-                    });
+                fn.apply(self, pending);
             }
 
             debounceTimer = window.setTimeout(function () {
-                promise = fn.apply(self, pending)
+                fn.apply(self, pending)
                     .finally(function () {
-                        promise = null;
                         debounceTimer = null;
                     });
             }, delay);

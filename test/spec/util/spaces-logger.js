@@ -138,20 +138,20 @@ define(function (require, exports, module) {
         }, this);
 
         this._originalSpaces.ps.descriptor.batchPlay(commands, options, function (err, results, errors) {
-                if (err && !options.continueOnError) {
-                    var throwable = new Error("Unable to log aborted batchPlay call");
-                    throwable.cause = err;
-                    throw throwable;
-                }
+            if (err && !options.continueOnError) {
+                var throwable = new Error("Unable to log aborted batchPlay call");
+                throwable.cause = err;
+                throw throwable;
+            }
 
-                results.forEach(function (result, index) {
-                    var call = this._calls[start + index];
-                    call.response.err = errors[start + index];
-                    call.response.result = result;
-                }, this);
+            results.forEach(function (result, index) {
+                var call = this._calls[start + index];
+                call.response.err = errors[start + index];
+                call.response.result = result;
+            }, this);
 
-                callback(err, results, errors);
-            }.bind(this));
+            callback(err, results, errors);
+        }.bind(this));
     };
 
     module.exports = SpacesLogger;

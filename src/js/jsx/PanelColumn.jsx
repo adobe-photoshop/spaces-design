@@ -38,9 +38,9 @@ define(function (require, exports, module) {
         
         render: function () {
             var className = classnames({
-                    "panel": true,
-                    "panel__visible": this.props.visible
-                });
+                "panel": true,
+                "panel__visible": this.props.visible
+            });
 
             return (
                 <div className={className}>

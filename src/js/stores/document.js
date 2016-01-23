@@ -651,8 +651,8 @@ define(function (require, exports, module) {
          */
         _updateLayerSelectionByIndices: function (document, selectedIndices) {
             var selectedIDs = selectedIndices.map(function (index) {
-                    return document.layers.byIndex(index + 1).id;
-                });
+                return document.layers.byIndex(index + 1).id;
+            });
 
             this._updateLayerSelection(document, selectedIDs, null);
         },

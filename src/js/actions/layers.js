@@ -156,8 +156,8 @@ define(function (require, exports) {
             extensionPromise = Promise.resolve();
         } else {
             var extensionPlayObjects = references.map(function (ref) {
-                    return layerLib.getExtensionData(ref[0], ref[1], METADATA_NAMESPACE);
-                });
+                return layerLib.getExtensionData(ref[0], ref[1], METADATA_NAMESPACE);
+            });
 
             extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
                 .map(function (extensionData) {
@@ -631,9 +631,9 @@ define(function (require, exports) {
             .bind(this)
             .then(function (descriptors) {
                 var payload = {
-                        documentID: document.id,
-                        descriptors: descriptors
-                    };
+                    documentID: document.id,
+                    descriptors: descriptors
+                };
                 this.dispatch(events.document.history.RESET_LAYERS_BY_INDEX, payload);
             });
     };
@@ -660,11 +660,11 @@ define(function (require, exports) {
 
         var docRef = documentLib.referenceBy.id(document.id),
             layerRefs = layers.map(function (layer) {
-            return [
-                docRef,
-                layerLib.referenceBy.id(layer.id)
-            ];
-        }).toArray();
+                return [
+                    docRef,
+                    layerLib.referenceBy.id(layer.id)
+                ];
+            }).toArray();
 
         // convert to range fetch in case of all-layers?
         return descriptor.batchMultiGetProperties(layerRefs, ["layerID", "visible"])
@@ -765,16 +765,16 @@ define(function (require, exports) {
         }
 
         var collapsedAncestorSet = layers.reduce(function (collapsedAncestors, layer) {
-            if (document.layers.hasCollapsedAncestor(layer)) {
-                document.layers.strictAncestors(layer).forEach(function (ancestor) {
-                    if (!ancestor.expanded) {
-                        collapsedAncestors.add(ancestor);
-                    }
-                });
-            }
-            return collapsedAncestors;
-        }, new Set(), this),
-        collapsedAncestors = Immutable.Set(collapsedAncestorSet).toList();
+                if (document.layers.hasCollapsedAncestor(layer)) {
+                    document.layers.strictAncestors(layer).forEach(function (ancestor) {
+                        if (!ancestor.expanded) {
+                            collapsedAncestors.add(ancestor);
+                        }
+                    });
+                }
+                return collapsedAncestors;
+            }, new Set(), this),
+            collapsedAncestors = Immutable.Set(collapsedAncestorSet).toList();
 
         return this.transfer("groups.setGroupExpansion", document, collapsedAncestors, true);
     };
@@ -1383,9 +1383,9 @@ define(function (require, exports) {
             .bind(this)
             .then(function (payload) {
                 return _getSelectedLayerIndices(document).then(function (selectedIndices) {
-                        payload.selectedIndices = selectedIndices;
-                        return payload;
-                    });
+                    payload.selectedIndices = selectedIndices;
+                    return payload;
+                });
             })
             .then(function (payload) {
                 this.dispatch(events.document.history.REORDER_LAYERS, payload);
@@ -1682,7 +1682,7 @@ define(function (require, exports) {
                 payload),
             layerPlayObjects = layerSpec.map(function (layer) {
                 var layerRef = layerLib.referenceBy.id(layer.id),
-                proportionalObj = layerLib.setProportionalScaling(layerRef, proportional);
+                    proportionalObj = layerLib.setProportionalScaling(layerRef, proportional);
 
                 return {
                     layer: layer,

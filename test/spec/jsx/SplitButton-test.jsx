@@ -21,6 +21,8 @@
  * 
  */
 
+/* global module, test, expect, ok, notEqual */
+
 /**
  * Very minimal test of the React Component SplitButton
  */
@@ -28,8 +30,7 @@
 define(function (require) {
     "use strict";
 
-    var React = require("react"),
-        ReactDOM = require("react-dom"),
+    var ReactDOM = require("react-dom"),
         TestUtils = require("react-addons-test-utils"),
         _ = require("lodash");
 

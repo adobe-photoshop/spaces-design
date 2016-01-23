@@ -72,7 +72,8 @@ define(function (require, exports, module) {
             return FORMATS_OPTIONS.findIndex(function (formatOption) {
                 return formatOption.format === format && formatOption.quality === quality;
             });
-        }, function (format, quality) {
+        },
+        function (format, quality) {
             return format + quality;
         });
 

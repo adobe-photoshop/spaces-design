@@ -302,14 +302,14 @@ define(function (require, exports) {
         switch (horizontalDirection) {
             // This is the default case in which no left offset needs to be calculated. 
             // This case is included for self-documentation.
-            case "l":
-                break;
-            case "m":
-                overallLeftOffset = (overallBounds.width - size.w) / 2;
-                break;
-            case "r":
-                overallLeftOffset = overallBounds.width - size.w;
-                break;
+        case "l":
+            break;
+        case "m":
+            overallLeftOffset = (overallBounds.width - size.w) / 2;
+            break;
+        case "r":
+            overallLeftOffset = overallBounds.width - size.w;
+            break;
         }
         
         // if the height input was changed
@@ -317,14 +317,14 @@ define(function (require, exports) {
         switch (verticalDirection) {
             // This is the default case in which no top offset needs to be calculated. 
             // This case is included for self-documentation.
-            case "t":
-                break;
-            case "c":
-                overallTopOffset = (overallBounds.height - size.h) / 2;
-                break;
-            case "b":
-                overallTopOffset = overallBounds.height - size.h;
-                break;
+        case "t":
+            break;
+        case "c":
+            overallTopOffset = (overallBounds.height - size.h) / 2;
+            break;
+        case "b":
+            overallTopOffset = overallBounds.height - size.h;
+            break;
         }
 
         // We used to pass Photoshop just the width and height, and groups would be resized
@@ -1201,8 +1201,8 @@ define(function (require, exports) {
         
         var documentRef = documentLib.referenceBy.id(document.id),
             layerRef = layers.map(function (layer) {
-                    return layerLib.referenceBy.id(layer.id);
-                })
+                return layerLib.referenceBy.id(layer.id);
+            })
                 .unshift(documentRef)
                 .toArray(),
             rotateObj = layerLib.rotate(layerRef, angle),

@@ -114,11 +114,11 @@ define(function (require, exports) {
         };
 
         var playOptions = suppressHistory ? undefined : {
-                historyStateInfo: {
-                    name: nls.localize("strings.ACTIONS.MODIFY_EXPORT_ASSETS"),
-                    target: documentLib.referenceBy.id(documentID)
-                }
-            };
+            historyStateInfo: {
+                name: nls.localize("strings.ACTIONS.MODIFY_EXPORT_ASSETS"),
+                target: documentLib.referenceBy.id(documentID)
+            }
+        };
 
         // prepare play objects for document or layer level, based on existence of layerIDs
         if (layerIDs) {
@@ -560,10 +560,10 @@ define(function (require, exports) {
 
         if (layer && (!layerExports || layerExports.isEmpty())) {
             var payload = {
-                    documentID: documentID,
-                    layerIDs: Immutable.List.of(layer.id),
-                    exportEnabled: true
-                };
+                documentID: documentID,
+                layerIDs: Immutable.List.of(layer.id),
+                exportEnabled: true
+            };
             return this.dispatchAsync(events.document.history.LAYER_EXPORT_ENABLED_CHANGED, payload)
                 .bind(this)
                 .then(function () {
@@ -832,31 +832,31 @@ define(function (require, exports) {
 
         // prompt for folder and then export to the result.
         // resolve immediately if no folder is returned
-        return this.transfer(promptForFolder)
-            .bind(this)
-            .then(function (baseDir) {
-                if (!baseDir) {
+        var promptPromise = this.transfer(promptForFolder);
+
+        return Promise.join(promptPromise, quickAddPromise, function (baseDir) {
+            if (!baseDir) {
+                return Promise.resolve();
+            }
+
+            _lastFolderPath = baseDir;
+
+            return _setAssetsRequested.call(this, document.id)
+                .bind(this)
+                .then(_setServiceBusy.bind(this, true))
+                .then(function () {
+                    // fetch documentExports anew, in case quick-add added any assets
+                    var documentExports = this.flux.stores.export.getDocumentExports(document.id, true);
+
+                    // Iterate over the root document assets, and export them
+                    var exportList = documentExports.rootExports.map(function (asset, index) {
+                        return _exportAsset.call(this, document, null, index, asset, _lastFolderPath);
+                    }, this);
+
+                    _batchExports.call(this, exportList);
                     return Promise.resolve();
-                }
-                
-                _lastFolderPath = baseDir;
-
-                return _setAssetsRequested.call(this, document.id)
-                    .bind(this)
-                    .then(_setServiceBusy.bind(this, true))
-                    .then(function () {
-                        // fetch documentExports anew, in case quick-add added any assets
-                        var documentExports = this.flux.stores.export.getDocumentExports(document.id, true);
-
-                        // Iterate over the root document assets, and export them
-                        var exportList = documentExports.rootExports.map(function (asset, index) {
-                            return _exportAsset.call(this, document, null, index, asset, _lastFolderPath);
-                        }, this);
-
-                        _batchExports.call(this, exportList);
-                        return Promise.resolve();
-                    });
-            });
+                });
+        }.bind(this));
     };
     exportDocumentAssets.action = {
         reads: [locks.JS_DOC, locks.JS_EXPORT],

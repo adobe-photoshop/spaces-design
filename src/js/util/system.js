@@ -30,20 +30,20 @@ define(function (require, exports) {
         language = parts.length > 0 && parts[0];
     
     switch (language) {
-        case "en":
-            language = "en";
-            break;
-        case "de":
-            language = "de";
-            break;
-        case "fr":
-            language = "fr";
-            break;
-        case "ja":
-            language = "ja";
-            break;
-        default:
-            language = "en";
+    case "en":
+        language = "en";
+        break;
+    case "de":
+        language = "de";
+        break;
+    case "fr":
+        language = "fr";
+        break;
+    case "ja":
+        language = "ja";
+        break;
+    default:
+        language = "en";
     }
 
     exports.isMac = isMac;

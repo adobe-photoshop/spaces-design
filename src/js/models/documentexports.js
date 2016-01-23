@@ -99,7 +99,7 @@ define(function (require, exports, module) {
             var assetProps = layer.artboardEnabled && layer.exportAssets === undefined ?
                 [{}] :
                 layer.exportAssets,
-            exportList = _toListOfAssets(assetProps);
+                exportList = _toListOfAssets(assetProps);
             return [layer.layerID, exportList];
         }));
     };

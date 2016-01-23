@@ -39,10 +39,10 @@ define(function (require, exports) {
      */
     var select = function () {
         var toolOptions = {
-                "$AtSl": false, // Don't auto select on drag
-                "$ASGr": false, // Don't auto select Groups,
-                "$Abbx": true // Show transform controls
-            };
+            "$AtSl": false, // Don't auto select on drag
+            "$ASGr": false, // Don't auto select Groups,
+            "$Abbx": true // Show transform controls
+        };
 
         var toolStore = this.flux.store("tool"),
             applicationStore = this.flux.store("application"),

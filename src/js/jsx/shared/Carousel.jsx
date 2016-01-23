@@ -135,13 +135,13 @@ define(function (require, exports, module) {
          */
         _buildNav: function () {
             return this.props.items.map(function (item, idx) {
-                    var classSet = classnames({
-                        "current": idx === this.state.index,
-                        "dot": true
-                    });
+                var classSet = classnames({
+                    "current": idx === this.state.index,
+                    "dot": true
+                });
 
-                    if (idx !== 0) {
-                        return (
+                if (idx !== 0) {
+                    return (
                             <a
                                 key={"link" + idx}
                                 className={classSet}
@@ -151,8 +151,8 @@ define(function (require, exports, module) {
                                 <h3>{nls.localize("strings.FIRST_LAUNCH.SLIDES." + idx + ".TITLE")}</h3>
                             </a>
                         );
-                    }
-                }, this);
+                }
+            }, this);
         },
         
         /**

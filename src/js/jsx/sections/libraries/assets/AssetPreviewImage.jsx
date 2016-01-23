@@ -109,7 +109,8 @@ define(function (require, exports, module) {
                 renditionSize = element.type === librariesAction.ELEMENT_GRAPHIC_TYPE ?
                     librariesAction.RENDITION_GRAPHIC_SIZE : librariesAction.RENDITION_DEFAULT_SIZE;
 
-            this._renditionUpdate = Promise.fromCallback(function (cb) {
+            this._renditionUpdate = Promise
+                .fromCallback(function (cb) {
                     element.getRenditionPath(renditionSize, cb);
                 })
                 .bind(this)

@@ -163,19 +163,19 @@ define(function (require, exports, module) {
         } else {
             switch (layerKind) {
                 // Photoshop's group / adjustment bounds are not useful, so ignore them.
-                case Layer.KINDS.GROUP:
-                case Layer.KINDS.GROUPEND:
-                case Layer.KINDS.ADJUSTMENT:
-                    return null;
-                case Layer.KINDS.TEXT:
-                    boundsObject = descriptor.boundingBox;
-                    break;
-                case Layer.KINDS.VECTOR:
-                    boundsObject = descriptor.boundsNoEffects;
-                    break;
-                default:
-                    boundsObject = descriptor.boundsNoMask;
-                    break;
+            case Layer.KINDS.GROUP:
+            case Layer.KINDS.GROUPEND:
+            case Layer.KINDS.ADJUSTMENT:
+                return null;
+            case Layer.KINDS.TEXT:
+                boundsObject = descriptor.boundingBox;
+                break;
+            case Layer.KINDS.VECTOR:
+                boundsObject = descriptor.boundsNoEffects;
+                break;
+            default:
+                boundsObject = descriptor.boundsNoMask;
+                break;
             }
 
             var model = {};
