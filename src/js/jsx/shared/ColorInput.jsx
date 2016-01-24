@@ -51,7 +51,8 @@ define(function (require, exports, module) {
     var DISMISS_ON_KEYS = [
         { key: os.eventKeyCode.ESCAPE, modifiers: null },
         { key: os.eventKeyCode.ENTER, modifiers: null },
-        { key: os.eventKeyCode.TAB, modifiers: null }
+        { key: os.eventKeyCode.TAB, modifiers: null },
+        { key: os.eventKeyCode.TAB, modifiers: { shift: true } }
     ];
     
     /**

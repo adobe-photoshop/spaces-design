@@ -34,7 +34,8 @@ define(function (require, exports, module) {
 
     var os = require("adapter").os;
 
-    var math = require("js/util/math");
+    var math = require("js/util/math"),
+        keyUtil = require("js/util/key");
 
     /**
      * Valid methods of positioning the dialog
@@ -329,8 +330,10 @@ define(function (require, exports, module) {
             if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
                 var flux = this.getFlux();
                 this.props.dismissOnKeys.forEach(function (keyObj) {
+                    var modifiers = keyObj.modifiers || {};
+
                     flux.actions.shortcuts.addShortcut(keyObj.key,
-                        keyObj.modifiers || {}, this.toggle, this.props.id + keyObj.key, true);
+                        modifiers, this.toggle, this.props.id + keyUtil.modifiersToBits(modifiers) + keyObj.key, true);
                 }, this);
             }
         },
@@ -355,7 +358,10 @@ define(function (require, exports, module) {
             if (this.props.dismissOnKeys && _.isArray(this.props.dismissOnKeys)) {
                 var flux = this.getFlux();
                 this.props.dismissOnKeys.forEach(function (keyObj) {
-                    flux.actions.shortcuts.removeShortcut(this.props.id + keyObj.key);
+                    var modifiers = keyObj.modifiers || {},
+                        modifierKey = keyUtil.modifiersToBits(modifiers);
+
+                    flux.actions.shortcuts.removeShortcut(this.props.id + modifierKey + keyObj.key);
                 }, this);
             }
         },

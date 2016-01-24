@@ -670,6 +670,7 @@ define(function (require, exports, module) {
     var ColorFields = React.createClass({
         propTypes: {
             color: React.PropTypes.instanceOf(HSVAColor),
+            onInputFocus: React.PropTypes.func,
             onChange: React.PropTypes.func
         },
 
@@ -715,6 +716,36 @@ define(function (require, exports, module) {
             this.props.onChange(hsv);
         },
 
+        /**
+         * Calls the passed in onInputFocus handler
+         * since component methods can only be bound to the
+         * owner component
+         *
+         * @private
+         * @param {string} refName ref name of the component that's focused
+         */
+        _handleInputFocus: function (refName) {
+            this.setState({
+                "lastFocusRef": refName
+            });
+
+            // This makes sure to update the owner component's focus Ref
+            this.props.onFocus();
+        },
+
+        /**
+         * Focuses the last focused input in this component
+         * Called from ColorPicker after mouse up
+         */
+        focusLastInput: function () {
+            var lastFocusInput = this.refs[this.state.lastFocusRef];
+
+            if (lastFocusInput) {
+                lastFocusInput.acquireFocus();
+                ReactDOM.findDOMNode(lastFocusInput).focus();
+            }
+        },
+
         render: function () {
             // If the color is already in hsv format, grab current values
             // tinycolor resets 0 saturation hsv colors h to 0 as well.
@@ -734,6 +765,8 @@ define(function (require, exports, module) {
                             disabled={this.props.disabled}
                             value={rgb.r}
                             onChange={this._handleRGBChange.bind(this, "r")}
+                            onFocus={this._handleInputFocus.bind(this, "RGB_R")}
+                            ref="RGB_R"
                             min={0}
                             max={255}
                             size="column-5" />
@@ -746,6 +779,8 @@ define(function (require, exports, module) {
                             disabled={this.props.disabled}
                             value={rgb.g}
                             onChange={this._handleRGBChange.bind(this, "g")}
+                            onFocus={this._handleInputFocus.bind(this, "RGB_G")}
+                            ref="RGB_G"
                             min={0}
                             max={255}
                             size="column-5" />
@@ -758,6 +793,8 @@ define(function (require, exports, module) {
                             disabled={this.props.disabled}
                             value={rgb.b}
                             onChange={this._handleRGBChange.bind(this, "b")}
+                            onFocus={this._handleInputFocus.bind(this, "RGB_B")}
+                            ref="RGB_B"
                             min={0}
                             max={255}
                             size="column-5" />
@@ -770,6 +807,8 @@ define(function (require, exports, module) {
                             disabled={this.props.disabled}
                             value={Math.round(hsv.h)}
                             onChange={this._handleHSVChange.bind(this, "h")}
+                            onFocus={this._handleInputFocus.bind(this, "HSB_H")}
+                            ref="HSB_H"
                             min={0}
                             max={360}
                             size="column-5" />
@@ -782,6 +821,8 @@ define(function (require, exports, module) {
                             disabled={this.props.disabled}
                             value={Math.round(hsv.s * 100)}
                             onChange={this._handleHSVChange.bind(this, "s")}
+                            onFocus={this._handleInputFocus.bind(this, "HSB_S")}
+                            ref="HSB_S"
                             min={0}
                             max={100}
                             size="column-5" />
@@ -794,6 +835,8 @@ define(function (require, exports, module) {
                             disabled={this.props.disabled}
                             value={Math.round(hsv.v * 100)}
                             onChange={this._handleHSVChange.bind(this, "v")}
+                            onFocus={this._handleInputFocus.bind(this, "HSB_B")}
+                            ref="HSB_B"
                             min={0}
                             max={100}
                             size="column-5" />
@@ -966,6 +1009,25 @@ define(function (require, exports, module) {
          */
         _handleMouseUp: function (event) {
             this.stopCoalescing(event);
+            
+            var focusRef = this.state.focusedInputRef,
+                focusComponent = this.refs[focusRef];
+
+            if (!focusRef || !focusComponent) {
+                return;
+            }
+
+            if (focusComponent.focus) {
+                // TextInput
+                focusComponent.focus();
+            } else if (focusComponent.focusLastInput) {
+                // ColorFields - it handles it's own children
+                focusComponent.focusLastInput();
+            } else {
+                // NumberInput
+                focusComponent.acquireFocus();
+                ReactDOM.findDOMNode(focusComponent).focus();
+            }
         },
 
         /**
@@ -1029,10 +1091,23 @@ define(function (require, exports, module) {
         },
 
         /**
+         * Handles one of the inputs being focused in the color picker
+         * Saving it's ref in state so after slider/map use we can focus it
+         *
+         * @private
+         * @param {string} refName `ref` value of the Component
+         */
+        _handleInputFocus: function (refName) {
+            this.setState({
+                focusedInputRef: refName
+            });
+        },
+
+        /**
          * Focuses on the ColorType component
          */
         focusInput: function () {
-            this.refs.input.focus();
+            this.refs.colorInput.focus();
         },
 
         render: function () {
@@ -1048,8 +1123,9 @@ define(function (require, exports, module) {
             return (
                 <div>
                     <ColorType {...this.props}
-                        ref="input"
+                        ref="colorInput"
                         color={color}
+                        onFocus={this._handleInputFocus.bind(this, "colorInput")}
                         onShiftTabPress={this._focusOpacityInput}
                         onChange={this._handleColorTypeChange}/>
                     <Map
@@ -1063,6 +1139,8 @@ define(function (require, exports, module) {
                         onChange={this._handleSaturationValueChange} />
                     <ColorFields
                         color={color}
+                        ref="colorFields"
+                        onFocus={this._handleInputFocus.bind(this, "colorFields")}
                         onChange={this._update} />
                     <div className="color-picker__hue-slider">
                         <Slider
@@ -1085,6 +1163,7 @@ define(function (require, exports, module) {
                             min={0}
                             max={100}
                             value={Math.round(color.a * 100)}
+                            onFocus={this._handleInputFocus.bind(this, "opacity")}
                             onKeyDown={this._handleKeyDown}
                             onChange={this._handleTransparencyInput}/>
                     </div>
