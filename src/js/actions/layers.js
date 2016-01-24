@@ -32,6 +32,7 @@ define(function (require, exports) {
         descriptor = require("adapter").ps.descriptor,
         documentLib = require("adapter").lib.document,
         layerLib = require("adapter").lib.layer,
+        appLib = require("adapter").lib.application,
         OS = require("adapter").os;
 
     var Layer = require("js/models/layer"),
@@ -2052,15 +2053,23 @@ define(function (require, exports) {
             }
         ];
 
-        var shortcutPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),
+        var preferencesObjects = [
+            appLib.setAddCopyToLayerNames(false),
+            appLib.setGlobalPreferences({
+                skipTransformSOFromLibrary: true
+            })
+        ];
+
+        var preferencesPromise = descriptor.batchPlayObjects(preferencesObjects),
+            shortcutPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),
             searchAllPromise = this.transfer("searchLayers.registerAllLayerSearch"),
             searchCurrentPromise = this.transfer("searchLayers.registerCurrentLayerSearch");
 
-        return Promise.join(shortcutPromise, searchAllPromise, searchCurrentPromise);
+        return Promise.join(preferencesPromise, shortcutPromise, searchAllPromise, searchCurrentPromise);
     };
     afterStartup.action = {
         reads: [],
-        writes: [],
+        writes: [locks.PS_APP],
         transfers: [shortcuts.addShortcuts, "searchLayers.registerAllLayerSearch",
             "searchLayers.registerCurrentLayerSearch"]
     };
