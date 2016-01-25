@@ -563,7 +563,7 @@ define(function (require, exports, module) {
                 if (!suggestion) {
                     suggestion = (options && lastWord !== "") ? options.find(function (opt) {
                         return ((opt.type === "item" || opt.type === "filter") &&
-                            opt.title.toLowerCase().indexOf(lastWord) === 0);
+                            opt.title.toLowerCase().indexOf(lastWord) !== -1);
                     }) : null;
                 }
 

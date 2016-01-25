@@ -424,8 +424,8 @@ define(function (require, exports, module) {
             var filters = this.state.filter,
                 filtersString,
                 idSplit = id.split("-"),
-                // Possible current types are Menu_Command, Current_Doc, Recent_Doc, All_Layers
                 type = idSplit[0],
+                // Possible current types are Menu_Command, Current_Doc, Recent_Doc, All_Layers
                 category = "category-" + type;
 
             // Seeing if filters are active or not for analytics
