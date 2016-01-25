@@ -260,17 +260,16 @@ define(function (require, exports, module) {
                         offsetParentBounds = this._target.offsetParent.getBoundingClientRect(),
                         placedDialogTop = Math.round(targetBounds.bottom) - Math.round(offsetParentBounds.top),
                         placedDialogBottom = placedDialogTop + Math.round(dialogBounds.height),
+                        pointerAbove = false,
+                        pointerBelow = false,
                         topPosition,
-                        bottomPosition,
-                        placedAbove;
+                        bottomPosition;
                     
                     // If there is space below the target, place the dialog below.
                     if (placedDialogBottom <= clientHeight) {
-                        placedAbove = false;
+                        pointerAbove = true;
                         topPosition = placedDialogTop + "px";
                     } else {
-                        placedAbove = true;
-                        
                         // Need to account for element margin
                         var dialogComputedStyle = window.getComputedStyle(dialogEl),
                             dialogMarginTop = math.pixelDimensionToNumber(dialogComputedStyle.marginTop),
@@ -278,8 +277,10 @@ define(function (require, exports, module) {
 
                         // If there is space above the target, let's place the dialog above it
                         if (dialogBounds.height + dialogMarginTop + dialogMarginBottom < targetBounds.top) {
-                            bottomPosition = (clientHeight - targetBounds.top - dialogMarginBottom) + "px";
+                            pointerBelow = true;
+                            topPosition = (targetBounds.top - dialogBounds.height) + "px";
                         } else {
+                            // Otherwise, it floats with no pointers at top or bottom
                             topPosition = (clientHeight -
                                 dialogBounds.height - dialogMarginTop - dialogMarginBottom) + "px";
                         }
@@ -288,7 +289,8 @@ define(function (require, exports, module) {
                     this.setState({
                         "topPosition": topPosition,
                         "bottomPosition": bottomPosition,
-                        "placedAbove": placedAbove
+                        "pointerAbove": pointerAbove,
+                        "pointerBelow": pointerBelow
                     });
                 } else {
                     throw new Error("Could not determine target by which to render this dialog: " + this.displayName);
@@ -369,8 +371,10 @@ define(function (require, exports, module) {
         render: function () {
             var children,
                 globalClass = (this.props.position === POSITION_METHODS.CENTER) ? "dialog__center" : "dialog__target",
+                // We reverse the pointerAbove/Below classes as they remove the dialog pointer rather than add it
                 classes = classnames(globalClass, this.props.className || "",
-                    { "placed-above": this.state.placedAbove }),
+                    { "hide-bottom-pointer": !this.state.pointerBelow },
+                    { "hide-top-pointer": !this.state.pointerAbove }),
                 props = {
                     className: classes,
                     style: {
