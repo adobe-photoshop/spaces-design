@@ -60,6 +60,7 @@
     "less": "^2.5.3",
     "lintspaces": "^0.3.3",
     "loader-utils": "^0.2.11",
+    "raw-loader": "^0.5.1",
     "react-addons-perf": "^0.14.2",
     "react-tools": "^0.13.1",
     "uglifyjs": "^2.4.10",

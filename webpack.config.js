@@ -70,6 +70,11 @@ var buildConfigs = languages.map(function (lang) {
                     test: /\.json$/,
                     exclude: /(node_modules)/,
                     loader: "json"
+                },
+                {
+                    test: /\.svg$/,
+                    exclude: /(node_modules)/,
+                    loader: "raw"
                 }
             ]
         },

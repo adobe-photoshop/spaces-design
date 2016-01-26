@@ -52,8 +52,7 @@ define(function (require, exports, module) {
             
             var buttonIcon;
             if (this.props.iconId) {
-                buttonIcon = (<SVGIcon viewBox="0 0 16 16" CSSID={this.props.iconId}
-                    iconPath={this.props.iconPath}/>);
+                buttonIcon = (<SVGIcon viewBox="0 0 16 16" CSSID={this.props.iconId}/>);
             } else {
                 buttonIcon = this.props.children;
             }

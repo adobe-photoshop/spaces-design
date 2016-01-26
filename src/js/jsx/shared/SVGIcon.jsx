@@ -25,67 +25,30 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        ReactDOM = require("react-dom");
+        classnames = require("classnames");
 
     var SVGIcon = React.createClass({
-
-        /**
-         * Returns an icon path based on the usual place (img folder), as well as the ID attribute to look
-         * in that path
-         *
-         * @private
-         * @return {string}
-         */
-        _getDefaultIconPath: function () {
-            return "img/ico-" + this.props.CSSID + ".svg#" + this.props.CSSID;
-        },
-
-        /**
-         * Sets xlink:href attribute on a SVG Use element based on props
-         *
-         * @private
-         * @param {SVGSVGElement} useNode
-         */
-        _setLinkAttribute: function (useNode) {
-            var iconPath;
+        propTypes: {
+            /**
+             * @type {String}
+             */
+            CSSID: React.PropTypes.string.isRequired,
             
-            if (typeof this.props.iconPath === "string") {
-                iconPath = this.props.iconPath + "#" + this.props.CSSID;
-            } else {
-                iconPath = this._getDefaultIconPath();
-            }
-            
-            useNode.setAttributeNS("http://www.w3.org/1999/xlink", "href", iconPath);   
+            /**
+             * @type {String}
+             */
+            className: React.PropTypes.string
         },
-
+        
         shouldComponentUpdate: function (nextProps) {
-            return nextProps.iconPath !== this.props.iconPath || nextProps.CSSID !== this.props.CSSID;
-        },
-        
-        componentDidMount: function () {
-            var component = ReactDOM.findDOMNode(this),
-                useNode = window.document.createElementNS("http://www.w3.org/2000/svg", "use");
-
-            this._setLinkAttribute(useNode);
-                                
-            component.appendChild(useNode);
-        },
-        
-        componentDidUpdate: function () {
-            var useNode = ReactDOM.findDOMNode(this).querySelector("use");
-
-            this._setLinkAttribute(useNode);
+            return nextProps.CSSID !== this.props.CSSID;
         },
 
         render: function () {
-            var className = this.props.className || "";
-            
-            return (
-                <svg
-                    key={this.props.key}
-                    viewBox={this.props.viewBox}
-                    className = {className} />
-            );
+            var className = classnames(this.props.className, "icon"),
+                svg = require("img/ico-" + this.props.CSSID + ".svg");
+
+            return (<span className={className} dangerouslySetInnerHTML={{ __html: svg }}/>);
         }
     });
 
