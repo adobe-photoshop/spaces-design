@@ -47,12 +47,13 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             // Calculations that are usually done here are done in
             // componentWillReceiveProps
-            return !this.state ||
+            return this.props.active !== nextProps.active ||
+                this.props.referencePoint !== nextProps.referencePoint ||
                 this.state.disabled !== nextState.disabled ||
+                this.state.proportional !== nextState.proportional ||
                 !Immutable.is(this.state.layers, nextState.layers) ||
                 !Immutable.is(this.state.widths, nextState.widths) ||
-                !Immutable.is(this.state.heights, nextState.heights) ||
-                this.state.proportional !== nextState.proportional;
+                !Immutable.is(this.state.heights, nextState.heights);
         },
 
         /**
@@ -65,27 +66,6 @@ define(function (require, exports, module) {
          * @param {object} nextProps
          */
         componentWillReceiveProps: function (nextProps) {
-            var getSelectedChildBounds = function (props) {
-                return props.document.layers.selectedChildBounds;
-            };
-
-            var getRelevantProps = function (props) {
-                var layers = props.document.layers.selected;
-                return collection.pluckAll(layers, ["kind", "locked", "isBackground", "proportionalScaling"]);
-            };
-
-            var getBounds = function (props) {
-                return props.document.bounds;
-            };
-
-            // If these props are the same, we don't need to calculate new state
-            if (this.state &&
-                Immutable.is(getBounds(this.props), getBounds(nextProps)) &&
-                Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) &&
-                Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps))) {
-                return;
-            }
-
             var document = nextProps.document,
                 documentBounds = document.bounds,
                 layers = document.layers.selected,
@@ -113,6 +93,11 @@ define(function (require, exports, module) {
                 heights: heights,
                 proportional: proportional
             });
+        },
+
+        componentWillMount: function () {
+            // Needed to correctly initialize this.state.
+            this.componentWillReceiveProps(this.props);
         },
 
         /**
@@ -320,10 +305,6 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            if (!this.state) {
-                return null;
-            }
-
             var proportionalToggle = null;
 
             if (this.state.layers.isEmpty() || this.state.disabled) {

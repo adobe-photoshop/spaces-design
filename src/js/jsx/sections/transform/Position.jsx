@@ -53,8 +53,9 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            return !this.state ||
+            return this.props.active !== nextProps.active ||
                 this.state.disabled !== nextState.disabled ||
+                this.props.referencePoint !== nextProps.referencePoint ||
                 !Immutable.is(this.state.xValues, nextState.xValues) ||
                 !Immutable.is(this.state.yValues, nextState.yValues) ||
                 !Immutable.is(this.state.absoluteXValues, nextState.absoluteXValues) ||
@@ -62,23 +63,6 @@ define(function (require, exports, module) {
         },
 
         componentWillReceiveProps: function (nextProps) {
-            var getSelectedChildBounds = function (props) {
-                return props.document.layers.selectedRelativeChildBounds;
-            };
-
-            var getRelevantProps = function (props) {
-                var layers = props.document.layers.selected;
-
-                return collection.pluckAll(layers, ["kind", "locked", "isBackground"]);
-            };
-
-            if (this.state &&
-                this.props.referencePoint === nextProps.referencePoint &&
-                Immutable.is(getSelectedChildBounds(this.props), getSelectedChildBounds(nextProps)) &&
-                Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps))) {
-                return;
-            }
-
             var document = nextProps.document,
                 layers = document.layers.selected,
                 bounds = document.layers.selectedRelativeChildBounds,
@@ -97,6 +81,11 @@ define(function (require, exports, module) {
                 absoluteXValues: absoluteXValues,
                 absoluteYValues: absoluteYValues
             });
+        },
+
+        componentWillMount: function () {
+            // Needed to correctly initialize this.state.
+            this.componentWillReceiveProps(this.props);
         },
 
         /**
@@ -289,10 +278,6 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            if (!this.state) {
-                return null;
-            }
-
             return (
                 <div className="control-group__horizontal">
                     <Label
