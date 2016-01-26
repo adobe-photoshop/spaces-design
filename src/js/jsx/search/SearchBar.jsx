@@ -212,26 +212,27 @@ define(function (require, exports, module) {
         /**
          * Removes words from Datalist input that are contained in the ID
          *
-         * @param {string} id ID of selected item
+         * @param {Array.<string>} id ID of selected item
          */
         _updateDatalistInput: function (id) {
             if (id) {
                 var currFilter = this.refs.datalist.getInputValue().split(" "),
-                idString = _.map(id, function (idWord) {
-                    var category = nls.localize("strings.SEARCH.CATEGORIES." + idWord),
-                        toRemove = category || this.state.safeFilterNameMap[idWord];
+                    idString = _.map(id, function (idWord) {
+                        var toRemove;
                         
-                    if (toRemove) {
-                        return toRemove.toLowerCase().replace(" ", "");
-                    }
+                        try {
+                            toRemove = nls.localize("strings.SEARCH.CATEGORIES." + idWord);
+                        } catch (e) {
+                            // If translation is not found, try map the id to a filter name (e.g. CC Library name)
+                            toRemove = this.state.safeFilterNameMap[idWord];
+                        }
 
-                    return idWord;
-                }, this).join("").toLowerCase(),
-
-                nextFilterMap = _.map(currFilter, function (word) {
-                    return idString.indexOf(word.toLowerCase()) > -1 ? "" : word;
-                }),
-                nextFilter = nextFilterMap.join(" ").trim();
+                        return toRemove ? toRemove.replace(" ", "") : idWord;
+                    }, this).join("").toLowerCase(),
+                    nextFilterMap = _.map(currFilter, function (word) {
+                        return idString.includes(word.toLowerCase()) ? "" : word;
+                    }),
+                    nextFilter = nextFilterMap.join(" ").trim();
 
                 this.refs.datalist.updateFilter(nextFilter);
             } else {
