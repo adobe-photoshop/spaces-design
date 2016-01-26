@@ -28,7 +28,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        Immutable = require("immutable");
 
     var AlignDistribute = require("./AlignDistribute"),
         Size = require("./Size"),
@@ -50,12 +51,11 @@ define(function (require, exports, module) {
             };
         },
 
-        shouldComponentUpdate: function (nextProps) {
-            if (!this.props.active && !nextProps.active) {
-                return false;
-            }
-            
-            return true;
+        shouldComponentUpdate: function (nextProps, nextState) {
+            return this.state.referencePoint !== nextState.referencePoint ||
+                this.props.active !== nextProps.active ||
+                this.props.disabled !== nextProps.disabled ||
+                !Immutable.is(this.props.document, nextProps.document);
         },
 
         /**
@@ -98,7 +98,9 @@ define(function (require, exports, module) {
                     <div className="section-container__no-collapse transform__body">
                         <div className="formline formline__padded-first-child formline__space-between">
                             <div className="control-group">
-                                <Size document={this.props.document}
+                                <Size
+                                    active={this.props.active}
+                                    document={this.props.document}
                                     referencePoint={this.state.referencePoint}/>
                             </div>
                             <div className="control-group reference-mark" title={referencePointTooltip}>
@@ -178,7 +180,9 @@ define(function (require, exports, module) {
                         </div>
                         <div className={positionRotateClasses}>
                             <div className="control-group">
-                                <Position document={this.props.document}
+                                <Position
+                                    active={this.props.active}
+                                    document={this.props.document}
                                     referencePoint={this.state.referencePoint} />
                             </div>
                             <div className="control-group">
