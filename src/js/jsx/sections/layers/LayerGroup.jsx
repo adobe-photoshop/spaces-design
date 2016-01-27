@@ -41,15 +41,20 @@ define(function (require, exports, module) {
 
         /**
          * This is used by the root LayerGroup to control whether or not its child LayerGroups 
-         * should render their collapsed layers. At initial rendering, `renderCollapsedLayers` 
+         * should render their collapsed layers. At initial rendering, `_renderCollapsedLayers` 
          * is set to false to prevent child LayerGroups from rendering collapsed layers, which
          * will reduce the initial load time. After the root LayerGroup is mounted , it will 
-         * set `renderCollapsedLayers` to true, and force update its child LayerGroups to 
+         * set `_renderCollapsedLayers` to true, and force update its child LayerGroups to 
          * render the collapsed layers for faster future expand actions (in `componentDidMount`).
          * 
          * @type {Boolean}
          */
-        renderCollapsedLayers: false,
+        _renderCollapsedLayers: false,
+        
+        /**
+         * @type {number}
+         */
+        _forceUpdateTimerID: null,
 
         propTypes: {
             /**
@@ -87,10 +92,16 @@ define(function (require, exports, module) {
             if (!this.props.parentLayer) {
                 // Wait for 2 seconds when the root LayerPanel is mounted, then force update to 
                 // render the collapsed layers.
-                this.renderCollapsedLayers = true;
-                window.setTimeout(function () {
+                this._renderCollapsedLayers = true;
+                this._forceUpdateTimerID = window.setTimeout(function () {
                     this.forceUpdate();
                 }.bind(this), 2000);
+            }
+        },
+
+        componentWillUnmount: function () {
+            if (this._forceUpdateTimerID) {
+                window.clearTimeout(this._forceUpdateTimerID);
             }
         },
         
@@ -105,7 +116,7 @@ define(function (require, exports, module) {
         render: function () {
             var parentLayer = this.props.parentLayer,
                 isRoot = !parentLayer,
-                renderCollapsedLayers = isRoot ? this.renderCollapsedLayers : this.props.renderCollapsedLayers;
+                renderCollapsedLayers = isRoot ? this._renderCollapsedLayers : this.props.renderCollapsedLayers;
 
             // Do not render layer group of collapsed layer to reduce document load time.
             // when the root LayerGroup is mounted, it will 
