@@ -50,7 +50,7 @@ define(function (require, exports, module) {
         .map(function (scale) {
             var obj = {
                 id: scale.toString(),
-                title: scale.toString()
+                title: scale.toLocaleString()
             };
             return [scale.toString(), obj];
         }));

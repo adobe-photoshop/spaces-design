@@ -161,7 +161,7 @@ define(function (require, exports, module) {
          */
         derivedSuffix: function () {
             var qualitySuffix = (this.quality === 32 || this.quality === 100) ? "" : "-" + this.quality.toString(),
-                scaleSuffix = "@" + this.scale + "x";
+                scaleSuffix = "@" + this.scale.toLocaleString() + "x";
 
             return scaleSuffix + qualitySuffix;
         },
