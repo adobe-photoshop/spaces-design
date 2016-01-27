@@ -70,7 +70,9 @@ define(function (require, exports) {
 
         var targetLayers = layers;
         if (recursive) {
-            layers = layers.flatMap(document.layers.descendants, document.layers);
+            layers = layers.flatMap(document.layers.descendants, document.layers).filter(function (layer) {
+                return layer.isGroup;
+            });
         }
 
         // When collapsing layers, if a visible descendent is selected then the selection

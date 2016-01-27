@@ -40,12 +40,16 @@ define(function (require, exports, module) {
         mixins: [FluxMixin],
 
         /**
-         * True if the LayerGroup's components are rendered. Used to avoid
-         * rendering layer group until it is first visible.
+         * This is used by the root LayerGroup to control whether or not its child LayerGroups 
+         * should render their collapsed layers. At initial rendering, `renderCollapsedLayers` 
+         * is set to false to prevent child LayerGroups from rendering collapsed layers, which
+         * will reduce the initial load time. After the root LayerGroup is mounted , it will 
+         * set `renderCollapsedLayers` to true, and force update its child LayerGroups to 
+         * render the collapsed layers for faster future expand actions (in `componentDidMount`).
          * 
          * @type {Boolean}
          */
-        isRendered: false,
+        renderCollapsedLayers: false,
 
         propTypes: {
             /**
@@ -68,7 +72,26 @@ define(function (require, exports, module) {
             /**
              * @type {Boolean}
              */
-            disabled: React.PropTypes.bool
+            disabled: React.PropTypes.bool,
+
+            /**
+             * True if the LayerGroup should render collapsed layers. This is controlled by the 
+             * root LayerGroup.
+             * 
+             * @type {Boolean}
+             */
+            renderCollapsedLayers: React.PropTypes.bool
+        },
+        
+        componentDidMount: function () {
+            if (!this.props.parentLayer) {
+                // Wait for 2 seconds when the root LayerPanel is mounted, then force update to 
+                // render the collapsed layers.
+                this.renderCollapsedLayers = true;
+                window.setTimeout(function () {
+                    this.forceUpdate();
+                }.bind(this), 2000);
+            }
         },
         
         shouldComponentUpdate: function () {
@@ -81,13 +104,13 @@ define(function (require, exports, module) {
 
         render: function () {
             var parentLayer = this.props.parentLayer,
-                isRoot = !parentLayer;
+                isRoot = !parentLayer,
+                renderCollapsedLayers = isRoot ? this.renderCollapsedLayers : this.props.renderCollapsedLayers;
 
             // Do not render layer group of collapsed layer to reduce document load time.
-            if (!isRoot && !parentLayer.expanded && !this.isRendered) {
+            // when the root LayerGroup is mounted, it will 
+            if (!isRoot && !parentLayer.expanded && !renderCollapsedLayers) {
                 return false;
-            } else {
-                this.isRendered = true;
             }
 
             var layerFaces = this.props.layerNodes.reduce(function (results, layerNode) {
@@ -99,14 +122,12 @@ define(function (require, exports, module) {
                             parentLayer={layer}
                             layerNodes={layerNode.children}
                             document={this.props.document}
-                            disabled={this.props.disabled}/>
+                            disabled={this.props.disabled}
+                            renderCollapsedLayers={renderCollapsedLayers}/>
                     );
 
                     var className = classnames({
-                        "layer-group": layerGroup,
-                        "layer-group__selected": layerGroup && layer.selected,
-                        "layer-group__collapsed": layerGroup && !layer.expanded,
-                        "layer-group__not-visible": layerGroup && !layer.visible
+                        "layer-group": layerGroup
                     });
 
                     results.push(
@@ -116,7 +137,7 @@ define(function (require, exports, module) {
                                 disabled={this.props.disabled}
                                 document={this.props.document}
                                 layer={layer}
-                                childNodes={layerNode.children}/>
+                                hasChildren={!!layerNode.children}/>
                             {layerGroup}
                         </li>
                     );

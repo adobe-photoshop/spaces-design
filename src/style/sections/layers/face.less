@@ -98,7 +98,7 @@ input[type="text"].face__name {
 }
 
 // Layer group selection state
-.layer-group__selected {
+.layer__selected + .layer-group {
     .face, .face:hover {
         background-color: @list-select-child-color;
     }
@@ -106,7 +106,7 @@ input[type="text"].face__name {
 
 // Layer direct selection state
 .face__selected,
-.layer-group__selected .face__selected {
+.layer__selected + .layer-group .face__selected {
     &, &:hover {
         background-color: @list-select-color;
     }
@@ -118,8 +118,8 @@ input[type="text"].face__name {
 }
 
 // Layer visibility state
-.face__not-visible,
-.layer-group__not-visible {
+.layer__not-visible,
+.layer__not-visible + .layer-group {
     .face__name {
         color: @item-hover;
         opacity: @label-hidden-opacity;
@@ -127,7 +127,7 @@ input[type="text"].face__name {
 }
 
 // Layer Group collapsed state
-.layer-group__collapsed > .layer-group{
+.layer__collapsed + .layer-group{
     display: none;
 }
 

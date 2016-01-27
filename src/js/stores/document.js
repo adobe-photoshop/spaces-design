@@ -26,7 +26,8 @@ define(function (require, exports, module) {
 
     var Fluxxor = require("fluxxor"),
         Immutable = require("immutable"),
-        _ = require("lodash");
+        _ = require("lodash"),
+        Promise = require("bluebird");
 
     var Document = require("../models/document"),
         Guide = require("../models/guide"),
@@ -38,6 +39,11 @@ define(function (require, exports, module) {
          * @type {Object.<number, Document>}
          */
         _openDocuments: null,
+        
+        /**
+         * @type {Map.<number, function>}
+         */
+        _layerIDToStateListener: null,
 
         initialize: function () {
             this.bindActions(
@@ -106,6 +112,7 @@ define(function (require, exports, module) {
          */
         _handleReset: function () {
             this._openDocuments = {};
+            this._layerIDToStateListener = new Map();
         },
 
         /**
@@ -167,6 +174,21 @@ define(function (require, exports, module) {
                 return;
             }
 
+            // Notify change of layer state.
+            if (oldDocument) {
+                oldDocument.layers.layers.forEach(function (layer) {
+                    var nextLayer = nextDocument.layers.byID(layer.id),
+                        callback = this._layerIDToStateListener[layer.id];
+
+                    // Do not notify the change if the layer is deleted or it does not have a listener (when 
+                    // its LayerFace instance is not mounted yet)
+                    if (nextLayer && callback &&
+                        (layer.selected !== nextLayer.selected || layer.expanded !== nextLayer.expanded)) {
+                        callback(nextLayer.selected, nextLayer.expanded);
+                    }
+                }, this);
+            }
+
             // If some selected layer remains uninitialized, a new document will
             // come along shortly. Wait until then to trigger the change event.
             var initialized = nextDocument.layers && nextDocument.layers.selected
@@ -175,8 +197,12 @@ define(function (require, exports, module) {
                 });
 
             if (initialized) {
-                // Include the document in the event payload
-                this.emit(changeEventName || "change", nextDocument);
+                // Performance Hack: delay emitting the `change` event so that the browser can start rendering for
+                // changes made by LayerFace (triggered by the layer state listener callback).
+                Promise.delay(0).bind(this).then(function () {
+                    // Include the document in the event payload
+                    this.emit(changeEventName || "change", nextDocument);
+                });
             }
         },
 
@@ -1179,6 +1205,25 @@ define(function (require, exports, module) {
                 nextDocument = document.set("layers", nextLayers);
 
             this.setDocument(nextDocument, true);
+        },
+
+        /**
+         * Add Layer state listener.
+         * 
+         * @param {number} layerID
+         * @param {Function} callback
+         */
+        addLayerStateListener: function (layerID, callback) {
+            this._layerIDToStateListener[layerID] = callback;
+        },
+        
+        /**
+         * Remove Layer state listener.
+         * 
+         * @param {number} layerID
+         */
+        removeLayerStateListener: function (layerID) {
+            this._layerIDToStateListener[layerID] = null;
         }
     });
 
