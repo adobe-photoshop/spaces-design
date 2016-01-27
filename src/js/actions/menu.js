@@ -646,12 +646,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        return this.transfer("searchCommands.registerMenuCommandSearch");
+        return this.transfer("search.commands.registerMenuCommandSearch");
     };
     afterStartup.action = {
         reads: [],
         writes: [],
-        transfers: ["searchCommands.registerMenuCommandSearch"]
+        transfers: ["search.commands.registerMenuCommandSearch"]
     };
 
     /**

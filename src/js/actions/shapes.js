@@ -221,7 +221,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetBounds],
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -352,7 +352,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [setStrokeColor],
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -397,7 +397,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetBounds],
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -486,7 +486,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetBounds],
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -699,7 +699,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -731,7 +731,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -763,7 +763,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -795,7 +795,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     exports.setStrokeEnabled = setStrokeEnabled;

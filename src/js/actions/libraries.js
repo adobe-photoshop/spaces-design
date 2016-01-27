@@ -1201,10 +1201,10 @@ define(function (require, exports) {
             dispatchPromise;
 
         if (!libraryCollection) {
-            searchPromise = this.transfer("searchLibraries.registerLibrarySearch", []);
+            searchPromise = this.transfer("search.libraries.registerLibrarySearch", []);
             dispatchPromise = this.dispatchAsync(events.libraries.LIBRARIES_UNLOADED);
         } else {
-            searchPromise = this.transfer("searchLibraries.registerLibrarySearch", libraryCollection.libraries);
+            searchPromise = this.transfer("search.libraries.registerLibrarySearch", libraryCollection.libraries);
             
             // List to library collection's sync event.
             _librarySyncStatus = new LibrarySyncStatus(libraryCollection);
@@ -1226,7 +1226,7 @@ define(function (require, exports) {
     handleLibrariesLoaded.action = {
         reads: [locks.CC_LIBRARIES],
         writes: [locks.JS_LIBRARIES],
-        transfers: ["searchLibraries.registerLibrarySearch"]
+        transfers: ["search.libraries.registerLibrarySearch"]
     };
     
     /**

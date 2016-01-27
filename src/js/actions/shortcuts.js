@@ -270,12 +270,12 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
-        return this.transfer("searchCommands.registerGlobalShortcutSearch");
+        return this.transfer("search.commands.registerGlobalShortcutSearch");
     };
     afterStartup.action = {
         reads: [],
         writes: [],
-        transfers: ["searchCommands.registerGlobalShortcutSearch"]
+        transfers: ["search.commands.registerGlobalShortcutSearch"]
     };
 
     /**

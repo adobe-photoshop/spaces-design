@@ -34,12 +34,21 @@ define(function (require, exports, module) {
 
     var locks = require("./locks"),
         events = require("./events"),
-        storeIndex = require("./stores/index"),
-        actionIndex = require("./actions/index"),
         AsyncDependencyQueue = require("./util/async-dependency-queue"),
         synchronization = require("./util/synchronization"),
         performance = require("./util/performance"),
         log = require("./util/log");
+
+    // Using contexts, we load action files automatically
+    var storeContext = require.context("./stores", true, /^\.\/.*\.js$/),
+        actionContext = require.context("./actions", true, /^\.\/.*\.js$/),
+        actionIndex = actionContext.keys().reduce(function (actionMap, actionKey) {
+            // "tool/superselect/type.js => tool.superselect.type"
+            var actionId = actionKey.substring(2, actionKey.indexOf(".js")).replace(/\//gi, ".");
+
+            actionMap[actionId] = actionContext(actionKey);
+            return actionMap;
+        }, {});
 
     /**
      * The number of logical CPU cores, used to determine the maximum number of
@@ -108,7 +117,7 @@ define(function (require, exports, module) {
         this._idleTasks = new Set();
 
         var actions = this._synchronizeAllModules(actionIndex),
-            stores = storeIndex.create(),
+            stores = this._initializeAllStores(storeContext),
             allStores = _.merge(stores, testStores || {});
 
         this._flux = new Fluxxor.Flux(allStores, actions);
@@ -955,6 +964,23 @@ define(function (require, exports, module) {
 
             return exports;
         }.bind(this), {});
+    };
+
+    /**
+     * Given a webpack context of stores, returns all Flux initialized stores
+     *
+     * @param {object} context all the store files in a context
+     *
+     * @return {Object.<string, Fluxxor.Store>} An object of initialized stores
+     */
+    FluxController.prototype._initializeAllStores = function (context) {
+        return context.keys().reduce(function (storeMap, storeKey) {
+            var storeId = storeKey.substring(2, storeKey.indexOf(".js")),
+                Store = context(storeKey);
+
+            storeMap[storeId] = new Store();
+            return storeMap;
+        }, {});
     };
 
     /**

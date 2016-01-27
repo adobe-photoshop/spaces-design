@@ -176,7 +176,7 @@ define(function (require, exports) {
         writes: [locks.PS_DOC],
         transfers: [updatePostScript, layerActions.resetBounds, layerActions.resetLayers],
         modal: true,
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -248,7 +248,7 @@ define(function (require, exports) {
         writes: [locks.PS_DOC],
         transfers: [updateFace, layerActions.resetBounds, layerActions.resetLayers],
         modal: true,
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -412,7 +412,7 @@ define(function (require, exports) {
         writes: [locks.PS_DOC],
         transfers: [updateSize, layerActions.resetBounds, layerActions.resetLayers],
         modal: true,
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
     
     /**
@@ -481,7 +481,7 @@ define(function (require, exports) {
         writes: [locks.PS_DOC],
         transfers: [updateTracking, layerActions.resetBounds, layerActions.resetLayers],
         modal: true,
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -552,7 +552,7 @@ define(function (require, exports) {
         writes: [locks.PS_DOC],
         transfers: [updateLeading, layerActions.resetBounds, layerActions.resetLayers],
         modal: true,
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**
@@ -620,7 +620,7 @@ define(function (require, exports) {
         writes: [locks.PS_DOC],
         transfers: [updateAlignment, layerActions.resetBounds, layerActions.resetLayers],
         modal: true,
-        post: ["verifyLayers.verifySelectedBounds"]
+        post: ["verify.layers.verifySelectedBounds"]
     };
 
     /**

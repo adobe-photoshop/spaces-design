@@ -484,14 +484,14 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.JS_TOOL, locks.PS_TOOL],
         transfers: [swapPolicies, policy.removePointerPolicies,
-            "toolSuperselect.select", "toolSuperselect.deselect",
-            "toolSuperselectVector.select", "toolSuperselectVector.deselect",
-            "toolSuperselectType.select", "toolSuperselectType.deselect",
-            "toolEllipse.select",
-            "toolPen.select", "toolPen.deselect",
-            "toolRectangle.select",
-            "toolSampler.select", "toolSampler.deselect",
-            "toolType.select", "toolType.deselect"
+            "tool.superselect.select", "tool.superselect.deselect",
+            "tool.superselect.vector.select", "tool.superselect.vector.deselect",
+            "tool.superselect.type.select", "tool.superselect.type.deselect",
+            "tool.ellipse.select",
+            "tool.pen.select", "tool.pen.deselect",
+            "tool.rectangle.select",
+            "tool.sampler.select", "tool.sampler.deselect",
+            "tool.type.select", "tool.type.deselect"
         ]
     };
 

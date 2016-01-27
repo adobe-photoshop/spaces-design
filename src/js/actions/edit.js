@@ -391,7 +391,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [],
         transfers: [history.decrementHistory],
-        post: ["verifyLayers.verifyLayerIndex"],
+        post: ["verify.layers.verifyLayerIndex"],
         modal: true,
         hideOverlays: true
     };
@@ -414,7 +414,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [],
         transfers: [history.incrementHistory],
-        post: ["verifyLayers.verifyLayerIndex"],
+        post: ["verify.layers.verifyLayerIndex"],
         modal: true,
         hideOverlays: true
     };

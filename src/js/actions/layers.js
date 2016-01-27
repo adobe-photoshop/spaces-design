@@ -380,7 +380,7 @@ define(function (require, exports) {
         modal: true,
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -947,7 +947,7 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [revealLayers, resetSelection, initializeLayers, tools.changeVectorMaskMode],
-        post: ["verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1017,7 +1017,7 @@ define(function (require, exports) {
     deselectAll.action = {
         reads: [locks.JS_APP],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        post: ["verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1042,7 +1042,7 @@ define(function (require, exports) {
         reads: [locks.JS_DOC, locks.JS_APP],
         writes: [],
         transfers: [select],
-        post: ["verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1091,7 +1091,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
         transfers: ["history.queryCurrentHistory", initializeLayers],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1131,7 +1131,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.PS_DOC],
         transfers: [removeLayers],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1251,7 +1251,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [addLayers, unlockBackgroundLayer],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1401,7 +1401,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
         transfers: [initializeLayers, getLayerIDsForDocumentID],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1465,7 +1465,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.PS_DOC, locks.JS_DOC],
         transfers: [resetIndex, resetBounds, "history.newHistoryState"],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1496,7 +1496,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [reorderLayers],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1527,7 +1527,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [reorderLayers],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1558,7 +1558,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [reorderLayers],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1589,7 +1589,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [reorderLayers],
-        post: ["verifyLayers.verifyLayerIndex", "verifyLayers.verifyLayerSelection"]
+        post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
     /**
@@ -1793,8 +1793,8 @@ define(function (require, exports) {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
         transfers: ["documents.updateDocument", addLayers, select],
-        post: ["verifyLayers.verifySelectedBounds", "verifyLayers.verifyLayerSelection",
-            "verifyLayers.verifyLayerIndex"]
+        post: ["verify.layers.verifySelectedBounds", "verify.layers.verifyLayerSelection",
+            "verify.layers.verifyLayerIndex"]
     };
 
     /**
@@ -1819,7 +1819,7 @@ define(function (require, exports) {
         writes: [],
         transfers: [resetBounds],
         modal: true,
-        post: ["verifyLayers.verifySelectedBounds"],
+        post: ["verify.layers.verifySelectedBounds"],
         hideOverlays: true
     };
 
@@ -2062,16 +2062,16 @@ define(function (require, exports) {
 
         var preferencesPromise = descriptor.batchPlayObjects(preferencesObjects),
             shortcutPromise = this.transfer(shortcuts.addShortcuts, shortcutSpecs),
-            searchAllPromise = this.transfer("searchLayers.registerAllLayerSearch"),
-            searchCurrentPromise = this.transfer("searchLayers.registerCurrentLayerSearch");
+            searchAllPromise = this.transfer("search.layers.registerAllLayerSearch"),
+            searchCurrentPromise = this.transfer("search.layers.registerCurrentLayerSearch");
 
         return Promise.join(preferencesPromise, shortcutPromise, searchAllPromise, searchCurrentPromise);
     };
     afterStartup.action = {
         reads: [],
         writes: [locks.PS_APP],
-        transfers: [shortcuts.addShortcuts, "searchLayers.registerAllLayerSearch",
-            "searchLayers.registerCurrentLayerSearch"]
+        transfers: [shortcuts.addShortcuts, "search.layers.registerAllLayerSearch",
+            "search.layers.registerCurrentLayerSearch"]
     };
 
     /**
