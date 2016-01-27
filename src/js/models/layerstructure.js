@@ -609,6 +609,16 @@ define(function (require, exports, module) {
     LayerStructure.prototype.byID = function (id) {
         return this.layers.get(id, null);
     };
+    
+    /**
+     * Get a list of Layer models by layer IDs.
+     *
+     * @param {Immutable.Iterable.<number>} ids
+     * @return {Immutable.Iterable.<Layer|null>}
+     */
+    LayerStructure.prototype.byIDs = function (ids) {
+        return ids.map(this.byID, this);
+    };
 
     /**
      * Get a Layer model by layer index.

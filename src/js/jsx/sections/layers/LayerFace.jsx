@@ -35,7 +35,6 @@ define(function (require, exports, module) {
     
     var system = require("js/util/system"),
         svgUtil = require("js/util/svg"),
-        collection = require("js/util/collection"),
         nls = require("js/util/nls");
 
     var Draggable = require("js/jsx/shared/Draggable"),
@@ -453,19 +452,21 @@ define(function (require, exports, module) {
         _handleBeforeDragStart: function () {
             // Photoshop logic is, if we drag a selected layers, all selected layers are being reordered
             // If we drag an unselected layer, only that layer will be reordered
-            var draggedLayers = Immutable.List([this.props.layer]);
+            var draggedLayerIds = Immutable.List([this.props.layer.id]);
 
             if (this.state.selected) {
-                draggedLayers = this.props.document.layers.selected.filter(function (layer) {
+                draggedLayerIds = this.props.document.layers.selected.filter(function (layer) {
                     // For now, we only check for background layer, but we might prevent locked layers dragging later
                     return !layer.isBackground;
-                }, this);
+                }).map(function (layer) {
+                    return layer.id;
+                });
             }
-            
+
             this._isDragEventTarget = true;
             this.getFlux().actions.panel.disableTooltips();
             
-            return { draggedTargets: draggedLayers };
+            return { draggedTargets: draggedLayerIds };
         },
 
         /**
@@ -510,7 +511,7 @@ define(function (require, exports, module) {
          * @private
          * @type {Droppable~onDrop}
          */
-        _handleDrop: function (draggedLayers) {
+        _handleDrop: function (draggedLayerIds) {
             if (!this.state.isDropTarget) {
                 return Promise.resolve();
             }
@@ -542,10 +543,9 @@ define(function (require, exports, module) {
                     throw new Error("Unable to drop at unexpected position: " + dropPosition);
             }
 
-            var dropIndex = doc.layers.indexOf(dropLayer) - dropOffset,
-                dragSource = collection.pluck(draggedLayers, "id");
+            var dropIndex = doc.layers.indexOf(dropLayer) - dropOffset;
 
-            return this.getFlux().actions.layers.reorder(doc, dragSource, dropIndex);
+            return this.getFlux().actions.layers.reorder(doc, draggedLayerIds, dropIndex);
         },
         
         /**
@@ -554,8 +554,9 @@ define(function (require, exports, module) {
          * @private
          * @type {Droppable~onDragTargetMove}
          */
-        _handleDragTargetMove: function (draggedLayers, dragPosition) {
-            var isDropTarget = !draggedLayers.includes(this.props.layer),
+        _handleDragTargetMove: function (draggedLayerIds, dragPosition) {
+            var draggedLayers = this.props.document.layers.byIDs(draggedLayerIds),
+                isDropTarget = !draggedLayers.includes(this.props.layer),
                 dropPosition = isDropTarget ? this._getDropPosition(dragPosition) : null,
                 canDropLayer = isDropTarget && this._validCompatibleDropTarget(
                     this.props.layer, draggedLayers, dropPosition);
@@ -655,7 +656,7 @@ define(function (require, exports, module) {
             return (
                 <Draggable
                     type="layer"
-                    target={this.props.layer}
+                    target={this.props.layer.id}
                     disabled={this.state.isEditing}
                     beforeDragStart={this._handleBeforeDragStart}
                     onDragStart={this._handleDragStart}

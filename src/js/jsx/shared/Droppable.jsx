@@ -40,33 +40,33 @@ define(function (require, exports, module) {
             accept: React.PropTypes.string.isRequired,
 
             /**
-             * @callback Draggable~handleDragTargetEnter
+             * @callback Droppable~onDragTargetEnter
              * @param {Immutable.List.<object>} draggedTargets
              * @param {{x: number, y:number}} position
              */
-            handleDragTargetEnter: React.PropTypes.func,
+            onDragTargetEnter: React.PropTypes.func,
             
             /**
-             * @callback Draggable~handleDragTargetMove
+             * @callback Droppable~onDragTargetMove
              * @param {Immutable.List.<object>} draggedTargets
              * @param {{x: number, y:number}} position
              */
-            handleDragTargetMove: React.PropTypes.func,
+            onDragTargetMove: React.PropTypes.func,
             
             /**
-             * @callback Draggable~handleDragTargetLeave
+             * @callback Droppable~onDragTargetLeave
              * @param {Immutable.List.<object>} draggedTargets
              * @param {{x: number, y:number}} position
              */
-            handleDragTargetLeave: React.PropTypes.func,
+            onDragTargetLeave: React.PropTypes.func,
             
             /**
-             * @callback Draggable~handleDrop
-             * @param {Immutable.List.<object>} draggedTargets
+             * @callback Droppable~onDrop
+             * @param {Immutable.List.<*>} draggedTargets
              * @param {{x: number, y:number}} position
              * @return {Promise}
              */
-            handleDrop: React.PropTypes.func
+            onDrop: React.PropTypes.func
         },
 
         getInitialState: function () {

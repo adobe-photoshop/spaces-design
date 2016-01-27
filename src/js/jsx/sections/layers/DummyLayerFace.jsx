@@ -29,8 +29,6 @@ define(function (require, exports, module) {
         Promise = require("bluebird"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React);
-        
-    var collection = require("js/util/collection");
 
     var Droppable = require("js/jsx/shared/Droppable");
 
@@ -52,17 +50,16 @@ define(function (require, exports, module) {
          * @private
          * @type {Droppable~onDrop}
          */
-        _handleDropLayers: function (draggedLayers) {
+        _handleDropLayers: function (draggedLayerIds) {
             if (!this.state.isDropTarget) {
                 return Promise.resolve();
             }
             
             this.setState({ isDropTarget: false });
             
-            var dropIndex = 0, // put dragged layers to the bottom
-                dragSource = collection.pluck(draggedLayers, "id");
+            var dropIndex = 0; // put dragged layers to the bottom
 
-            return this.getFlux().actions.layers.reorder(this.props.document, dragSource, dropIndex);
+            return this.getFlux().actions.layers.reorder(this.props.document, draggedLayerIds, dropIndex);
         },
         
         /**
@@ -71,14 +68,14 @@ define(function (require, exports, module) {
          * @private
          * @type {Droppable~onDragTargetEnter}
          */
-        _handleDragTargetEnter: function (draggedLayers) {
+        _handleDragTargetEnter: function (draggedLayerIds) {
             // Dropping on the dummy layer is valid as long as a group is not
             // being dropped below itself. The dummy layer only exists
             // when there is a bottom group layer. Drop position is fixed.
 
             var bottomLayer = this.props.document.layers.top.last(),
                 isGroup = bottomLayer.isGroup,
-                isDropTarget = !isGroup || !draggedLayers.contains(bottomLayer);
+                isDropTarget = !isGroup || !draggedLayerIds.contains(bottomLayer.id);
 
             this.setState({ isDropTarget: isDropTarget });
         },

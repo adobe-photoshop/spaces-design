@@ -115,7 +115,7 @@ define(function (require, exports, module) {
          * @private
          * @type {Droppable~onDrop}
          */
-        _handleDropLayers: function (draggedLayers) {
+        _handleDropLayers: function (draggedLayerIds) {
             if (!this.state.canDropLayer) {
                 this.setState({ isDropTarget: false });
                 return Promise.resolve();
@@ -128,6 +128,7 @@ define(function (require, exports, module) {
 
             var flux = this.getFlux(),
                 document = flux.store("application").getCurrentDocument(),
+                draggedLayers = document.layers.byIDs(draggedLayerIds),
                 selectedLayers = document.layers.selected,
                 promise = Promise.resolve();
 
@@ -147,10 +148,12 @@ define(function (require, exports, module) {
          * @private
          * @type {Droppable~onDragTargetEnter}
          */
-        _handleDragTargetEnter: function (draggedLayers) {
-            // Single linked layer is not accepted, but multiple linked (or mixed) layers are accepted.
-            var isSingleLinkedLayer = draggedLayers.size === 1 && draggedLayers.first().isLinked;
-            
+        _handleDragTargetEnter: function (draggedLayerIDs) {
+            var document = this.getFlux().store("application").getCurrentDocument(),
+                firstDraggedLayer = document.layers.byID(draggedLayerIDs.first()),
+                // Single linked layer is not accepted, but multiple linked (or mixed) layers are accepted.
+                isSingleLinkedLayer = draggedLayerIDs.size === 1 && firstDraggedLayer.isLinked;
+
             this.setState({
                 isDropTarget: true,
                 canDropLayer: this.state.selectedLibrary && !isSingleLinkedLayer
