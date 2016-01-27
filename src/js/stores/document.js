@@ -175,7 +175,7 @@ define(function (require, exports, module) {
             }
 
             // Notify change of layer state.
-            if (oldDocument) {
+            if (oldDocument && oldDocument.layers && nextDocument.layers) {
                 oldDocument.layers.layers.forEach(function (layer) {
                     var nextLayer = nextDocument.layers.byID(layer.id),
                         callback = this._layerIDToStateListener[layer.id];
