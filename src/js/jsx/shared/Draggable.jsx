@@ -109,7 +109,7 @@ define(function (require, exports, module) {
             
             // The object passed to the Droppable component when dropped. This value can be overwritten by the 
             // optional callback "beforeDragStart".
-            target: React.PropTypes.object.isRequired,
+            target: React.PropTypes.any.isRequired,
             
             // If true, the Draggable component will be disabled.
             disabled: React.PropTypes.bool,
