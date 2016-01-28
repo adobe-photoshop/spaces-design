@@ -123,4 +123,16 @@ var buildConfigs = languages.map(function (lang) {
     return options;
 });
 
+// Hack: add Timestamp to the WebPack build message.
+WebpackNotifierPlugin.prototype._compileMessage = WebpackNotifierPlugin.prototype.compileMessage;
+WebpackNotifierPlugin.prototype.compileMessage = function (stats) {
+    var msg = this._compileMessage(stats);
+    
+    if (msg === "Build successful") {
+        msg += " @ " + (new Date()).toLocaleTimeString();
+    }
+
+    return msg;
+};
+
 module.exports = buildConfigs;

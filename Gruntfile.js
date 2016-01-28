@@ -162,7 +162,7 @@ module.exports = function (grunt) {
         watch: {
             styles: {
                 files: ["src/style/**/*"],
-                tasks: ["less"],
+                tasks: ["less", "notify:less"],
                 options: {
                     spawn: false,
                     interrupt: true,
@@ -235,6 +235,14 @@ module.exports = function (grunt) {
                     logConcurrentOutput: true
                 }
             }
+        },
+        notify: {
+            less: {
+                options: {
+                    title: "LESS",
+                    message: "Build Successful"
+                }
+            }
         }
     });
 
@@ -255,6 +263,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-concurrent");
     grunt.loadNpmTasks("grunt-concat-json");
     grunt.loadNpmTasks("grunt-merge-json");
+    grunt.loadNpmTasks("grunt-notify");
 
     grunt.registerTask("seqtest", "Runs the linter tests sequentially",
         ["jshint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
