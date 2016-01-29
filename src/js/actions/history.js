@@ -328,7 +328,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP],
         writes: [locks.JS_HISTORY, locks.JS_DOC, locks.PS_DOC],
         transfers: ["documents.updateDocument"],
-        post: ["verifyLayers.verifyLayerIndex"],
+        post: ["verify.layers.verifyLayerIndex"],
         modal: true,
         hideOverlays: true
     };

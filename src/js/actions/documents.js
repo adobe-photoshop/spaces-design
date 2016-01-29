@@ -592,7 +592,7 @@ define(function (require, exports) {
         writes: [locks.PS_DOC, locks.PS_APP],
         transfers: [preferencesActions.setPreference, allocateDocument,
             "panel.setOverlayOffsetsForFirstDocument", exportActions.addDefaultAsset, toolActions.changeVectorMaskMode],
-        post: ["verifyDocuments.verifyActiveDocument", "verifyDocuments.verifyOpenDocuments"],
+        post: ["verify.documents.verifyActiveDocument", "verify.documents.verifyOpenDocuments"],
         lockUI: true,
         hideOverlays: true
     };
@@ -646,7 +646,7 @@ define(function (require, exports) {
         writes: [locks.PS_APP],
         transfers: [initActiveDocument, ui.updateTransform, application.updateRecentFiles,
             "panel.setOverlayOffsetsForFirstDocument", menu.native, toolActions.changeVectorMaskMode],
-        post: ["verifyDocuments.verifyActiveDocument", "verifyDocuments.verifyOpenDocuments"],
+        post: ["verify.documents.verifyActiveDocument", "verify.documents.verifyOpenDocuments"],
         lockUI: true,
         hideOverlays: true
     };
@@ -689,7 +689,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.PS_APP, locks.PS_DOC],
         transfers: ["panel.cloak", disposeDocument, toolActions.changeVectorMaskMode],
-        post: ["verifyDocuments.verifyActiveDocument", "verifyDocuments.verifyOpenDocuments"],
+        post: ["verify.documents.verifyActiveDocument", "verify.documents.verifyOpenDocuments"],
         lockUI: true,
         hideOverlays: true
     };
@@ -756,7 +756,7 @@ define(function (require, exports) {
             ui.updateTransform, toolActions.select, "panel.cloak", guideActions.queryCurrentGuides,
             toolActions.changeVectorMaskMode, updateDocument],
         lockUI: true,
-        post: ["verifyDocuments.verifyActiveDocument"],
+        post: ["verify.documents.verifyActiveDocument"],
         hideOverlays: true
     };
 
@@ -1140,16 +1140,16 @@ define(function (require, exports) {
         var activeDocumentID = payload && payload.activeDocumentID,
             openDocumentIDs = payload ? payload.openDocumentIDs : [],
             initPromise = this.transfer(initInactiveDocuments, activeDocumentID, openDocumentIDs),
-            searchCurrentPromise = this.transfer("searchDocuments.registerCurrentDocumentSearch"),
-            searchRecentPromise = this.transfer("searchDocuments.registerRecentDocumentSearch");
+            searchCurrentPromise = this.transfer("search.documents.registerCurrentDocumentSearch"),
+            searchRecentPromise = this.transfer("search.documents.registerRecentDocumentSearch");
 
         return Promise.join(initPromise, searchCurrentPromise, searchRecentPromise);
     };
     afterStartup.action = {
         reads: [],
         writes: [],
-        transfers: [initInactiveDocuments, "searchDocuments.registerCurrentDocumentSearch",
-            "searchDocuments.registerRecentDocumentSearch"]
+        transfers: [initInactiveDocuments, "search.documents.registerCurrentDocumentSearch",
+            "search.documents.registerRecentDocumentSearch"]
     };
 
     /**

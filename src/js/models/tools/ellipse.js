@@ -47,7 +47,7 @@ define(function (require, exports, module) {
             backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE);
         
-        Tool.call(this, "ellipse", "Ellipse", "ellipseTool", "toolEllipse.select");
+        Tool.call(this, "ellipse", "Ellipse", "ellipseTool", "tool.ellipse.select");
 
         this.keyboardPolicyList = [shiftUKeyPolicy, deleteKeyPolicy, backspaceKeyPolicy, escapeKeyPolicy];
         this.activationKey = shortcuts.GLOBAL.TOOLS.ELLIPSE;

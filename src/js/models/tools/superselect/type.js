@@ -43,8 +43,8 @@ define(function (require, exports, module) {
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE);
         this.keyboardPolicyList = [escapeKeyPolicy];
-        this.selectHandler = "toolSuperselectType.select";
-        this.deselectHandler = "toolSuperselectType.deselect";
+        this.selectHandler = "tool.superselect.type.select";
+        this.deselectHandler = "tool.superselect.type.deselect";
         this.isMainTool = false;
     };
     util.inherits(SuperSelectTypeTool, Tool);

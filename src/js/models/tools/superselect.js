@@ -108,8 +108,8 @@ define(function (require, exports, module) {
         this.activationKey = shortcuts.GLOBAL.TOOLS.SELECT;
         this.handleVectorMaskMode = true;
 
-        this.selectHandler = "toolSuperselect.select";
-        this.deselectHandler = "toolSuperselect.deselect";
+        this.selectHandler = "tool.superselect.select";
+        this.deselectHandler = "tool.superselect.deselect";
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.ESCAPE),

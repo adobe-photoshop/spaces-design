@@ -48,7 +48,7 @@ define(function (require, exports, module) {
             backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE);
 
-        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", "toolRectangle.select");
+        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", "tool.rectangle.select");
        
         this.keyboardPolicyList = [shiftUKeyPolicy, deleteKeyPolicy, backspaceKeyPolicy, escapeKeyPolicy];
         this.activationKey = utilShortcuts.GLOBAL.TOOLS.RECTANGLE;

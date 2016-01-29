@@ -86,8 +86,8 @@ define(function (require, exports, module) {
             this.pointerPolicyList = [rightPointerPolicy, vectorMaskPointerPolicy];
         }
 
-        this.selectHandler = "toolSuperselectVector.select";
-        this.deselectHandler = "toolSuperselectVector.deselect";
+        this.selectHandler = "tool.superselect.vector.select";
+        this.deselectHandler = "tool.superselect.vector.deselect";
     };
     util.inherits(SuperSelectVectorTool, Tool);
 
