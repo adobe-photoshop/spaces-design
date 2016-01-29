@@ -37,7 +37,8 @@ define(function (require, exports, module) {
         math = require("js/util/math"),
         collection = require("js/util/collection"),
         headlights = require("js/util/headlights"),
-        log = require("js/util/log");
+        log = require("js/util/log"),
+        nls = require("js/util/nls");
 
     var NumberInput = React.createClass({
         mixins: [Focusable, FluxMixin],
@@ -152,10 +153,17 @@ define(function (require, exports, module) {
             var value;
             try {
                 var trimValue = _.trimRight(rawValue, this.props.suffix);
+
+                if (nls.commaDecimalSeparator) {
+                    // Replace decimal separator , with . and replace argument separator ; with ,
+                    trimValue.replace(new RegExp("\\,|\\;", "g"), function (match) {
+                        return match === "," ? "." : ",";
+                    });
+                }
                 /*jslint evil: true */
                 value = mathjs.eval(trimValue);
                 /*jslint evil: false */
-                
+
                 // Run it through our simple parser to get rid of complex and big numbers
                 value = math.parseNumber(value);
             } catch (err) {
@@ -192,7 +200,10 @@ define(function (require, exports, module) {
             switch (typeof value) {
             case "number":
                 if (_.isFinite(value)) {
-                    formattedValue = String(mathjs.round(value, this.props.precision)) + this.props.suffix;
+                    var roundedValue = mathjs.round(value, this.props.precision),
+                        localeValue = roundedValue.toLocaleString();
+
+                    formattedValue = String(localeValue) + this.props.suffix;
                 } else {
                     formattedValue = "";
                     log.warn("Non-finite value in NumberInput: ", value);

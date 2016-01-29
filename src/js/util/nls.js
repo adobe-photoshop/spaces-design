@@ -52,5 +52,13 @@ define(function (require, exports) {
         }
     };
 
+    /**
+     * The following tests whether or not decimals are separated by comma in the current locale.
+     *
+     * @type {boolean}
+     */
+    var commaDecimalSeparator = Number(0.5).toLocaleString().indexOf(",") > 0;
+
     exports.localize = localize;
+    exports.commaDecimalSeparator = commaDecimalSeparator;
 });

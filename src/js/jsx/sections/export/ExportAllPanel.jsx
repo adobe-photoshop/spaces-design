@@ -72,7 +72,7 @@ define(function (require, exports, module) {
                 var stable = asset.status === ExportAsset.STATUS.STABLE,
                     requested = asset.status === ExportAsset.STATUS.REQUESTED,
                     errored = asset.status === ExportAsset.STATUS.ERROR,
-                    assetTitle = asset.scale + "x";
+                    assetTitle = asset.scale.toLocaleString() + "x";
 
                 var assetClasses = classnames({
                     "exports-panel__layer-asset": true,
