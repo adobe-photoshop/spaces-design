@@ -28,6 +28,10 @@ define(function (require, exports, module) {
         classnames = require("classnames");
 
     var PanelColumn = React.createClass({
+        getInitialState: function () {
+            return {};
+        },
+        
         shouldComponentUpdate: function (nextProps) {
             if (!this.props.visible && !nextProps.visible) {
                 return false;
@@ -35,10 +39,25 @@ define(function (require, exports, module) {
 
             return true;
         },
+
+        componentWillReceiveProps: function (nextProps) {
+            if (!this.props.visible && nextProps.visible) {
+                this.setState({
+                    showPanel: true
+                });
+            } else if (this.props.visible && !nextProps.visible) {
+                this.setState({
+                    hidePanel: true
+                });
+            }
+        },
         
         render: function () {
+
             var className = classnames({
                     "panel": true,
+                    "panel-show": this.state.showPanel,
+                    "panel-hide": this.state.hidePanel,
                     "panel__visible": this.props.visible
                 });
 

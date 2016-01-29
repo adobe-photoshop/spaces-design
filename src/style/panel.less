@@ -454,6 +454,40 @@
     }
 }
 
+.panel-show {
+    animation-name: showPanel;
+    animation-duration: 0.5s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-in-out;
+}
+
+.panel-hide {
+    animation-name: hidePanel;
+    animation-duration: 0.5s;
+    animation-iteration-count: 1;
+    animation-timing-function: ease-in-out;
+}
+
+@keyframes hidePanel {
+    0% {
+        opacity: 1.0;
+    }
+
+    100% {
+        opacity: 0.01;
+    }
+}
+
+@keyframes hidePanel {
+    0% {
+        opacity: 0.01;
+    }
+
+    100% {
+        opacity: 1.00;
+    }
+}
+
 // LANGUAGE SPECIFIC STYLES //
 
 /**** JAPANESE *****/
