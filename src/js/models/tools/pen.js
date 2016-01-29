@@ -65,8 +65,8 @@ define(function (require, exports, module) {
             arrowLeftKeyPolicy
         ];
         
-        this.selectHandler = "toolPen.select";
-        this.deselectHandler = "toolPen.deselect";
+        this.selectHandler = "tool.pen.select";
+        this.deselectHandler = "tool.pen.deselect";
         this.activationKey = shortcutUtil.GLOBAL.TOOLS.PEN;
         this.handleVectorMaskMode = true;
     };
