@@ -175,6 +175,11 @@
         }
       }
     },
+    "react-addons-perf": {
+      "version": "0.14.6",
+      "from": "react-addons-perf@0.14.6",
+      "resolved": "https://registry.npmjs.org/react-addons-perf/-/react-addons-perf-0.14.6.tgz"
+    },
     "react-addons-pure-render-mixin": {
       "version": "0.14.6",
       "from": "https://registry.npmjs.org/react-addons-pure-render-mixin/-/react-addons-pure-render-mixin-0.14.6.tgz",
