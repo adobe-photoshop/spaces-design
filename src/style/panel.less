@@ -458,33 +458,33 @@
     animation-name: showPanel;
     animation-duration: 0.5s;
     animation-iteration-count: 1;
-    animation-timing-function: ease-in-out;
+    animation-timing-function: linear;
 }
 
 .panel-hide {
     animation-name: hidePanel;
     animation-duration: 0.5s;
     animation-iteration-count: 1;
-    animation-timing-function: ease-in-out;
+    animation-timing-function: linear;
 }
 
 @keyframes hidePanel {
     0% {
-        opacity: 1.0;
+        width: 32rem;
     }
 
     100% {
-        opacity: 0.01;
+        width: 0;
     }
 }
 
-@keyframes hidePanel {
+@keyframes showPanel {
     0% {
-        opacity: 0.01;
+        width: 0;
     }
 
     100% {
-        opacity: 1.00;
+        width: 32rem;
     }
 }
 

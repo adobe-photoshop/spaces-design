@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         getInitialState: function () {
             return {};
         },
-        
+
         shouldComponentUpdate: function (nextProps) {
             if (!this.props.visible && !nextProps.visible) {
                 return false;
@@ -43,11 +43,13 @@ define(function (require, exports, module) {
         componentWillReceiveProps: function (nextProps) {
             if (!this.props.visible && nextProps.visible) {
                 this.setState({
-                    showPanel: true
+                    showPanel: true,
+                    hidePanel: false
                 });
             } else if (this.props.visible && !nextProps.visible) {
                 this.setState({
-                    hidePanel: true
+                    hidePanel: true,
+                    showPanel: false
                 });
             }
         },
