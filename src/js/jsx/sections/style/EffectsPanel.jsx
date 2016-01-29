@@ -51,7 +51,7 @@ define(function (require, exports, module) {
 
     /**
      * The maximum allowed number of effects of a given kind per layer
-     * 
+     *
      * @const
      * @type {number}
      */
@@ -73,7 +73,7 @@ define(function (require, exports, module) {
 
         /**
          * Selects the content of the input on focus.
-         * 
+         *
          * @private
          * @param {SyntheticEvent} event
          */
@@ -143,7 +143,7 @@ define(function (require, exports, module) {
 
         /**
          * Calls action to copy currently selected layer's style
-         * 
+         *
          * @private
          */
         _handleStyleCopy: function (event) {
@@ -182,7 +182,7 @@ define(function (require, exports, module) {
         /**
          * Adds a new effect based on selection from list
          *
-         * @param {string} effectType for new effect to be added        
+         * @param {string} effectType for new effect to be added
          * @param {Event} event
          */
         _handleEffectListClick: function (effectType, event) {
@@ -195,26 +195,26 @@ define(function (require, exports, module) {
 
             headlights.logEvent("effect", "create", _.kebabCase(effectType));
         },
-        
+
         /**
          * True if user can add new effect to the selected layers.
          *
          * @private
-         * @param {string} effectName - accept: strokeEffects, colorOverlays, innerShadows, dropShadows
+         * @param {string} effectName - accept: strokeEffects, innerShadows, colorOverlays, dropShadows
          * @return {boolean}
          */
         _canAddEffect: function (effectName) {
             var effects = collection.pluck(this.props.document.layers.selected, effectName);
-            
+
             // Return false if any of the selected layers reach maximum effect count.
             return collection.zip(effects).size < MAX_EFFECT_COUNT;
         },
-        
+
         render: function () {
             if (this.props.document.layers.selected.isEmpty()) {
                 return null;
             }
-            
+
             var containerClasses = classnames({
                 "section-container": true,
                 "section-container__collapsed": !this.props.visible
@@ -254,12 +254,12 @@ define(function (require, exports, module) {
                         document={this.props.document}
                         layers={this.props.document.layers.selected}
                         disabled={this.props.disabled}/>
+                    <InnerShadowList {...this.props}
+                        onFocus={this._handleFocus}/>
                     <ColorOverlayList
                         document={this.props.document}
                         layers={this.props.document.layers.selected}
                         disabled={this.props.disabled}/>
-                    <InnerShadowList {...this.props}
-                        onFocus={this._handleFocus}/>
                     <DropShadowList {...this.props}
                         onFocus={this._handleFocus}/>
                     <UnsupportedEffectList
@@ -268,17 +268,17 @@ define(function (require, exports, module) {
                         disabled={this.props.disabled}/>
                 </div>
             );
-            
+
             var canAddStroke = this._canAddEffect("strokeEffects"),
                 canAddColorOverlay = this._canAddEffect("colorOverlays"),
                 canAddInnerShadow = this._canAddEffect("innerShadows"),
                 canAddDropShadow = this._canAddEffect("dropShadows"),
                 strokeMenuClasses = classnames("popover-list__item",
                     { "popover-list__item-disabled": !canAddStroke }),
-                colorOverlayMenuClasses = classnames("popover-list__item",
-                    { "popover-list__item-disabled": !canAddColorOverlay }),
                 innerShadowMenuClasses = classnames("popover-list__item",
                     { "popover-list__item-disabled": !canAddInnerShadow }),
+                colorOverlayMenuClasses = classnames("popover-list__item",
+                    { "popover-list__item-disabled": !canAddColorOverlay }),
                 dropShadowMenuClasses = classnames("popover-list__item",
                     { "popover-list__item-disabled": !canAddDropShadow });
 
@@ -334,15 +334,15 @@ define(function (require, exports, module) {
                                     this._handleEffectListClick.bind(this, LayerEffect.STROKE)}>
                                 {nls.localize("strings.STYLE.STROKE_EFFECT.TITLE_SINGLE")}
                             </li>
-                            <li className={colorOverlayMenuClasses}
-                                onClick={canAddColorOverlay &&
-                                    this._handleEffectListClick.bind(this, LayerEffect.COLOR_OVERLAY)}>
-                                {nls.localize("strings.STYLE.COLOR_OVERLAY.TITLE_SINGLE")}
-                            </li>
                             <li className={innerShadowMenuClasses}
                                 onClick={canAddInnerShadow &&
                                     this._handleEffectListClick.bind(this, LayerEffect.INNER_SHADOW)}>
                                 {nls.localize("strings.STYLE.INNER_SHADOW.TITLE_SINGLE")}
+                            </li>
+                            <li className={colorOverlayMenuClasses}
+                                onClick={canAddColorOverlay &&
+                                    this._handleEffectListClick.bind(this, LayerEffect.COLOR_OVERLAY)}>
+                                {nls.localize("strings.STYLE.COLOR_OVERLAY.TITLE_SINGLE")}
                             </li>
                             <li className={dropShadowMenuClasses}
                                 onClick={canAddDropShadow &&
