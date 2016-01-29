@@ -44,8 +44,8 @@ define(function (require, exports, module) {
         this.icon = "eyedropper";
         this.activationKey = shortcuts.GLOBAL.TOOLS.SAMPLER;
 
-        this.selectHandler = "toolSampler.select";
-        this.deselectHandler = "toolSampler.deselect";
+        this.selectHandler = "tool.sampler.select";
+        this.deselectHandler = "tool.sampler.deselect";
 
         var pointerPolicy = new PointerEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.LEFT_MOUSE_DOWN);

@@ -34,7 +34,7 @@ define(function (require, exports, module) {
      * @constructor
      */
     var TypeTool = function () {
-        Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", "toolType.select", "tool.type.deselect");
+        Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", "tool.type.select", "tool.type.deselect");
 
         this.activationKey = shortcuts.GLOBAL.TOOLS.TYPE;
     };

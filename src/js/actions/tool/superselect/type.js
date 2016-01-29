@@ -69,7 +69,7 @@ define(function (require, exports) {
         if (_typeChangedHandler) {
             descriptor.removeListener("updateTextProperties", _typeChangedHandler);
         }
-        _typeChangedHandler = this.flux.actions.toolType.updateTextPropertiesHandlerThrottled.bind(this);
+        _typeChangedHandler = this.flux.actions["tool.type"].updateTextPropertiesHandlerThrottled.bind(this);
         descriptor.addListener("updateTextProperties", _typeChangedHandler);
 
         return Promise.resolve();
