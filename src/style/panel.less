@@ -84,17 +84,13 @@
     box-shadow: inset 0 (0.2rem) 0 @bg-border;
     border-right: @panel-border-width solid @bg-border;
     z-index: 1;
-    display: none;
+    display: flex;
     position: relative;
     flex-direction: column;
 }
 
-.panel__visible + .panel:nth-child(2){
+.panel + .panel:nth-child(2){
     border-right: @panel-border-width solid @bg-border;
-}
-
-.panel__visible{
-    display: flex;
 }
 
 .panel__element {
@@ -455,6 +451,7 @@
 }
 
 .panel-show {
+    width: @panel-column-width;
     animation-name: showPanel;
     animation-duration: 0.5s;
     animation-iteration-count: 1;
@@ -466,11 +463,12 @@
     animation-duration: 0.5s;
     animation-iteration-count: 1;
     animation-timing-function: linear;
+    width: 0;
 }
 
 @keyframes hidePanel {
     0% {
-        width: 32rem;
+        width: @panel-column-width;
     }
 
     100% {
@@ -484,7 +482,7 @@
     }
 
     100% {
-        width: 32rem;
+        width: @panel-column-width;
     }
 }
 
