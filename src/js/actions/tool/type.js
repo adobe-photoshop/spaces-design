@@ -114,7 +114,7 @@ define(function (require, exports) {
             descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
         }
 
-        _typeChangedHandler = this.flux.actions["tool.type"].updateTextPropertiesHandlerThrottled.bind(this);
+        _typeChangedHandler = this.flux.actions.tool.type.updateTextPropertiesHandlerThrottled.bind(this);
         descriptor.addListener("updateTextProperties", _typeChangedHandler);
 
         _layerCreatedHandler = function (event) {
@@ -158,7 +158,7 @@ define(function (require, exports) {
 
         _layerDeletedHandler = function (event) {
             _layerDeleted = event.layerID;
-            this.flux.actions["tool.type"].handleDeletedLayer(event, _layersReplaced);
+            this.flux.actions.tool.type.handleDeletedLayer(event, _layersReplaced);
         }.bind(this);
         descriptor.addListener("deleteTextLayer", _layerDeletedHandler);
 
@@ -171,7 +171,7 @@ define(function (require, exports) {
                     return;
                 }
 
-                this.flux.actions["tool.type"].handleTypeModalStateCanceled();
+                this.flux.actions.tool.type.handleTypeModalStateCanceled();
             }
         }.bind(this);
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);

@@ -35,6 +35,7 @@ define(function (require, exports) {
     var events = require("js/events"),
         locks = require("js/locks"),
         system = require("js/util/system"),
+        objUtil = require("js/util/object"),
         log = require("js/util/log"),
         headlights = require("js/util/headlights"),
         policyActions = require("./policy"),
@@ -428,7 +429,7 @@ define(function (require, exports) {
             actionModuleName = actionNameParts[0],
             actionName = actionNameParts[1],
             actionNameThrottled = actionName + "Throttled",
-            actionThrottled = this.flux.actions[actionModuleName][actionNameThrottled];
+            actionThrottled = objUtil.getPath(this.flux.actions, actionModuleName)[actionNameThrottled];
 
         return actionThrottled;
     };
