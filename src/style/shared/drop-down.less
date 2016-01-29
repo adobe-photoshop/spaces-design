@@ -21,31 +21,32 @@
  *
  */
 
-.drop-down input {
+.drop-down input, 
+.drop-down input:hover,
+.drop-down input:focus, .drop-down input:focus:hover,
+.drop-down input:disabled 
+.drop-down:hover input{
     font-size: @text-medium;
-    background: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='#cecece' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>") no-repeat right @bg-panel; 
+    background-repeat: no-repeat;
+    background-position: right;
+    background-color: @bg-panel;
     background-size: 1rem;
     padding-right: 1rem;
     outline: none;
 }
 
+.drop-down input {
+    background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='@{icon-active}' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>");
+}
+
 .drop-down input:hover {
-    background: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='#e1e1e1' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>") no-repeat right @bg-panel;
-    background-size: 1rem;
+    background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='@{icon-hover}' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>"); 
 }
 
 .drop-down input:focus, .drop-down input:focus:hover {
-    background: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='#1b8be9' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>") no-repeat right @bg-panel;
-    background-size: 1rem;
+    background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='@{focus-highlight}' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>"); 
 }
 
 .drop-down input:disabled {
-    background: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='#848484' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>") no-repeat right @bg-panel;
-    background-size: 1rem;
-}
-
-.drop-down {
-    svg {
-        fill: @icon-active;
-    }
+    background-image: url("data:image/svg+xml;charset=UTF-8,<svg width='11' height='7' viewBox='0 0 11 7' xmlns='http://www.w3.org/2000/svg'><title>drop-down</title><path d='M1.885 1.74l2.93 2.722m.685.68L9.164 1.74' stroke-linecap='square' stroke='@{icon-disabled}' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>"); 
 }

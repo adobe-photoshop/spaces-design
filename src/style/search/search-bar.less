@@ -31,7 +31,6 @@
     background-position: 1.7rem 1.5rem;
     top: 25%;
     left: 50%;
-    transform: none;
     transform: translate(-50%, 0); /*this is important so it won't bounce when typing in the search field */
     
     width: @search-bar-width;
@@ -131,7 +130,8 @@
 }
 
 .search-bar__dialog .select__option {
-    padding: 0.5rem 0.8rem 0.7rem 0.8rem;
+    padding: 0.5rem 0.8rem 0.7rem 0.7rem;
+    margin: 0;
     border-left: .3rem solid transparent;
     display: flex;
     overflow: hidden;
@@ -156,9 +156,9 @@
 }
 
 .search-bar__dialog .select__option__selected {
-    color: @text-highlight;
+    color: @text-focus;
     border-left: .3rem solid @focus-highlight;
-    background-color: @bg-app;
+    background-color: @bg-dialog;
     
     svg {
         fill: @focus-highlight;
