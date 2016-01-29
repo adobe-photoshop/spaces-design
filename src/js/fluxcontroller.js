@@ -936,7 +936,7 @@ define(function (require, exports, module) {
                 debouncedName = name + DEBOUNCED_ACTION_SUFFIX,
                 synchronizedAction = this._synchronize(namespace, module, name),
                 throttledAction = synchronization.throttle(synchronizedAction),
-                debouncedAction = synchronization.debounce(synchronizedAction);
+                debouncedAction = _.debounce(synchronizedAction);
 
             exports[name] = synchronizedAction;
             exports[throttledName] = throttledAction;

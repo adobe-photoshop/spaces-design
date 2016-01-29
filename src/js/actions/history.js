@@ -35,7 +35,6 @@ define(function (require, exports) {
 
     var events = require("js/events"),
         locks = require("js/locks"),
-        synchronization = require("js/util/synchronization"),
         log = require("js/util/log");
 
     /**
@@ -416,7 +415,7 @@ define(function (require, exports) {
      */
     var beforeStartup = function () {
         var debouncedHandleHistoryStateAfterSelect =
-            synchronization.debounce(this.flux.actions.history.handleHistoryStateAfterSelect, this, 200);
+            _.debounce(this.flux.actions.history.handleHistoryStateAfterSelect.bind(this), 200);
 
         // We get these every time there is a new history state being created
         _historyStateHandler = function (event) {

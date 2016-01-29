@@ -45,8 +45,7 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         layerActionsUtil = require("js/util/layeractions"),
         headlights = require("js/util/headlights"),
-        nls = require("js/util/nls"),
-        synchronization = require("js/util/synchronization");
+        nls = require("js/util/nls");
 
     /**
      * play/batchPlay options that allow the canvas to be continually updated.
@@ -1393,18 +1392,18 @@ define(function (require, exports) {
     var beforeStartup = function () {
         // TODO does this still need to debounce?  Are there cases where we get several events that correspond to
         // one history state?
-        _artboardTransformHandler = synchronization.debounce(function () {
+        _artboardTransformHandler = _.debounce(function () {
             return this.flux.actions.transform.handleTransformArtboard();
-        }, this);
+        }.bind(this));
 
         _layerTransformHandler = function (event) {
             this.flux.actions.transform.handleTransformLayer(event);
         }.bind(this);
 
-        _moveToArtboardHandler = synchronization.debounce(function () {
+        _moveToArtboardHandler = _.debounce(function () {
             // Undefined makes it use the most recent document model
             return this.flux.actions.layers.resetIndex(undefined);
-        }, this, EVENT_DEBOUNCE_DELAY);
+        }.bind(this), EVENT_DEBOUNCE_DELAY);
 
         descriptor.addListener("transform", _layerTransformHandler);
         descriptor.addListener("move", _layerTransformHandler);

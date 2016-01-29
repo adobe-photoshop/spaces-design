@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        Immutable = require("immutable");
+        Immutable = require("immutable"),
+        _ = require("lodash");
 
     var os = require("adapter").os;
 
@@ -38,7 +39,6 @@ define(function (require, exports, module) {
         Button = require("js/jsx/shared/Button"),
         SVGIcon = require("js/jsx/shared/SVGIcon"),
         nls = require("js/util/nls"),
-        synchronization = require("js/util/synchronization"),
         searchStore = require("js/stores/search"),
         headlights = require("js/util/headlights"),
         exportStore = require("js/stores/export");
@@ -157,11 +157,11 @@ define(function (require, exports, module) {
             this._updateTabContainerScroll();
             this._updateTabSize();
 
-            this._updatePanelSizesDebounced = synchronization.debounce(this._updatePanelSizes, this, 500);
+            this._updatePanelSizesDebounced = _.debounce(this._updatePanelSizes, 500);
             os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
             this._updatePanelSizes();
             
-            this._handleWindowResizeDebounced = synchronization.debounce(this._handleWindowResize, this, 500);
+            this._handleWindowResizeDebounced = _.debounce(this._handleWindowResize, 500);
             window.addEventListener("resize", this._handleWindowResizeDebounced);
         },
 

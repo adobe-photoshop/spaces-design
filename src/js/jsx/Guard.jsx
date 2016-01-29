@@ -25,11 +25,10 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        _ = require("lodash");
 
     var os = require("adapter").os;
-
-    var synchronization = require("js/util/synchronization");
 
     /**
      * Input events to block when the component becomes inactive.
@@ -63,7 +62,7 @@ define(function (require, exports, module) {
      * @private
      * @type {function}
      */
-    var _resetCursorDebounced = synchronization.debounce(os.resetCursor, os, 500);
+    var _resetCursorDebounced = _.debounce(os.resetCursor.bind(os), 500);
 
     var Guard = React.createClass({
 

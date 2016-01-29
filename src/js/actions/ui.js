@@ -36,7 +36,6 @@ define(function (require, exports) {
         events = require("js/events"),
         locks = require("js/locks"),
         shortcuts = require("./shortcuts"),
-        synchronization = require("js/util/synchronization"),
         system = require("js/util/system");
 
     /**
@@ -353,7 +352,7 @@ define(function (require, exports) {
      */
     var beforeStartup = function () {
         var scrolling = false,
-            updateTransformDebounced = synchronization.debounce(function () {
+            updateTransformDebounced = _.debounce(function () {
                 return this.flux.actions.ui.updateTransform()
                     .bind(this)
                     .then(function () {
@@ -363,7 +362,7 @@ define(function (require, exports) {
                         // Reenable overlays
                         this.dispatch(events.panel.END_CANVAS_UPDATE);
                     });
-            }, this, EVENT_DEBOUNCE_DELAY, false);
+            }.bind(this), EVENT_DEBOUNCE_DELAY);
 
         // Handles spacebar + drag, scroll and window resize events
         _scrollHandler = function (event) {
@@ -384,8 +383,10 @@ define(function (require, exports) {
         }.bind(this);
         descriptor.addListener("scroll", _scrollHandler);
 
-        _displayConfigurationChangedHandler = synchronization.debounce(
-            this.flux.actions.ui.handleDisplayConfigurationChanged, this, EVENT_DEBOUNCE_DELAY);
+        _displayConfigurationChangedHandler = _.debounce(
+            this.flux.actions.ui.handleDisplayConfigurationChanged.bind(this),
+            EVENT_DEBOUNCE_DELAY
+        );
         adapterOS.addListener("displayConfigurationChanged", _displayConfigurationChangedHandler);
 
         // Enable over-scroll mode

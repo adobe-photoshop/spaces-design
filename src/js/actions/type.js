@@ -41,8 +41,7 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         math = require("js/util/math"),
         nls = require("js/util/nls"),
-        layerActionsUtil = require("js/util/layeractions"),
-        synchronization = require("js/util/synchronization");
+        layerActionsUtil = require("js/util/layeractions");
 
     /**
      * Minimum and maximum Photoshop-supported font sizes
@@ -799,7 +798,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var beforeStartup = function () {
-        _fontListChangedHandler = synchronization.debounce(function () {
+        _fontListChangedHandler = _.debounce(function () {
             var fontStore = this.flux.store("font"),
                 fontState = fontStore.getState(),
                 initialized = fontState.initialized;
@@ -809,7 +808,7 @@ define(function (require, exports) {
             } else {
                 return Promise.resolve();
             }
-        }, this, 500);
+        }.bind(this), 500);
 
         descriptor.addListener("fontListChanged", _fontListChangedHandler);
 

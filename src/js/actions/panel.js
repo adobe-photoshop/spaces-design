@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird");
+    var Promise = require("bluebird"),
+        _ = require("lodash");
 
     var adapter = require("adapter"),
         descriptor = require("adapter").ps.descriptor,
@@ -35,7 +36,6 @@ define(function (require, exports) {
     var events = require("js/events"),
         locks = require("js/locks"),
         preferences = require("./preferences"),
-        synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
         uiUtil = require("js/util/ui");
 
@@ -327,9 +327,9 @@ define(function (require, exports) {
         }.bind(this);
         adapterOS.addListener("activationChanged", _activationChangeHandler);
 
-        var windowResizeDebounced = synchronization.debounce(function () {
+        var windowResizeDebounced = _.debounce(function () {
             return this.flux.actions.panel.setOverlayCloaking();
-        }, this, DEBOUNCE_DELAY, false);
+        }.bind(this), DEBOUNCE_DELAY);
 
         // Handles window resize for resetting superselect tool policies
         _resizeHandler = function (event) {

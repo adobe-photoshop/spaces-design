@@ -80,59 +80,5 @@ define(function (require, exports) {
         return throttledFn;
     };
 
-    /**
-     * Debounce a promise-returning asynchronous function. Synchronous functions should
-     * use _.debounce instead.
-     *
-     * @param {function(*):Promise=} fn The function to debounce. May either return
-     *  a promise, or undefined.
-     * @param {object=} receiver Optional receiver for the debounced function.
-     * @param {number=} delay Optional number of milliseconds to wait after last call
-     * @param {boolean=} immediate Flag to call debounced function at the beginning
-     * @return {function(*)} The debounced function.
-     */
-    var debounce = function (fn, receiver, delay, immediate) {
-        var debounceTimer = null,
-            pending = null;
-
-        // Handle omitted receiver
-        if (typeof receiver === "number") {
-            immediate = delay;
-            delay = receiver;
-            receiver = undefined;
-        }
-
-        // Handle omitted delay/immediate flag
-        delay = delay || 0;
-        immediate = immediate || false;
-
-        var debouncedFn = function () {
-            var self = receiver;
-            if (self === undefined) {
-                self = this;
-            }
-
-            pending = arguments;
-
-            if (debounceTimer) {
-                window.clearTimeout(debounceTimer);
-                debounceTimer = null;
-            } else if (immediate) {
-                immediate = false;
-                fn.apply(self, pending);
-            }
-
-            debounceTimer = window.setTimeout(function () {
-                fn.apply(self, pending)
-                    .finally(function () {
-                        debounceTimer = null;
-                    });
-            }, delay);
-        };
-
-        return debouncedFn;
-    };
-
     exports.throttle = throttle;
-    exports.debounce = debounce;
 });
