@@ -524,23 +524,23 @@ define(function (require, exports, module) {
                 dropOffset;
 
             switch (dropPosition) {
-                case "above":
-                    dropOffset = 0;
-                    break;
-                case "below":
-                    if (dropLayer.isGroup && !dropLayer.expanded) {
-                        // Drop below the closed group
-                        dropOffset = doc.layers.descendants(dropLayer).size;
-                    } else {
-                        // Drop directly below, inside the closed group
-                        dropOffset = 1;
-                    }
-                    break;
-                case "on":
+            case "above":
+                dropOffset = 0;
+                break;
+            case "below":
+                if (dropLayer.isGroup && !dropLayer.expanded) {
+                    // Drop below the closed group
+                    dropOffset = doc.layers.descendants(dropLayer).size;
+                } else {
+                    // Drop directly below, inside the closed group
                     dropOffset = 1;
-                    break;
-                default:
-                    throw new Error("Unable to drop at unexpected position: " + dropPosition);
+                }
+                break;
+            case "on":
+                dropOffset = 1;
+                break;
+            default:
+                throw new Error("Unable to drop at unexpected position: " + dropPosition);
             }
 
             var dropIndex = doc.layers.indexOf(dropLayer) - dropOffset;

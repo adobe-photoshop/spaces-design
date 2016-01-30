@@ -88,11 +88,11 @@ define(function (require, exports, module) {
         _opaqueColorChanged: function (color, coalesce) {
             this.getFlux().actions.shapes
                 .setFillColorThrottled(this.props.document, this.props.layers, color,
-                    {
-                        coalesce: coalesce,
-                        ignoreAlpha: true,
-                        enabled: true
-                    });
+                {
+                    coalesce: coalesce,
+                    ignoreAlpha: true,
+                    enabled: true
+                });
             if (!coalesce) {
                 headlights.logEvent("edit", "color-input", "opaque-fill-color-change");
             }

@@ -129,12 +129,12 @@ define(function (require, exports) {
         }
 
         return superPromise.then(function (responseArray) {
-                // rudimentary response validation
-                if (responseArray.length !== reverseIndex.length) {
-                    return Promise.reject(new Error("Failed during selection dance"));
-                }
-                return _handleCompositeResponse(responseArray, layerActions, reverseIndex);
-            });
+            // rudimentary response validation
+            if (responseArray.length !== reverseIndex.length) {
+                return Promise.reject(new Error("Failed during selection dance"));
+            }
+            return _handleCompositeResponse(responseArray, layerActions, reverseIndex);
+        });
     };
 
     /**

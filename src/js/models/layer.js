@@ -343,7 +343,7 @@ define(function (require, exports, module) {
        [layerLib.layerKinds.PATTERN, Layer.KINDS.PATTERN],
        [layerLib.layerKinds.SOLIDCOLOR, Layer.KINDS.SOLIDCOLOR],
        [layerLib.layerKinds.BACKGROUND, Layer.KINDS.BACKGROUND]
-   ]));
+    ]));
     
     Layer.smartObjectTypes = smartObjectTypes;
 
@@ -570,14 +570,14 @@ define(function (require, exports, module) {
      */
     var _capitalizeLayerKindName = function (layerKind) {
         switch (layerKind) {
-            case Layer.KINDS.SMARTOBJECT:
-                return "SmartObject";
-            case Layer.KINDS.GROUPEND:
-                return "GroupEnd";
-            case Layer.KINDS.SOLIDCOLOR:
-                return "SolidColor";
-            default:
-                return _.capitalize(layerKind.toLowerCase());
+        case Layer.KINDS.SMARTOBJECT:
+            return "SmartObject";
+        case Layer.KINDS.GROUPEND:
+            return "GroupEnd";
+        case Layer.KINDS.SOLIDCOLOR:
+            return "SolidColor";
+        default:
+            return _.capitalize(layerKind.toLowerCase());
         }
     };
 

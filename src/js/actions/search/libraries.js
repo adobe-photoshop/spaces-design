@@ -144,39 +144,38 @@ define(function (require, exports) {
                 selectPromise = this.flux.actions.libraries.selectLibrary(asset.library.id);
 
             switch (elementInfo.type) {
-                case "GRAPHIC":
-                    var uiStore = this.flux.stores.ui,
-                        panelStore = this.flux.stores.panel,
-                        centerOffsets = panelStore.getState().centerOffsets,
-                        midX = (window.document.body.clientWidth + centerOffsets.left - centerOffsets.right) / 2,
-                        midY = (window.document.body.clientHeight + centerOffsets.top - centerOffsets.bottom) / 2,
-                        location = uiStore.transformWindowToCanvas(midX, midY);
+            case "GRAPHIC":
+                var uiStore = this.flux.stores.ui,
+                    panelStore = this.flux.stores.panel,
+                    centerOffsets = panelStore.getState().centerOffsets,
+                    midX = (window.document.body.clientWidth + centerOffsets.left - centerOffsets.right) / 2,
+                    midY = (window.document.body.clientHeight + centerOffsets.top - centerOffsets.bottom) / 2,
+                    location = uiStore.transformWindowToCanvas(midX, midY);
                     
-                    selectPromise
-                        .bind(this)
-                        .then(function () {
-                            if (currentDocument) {
-                                this.flux.actions.libraries.createLayerFromElement(asset, location);
-                            } else {
-                                this.flux.actions.libraries.openGraphicForEdit(asset);
-                            }
-                        });
-                    
-                    break;
-                case "LAYERSTYLE":
-                    selectPromise
-                        .bind(this)
-                        .then(function () {
-                            this.flux.actions.libraries.applyLayerStyle(asset);
-                        });
-                    break;
-                case "CHARACTERSTYLE":
-                    selectPromise
-                        .bind(this)
-                        .then(function () {
-                            this.flux.actions.libraries.applyCharacterStyle(asset);
-                        });
-                    break;
+                selectPromise
+                    .bind(this)
+                    .then(function () {
+                        if (currentDocument) {
+                            this.flux.actions.libraries.createLayerFromElement(asset, location);
+                        } else {
+                            this.flux.actions.libraries.openGraphicForEdit(asset);
+                        }
+                    });
+                break;
+            case "LAYERSTYLE":
+                selectPromise
+                    .bind(this)
+                    .then(function () {
+                        this.flux.actions.libraries.applyLayerStyle(asset);
+                    });
+                break;
+            case "CHARACTERSTYLE":
+                selectPromise
+                    .bind(this)
+                    .then(function () {
+                        this.flux.actions.libraries.applyCharacterStyle(asset);
+                    });
+                break;
             }
         }
     };

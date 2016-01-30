@@ -149,7 +149,7 @@ define(function (require, exports, module) {
                             </ul>
                     </div>
                 </div>)
-            ];
+                ];
 
             return (
                 <div className="first-launch__content" >

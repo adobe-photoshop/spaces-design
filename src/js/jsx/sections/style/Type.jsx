@@ -435,22 +435,22 @@ define(function (require, exports, module) {
 
             var locked = this.props.disabled || !this.state.initialized || !this.props.uniformLayerKind,
                 characterStyles = layers.reduce(function (characterStyles, layer) {
-                if (layer.text && layer.text.characterStyle) {
-                    // TextStyle colors are always opaque; opacity is ONLY stored
-                    // as the layer opacity. However, we want to show an RGBA color
-                    // in the UI, so we temporarily clone the text style objects here,
-                    // merging the layer opacity and the opaque color into a translucent
-                    // color for the view.
-                    var style = layer.text.characterStyle;
+                    if (layer.text && layer.text.characterStyle) {
+                        // TextStyle colors are always opaque; opacity is ONLY stored
+                        // as the layer opacity. However, we want to show an RGBA color
+                        // in the UI, so we temporarily clone the text style objects here,
+                        // merging the layer opacity and the opaque color into a translucent
+                        // color for the view.
+                        var style = layer.text.characterStyle;
                     
-                    if (style.color) {
-                        style = style.set("color", style.color.setOpacity(layer.opacity));
-                    }
+                        if (style.color) {
+                            style = style.set("color", style.color.setOpacity(layer.opacity));
+                        }
 
-                    characterStyles = characterStyles.push(style);
-                }
-                return characterStyles;
-            }, Immutable.List());
+                        characterStyles = characterStyles.push(style);
+                    }
+                    return characterStyles;
+                }, Immutable.List());
 
             if (characterStyles.isEmpty()) {
                 return null;

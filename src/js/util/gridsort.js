@@ -104,7 +104,8 @@ define(function (require, exports, module) {
         // filter any layers without bounds, just in case
         // sort left-to-right, then reduce them into a grid.
         // note the use of '_.ary()' to pass only the first two reducer args into _addLayerToRow
-        var grid = layers.filter(function (layer) {
+        var grid = layers
+            .filter(function (layer) {
                 return layer.bounds && !layer.bounds.empty;
             })
             .sort(function (a, b) {

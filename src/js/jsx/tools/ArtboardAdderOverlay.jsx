@@ -170,32 +170,32 @@ define(function (require, exports, module) {
                 newBounds;
 
             switch (direction) {
-                case "n":
-                    newBounds = bounds.merge({
-                        top: bounds.top - bounds.height - padding,
-                        bottom: bounds.bottom - bounds.height - padding
-                    });
-                    break;
-                case "s":
-                    newBounds = bounds.merge({
-                        top: bounds.top + bounds.height + padding,
-                        bottom: bounds.bottom + bounds.height + padding
-                    });
-                    break;
-                case "w":
-                    newBounds = bounds.merge({
-                        left: bounds.left - bounds.width - padding,
-                        right: bounds.right - bounds.width - padding
-                    });
-                    break;
-                case "e":
-                    newBounds = bounds.merge({
-                        left: bounds.left + bounds.width + padding,
-                        right: bounds.right + bounds.width + padding
-                    });
-                    break;
-                default:
-                    throw new Error("Invalid direction passed to artboard bound calculation");
+            case "n":
+                newBounds = bounds.merge({
+                    top: bounds.top - bounds.height - padding,
+                    bottom: bounds.bottom - bounds.height - padding
+                });
+                break;
+            case "s":
+                newBounds = bounds.merge({
+                    top: bounds.top + bounds.height + padding,
+                    bottom: bounds.bottom + bounds.height + padding
+                });
+                break;
+            case "w":
+                newBounds = bounds.merge({
+                    left: bounds.left - bounds.width - padding,
+                    right: bounds.right - bounds.width - padding
+                });
+                break;
+            case "e":
+                newBounds = bounds.merge({
+                    left: bounds.left + bounds.width + padding,
+                    right: bounds.right + bounds.width + padding
+                });
+                break;
+            default:
+                throw new Error("Invalid direction passed to artboard bound calculation");
             }
 
             return newBounds;
@@ -230,22 +230,22 @@ define(function (require, exports, module) {
                 circleRadius = remToPx(1.625) * scale;
 
             switch (direction) {
-                case "n":
-                    adderXCenter = bounds.xCenter;
-                    adderYCenter = bounds.top - padding;
-                    break;
-                case "s":
-                    adderXCenter = bounds.xCenter;
-                    adderYCenter = bounds.bottom + padding;
-                    break;
-                case "w":
-                    adderXCenter = bounds.left - padding;
-                    adderYCenter = bounds.yCenter;
-                    break;
-                case "e":
-                    adderXCenter = bounds.right + padding;
-                    adderYCenter = bounds.yCenter;
-                    break;
+            case "n":
+                adderXCenter = bounds.xCenter;
+                adderYCenter = bounds.top - padding;
+                break;
+            case "s":
+                adderXCenter = bounds.xCenter;
+                adderYCenter = bounds.bottom + padding;
+                break;
+            case "w":
+                adderXCenter = bounds.left - padding;
+                adderYCenter = bounds.yCenter;
+                break;
+            case "e":
+                adderXCenter = bounds.right + padding;
+                adderYCenter = bounds.yCenter;
+                break;
             }
 
             var adder = this._scrimGroup.append("g")

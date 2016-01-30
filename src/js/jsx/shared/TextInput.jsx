@@ -300,13 +300,13 @@ define(function (require, exports, module) {
             var key = event.key;
 
             switch (key) {
-                case "Escape":
-                    this._reset(event);
-                    break;
-                case "Return":
-                case "Enter":
-                    this._commit(event);
-                    break;
+            case "Escape":
+                this._reset(event);
+                break;
+            case "Return":
+            case "Enter":
+                this._commit(event);
+                break;
             }
 
             if (this.props.onKeyDown) {

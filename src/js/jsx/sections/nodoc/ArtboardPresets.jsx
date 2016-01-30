@@ -53,18 +53,18 @@ define(function (require, exports, module) {
 
         render: function () {
             var templateLinks = templates.map(function (template, index) {
-                    var name = nls.localize("strings.TEMPLATES." + template.id);
-                    return (
-                        <li
-                            key={index}
-                            className="link-list__item"
-                            onClick={this._openTemplate.bind(this, template)}>
+                var name = nls.localize("strings.TEMPLATES." + template.id);
+                return (
+                    <li
+                        key={index}
+                        className="link-list__item"
+                        onClick={this._openTemplate.bind(this, template)}>
 
-                            <span>{name}</span>
-                            <span>{template.width} x {template.height}</span>
-                        </li>
-                    );
-                }, this);
+                        <span>{name}</span>
+                        <span>{template.width} x {template.height}</span>
+                    </li>
+                );
+            }, this);
 
             return (
                 <section className="artboard-presets section section__active">

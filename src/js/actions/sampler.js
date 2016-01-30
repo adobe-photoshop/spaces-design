@@ -71,17 +71,17 @@ define(function (require, exports) {
             color;
 
         switch (sourceLayer.kind) {
-            case Layer.KINDS.VECTOR:
-                color = sourceLayer.fill && sourceLayer.fill.color;
+        case Layer.KINDS.VECTOR:
+            color = sourceLayer.fill && sourceLayer.fill.color;
                 
-                return Promise.resolve(color);
-            case Layer.KINDS.TEXT:
-                color = sourceLayer.text.firstCharacterStyle.color;
-                color = color && color.setOpacity(sourceLayer.opacity);
+            return Promise.resolve(color);
+        case Layer.KINDS.TEXT:
+            color = sourceLayer.text.firstCharacterStyle.color;
+            color = color && color.setOpacity(sourceLayer.opacity);
 
-                return Promise.resolve(color);
-            default:
-                return uiUtil.colorAtPoint(doc.id, coords.x, coords.y, sourceLayer.opacity);
+            return Promise.resolve(color);
+        default:
+            return uiUtil.colorAtPoint(doc.id, coords.x, coords.y, sourceLayer.opacity);
         }
     };
 

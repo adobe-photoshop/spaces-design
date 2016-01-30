@@ -42,14 +42,14 @@ define(function (require, exports) {
      */
     var isTextInput = function (el) {
         switch (el.type) {
-            case "text":
-            case "search":
-            case "url":
-            case "tel":
-            case "password":
-                return true;
-            default:
-                return false;
+        case "text":
+        case "search":
+        case "url":
+        case "tel":
+        case "password":
+            return true;
+        default:
+            return false;
         }
     };
 

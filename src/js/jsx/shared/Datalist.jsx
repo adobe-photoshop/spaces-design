@@ -555,9 +555,9 @@ define(function (require, exports, module) {
 
                     // First check if there's anything based on the whole search value
                     suggestion = (options && valueLowerCase !== "") ? options.find(function (opt) {
-                            return ((opt.type === "item" || opt.type === "filter") &&
+                        return ((opt.type === "item" || opt.type === "filter") &&
                                 opt.title.toLowerCase().indexOf(valueLowerCase) === 0);
-                        }) : null;
+                    }) : null;
 
                 // Otherwise suggest based on last word typed
                 if (!suggestion) {

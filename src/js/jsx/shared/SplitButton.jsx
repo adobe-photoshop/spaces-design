@@ -20,7 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  */
- 
+
 define(function (require, exports, module) {
     "use strict";
 
@@ -45,10 +45,10 @@ define(function (require, exports, module) {
 
         render: function () {
             var buttonClasses = classnames({
-                    "split-button__item__selected": this.props.selected,
-                    "split-button__item__disabled": this.props.disabled,
-                    "split-button__item": true
-                }, this.props.className);
+                "split-button__item__selected": this.props.selected,
+                "split-button__item__disabled": this.props.disabled,
+                "split-button__item": true
+            }, this.props.className);
             
             var buttonIcon;
             if (this.props.iconId) {

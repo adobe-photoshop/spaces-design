@@ -21,11 +21,12 @@
  * 
  */
 
-/* global console */
 define(function (require, exports, module) {
     "use strict";
 
     var loglevel = require("loglevel");
+
+    /*eslint no-console:0*/
 
     if (__PG_DEBUG__) {
         // If the debug global is set, log messages at and below debug level

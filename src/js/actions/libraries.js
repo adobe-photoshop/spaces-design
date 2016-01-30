@@ -289,19 +289,23 @@ define(function (require, exports) {
                 currentLibrary.beginOperation();
                 newElement = currentLibrary.createElement(firstLayer.name, ELEMENT_GRAPHIC_TYPE);
 
-                return Promise.fromCallback(function (done) {
-                    var representation = newElement.createRepresentation(representationType, "primary");
+                return Promise
+                    .fromCallback(function (done) {
+                        var representation = newElement.createRepresentation(representationType, "primary");
 
-                    representation.updateContentFromPath(paths.exportedLayerPath, false, done);
-                }).then(function () {
-                    newElement.setRenditionCache(RENDITION_GRAPHIC_SIZE, paths.tempPreviewPath);
-                }).finally(function () {
-                    currentLibrary.endOperation();
-                }).then(function () {
-                    return Promise.fromCallback(function (done) {
-                        newElement.getPrimaryRepresentation().getContentPath(done);
+                        representation.updateContentFromPath(paths.exportedLayerPath, false, done);
+                    })
+                    .then(function () {
+                        newElement.setRenditionCache(RENDITION_GRAPHIC_SIZE, paths.tempPreviewPath);
+                    })
+                    .finally(function () {
+                        currentLibrary.endOperation();
+                    })
+                    .then(function () {
+                        return Promise.fromCallback(function (done) {
+                            newElement.getPrimaryRepresentation().getContentPath(done);
+                        });
                     });
-                });
             })
             .then(function (newElementContentPath) {
                 var createObj = libraryAdapter.createElement(currentDocument.id,
@@ -463,7 +467,8 @@ define(function (require, exports) {
 
                 newElement = currentLibrary.createElement(currentLayer.name, ELEMENT_LAYERSTYLE_TYPE);
 
-                return Promise.fromCallback(function (done) {
+                return Promise
+                    .fromCallback(function (done) {
                         var representation = newElement.createRepresentation(REP_LAYERSTYLE_TYPE, "primary");
                         representation.updateContentFromPath(stylePath, false, done);
                     })
@@ -579,7 +584,8 @@ define(function (require, exports) {
         var tempFilePath,
             tempPreviewPath;
         
-        return Promise.bind(this)
+        return Promise
+            .bind(this)
             .then(function () {
                 // Create a temp file of the element by copying its primary representation.
                 
@@ -936,7 +942,8 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        return Promise.fromCallback(function (done) {
+        return Promise
+            .fromCallback(function (done) {
                 representation.getContentPath(done);
             })
             .bind(this)
@@ -1134,7 +1141,8 @@ define(function (require, exports) {
             id: library.id
         };
 
-        return Promise.fromCallback(function (done) {
+        return Promise
+            .fromCallback(function (done) {
                 libraryCollection.removeLibrary(library, done);
             })
             .bind(this)
@@ -1296,23 +1304,23 @@ define(function (require, exports) {
                             var elementType = properties.elementType === "image" ? "graphic" : properties.elementType;
                             
                             switch (event) {
-                                case "createLibrary":
-                                    headlights.logEvent("libraries", "library", "create");
-                                    break;
-                                case "deleteLibrary":
-                                    headlights.logEvent("libraries", "library", "delete");
-                                    break;
-                                case "createElement":
-                                    headlights.logEvent("libraries", "element", ["create", elementType].join("-"));
-                                    break;
-                                case "deleteElement":
-                                    headlights.logEvent("libraries", "element", ["delete", elementType].join("-"));
-                                    break;
-                                case "updateElement":
-                                    // updateType: info (rename), representation (update content)
-                                    headlights.logEvent("libraries", "element",
+                            case "createLibrary":
+                                headlights.logEvent("libraries", "library", "create");
+                                break;
+                            case "deleteLibrary":
+                                headlights.logEvent("libraries", "library", "delete");
+                                break;
+                            case "createElement":
+                                headlights.logEvent("libraries", "element", ["create", elementType].join("-"));
+                                break;
+                            case "deleteElement":
+                                headlights.logEvent("libraries", "element", ["delete", elementType].join("-"));
+                                break;
+                            case "updateElement":
+                                // updateType: info (rename), representation (update content)
+                                headlights.logEvent("libraries", "element",
                                         ["update", elementType, properties.updateType].join("-"));
-                                    break;
+                                break;
                             }
                         }
                     }

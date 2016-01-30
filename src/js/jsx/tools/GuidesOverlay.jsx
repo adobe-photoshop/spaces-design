@@ -300,16 +300,17 @@ define(function (require, exports, module) {
                 if (!highlightFound && intersects) {
                     self._debouncedHighlight(guideZone);
 
-                    guideZone.on("mousedown", function () {
+                    guideZone
+                        .on("mousedown", function () {
                             // Instead of creating a guide on mouse down, we flip a flag
                             // and start guide creation if user drags the pointer out
                             // of the guide zone
                             // This prevents guide creation under the zones / with clicks
                             d3.select(this)
                                 .classed("guide-edges__hover", false);
-                            
+
                             self._currentMouseDown = true;
-                            
+
                             d3.event.stopPropagation();
                         })
                         .on("mouseout", function () {

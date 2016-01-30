@@ -21,13 +21,12 @@
  * 
  */
 
-/* global module, test, equal */
+/* global module, test, equal, expect */
 
 define(function (require) {
     "use strict";
 
-    var React = require("react"),
-        ReactDOM = require("react-dom"),
+    var ReactDOM = require("react-dom"),
         TestUtils = require("react-addons-test-utils");
 
     var NumberInput = require("js/jsx/shared/NumberInput");

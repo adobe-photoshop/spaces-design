@@ -210,28 +210,28 @@ define(function (require, exports, module) {
                 commandPromise = Promise.resolve();
             
             switch (this.state.command) {
-                case _CREATE_LIBRARY:
-                    if (libraryName.length !== 0) {
-                        commandPromise = libraryActions.createLibrary(libraryName)
-                            .bind(this)
-                            .then(function () {
-                                if (this.props.onCreateLibrary) {
-                                    this.props.onCreateLibrary(false);
-                                }
-                            });
-                    }
-                    break;
+            case _CREATE_LIBRARY:
+                if (libraryName.length !== 0) {
+                    commandPromise = libraryActions.createLibrary(libraryName)
+                        .bind(this)
+                        .then(function () {
+                            if (this.props.onCreateLibrary) {
+                                this.props.onCreateLibrary(false);
+                            }
+                        });
+                }
+                break;
                 
-                case _RENAME_LIBRARY:
-                    if (libraryName.length !== 0) {
-                        commandPromise = libraryActions.renameLibrary(this.props.selected.id, libraryName);
-                        headlights.logEvent("libraries", "library", "update-library-info");
-                    }
-                    break;
+            case _RENAME_LIBRARY:
+                if (libraryName.length !== 0) {
+                    commandPromise = libraryActions.renameLibrary(this.props.selected.id, libraryName);
+                    headlights.logEvent("libraries", "library", "update-library-info");
+                }
+                break;
                 
-                case _DELETE_LIBRARY:
-                    commandPromise = libraryActions.removeLibrary(this.props.selected.id);
-                    break;
+            case _DELETE_LIBRARY:
+                commandPromise = libraryActions.removeLibrary(this.props.selected.id);
+                break;
             }
             
             commandPromise

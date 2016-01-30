@@ -131,31 +131,31 @@ define(function (require, exports) {
         var xKey, yKey;
 
         switch (refPoint[0]) {
-            case "l":
-                xKey = "left";
-                break;
-            case "m":
-                xKey = "xCenter";
-                break;
-            case "r":
-                xKey = "right";
-                break;
-            default:
-                throw new Error("Invalid reference point provided: " + refPoint);
+        case "l":
+            xKey = "left";
+            break;
+        case "m":
+            xKey = "xCenter";
+            break;
+        case "r":
+            xKey = "right";
+            break;
+        default:
+            throw new Error("Invalid reference point provided: " + refPoint);
         }
 
         switch (refPoint[1]) {
-            case "t":
-                yKey = "top";
-                break;
-            case "c":
-                yKey = "yCenter";
-                break;
-            case "b":
-                yKey = "bottom";
-                break;
-            default:
-                throw new Error("Invalid reference point provided: " + refPoint);
+        case "t":
+            yKey = "top";
+            break;
+        case "c":
+            yKey = "yCenter";
+            break;
+        case "b":
+            yKey = "bottom";
+            break;
+        default:
+            throw new Error("Invalid reference point provided: " + refPoint);
         }
 
         return {

@@ -297,24 +297,9 @@ define(function (require, exports, module) {
 
                 // HACK: For some reason Photoshop's bounds seem to be shifted by ~1px to the
                 // bottom-right. See https://github.com/adobe-photoshop/spaces-design/issues/866
-                var offset = system.isMac ? 0 : scale,
-                    boundRect;
+                var offset = system.isMac ? 0 : scale;
 
                 if (layer.isArtboard) {
-                    // We don't want to draw the artboard bounds if it's the selected artboard
-                    if (!layer.selected) {
-                        boundRect = this._scrimGroup
-                            .append("rect")
-                            .attr("x", bounds.left + offset)
-                            .attr("y", bounds.top + offset)
-                            .attr("width", bounds.width)
-                            .attr("height", bounds.height)
-                            .attr("layer-id", layer.id)
-                            .attr("id", "layer-" + layer.id)
-                            .classed("layer-bounds", false)
-                            .classed("layer-artboard-bounds", true);
-                    }
-
                     var nameBounds = uiUtil.getNameBadgeBounds(bounds, scale),
                         namePointCoords = [
                             { x: nameBounds.left, y: nameBounds.top },
@@ -336,19 +321,6 @@ define(function (require, exports, module) {
                         .attr("height", nameBounds.height)
                         .classed("artboard-name-rect", true)
                         .classed("layer-artboard-bounds", true);
-                } else {
-                    boundRect = this._scrimGroup
-                        .append("rect")
-                        .attr("x", bounds.left + offset)
-                        .attr("y", bounds.top + offset)
-                        .attr("width", bounds.width)
-                        .attr("height", bounds.height)
-                        .attr("layer-id", layer.id)
-                        .attr("layer-selected", layer.selected)
-                        .attr("id", "layer-" + layer.id)
-                        .classed("layer-bounds", true)
-                        .classed("layer-artboard-bounds", false)
-                        .classed("marqueeable", true);
                 }
             }, this);
 

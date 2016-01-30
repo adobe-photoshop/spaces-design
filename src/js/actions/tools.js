@@ -707,11 +707,11 @@ define(function (require, exports) {
 
                     if (currentLayer.vectorMaskEnabled && currentLayer.vectorMaskEmpty) {
                         var deleteMaskOptions = {
-                            historyStateInfo: {
-                                name: nls.localize("strings.ACTIONS.DELETE_VECTOR_MASK"),
-                                target: documentLib.referenceBy.id(currentDocument.id)
-                            }
-                        },
+                                historyStateInfo: {
+                                    name: nls.localize("strings.ACTIONS.DELETE_VECTOR_MASK"),
+                                    target: documentLib.referenceBy.id(currentDocument.id)
+                                }
+                            },
                             deleteActions = Immutable.List.of({ layer: currentLayer,
                                 playObject: vectorMaskLib.deleteVectorMask() });
 
@@ -869,32 +869,32 @@ define(function (require, exports) {
             synchronization.throttle(this.flux.actions.tools.resetBorderPolicies, this, 100);
             
         _borderPolicyChangeHandler = function () {
-                if (!this.controller.active) {
-                    return;
-                }
-                var currentDocument = appStore.getCurrentDocument();
+            if (!this.controller.active) {
+                return;
+            }
+            var currentDocument = appStore.getCurrentDocument();
 
-                if (currentDocument) {
-                    var nextDocumentLayerBounds = currentDocument.layers.selectedChildBounds,
-                        newxUiTransformMatrix = uiStore.getCurrentTransformMatrix(),
-                        newCanvasRectangle = panelStore.getCloakRect(),
-                        newTool = toolStore.getCurrentTool();
+            if (currentDocument) {
+                var nextDocumentLayerBounds = currentDocument.layers.selectedChildBounds,
+                    newxUiTransformMatrix = uiStore.getCurrentTransformMatrix(),
+                    newCanvasRectangle = panelStore.getCloakRect(),
+                    newTool = toolStore.getCurrentTool();
                     
-                    if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds) ||
-                            !_.isEqual(uiTransformMatrix, newxUiTransformMatrix) ||
-                            !_.isEqual(canvasRectangle, newCanvasRectangle) ||
-                            activeTool !== newTool) {
-                        documentLayerBounds = nextDocumentLayerBounds;
-                        uiTransformMatrix = newxUiTransformMatrix;
-                        activeTool = newTool;
-                        canvasRectangle = newCanvasRectangle;
-                        throttledResetBorderPolicies();
-                    }
-                } else {
+                if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds) ||
+                        !_.isEqual(uiTransformMatrix, newxUiTransformMatrix) ||
+                        !_.isEqual(canvasRectangle, newCanvasRectangle) ||
+                        activeTool !== newTool) {
+                    documentLayerBounds = nextDocumentLayerBounds;
+                    uiTransformMatrix = newxUiTransformMatrix;
+                    activeTool = newTool;
+                    canvasRectangle = newCanvasRectangle;
                     throttledResetBorderPolicies();
-                    documentLayerBounds = null;
                 }
-            }.bind(this);
+            } else {
+                throttledResetBorderPolicies();
+                documentLayerBounds = null;
+            }
+        }.bind(this);
 
         this.flux.store("document").on("change", _borderPolicyChangeHandler);
         this.flux.store("application").on("change", _borderPolicyChangeHandler);
