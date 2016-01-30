@@ -230,7 +230,7 @@ module.exports = function (grunt) {
             }
         },
         concurrent: {
-            test: ["eslint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
+            test: ["checkDependencies", "eslint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
             build: {
                 tasks: ["watch:styles", "watch:dictionaries", "watch:sources", "webpack:watch"],
                 options: {
@@ -245,6 +245,9 @@ module.exports = function (grunt) {
                     message: "Build Successful"
                 }
             }
+        },
+        checkDependencies: {
+            this: {},
         }
     });
 
@@ -266,6 +269,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-concat-json");
     grunt.loadNpmTasks("grunt-merge-json");
     grunt.loadNpmTasks("grunt-notify");
+    grunt.loadNpmTasks('grunt-check-dependencies');
 
     grunt.registerTask("seqtest", "Runs the linter tests sequentially",
         ["eslint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
@@ -277,11 +281,11 @@ module.exports = function (grunt) {
         ["clean:i18n", "concat-json", "merge-json"]
     );
     grunt.registerTask("compile", "Bundles Design Space in Release mode, for all locales",
-        ["test", "clean:build", "i18n", "copy:img", "copy:htmlRelease",
+        ["checkDependencies", "test", "clean:build", "i18n", "copy:img", "copy:htmlRelease",
          "less", "webpack:compile", "uglify", "clean:i18n"]
     );
     grunt.registerTask("debug", "Bundles Design Space in Debug mode, for English only",
-        ["clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]
+        ["checkDependencies", "clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]
     );
     grunt.registerTask("default", "Runs linter tests", ["test"]);
 };
