@@ -29,13 +29,13 @@ define(function (require, exports, module) {
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         StoreWatchMixin = Fluxxor.StoreWatchMixin,
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        _ = require("lodash");
 
     var os = require("adapter").os;
 
     var ToolbarIcon = require("js/jsx/ToolbarIcon"),
-        Zoom = require("js/jsx/Zoom"),
-        synchronization = require("js/util/synchronization");
+        Zoom = require("js/jsx/Zoom");
 
     var Toolbar = React.createClass({
         mixins: [FluxMixin, StoreWatchMixin("tool", "application", "preferences")],
@@ -99,7 +99,7 @@ define(function (require, exports, module) {
 
         // On startup, we want to make sure center offsets take pinned toolbar
         componentDidMount: function () {
-            this._updateToolbarWidthDebounced = synchronization.debounce(this._updateToolbarWidth, this, 500);
+            this._updateToolbarWidthDebounced = _.debounce(this._updateToolbarWidth, 500);
             os.addListener("displayConfigurationChanged", this._updateToolbarWidthDebounced);
             this._updateToolbarWidth();
         },

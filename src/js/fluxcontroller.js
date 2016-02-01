@@ -68,14 +68,6 @@ define(function (require, exports, module) {
     var THROTTLED_ACTION_SUFFIX = "Throttled";
 
     /**
-     * Suffix used to name debounced actions.
-     *
-     * @const
-     * @type {String}
-     */
-    var DEBOUNCED_ACTION_SUFFIX = "Debounced";
-
-    /**
      * Maximum delay after which reset retry will continue
      *  before failing definitively.
      *  
@@ -933,14 +925,11 @@ define(function (require, exports, module) {
             }
 
             var throttledName = name + THROTTLED_ACTION_SUFFIX,
-                debouncedName = name + DEBOUNCED_ACTION_SUFFIX,
                 synchronizedAction = this._synchronize(namespace, module, name),
-                throttledAction = synchronization.throttle(synchronizedAction),
-                debouncedAction = synchronization.debounce(synchronizedAction);
+                throttledAction = synchronization.throttle(synchronizedAction);
 
             exports[name] = synchronizedAction;
             exports[throttledName] = throttledAction;
-            exports[debouncedName] = debouncedAction;
 
             this._synchronizedActions.set(module[name], synchronizedAction);
 

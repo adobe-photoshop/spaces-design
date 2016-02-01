@@ -49,8 +49,7 @@ define(function (require, exports) {
         locking = require("js/util/locking"),
         headlights = require("js/util/headlights"),
         nls = require("js/util/nls"),
-        global = require("js/util/global"),
-        synchronization = require("js/util/synchronization");
+        global = require("js/util/global");
 
     /**
      * Properties to be included when requesting layer
@@ -1927,7 +1926,7 @@ define(function (require, exports) {
 
         // Listens to layer shift events caused by auto canvas resize feature of artboards
         // and shifts all the layers correctly
-        _autoCanvasResizeShiftHandler = synchronization.debounce(function (event) {
+        _autoCanvasResizeShiftHandler = _.debounce(function (event) {
             return this.flux.actions.layers.handleCanvasShift(event);
         }.bind(this), 500);
         descriptor.addListener("autoCanvasResizeShift", _autoCanvasResizeShiftHandler);

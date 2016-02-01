@@ -28,15 +28,15 @@ define(function (require, exports, module) {
         ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        classnames = require("classnames");
+        classnames = require("classnames"),
+        _ = require("lodash");
 
     var os = require("adapter").os;
 
     var Button = require("js/jsx/shared/Button"),
         SVGIcon = require("js/jsx/shared/SVGIcon"),
         nls = require("js/util/nls"),
-        headlights = require("js/util/headlights"),
-        synchronization = require("js/util/synchronization");
+        headlights = require("js/util/headlights");
 
     var PanelSet = React.createClass({
         mixins: [FluxMixin],
@@ -74,9 +74,9 @@ define(function (require, exports, module) {
         _updatePanelSizesDebounced: null,
 
         componentDidMount: function () {
-            this._updatePanelSizesDebounced = synchronization.debounce(function () {
+            this._updatePanelSizesDebounced = _.debounce(function () {
                 return this._updatePanelSizes();
-            }, this, 500);
+            }.bind(this), 500);
 
             os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
             this._updatePanelSizes();

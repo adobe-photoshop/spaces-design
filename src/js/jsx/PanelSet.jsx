@@ -48,7 +48,6 @@ define(function (require, exports, module) {
         LayersPanel = require("./sections/layers/LayersPanel"),
         LibrariesPanel = require("./sections/libraries/LibrariesPanel"),
         nls = require("js/util/nls"),
-        synchronization = require("js/util/synchronization"),
         system = require("js/util/system"),
         headlights = require("js/util/headlights");
 
@@ -135,7 +134,7 @@ define(function (require, exports, module) {
         _updatePanelSizesDebounced: null,
 
         componentDidMount: function () {
-            this._updatePanelSizesDebounced = synchronization.debounce(this._updatePanelSizes, this, 500);
+            this._updatePanelSizesDebounced = _.debounce(this._updatePanelSizes, 500);
             os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
         },
 
