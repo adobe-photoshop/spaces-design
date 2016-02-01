@@ -184,6 +184,10 @@ module.exports = function (grunt) {
                 options: {
                     interval: 500
                 }
+            },
+            dependencies: {
+                files: ["package.json"],
+                tasks: ["checkDependencies"]
             }
         },
         // Build tasks
@@ -232,7 +236,7 @@ module.exports = function (grunt) {
         concurrent: {
             test: ["eslint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
             build: {
-                tasks: ["watch:styles", "watch:dictionaries", "watch:sources", "webpack:watch"],
+                tasks: ["watch:styles", "watch:dictionaries", "watch:sources", "webpack:watch", "watch:dependencies"],
                 options: {
                     logConcurrentOutput: true
                 }
@@ -245,6 +249,9 @@ module.exports = function (grunt) {
                     message: "Build Successful"
                 }
             }
+        },
+        checkDependencies: {
+            this: {}
         }
     });
 
@@ -266,22 +273,23 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-concat-json");
     grunt.loadNpmTasks("grunt-merge-json");
     grunt.loadNpmTasks("grunt-notify");
+    grunt.loadNpmTasks("grunt-check-dependencies");
 
     grunt.registerTask("seqtest", "Runs the linter tests sequentially",
         ["eslint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
     );
     grunt.registerTask("test", "Runs linter tests",
-        ["concurrent:test"]
+        ["checkDependencies", "concurrent:test"]
     );
     grunt.registerTask("i18n", "Prepares the localization dictionaries",
         ["clean:i18n", "concat-json", "merge-json"]
     );
     grunt.registerTask("compile", "Bundles Design Space in Release mode, for all locales",
-        ["test", "clean:build", "i18n", "copy:img", "copy:htmlRelease",
+        ["checkDependencies", "test", "clean:build", "i18n", "copy:img", "copy:htmlRelease",
          "less", "webpack:compile", "uglify", "clean:i18n"]
     );
     grunt.registerTask("debug", "Bundles Design Space in Debug mode, for English only",
-        ["clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]
+        ["checkDependencies", "clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]
     );
     grunt.registerTask("default", "Runs linter tests", ["test"]);
 };
