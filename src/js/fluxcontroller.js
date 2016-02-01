@@ -255,6 +255,23 @@ define(function (require, exports, module) {
     };
 
     /**
+     * The complete set of valid properties for action objects. An error is thrown
+     * if an action contains a property not in this set.
+     *
+     * @type {Array.<number>}
+     */
+    const ACTION_OBJECT_PROPERTIES = new Set([
+        "reads",
+        "writes",
+        "modal",
+        "transfers",
+        "allowFailure",
+        "post",
+        "lockUI",
+        "hideOverlays"
+    ]);
+
+    /**
      * Calculate the (transitive) set of locks required to execute each action
      * based on its immediate lock requirements and its declared action transfers.
      *
@@ -281,6 +298,15 @@ define(function (require, exports, module) {
             if (!dependencies) {
                 dependencies = new Set([action]);
                 if (actionObject) {
+                    var actionName = this._actionNames.get(action);
+
+                    // Assert validity of all action properties
+                    Object.keys(actionObject).forEach(function (key) {
+                        if (!ACTION_OBJECT_PROPERTIES.has(key)) {
+                            throw new Error("Unexpected property " + key + " of action " + actionName);
+                        }
+                    });
+
                     if (actionObject.transfers) {
                         actionObject.transfers.forEach(function (dependency, index) {
                             // Translate action pathnames to unsynchronized action functions
@@ -290,7 +316,6 @@ define(function (require, exports, module) {
 
                             // Validate transfer declarations
                             if (!dependency) {
-                                var actionName = this._actionNames.get(action);
                                 throw new Error("Transfer declaration " + index + " of " + actionName + " is invalid.");
                             }
                             
@@ -303,6 +328,22 @@ define(function (require, exports, module) {
 
                     var reads = actionObject.reads || locks.ALL_LOCKS,
                         writes = actionObject.writes || locks.ALL_LOCKS;
+
+                    // Assert uniqueness of read locks
+                    var uniqueReads = _.uniq(reads);
+                    if (reads.length !== uniqueReads.length) {
+                        throw new Error("Redundant read lock specified for " + actionName);
+                    } else {
+                        reads = uniqueReads;
+                    }
+
+                    // Assert uniqueness of read locks
+                    var uniqueWrites = _.uniq(writes);
+                    if (writes.length !== uniqueWrites.length) {
+                        throw new Error("Redundant write lock specified for " + actionName);
+                    } else {
+                        writes = uniqueWrites;
+                    }
 
                     // Calculate transitive lock sets based on the action's dependencies
                     dependencies.forEach(function (dependency) {

@@ -817,7 +817,7 @@ define(function (require, exports) {
     beforeStartup.action = {
         reads: [],
         writes: [],
-        modal: []
+        modal: true
     };
 
     /**
@@ -833,7 +833,7 @@ define(function (require, exports) {
     afterStartup.action = {
         reads: [],
         writes: [],
-        modal: []
+        modal: true
     };
 
     /**
@@ -850,7 +850,7 @@ define(function (require, exports) {
     onReset.action = {
         reads: [],
         writes: [],
-        modal: []
+        modal: true
     };
 
     exports.setPostScript = setPostScript;

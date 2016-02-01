@@ -522,6 +522,7 @@ define(function (require, exports) {
     initTool.action = {
         reads: [locks.JS_TOOL],
         writes: [],
+        modal: true,
         transfers: [selectTool]
     };
 
@@ -580,7 +581,7 @@ define(function (require, exports) {
         reads: [],
         writes: [],
         transfers: [policy.suspendAllPolicies, policy.restoreAllPolicies,
-        changeModalState, "panel.cloak"],
+            changeModalState, "panel.cloak"],
         modal: true
     };
 
@@ -909,9 +910,9 @@ define(function (require, exports) {
         return this.transfer(initTool); // Initialize the current tool
     };
     beforeStartup.action = {
-        modal: true,
         reads: [],
         writes: [],
+        modal: true,
         transfers: [initTool]
     };
 
@@ -992,9 +993,9 @@ define(function (require, exports) {
         return this.transfer(shortcuts.addShortcuts, shortcutSpecs);
     };
     afterStartup.action = {
-        modal: true,
         reads: [locks.JS_TOOL],
         writes: [],
+        modal: true,
         transfers: [shortcuts.addShortcuts]
     };
 

@@ -135,7 +135,7 @@ define(function (require, exports) {
 
         playObjects.push(expandPlayObject);
 
-        var expansionPromise = descriptor.batchPlayObjects(playObjects),
+        var expansionPromise = descriptor.batchPlayObjects(playObjects, { canExecuteWhileModal: true }),
             dispatchPromise = this.dispatchAsync(events.document.SET_GROUP_EXPANSION, {
                 documentID: document.id,
                 layerIDs: collection.pluck(layers, "id"),
@@ -156,6 +156,7 @@ define(function (require, exports) {
     setGroupExpansion.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
+        modal: true,
         transfers: ["layers.initializeLayers"]
     };
 

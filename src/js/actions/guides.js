@@ -225,7 +225,7 @@ define(function (require, exports) {
     };
     createGuideAndTrack.action = {
         reads: [locks.JS_UI],
-        writes: [locks.JS_DOC]
+        writes: [locks.JS_DOC, locks.PS_DOC]
     };
 
     /**
@@ -298,7 +298,7 @@ define(function (require, exports) {
     };
     deleteGuide.action = {
         reads: [],
-        writes: [locks.JS_DOC],
+        writes: [locks.JS_DOC, locks.PS_DOC],
         transfers: [resetGuidePolicies]
     };
 
@@ -405,7 +405,8 @@ define(function (require, exports) {
     };
     queryCurrentGuides.action = {
         reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        writes: [locks.JS_DOC],
+        modal: true
     };
 
     // Event handlers for guides
@@ -458,9 +459,9 @@ define(function (require, exports) {
         return Promise.resolve();
     };
     beforeStartup.action = {
-        modal: true,
         reads: [],
         writes: [],
+        modal: true,
         transfers: []
     };
     

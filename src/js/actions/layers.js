@@ -308,9 +308,9 @@ define(function (require, exports) {
             });
     };
     getLayerIDsForDocumentID.action = {
-        modal: true,
         reads: [locks.PS_DOC],
-        writes: []
+        writes: [],
+        modal: true
     };
 
     /**
@@ -376,9 +376,9 @@ define(function (require, exports) {
             });
     };
     addLayers.action = {
-        modal: true,
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
+        modal: true,
         post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
 
@@ -556,6 +556,7 @@ define(function (require, exports) {
     resetBounds.action = {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
+        modal: true,
         transfers: [guides.queryCurrentGuides]
     };
 
@@ -574,6 +575,7 @@ define(function (require, exports) {
     resetBoundsQuietly.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [resetBounds]
     };
 
@@ -602,6 +604,7 @@ define(function (require, exports) {
     resetLinkedLayers.action = {
         reads: [locks.JS_DOC],
         writes: [],
+        modal: true,
         transfers: [resetBounds]
     };
 
@@ -638,7 +641,8 @@ define(function (require, exports) {
     };
     resetLayersByIndex.action = {
         reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        writes: [locks.JS_DOC],
+        modal: true
     };
 
     /**
@@ -780,6 +784,7 @@ define(function (require, exports) {
     revealLayers.action = {
         reads: [locks.JS_DOC],
         writes: [],
+        modal: true,
         transfers: ["groups.setGroupExpansion"]
     };
 
@@ -810,6 +815,7 @@ define(function (require, exports) {
     resetSelection.action = {
         reads: [locks.PS_DOC, locks.JS_DOC],
         writes: [locks.JS_DOC],
+        modal: true,
         transfers: [initializeLayers]
     };
 
@@ -1089,6 +1095,7 @@ define(function (require, exports) {
     removeLayers.action = {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
+        modal: true,
         transfers: ["history.queryCurrentHistory", initializeLayers],
         post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
@@ -1399,6 +1406,7 @@ define(function (require, exports) {
     resetIndex.action = {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC],
+        modal: true,
         transfers: [initializeLayers, getLayerIDsForDocumentID],
         post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
     };
@@ -1492,7 +1500,7 @@ define(function (require, exports) {
         return this.transfer(reorderLayers, document, layerIDs, "front");
     };
     bringToFront.action = {
-        reads: [],
+        reads: [locks.JS_DOC, locks.JS_APP],
         writes: [],
         transfers: [reorderLayers],
         post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
@@ -1523,7 +1531,7 @@ define(function (require, exports) {
         return this.transfer(reorderLayers, document, layerIDs, "next");
     };
     bringForward.action = {
-        reads: [],
+        reads: [locks.JS_DOC, locks.JS_APP],
         writes: [],
         transfers: [reorderLayers],
         post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
@@ -1554,7 +1562,7 @@ define(function (require, exports) {
         return this.transfer(reorderLayers, document, layerIDs, "previous");
     };
     sendBackward.action = {
-        reads: [],
+        reads: [locks.JS_DOC, locks.JS_APP],
         writes: [],
         transfers: [reorderLayers],
         post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
@@ -1585,7 +1593,7 @@ define(function (require, exports) {
         return this.transfer(reorderLayers, document, layerIDs, "back");
     };
     sendToBack.action = {
-        reads: [],
+        reads: [locks.JS_DOC, locks.JS_APP],
         writes: [],
         transfers: [reorderLayers],
         post: ["verify.layers.verifyLayerIndex", "verify.layers.verifyLayerSelection"]
@@ -1814,7 +1822,7 @@ define(function (require, exports) {
         return this.transfer(resetBounds, document, document.layers.all);
     };
     handleCanvasShift.action = {
-        reads: [locks.JS_DOC],
+        reads: [locks.JS_DOC, locks.JS_APP],
         writes: [],
         transfers: [resetBounds],
         modal: true,
@@ -2014,7 +2022,8 @@ define(function (require, exports) {
     };
     beforeStartup.action = {
         reads: [],
-        writes: []
+        writes: [],
+        modal: true
     };
 
     /**

@@ -94,7 +94,8 @@ define(function (require, exports) {
         return adapter.setPropertyValue(TOOLTIP_TIME_KEY, DEFAULT_TOOLTIP_TIME);
     };
     enableTooltips.action = {
-        writes: [locks.PS_APP]
+        writes: [locks.PS_APP],
+        modal: true
     };
 
     /**
@@ -108,7 +109,8 @@ define(function (require, exports) {
         });
     };
     disableTooltips.action = {
-        writes: [locks.PS_APP]
+        writes: [locks.PS_APP],
+        modal: true
     };
 
     /**
@@ -127,6 +129,7 @@ define(function (require, exports) {
     togglePinnedToolbar.action = {
         reads: [],
         writes: [locks.JS_PREF],
+        modal: true,
         transfers: [preferences.setPreference]
     };
 
@@ -148,6 +151,7 @@ define(function (require, exports) {
     toggleSingleColumnMode.action = {
         reads: [],
         writes: [locks.JS_PREF],
+        modal: true,
         transfers: [preferences.setPreference]
     };
 
@@ -184,6 +188,7 @@ define(function (require, exports) {
     cloak.action = {
         reads: [locks.JS_PANEL],
         writes: [locks.PS_APP],
+        modal: true,
         hideOverlays: true
     };
 
@@ -250,6 +255,7 @@ define(function (require, exports) {
     setOverlayOffsetsForFirstDocument.action = {
         reads: [locks.JS_PREF, locks.JS_APP, locks.JS_PANEL],
         writes: [locks.PS_APP],
+        modal: true,
         transfers: [],
         hideOverlays: true
     };
@@ -287,7 +293,7 @@ define(function (require, exports) {
         var stop = payload.stop,
             psStop = appLib.colorStops[stop],
             setColorStop = appLib.setColorStop(psStop),
-            setColorStopPromise = descriptor.playObject(setColorStop),
+            setColorStopPromise = descriptor.playObject(setColorStop, { canExecuteWhileModal: true }),
             dispatchPromise = this.dispatchAsync(events.panel.COLOR_STOP_CHANGED, {
                 stop: stop
             });
@@ -297,6 +303,7 @@ define(function (require, exports) {
     setColorStop.action = {
         reads: [],
         writes: [locks.PS_APP, locks.JS_PANEL],
+        modal: true,
         transfers: []
     };
 

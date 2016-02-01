@@ -40,6 +40,7 @@ define(function (require, exports) {
     openFirstLaunch.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [dialog.openDialog]
     };
 
@@ -54,6 +55,7 @@ define(function (require, exports) {
     openKeyboardShortcuts.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [dialog.openDialog]
     };
 
@@ -75,6 +77,7 @@ define(function (require, exports) {
     afterStartup.action = {
         reads: [locks.JS_PREF],
         writes: [],
+        modal: true,
         transfers: [openFirstLaunch]
     };
 

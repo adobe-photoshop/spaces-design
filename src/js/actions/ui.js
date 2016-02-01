@@ -101,6 +101,7 @@ define(function (require, exports) {
     updateTransform.action = {
         reads: [locks.PS_APP, locks.JS_APP],
         writes: [locks.JS_UI],
+        modal: true,
         hideOverlays: true
     };
 
@@ -427,6 +428,7 @@ define(function (require, exports) {
     afterStartup.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: ["shortcuts.addShortcut", updateTransform]
     };
 

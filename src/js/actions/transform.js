@@ -779,7 +779,7 @@ define(function (require, exports) {
     };
     flipY.action = {
         reads: [],
-        writes: [locks.JS_DOC, locks.JS_DOC],
+        writes: [locks.JS_DOC, locks.PS_DOC],
         transfers: [historyActions.newHistoryState, layerActions.resetBounds],
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -1370,7 +1370,7 @@ define(function (require, exports) {
         }
     };
     handleTransformLayer.action = {
-        read: [locks.JS_APP, locks.JS_DOC],
+        reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.JS_TOOL],
         transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds",
             "history.newHistoryStateRogueSafe", "layers.select"],
@@ -1414,7 +1414,8 @@ define(function (require, exports) {
     };
     beforeStartup.action = {
         reads: [],
-        writes: []
+        writes: [],
+        modal: true
     };
 
     /**
