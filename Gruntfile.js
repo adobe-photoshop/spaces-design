@@ -184,6 +184,10 @@ module.exports = function (grunt) {
                 options: {
                     interval: 500
                 }
+            },
+            dependencies: {
+                files: ["package.json"],
+                tasks: ["checkDependencies"]
             }
         },
         // Build tasks
@@ -230,9 +234,9 @@ module.exports = function (grunt) {
             }
         },
         concurrent: {
-            test: ["checkDependencies", "eslint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
+            test: ["eslint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
             build: {
-                tasks: ["watch:styles", "watch:dictionaries", "watch:sources", "webpack:watch"],
+                tasks: ["watch:styles", "watch:dictionaries", "watch:sources", "webpack:watch", "watch:dependencies"],
                 options: {
                     logConcurrentOutput: true
                 }
@@ -247,7 +251,7 @@ module.exports = function (grunt) {
             }
         },
         checkDependencies: {
-            this: {},
+            this: {}
         }
     });
 
@@ -269,13 +273,13 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-concat-json");
     grunt.loadNpmTasks("grunt-merge-json");
     grunt.loadNpmTasks("grunt-notify");
-    grunt.loadNpmTasks('grunt-check-dependencies');
+    grunt.loadNpmTasks("grunt-check-dependencies");
 
     grunt.registerTask("seqtest", "Runs the linter tests sequentially",
         ["eslint", "jscs", "jsdoc", "jsonlint", "lintspaces"]
     );
     grunt.registerTask("test", "Runs linter tests",
-        ["concurrent:test"]
+        ["checkDependencies", "concurrent:test"]
     );
     grunt.registerTask("i18n", "Prepares the localization dictionaries",
         ["clean:i18n", "concat-json", "merge-json"]
