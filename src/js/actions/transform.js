@@ -1392,9 +1392,9 @@ define(function (require, exports) {
     var beforeStartup = function () {
         // TODO does this still need to debounce?  Are there cases where we get several events that correspond to
         // one history state?
-        _artboardTransformHandler = _.debounce(function () {
+        _artboardTransformHandler = function () {
             return this.flux.actions.transform.handleTransformArtboard();
-        }.bind(this));
+        }.bind(this);
 
         _layerTransformHandler = function (event) {
             this.flux.actions.transform.handleTransformLayer(event);
