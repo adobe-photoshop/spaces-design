@@ -138,7 +138,8 @@ define(function (require, exports) {
     };
     beforeStartup.action = {
         reads: [],
-        writes: []
+        writes: [],
+        modal: true
     };
 
     /**

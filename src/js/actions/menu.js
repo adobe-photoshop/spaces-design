@@ -156,7 +156,8 @@ define(function (require, exports) {
     };
     openURL.action = {
         reads: [],
-        writes: []
+        writes: [],
+        modal: true
     };
 
     /**

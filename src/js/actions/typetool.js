@@ -61,9 +61,9 @@ define(function (require, exports) {
         }
     };
     handleDeletedLayer.action = {
-        modal: true,
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [],
+        modal: true,
         transfers: [layerActions.removeLayers, documentActions.updateDocument]
     };
 
@@ -84,9 +84,9 @@ define(function (require, exports) {
         return this.transfer(layerActions.resetLayers, document, document.layers.selected);
     };
     handleTypeModalStateCanceled.action = {
-        modal: true,
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [],
+        modal: true,
         transfers: [layerActions.resetLayers],
         post: ["verify.layers.verifySelectedBounds"]
     };

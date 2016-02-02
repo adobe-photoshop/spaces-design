@@ -1096,6 +1096,7 @@ define(function (require, exports) {
     selectLibrary.action = {
         reads: [],
         writes: [locks.JS_LIBRARIES],
+        modal: true,
         transfers: [preferencesActions.setPreference]
     };
 
@@ -1118,6 +1119,7 @@ define(function (require, exports) {
     createLibrary.action = {
         reads: [],
         writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES],
+        modal: true,
         transfers: [preferencesActions.setPreference]
     };
 
@@ -1156,6 +1158,7 @@ define(function (require, exports) {
     removeLibrary.action = {
         reads: [],
         writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES],
+        modal: true,
         transfers: [preferencesActions.setPreference]
     };
     
@@ -1169,6 +1172,7 @@ define(function (require, exports) {
     };
     syncLibraries.action = {
         reads: [],
+        modal: true,
         writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES]
     };
 
@@ -1193,6 +1197,7 @@ define(function (require, exports) {
     };
     renameLibrary.action = {
         reads: [],
+        modal: true,
         writes: [locks.CC_LIBRARIES, locks.JS_LIBRARIES]
     };
     
@@ -1234,6 +1239,7 @@ define(function (require, exports) {
     handleLibrariesLoaded.action = {
         reads: [locks.CC_LIBRARIES],
         writes: [locks.JS_LIBRARIES],
+        modal: true,
         transfers: ["search.libraries.registerLibrarySearch"]
     };
     
@@ -1379,6 +1385,7 @@ define(function (require, exports) {
     afterStartup.action = {
         reads: [locks.JS_LIBRARIES, locks.CC_LIBRARIES],
         writes: [],
+        modal: true,
         transfers: [handleLibrariesLoaded]
     };
     

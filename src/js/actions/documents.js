@@ -243,7 +243,8 @@ define(function (require, exports) {
     };
     initInactiveDocuments.action = {
         reads: [locks.PS_DOC],
-        writes: [locks.JS_DOC]
+        writes: [locks.JS_DOC],
+        modal: true
     };
 
     /**
@@ -321,6 +322,7 @@ define(function (require, exports) {
     initActiveDocument.action = {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC, locks.JS_APP],
+        modal: true,
         transfers: [historyActions.queryCurrentHistory, "layers.deselectAll", "application.updateRecentFiles"],
         hideOverlays: true
     };
@@ -376,6 +378,7 @@ define(function (require, exports) {
         reads: [locks.PS_DOC, locks.PS_APP],
         writes: [locks.JS_DOC],
         transfers: [historyActions.queryCurrentHistory],
+        modal: true,
         lockUI: true,
         hideOverlays: true
     };
@@ -398,6 +401,7 @@ define(function (require, exports) {
     };
     initializeDocuments.action = {
         reads: [locks.JS_APP, locks.JS_DOC],
+        modal: true,
         writes: [],
         transfers: [updateDocument]
     };
@@ -464,8 +468,9 @@ define(function (require, exports) {
             });
     };
     disposeDocument.action = {
-        reads: [],
+        reads: [locks.PS_DOC],
         writes: [locks.JS_DOC, locks.JS_APP],
+        modal: true,
         transfers: [updateDocument, "layers.resetLinkedLayers", "history.queryCurrentHistory",
             "ui.updateTransform", "application.updateRecentFiles", "libraries.deleteGraphicTempFiles"],
         lockUI: true,
@@ -507,6 +512,7 @@ define(function (require, exports) {
     allocateDocument.action = {
         reads: [locks.PS_APP],
         writes: [locks.JS_APP],
+        modal: true,
         transfers: [updateDocument, historyActions.queryCurrentHistory, ui.updateTransform],
         lockUI: true,
         hideOverlays: true
@@ -751,7 +757,7 @@ define(function (require, exports) {
     };
     selectDocument.action = {
         reads: [locks.JS_TOOL],
-        writes: [locks.JS_APP],
+        writes: [locks.JS_APP, locks.PS_APP],
         transfers: ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
             ui.updateTransform, toolActions.select, "panel.cloak", guideActions.queryCurrentGuides,
             toolActions.changeVectorMaskMode, updateDocument],
@@ -1126,6 +1132,7 @@ define(function (require, exports) {
     beforeStartup.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [initActiveDocument]
     };
 
@@ -1148,6 +1155,7 @@ define(function (require, exports) {
     afterStartup.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [initInactiveDocuments, "search.documents.registerCurrentDocumentSearch",
             "search.documents.registerRecentDocumentSearch"]
     };

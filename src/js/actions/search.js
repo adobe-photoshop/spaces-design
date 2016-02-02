@@ -56,6 +56,7 @@ define(function (require, exports) {
     toggleSearchBar.action = {
         reads: [locks.JS_DIALOG],
         writes: [],
+        modal: true,
         transfers: [dialog.openDialog, dialog.closeDialog]
     };
 
@@ -70,6 +71,7 @@ define(function (require, exports) {
     beforeStartup.action = {
         reads: [],
         writes: [locks.JS_SEARCH],
+        modal: true,
         transfers: []
     };
 

@@ -341,6 +341,7 @@ define(function (require, exports) {
     openExportPanel.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [dialog.openDialog]
     };
 
@@ -355,6 +356,7 @@ define(function (require, exports) {
     closeExportPanel.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [dialog.closeDialog]
     };
 
@@ -412,7 +414,8 @@ define(function (require, exports) {
     };
     updateExportAsset.action = {
         reads: [locks.JS_DOC],
-        writes: [locks.JS_EXPORT, locks.PS_DOC]
+        writes: [locks.JS_EXPORT, locks.PS_DOC],
+        modal: true
     };
 
     /**
@@ -430,6 +433,7 @@ define(function (require, exports) {
     updateLayerAssetScale.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [updateExportAsset]
     };
 
@@ -448,6 +452,7 @@ define(function (require, exports) {
     updateLayerAssetSuffix.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [updateExportAsset]
     };
 
@@ -466,6 +471,7 @@ define(function (require, exports) {
     updateLayerAssetFormat.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [updateExportAsset]
     };
 
@@ -576,6 +582,7 @@ define(function (require, exports) {
     addDefaultAsset.action = {
         reads: [locks.JS_DOC, locks.JS_EXPORT],
         writes: [],
+        modal: true,
         transfers: [updateExportAsset]
     };
 
@@ -684,7 +691,8 @@ define(function (require, exports) {
     };
     setServiceAvailable.action = {
         reads: [],
-        writes: [locks.JS_EXPORT]
+        writes: [locks.JS_EXPORT],
+        modal: true
     };
 
     /**
@@ -802,6 +810,7 @@ define(function (require, exports) {
     exportLayerAssets.action = {
         reads: [locks.JS_DOC],
         writes: [locks.JS_EXPORT],
+        modal: true,
         transfers: [promptForFolder, addAsset, setServiceAvailable]
     };
 
@@ -861,6 +870,7 @@ define(function (require, exports) {
     exportDocumentAssets.action = {
         reads: [locks.JS_DOC, locks.JS_EXPORT],
         writes: [],
+        modal: true,
         transfers: [promptForFolder, addAsset, setServiceAvailable]
     };
     
@@ -881,6 +891,7 @@ define(function (require, exports) {
     copyFile.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [setServiceAvailable]
     };
     
@@ -900,6 +911,7 @@ define(function (require, exports) {
     deleteFiles.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: [setServiceAvailable]
     };
 
@@ -918,6 +930,7 @@ define(function (require, exports) {
     setUseArtboardPrefix.action = {
         reads: [],
         writes: [locks.JS_EXPORT, locks.JS_PREF],
+        modal: true,
         transfers: [preferences.setPreference]
     };
 
@@ -1012,7 +1025,8 @@ define(function (require, exports) {
     };
     afterStartup.action = {
         reads: [],
-        writes: []
+        writes: [],
+        modal: true
     };
 
     /**

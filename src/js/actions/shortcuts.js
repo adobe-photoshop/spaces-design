@@ -275,6 +275,7 @@ define(function (require, exports) {
     afterStartup.action = {
         reads: [],
         writes: [],
+        modal: true,
         transfers: ["search.commands.registerGlobalShortcutSearch"]
     };
 

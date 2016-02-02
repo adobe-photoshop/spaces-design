@@ -449,6 +449,7 @@ define(function (require, exports) {
     click.action = {
         reads: [locks.PS_DOC, locks.JS_DOC, locks.JS_TOOL, locks.JS_UI],
         writes: [],
+        modal: true,
         transfers: [layerActions.deselectAll, layerActions.select]
     };
 
@@ -529,6 +530,7 @@ define(function (require, exports) {
     doubleClick.action = {
         reads: [locks.JS_UI, locks.JS_DOC, locks.PS_DOC],
         writes: [],
+        modal: true,
         transfers: [layerActions.select, editLayer]
     };
 
@@ -556,6 +558,7 @@ define(function (require, exports) {
     backOut.action = {
         reads: [locks.JS_DOC],
         writes: [],
+        modal: true,
         transfers: [layerActions.select, layerActions.deselectAll]
     };
 
@@ -575,6 +578,7 @@ define(function (require, exports) {
     nextSibling.action = {
         reads: [locks.JS_DOC],
         writes: [],
+        modal: true,
         transfers: [layerActions.select]
     };
 
@@ -614,6 +618,7 @@ define(function (require, exports) {
     diveIn.action = {
         reads: [locks.JS_DOC],
         writes: [],
+        modal: true,
         transfers: [layerActions.select, editLayer]
     };
 
@@ -717,6 +722,7 @@ define(function (require, exports) {
     marqueeSelect.action = {
         reads: [locks.JS_DOC],
         writes: [locks.JS_PANEL],
+        modal: true,
         transfers: [layerActions.deselectAll, layerActions.select]
     };
 

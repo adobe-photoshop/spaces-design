@@ -43,7 +43,8 @@ define(function (require, exports) {
     };
     hostVersion.action = {
         reads: [locks.PS_APP],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_APP],
+        modal: true
     };
 
     /** 
@@ -69,7 +70,8 @@ define(function (require, exports) {
     };
     updateRecentFiles.action = {
         reads: [locks.PS_APP],
-        writes: [locks.JS_APP]
+        writes: [locks.JS_APP],
+        modal: true
     };
 
     /**

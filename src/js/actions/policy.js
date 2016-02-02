@@ -382,6 +382,7 @@ define(function (require, exports) {
     beforeStartup.action = {
         reads: [],
         writes: [locks.PS_APP, locks.JS_POLICY],
+        modal: true,
         transfers: ["policy.setMode"]
     };
 

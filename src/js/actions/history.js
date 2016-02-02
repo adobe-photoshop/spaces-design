@@ -390,7 +390,8 @@ define(function (require, exports) {
     handleHistoryStateAfterSelect.action = {
         reads: [locks.JS_DOC],
         writes: [],
-        transfers: ["documents.updateDocument"]
+        transfers: ["documents.updateDocument"],
+        modal: true
     };
 
     /**
@@ -461,7 +462,8 @@ define(function (require, exports) {
     };
     beforeStartup.action = {
         reads: [],
-        writes: []
+        writes: [],
+        modal: true
     };
     
     /** @ignore */
