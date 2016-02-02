@@ -458,7 +458,7 @@ define(function (require, exports, module) {
                         .on("click", applyTypeStyleFunc);
                 } else if (sample.type === "layerEffects") {
                     var duplicateLayerEffectsFunc = function () {
-                        fluxActions.layerEffects.duplicateLayerEffects(this.state.document, targetLayers, sample.value);
+                        fluxActions.layereffects.duplicateLayerEffects(this.state.document, targetLayers, sample.value);
                         d3.event.stopPropagation();
                         headlights.logEvent("tools", "sampler-hud", sample.type);
                     }.bind(this);

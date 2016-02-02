@@ -70,7 +70,7 @@ define(function (require, exports, module) {
          * @param {boolean} coalesce
          */
         _colorChanged: function (color, coalesce) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setColorThrottled(this.props.document, this.props.layers,
                     LayerEffect.COLOR_OVERLAY, this.props.index, color, coalesce, false);
         },
@@ -83,7 +83,7 @@ define(function (require, exports, module) {
          * @param {boolean} coalesce
          */
         _opaqueColorChanged: function (color, coalesce) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setColorThrottled(this.props.document, this.props.layers,
                     LayerEffect.COLOR_OVERLAY, this.props.index, color, coalesce, true);
         },
@@ -96,7 +96,7 @@ define(function (require, exports, module) {
          * @param {boolean} coalesce
          */
         _alphaChanged: function (color, coalesce) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setAlphaThrottled(this.props.document, this.props.layers,
                     LayerEffect.COLOR_OVERLAY, this.props.index, color.a, coalesce);
         },
@@ -108,7 +108,7 @@ define(function (require, exports, module) {
          * @param {string} blendMode new blend mode
          */
         _blendModeChanged: function (blendMode) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setBlendModeThrottled(this.props.document,
                     this.props.layers,
                     this.props.index,
@@ -126,7 +126,7 @@ define(function (require, exports, module) {
          * @param {boolean} enabled new enabled state
          */
         _enabledChanged: function (event, enabled) {
-            this.getFlux().actions.layerEffects.setEffectEnabled(
+            this.getFlux().actions.layereffects.setEffectEnabled(
                 this.props.document, this.props.layers, this.props.index, enabled, LayerEffect.COLOR_OVERLAY);
         },
 
@@ -136,7 +136,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleDelete: function () {
-            this.getFlux().actions.layerEffects.deleteEffect(
+            this.getFlux().actions.layereffects.deleteEffect(
                 this.props.document, this.props.layers, this.props.index, LayerEffect.COLOR_OVERLAY);
             headlights.logEvent("effect", "delete", "color-overlay");
         },

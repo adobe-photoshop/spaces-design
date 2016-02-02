@@ -81,7 +81,7 @@ define(function (require, exports) {
          * @param {boolean} coalesce
          */
         _colorChanged: function (color, coalesce) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setColorThrottled(this.props.document, this.props.layers,
                     this.props.type, this.props.index, color, coalesce, false);
         },
@@ -94,7 +94,7 @@ define(function (require, exports) {
          * @param {boolean} coalesce
          */
         _opaqueColorChanged: function (color, coalesce) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setColorThrottled(this.props.document, this.props.layers,
                     this.props.type, this.props.index, color, coalesce, true);
         },
@@ -107,7 +107,7 @@ define(function (require, exports) {
          * @param {boolean} coalesce
          */
         _alphaChanged: function (color, coalesce) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setAlphaThrottled(this.props.document, this.props.layers,
                     this.props.type, this.props.index, color.a, coalesce);
         },
@@ -139,7 +139,7 @@ define(function (require, exports) {
             });
 
             if (xChanged) {
-                this.getFlux().actions.layerEffects
+                this.getFlux().actions.layereffects
                     .setShadowXThrottled(this.props.document, this.props.layers,
                         this.props.index, minValidX, this.props.type);
             } else {
@@ -174,7 +174,7 @@ define(function (require, exports) {
             });
 
             if (yChanged) {
-                this.getFlux().actions.layerEffects
+                this.getFlux().actions.layereffects
                     .setShadowYThrottled(this.props.document, this.props.layers,
                         this.props.index, minValidY, this.props.type);
             } else {
@@ -190,7 +190,7 @@ define(function (require, exports) {
          * @param {blur} blur new shadow blur value in pixels
          */
         _blurChanged: function (event, blur) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setShadowBlurThrottled(this.props.document,
                     this.props.layers,
                     this.props.index,
@@ -206,7 +206,7 @@ define(function (require, exports) {
          * @param {spread} spread new shadow spread value in pixels
          */
         _spreadChanged: function (event, spread) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setShadowSpreadThrottled(this.props.document,
                     this.props.layers,
                     this.props.index,
@@ -221,7 +221,7 @@ define(function (require, exports) {
          * @param {string} blendMode new blend mode
          */
         _blendModeChanged: function (blendMode) {
-            this.getFlux().actions.layerEffects
+            this.getFlux().actions.layereffects
                 .setBlendModeThrottled(this.props.document,
                     this.props.layers,
                     this.props.index,
@@ -239,7 +239,7 @@ define(function (require, exports) {
          * @param {boolean} enabled new enabled state
          */
         _enabledChanged: function (event, enabled) {
-            this.getFlux().actions.layerEffects.setEffectEnabled(
+            this.getFlux().actions.layereffects.setEffectEnabled(
                 this.props.document, this.props.layers, this.props.index, enabled, this.props.type);
         },
 
@@ -249,7 +249,7 @@ define(function (require, exports) {
          * @private
          */
         _handleDelete: function () {
-            this.getFlux().actions.layerEffects.deleteEffect(
+            this.getFlux().actions.layereffects.deleteEffect(
                 this.props.document, this.props.layers, this.props.index, this.props.type);
             
             headlights.logEvent("effect", "delete", "shadow");
