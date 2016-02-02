@@ -413,11 +413,13 @@ define(function (require, exports, module) {
                 }
             } else if (this.state.recentFilesInitialized) {
                 return (
-                    <div className="panel-set panel-set__active null-state">
-                        <PanelColumn ref="panelSet" visible="true">
-                            <RecentFiles recentFiles={this.state.recentFiles} />
-                            <ArtboardPresets />
-                        </PanelColumn>
+                    <div className="panel-set__container panel-set__active null-state">
+                        <div ref="panelSet" className="panel-set">
+                            <PanelColumn ref="panelSet" visible="true">
+                                <RecentFiles recentFiles={this.state.recentFiles} />
+                                <ArtboardPresets />
+                            </PanelColumn>
+                        </div>
                         <IconBar />
                     </div>
                 );
