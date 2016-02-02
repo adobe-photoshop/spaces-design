@@ -191,7 +191,7 @@ define(function (require, exports, module) {
 
             dialog.toggle(event);
             this._forceVisible();
-            this.getFlux().actions.layerEffects.addEffect(this.props.document, layers, effectType);
+            this.getFlux().actions.layereffects.addEffect(this.props.document, layers, effectType);
 
             headlights.logEvent("effect", "create", _.kebabCase(effectType));
         },

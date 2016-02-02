@@ -46,7 +46,7 @@ define(function (require, exports, module) {
          * @param  {number} effectIndex
          */
         _handleDelete: function (effectType, effectIndex) {
-            this.getFlux().actions.layerEffects.deleteEffect(
+            this.getFlux().actions.layereffects.deleteEffect(
                 this.props.document, this.props.layers, effectIndex, effectType);
             headlights.logEvent("effect", "delete", "unsupported");
         },
@@ -61,7 +61,7 @@ define(function (require, exports, module) {
          * @param {boolean} enabled new enabled state
          */
         _enabledChangedHandler: function (effectType, effectIndex, event, enabled) {
-            this.getFlux().actions.layerEffects.setEffectEnabled(
+            this.getFlux().actions.layereffects.setEffectEnabled(
                 this.props.document, this.props.layers, effectIndex, enabled, effectType);
         },
 
