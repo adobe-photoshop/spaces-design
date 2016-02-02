@@ -185,12 +185,18 @@ define(function (require, exports, module) {
             }
 
             var libraryState = this.getFlux().store("library").getState(),
-                connected = libraryState.isConnected,
+                isInitialized = libraryState.isInitialized;
+
+            if (!isInitialized) {
+                return null;
+            }
+
+            var isConnected = libraryState.isConnected,
                 libraries = this.state.libraries,
                 currentLibrary = this.state.selectedLibrary,
                 containerContents;
 
-            if (connected) {
+            if (isConnected) {
                 containerContents = (
                 <Library
                     className={this.state.isCreatingLibrary && "libraries__content__hidden"}
@@ -222,7 +228,7 @@ define(function (require, exports, module) {
                         selected={currentLibrary}
                         onLibraryChange={this._handleLibraryChange}
                         onCreateLibrary={this._handleCreateLibrary}
-                        disabled={!connected} />
+                        disabled={!isConnected} />
                     {containerContents}
                     <LibraryBar
                         className="libraries__bar__bottom"
