@@ -37,6 +37,7 @@ define(function (require, exports, module) {
         AsyncDependencyQueue = require("./util/async-dependency-queue"),
         synchronization = require("./util/synchronization"),
         performance = require("./util/performance"),
+        objUtil = require("./util/object"),
         log = require("./util/log");
 
     // Using contexts, we load action files automatically
@@ -950,6 +951,17 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Given a module name, gets the module in the action tree
+     *
+     * @param {string} moduleName dot separated path to the module
+     *
+     * @return {object} Synchronized module
+     */
+    FluxController.prototype.getModule = function (moduleName) {
+        return objUtil.getPath(this._flux.actions, moduleName);
+    };
+
+    /**
      * Given a module, returns a copy in which the methods have been synchronized.
      *
      * @private
@@ -988,9 +1000,31 @@ define(function (require, exports, module) {
      */
     FluxController.prototype._synchronizeAllModules = function (modules) {
         return Object.keys(modules).reduce(function (exports, moduleName) {
-            var rawModule = modules[moduleName];
+            var rawModule = modules[moduleName],
+                syncModule = this._synchronizeModule(moduleName, rawModule);
 
-            exports[moduleName] = this._synchronizeModule(moduleName, rawModule);
+            var modulePathArray = moduleName.split("."),
+                modulePath = _.initial(modulePathArray),
+                moduleBasename = _.last(modulePathArray),
+                moduleObject = {},
+                root = exports;
+
+            moduleObject[moduleBasename] = syncModule;
+
+            // If the path to this module does not yet exist
+            // we create empty objects using the folder structure
+            modulePath.forEach(function (path) {
+                if (!root.hasOwnProperty(path)) {
+                    root[path] = {};
+                }
+
+                root = root[path];
+            });
+            
+            // Using Object.assign here guarantees that if we 
+            // run into an action module on the path to one of the sub modules
+            // we don't delete all those ("search.select" then "search")
+            Object.assign(root, moduleObject);
 
             return exports;
         }.bind(this), {});
@@ -1036,13 +1070,13 @@ define(function (require, exports, module) {
 
         var allMethodPromises = Object.keys(actionIndex)
                 .filter(function (moduleName) {
-                    if (this._flux.actions[moduleName].hasOwnProperty(methodName)) {
+                    if (this.getModule(moduleName).hasOwnProperty(methodName)) {
                         return true;
                     }
                 }, this)
                 .sort(_actionModuleComparator)
                 .map(function (moduleName) {
-                    var module = this._flux.actions[moduleName],
+                    var module = this.getModule(moduleName),
                         methodPromise = module[methodName].call(module, getParam(moduleName));
 
                     return Promise.all([moduleName, methodPromise]);
