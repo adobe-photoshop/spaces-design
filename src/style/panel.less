@@ -81,8 +81,8 @@
     box-shadow: inset 0 (0.2rem) 0 @bg-border;
     border-right: @panel-border-width solid @bg-border;
     z-index: 1;
-    left: 0;
-    transition: left 0.2s linear;
+    // left: 0;
+    transition: transform 0.2s linear;
     position: absolute;
     flex-direction: column;
     // display: none;
@@ -90,7 +90,8 @@
 
 .panel__visible + .panel:nth-child(2){
     border-right: @panel-border-width solid @bg-border;
-    left: 32rem;
+    // left: 32rem;
+    transform: translateX(32rem);
 }
 
 .panel__visible{
@@ -99,11 +100,11 @@
 }
 
 .panel + .panel__visible:nth-child(2) {
-    left: 0;
+      transform: translateX(0);
 }
 
 .panel.panel__visible + .panel__visible:nth-child(2) {
-    left: 32rem;
+    transform: translateX(32rem);
 }
 
 .panel__element {
