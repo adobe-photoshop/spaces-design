@@ -221,7 +221,7 @@ define(function (require, exports) {
     setStroke.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetBounds],
+        transfers: ["layers.resetBounds"],
         post: ["verify.layers.verifySelectedBounds"]
     };
 
@@ -334,7 +334,7 @@ define(function (require, exports) {
     setStrokeColor.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetBounds]
+        transfers: ["layers.resetBounds"]
     };
 
     /**
@@ -397,7 +397,7 @@ define(function (require, exports) {
     setStrokeAlignment.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetBounds],
+        transfers: ["layers.resetBounds"],
         post: ["verify.layers.verifySelectedBounds"]
     };
 
@@ -486,7 +486,7 @@ define(function (require, exports) {
     setStrokeWidth.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetBounds],
+        transfers: ["layers.resetBounds"],
         post: ["verify.layers.verifySelectedBounds"]
     };
 
@@ -520,9 +520,6 @@ define(function (require, exports) {
      * @param {Color} color
      * @param {object} options
      * @param {boolean=} options.coalesce Whether to coalesce this operation's history state
-     * @param {boolean=} options.enabled optional enabled flag, default=true
-     * @param {boolean=} options.ignoreAlpha Whether to ignore the alpha value of the
-     *  supplied color and only update the opaque color.
      * @return {Promise}
      */
     var setFillColor = function (document, layers, color, options) {
@@ -699,7 +696,7 @@ define(function (require, exports) {
     combineUnion.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
+        transfers: ["layers.resetLayers", "layers.resetLayersByIndex"],
         post: ["verify.layers.verifySelectedBounds"]
     };
 
@@ -731,7 +728,7 @@ define(function (require, exports) {
     combineSubtract.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
+        transfers: ["layers.resetLayers", "layers.resetLayersByIndex"],
         post: ["verify.layers.verifySelectedBounds"]
     };
 
@@ -763,7 +760,7 @@ define(function (require, exports) {
     combineIntersect.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
+        transfers: ["layers.resetLayers", "layers.resetLayersByIndex"],
         post: ["verify.layers.verifySelectedBounds"]
     };
 
@@ -795,7 +792,7 @@ define(function (require, exports) {
     combineDifference.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetLayers, layerActions.resetLayersByIndex],
+        transfers: ["layers.resetLayers", "layers.resetLayersByIndex"],
         post: ["verify.layers.verifySelectedBounds"]
     };
 

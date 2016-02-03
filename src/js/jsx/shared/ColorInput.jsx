@@ -391,7 +391,7 @@ define(function (require, exports, module) {
                 }
             }
 
-            var swatchClassSet = classnames(swatchClassProps),
+            var swatchClassSet = classnames(this.props.className, swatchClassProps),
                 swatchOverlayFunc = this.props.swatchOverlay || _DEFAULT_SWATCH_OVERLAY,
                 overlay = swatchOverlayFunc(colorTiny, !this.props.editable),
                 dialogClasses = classnames("color-picker", this.props.className);

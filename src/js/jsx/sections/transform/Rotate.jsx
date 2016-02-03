@@ -212,24 +212,26 @@ define(function (require, exports, module) {
                 disabled = this._disabled(document, layers);
 
             return (
-                <div className="control-group">
-                    <Label
-                        onScrubStart={this._handleScrubBegin}
-                        onScrub={this._handleScrub}
-                        onScrubEnd={this._handleScrubEnd}
-                        size="column-3"
-                        title={nls.localize("strings.TOOLTIPS.SET_ROTATION")}>
-                        <SVGIcon CSSID="rotation" />
-                    </Label>
-                    <NumberInput
-                        disabled={disabled}
-                        // HACK: This lets 0 as a value work and not be considered the starting value
-                        value={disabled ? "" : this.state.value}
-                        onChange={this._rotateLayer}
-                        step={1}
-                        bigstep={15}
-                        ref="rotate"
-                        size="column-4" />
+                <div className="control-group__horizontal">
+                    <div>
+                        <Label
+                            onScrubStart={this._handleScrubBegin}
+                            onScrub={this._handleScrub}
+                            onScrubEnd={this._handleScrubEnd}
+                            size="column-3"
+                            title={nls.localize("strings.TOOLTIPS.SET_ROTATION")}>
+                            <SVGIcon CSSID="rotation" />
+                        </Label>
+                        <NumberInput
+                            disabled={disabled}
+                            // HACK: This lets 0 as a value work and not be considered the starting value
+                            value={disabled ? "" : this.state.value}
+                            onChange={this._rotateLayer}
+                            step={1}
+                            bigstep={15}
+                            ref="rotate"
+                            size="column-4" />
+                    </div>
                 </div>
             );
         }
