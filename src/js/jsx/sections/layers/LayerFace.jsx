@@ -692,6 +692,7 @@ define(function (require, exports, module) {
                                         className="face__name"
                                         ref="layerName"
                                         doubleClickToEdit={true}
+                                        acquireFocusOnMouseDown={false}
                                         value={layer.name}
                                         disabled={this.props.disabled || !nameEditable}
                                         onFocus={this._handleInputFocusChange.bind(this, true)}
