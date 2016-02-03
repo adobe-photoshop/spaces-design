@@ -38,7 +38,7 @@ define(function (require, exports, module) {
         mixins: [FluxMixin],
 
         propTypes: {
-            document: React.PropTypes.instanceOf(Document).isRequired,
+            document: React.PropTypes.instanceOf(Document),
             disabled: React.PropTypes.bool
         },
 
@@ -191,6 +191,10 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            if (!this.props.document) {
+                return null;
+            }
+
             var addFillButton = this._createColorButton(function (layer) {
                 return !layer.fill ? null :
                     { color: layer.fill.color, title: nls.localize("strings.TOOLTIPS.ADD_FILL_COLOR") };

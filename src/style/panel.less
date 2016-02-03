@@ -40,6 +40,14 @@
     display: flex;
 }
 
+.panel-set__not-visible {
+    display: none;
+}
+
+.panel__tab-bar__visible {
+    display: block;
+}
+
 .panel__tab-bar {
     background-color: @bg-panel;
     width: @toolbar-button-size + 0.2rem;
@@ -409,7 +417,7 @@
     }
 }
 
-.panel-set__container__small-screen {
+.panel-set__small-screen {
     .panel {
         border-right: @hairline solid @bg-border;
     }

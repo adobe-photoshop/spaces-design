@@ -1195,7 +1195,7 @@ define(function (require, exports) {
     };
     
     /**
-     * Handle libraries load event. 
+     * Handle libraries load/unload event. 
      *
      * @private
      * @return {Promise}
@@ -1266,7 +1266,7 @@ define(function (require, exports) {
         _toolModalStateChangedHandler = function (event) {
             var isPlacingGraphic = this.flux.store("library").getState().isPlacingGraphic,
                 modalStateEnded = event.state && event.state._value === "exit";
-        
+
             if (isPlacingGraphic && modalStateEnded) {
                 this.flux.actions.libraries.handleCompletePlacingGraphic();
             }
@@ -1277,7 +1277,7 @@ define(function (require, exports) {
     };
     beforeStartup.action = {
         reads: [locks.JS_PREF],
-        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES]
+        writes: []
     };
 
     /**
@@ -1294,6 +1294,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var afterStartup = function () {
+        // Load external CC Libraries API asynchronously. The loaded API is exposed as a global instance `ccLibraries`
         return Promise.promisify($S)("file://shared/libs/cc-libraries-api.min.js")
             .timeout(3000, "CC Libraries API load timeout, please don't restart and notify the chatroom!")
             .bind(this)
@@ -1302,14 +1303,14 @@ define(function (require, exports) {
                 // There is now a ccLibraries object in this scope
                 // So we emit that to the store
                 this.dispatch(events.libraries.LIBRARIES_API_LOADED, ccLibraries);
-        
+
                 var dependencies = {
                     // Photoshop on startup will grab the port of the CC Library process and expose it to us
                     vulcanCall: function (requestType, requestPayload, responseType, callback) {
                         descriptor.getProperty("application", "designSpaceLibrariesInfo")
                             .then(function (imsInfo) {
                                 var port = imsInfo.port;
-        
+
                                 callback(JSON.stringify({ port: port }));
                             });
                     },
@@ -1345,7 +1346,7 @@ define(function (require, exports) {
                         }
                     }
                 };
-        
+
                 // SHARED_LOCAL_STORAGE flag forces websocket use
                 ccLibraries.configure(dependencies, {
                     SHARED_LOCAL_STORAGE: true,
@@ -1371,7 +1372,9 @@ define(function (require, exports) {
                 }.bind(this);
                 ccLibraries.addLoadedCollectionsListener(_handleLibrariesLoadedHelper);
                 
-                // ccLibraries will not notify if users is logged out before, call the callback manually instead.
+                // `ccLibraries` will not emit the `LoadedCollections` (will empty collection) event 
+                // when the user log out Creative Cloud before it starts, so we have to manually call
+                // the event handler to notify the `Unload` event.
                 setTimeout(function () {
                     if (ccLibraries.getLoadedCollections.length === 0) {
                         _handleLibrariesLoadedHelper();
@@ -1381,7 +1384,7 @@ define(function (require, exports) {
     };
     afterStartup.action = {
         reads: [locks.JS_LIBRARIES, locks.CC_LIBRARIES],
-        writes: [],
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES],
         modal: true
     };
     

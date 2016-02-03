@@ -248,7 +248,7 @@ define(function (require, exports, module) {
             var centerOffsets = this.getCenterOffsets(),
                 windowWidth = window.document.body.clientWidth,
                 windowHeight = window.document.body.clientHeight;
-            
+
             return {
                 left: centerOffsets.left,
                 top: centerOffsets.top,
