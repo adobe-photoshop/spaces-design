@@ -19,17 +19,17 @@
     },
     "fluxxor": {
       "version": "1.7.3",
-      "from": "fluxxor@>=1.7.3 <2.0.0",
+      "from": "https://registry.npmjs.org/fluxxor/-/fluxxor-1.7.3.tgz",
       "resolved": "https://registry.npmjs.org/fluxxor/-/fluxxor-1.7.3.tgz",
       "dependencies": {
         "eventemitter3": {
           "version": "0.1.6",
-          "from": "eventemitter3@>=0.1.5 <0.2.0",
+          "from": "https://registry.npmjs.org/eventemitter3/-/eventemitter3-0.1.6.tgz",
           "resolved": "https://registry.npmjs.org/eventemitter3/-/eventemitter3-0.1.6.tgz"
         },
         "object-path": {
           "version": "0.6.0",
-          "from": "object-path@>=0.6.0 <0.7.0",
+          "from": "https://registry.npmjs.org/object-path/-/object-path-0.6.0.tgz",
           "resolved": "https://registry.npmjs.org/object-path/-/object-path-0.6.0.tgz"
         }
       }
@@ -46,12 +46,12 @@
     },
     "lodash": {
       "version": "3.10.1",
-      "from": "lodash@>=3.10.1 <4.0.0",
+      "from": "https://registry.npmjs.org/lodash/-/lodash-3.10.1.tgz",
       "resolved": "https://registry.npmjs.org/lodash/-/lodash-3.10.1.tgz"
     },
     "loglevel": {
       "version": "1.4.0",
-      "from": "loglevel@>=1.4.0 <2.0.0",
+      "from": "https://registry.npmjs.org/loglevel/-/loglevel-1.4.0.tgz",
       "resolved": "https://registry.npmjs.org/loglevel/-/loglevel-1.4.0.tgz"
     },
     "mathjs": {
@@ -177,7 +177,7 @@
     },
     "react-addons-perf": {
       "version": "0.14.6",
-      "from": "react-addons-perf@0.14.6",
+      "from": "https://registry.npmjs.org/react-addons-perf/-/react-addons-perf-0.14.6.tgz",
       "resolved": "https://registry.npmjs.org/react-addons-perf/-/react-addons-perf-0.14.6.tgz"
     },
     "react-addons-pure-render-mixin": {
@@ -192,13 +192,13 @@
     },
     "scriptjs": {
       "version": "2.5.8",
-      "from": "scriptjs@>=2.5.8 <3.0.0",
+      "from": "https://registry.npmjs.org/scriptjs/-/scriptjs-2.5.8.tgz",
       "resolved": "https://registry.npmjs.org/scriptjs/-/scriptjs-2.5.8.tgz"
     },
     "spaces-adapter": {
-      "version": "1.2.0",
-      "from": "adobe-photoshop/spaces-adapter#v1.2.0",
-      "resolved": "git://github.com/adobe-photoshop/spaces-adapter.git#ca530e9ee2e655260269841bf4bee9ee6cb96afb",
+      "version": "1.2.1",
+      "from": "git+https://github.com/adobe-photoshop/spaces-adapter.git#v1.2.1",
+      "resolved": "git+https://github.com/adobe-photoshop/spaces-adapter.git#e08f1c6731278e607259877f245c5591fef81157",
       "dependencies": {
         "qunitjs": {
           "version": "1.20.0",
@@ -209,12 +209,12 @@
     },
     "tinycolor2": {
       "version": "1.3.0",
-      "from": "tinycolor2@>=1.1.2 <2.0.0",
+      "from": "https://registry.npmjs.org/tinycolor2/-/tinycolor2-1.3.0.tgz",
       "resolved": "https://registry.npmjs.org/tinycolor2/-/tinycolor2-1.3.0.tgz"
     },
     "wolfy87-eventemitter": {
       "version": "4.3.0",
-      "from": "wolfy87-eventemitter@>=4.3.0 <5.0.0",
+      "from": "https://registry.npmjs.org/wolfy87-eventemitter/-/wolfy87-eventemitter-4.3.0.tgz",
       "resolved": "https://registry.npmjs.org/wolfy87-eventemitter/-/wolfy87-eventemitter-4.3.0.tgz"
     }
   }
