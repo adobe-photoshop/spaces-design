@@ -433,7 +433,7 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var locked = this.props.disabled || !this.state.initialized || !this.props.uniformLayerKind,
+            var locked = this.props.disabled || !this.state.initialized,
                 characterStyles = layers.reduce(function (characterStyles, layer) {
                     if (layer.text && layer.text.characterStyle) {
                         // TextStyle colors are always opaque; opacity is ONLY stored
@@ -499,7 +499,7 @@ define(function (require, exports, module) {
                 return layer.textWarningLevel > 0;
             });
 
-            if (this.props.uniformLayerKind && !postScriptNames.isEmpty() && this.state.initialized) {
+            if (!postScriptNames.isEmpty() && this.state.initialized) {
                 if (postScriptFamilyName || anylayerTextWarning) {
                     familyName = this._getPostScriptFontFamily(postScriptFamilyName);
                     if (!familyName) {
@@ -601,7 +601,7 @@ define(function (require, exports, module) {
                 }, doc.resolution);
             };
 
-            if (hasSomeTextLayers && this.props.uniformLayerKind) {
+            if (hasSomeTextLayers) {
                 fillBlendFormline = (
                     <div className={fillClassNames}>
                         <div className="control-group__vertical">
@@ -637,7 +637,7 @@ define(function (require, exports, module) {
                                 containerType={"type"}
                                 layers={this.props.document.layers.selected} />
                         </div>
-                        <div className="control-group__vertical control-group__no-label column-2">
+                        <div className="control-group__vertical control-group__no-label">
                         </div>
                     </div>
                 );

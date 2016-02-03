@@ -47,15 +47,14 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var disabled = !this.props.uniformLayerKind,
-                showRadius = this.props.document.layers.selected.some(function (layer) {
-                    return layer.radii;
-                });
+            var showRadius = this.props.document.layers.selected.some(function (layer) {
+                return layer.radii;
+            });
 
             return (
                 <div>
-                    <Stroke disabled={disabled} document={this.props.document} />
-                    {showRadius ? (<Radius disabled={disabled} document={this.props.document} />) : null}
+                    <Stroke document={this.props.document} />
+                    {showRadius ? (<Radius document={this.props.document} />) : null}
                 </div>
             );
         }

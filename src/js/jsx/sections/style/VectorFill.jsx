@@ -181,44 +181,53 @@ define(function (require, exports, module) {
                     document={this.props.document}
                     layers={this.state.layers}
                     fill={this.state.fill} />);
+
+            var disabledVectorFill;
+            if (!this.props.document.layers.selected.isEmpty()) {
+                disabledVectorFill = this.props.document.layers.selected.filter(function (layer) {
+                    return layer.isVector;
+                });
+            }
             
             return (
-                <div className="formline formline__space-between">
-                    <div className="control-group__vertical vector-fill">
-                        <FillColor
-                            disabled={!this.props.uniformLayerKind}
-                            forceDisabledDisplay={this.props.hasSomeTypeLayers}
-                            document={this.props.document}
-                            layers={this.state.layers}
-                            fill={this.state.fill} />
-                    </div>
-                    <div className="control-group__vertical control-group__no-label">
-                        <LayerBlendMode
-                            id={this.props.id}
-                            document={this.props.document}
-                            disabled={this.props.disabled}
-                            onFocus={this.props.onFocus}
-                            containerType={"appearance"}
-                            layers={this.props.document.layers.selected} />
-                    </div>
-                    <div className="control-group__vertical">
-                        <Label
-                            size="column-4"
-                            className={opacityLabelClasses}
-                            onScrubStart={this._handleOpacityScrubBegin}
-                            onScrub={this._handleOpacityScrub}
-                            onScrubEnd={this._handleOpacityScrubEnd}
-                            title={nls.localize("strings.TOOLTIPS.SET_OPACITY")}>
-                            {nls.localize("strings.STYLE.OPACITY")}
-                        </Label>
-                        <Opacity
-                            document={this.props.document}
-                            disabled={this.props.disabled}
-                            onFocus={this.props.onFocus}
-                            layers={this.props.document.layers.selected} />
-                    </div>
-                    <div className="control-group__vertical control-group__no-label">
-                        {fillVisibilityToggle}
+                <div>
+                    <div className="formline formline__space-between">
+                        <div className="control-group__vertical vector-fill">
+                            <FillColor
+                                disabled={!disabledVectorFill}
+                                forceDisabledDisplay={this.props.hasSomeTypeLayers}
+                                document={this.props.document}
+                                layers={this.state.layers}
+                                fill={this.state.fill} />
+                        </div>
+                        <div className="control-group__vertical control-group__no-label">
+                            <LayerBlendMode
+                                id={this.props.id}
+                                document={this.props.document}
+                                disabled={this.props.disabled}
+                                onFocus={this.props.onFocus}
+                                containerType={"appearance"}
+                                layers={this.props.document.layers.selected} />
+                        </div>
+                        <div className="control-group__vertical">
+                            <Label
+                                size="column-4"
+                                className={opacityLabelClasses}
+                                onScrubStart={this._handleOpacityScrubBegin}
+                                onScrub={this._handleOpacityScrub}
+                                onScrubEnd={this._handleOpacityScrubEnd}
+                                title={nls.localize("strings.TOOLTIPS.SET_OPACITY")}>
+                                {nls.localize("strings.STYLE.OPACITY")}
+                            </Label>
+                            <Opacity
+                                document={this.props.document}
+                                disabled={this.props.disabled}
+                                onFocus={this.props.onFocus}
+                                layers={this.props.document.layers.selected} />
+                        </div>
+                        <div className="control-group__vertical control-group__no-label">
+                            {fillVisibilityToggle}
+                        </div>
                     </div>
                 </div>
             );
