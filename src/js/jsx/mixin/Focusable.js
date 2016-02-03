@@ -24,13 +24,24 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var ReactDOM = require("react-dom");
+    var ReactDOM = require("react-dom"),
+        React = require("react");
 
     var OS = require("adapter").os;
 
     var log = require("js/util/log");
 
     module.exports = {
+        propTypes: {
+            acquireFocusOnMouseDown: React.PropTypes.bool
+        },
+
+        getDefaultProps: function () {
+            return {
+                acquireFocusOnMouseDown: true // If false, will not install mousedown listeners
+            };
+        },
+        
         /** @ignore */
         acquireFocus: function () {
             return OS.acquireKeyboardFocus()
@@ -51,10 +62,14 @@ define(function (require, exports, module) {
                 });
         },
         componentDidMount: function () {
-            ReactDOM.findDOMNode(this).addEventListener("mousedown", this.acquireFocus);
+            if (this.props.acquireFocusOnMouseDown) {
+                ReactDOM.findDOMNode(this).addEventListener("mousedown", this.acquireFocus);
+            }
         },
         componentWillUnmount: function () {
-            ReactDOM.findDOMNode(this).removeEventListener("mousedown", this.acquireFocus);
+            if (this.props.acquireFocusOnMouseDown) {
+                ReactDOM.findDOMNode(this).removeEventListener("mousedown", this.acquireFocus);
+            }
         }
     };
 });
