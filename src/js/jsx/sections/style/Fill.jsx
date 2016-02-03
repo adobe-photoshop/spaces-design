@@ -70,9 +70,15 @@ define(function (require, exports, module) {
          * @param {boolean} coalesce
          */
         _colorChanged: function (color, coalesce) {
-            this.getFlux().actions.shapes
-                .setFillColorThrottled(this.props.document, this.props.layers, color,
-                    { coalesce: coalesce });
+            var actionOpts = {
+                coalesce: coalesce
+            };
+
+            var selectedLayers = this.props.document.layers.selected;
+
+            this.getFlux().actions.layers
+                .changeColorsThrottled(this.props.document, selectedLayers, color, actionOpts);
+
             if (!coalesce) {
                 headlights.logEvent("edit", "color-input", "fill-color-change");
             }

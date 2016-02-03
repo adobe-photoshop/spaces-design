@@ -39,6 +39,8 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         documentActions = require("./documents"),
         historyActions = require("./history"),
+        typeActions = require("./type"),
+        shapeActions = require("./shapes"),
         log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
@@ -1840,6 +1842,56 @@ define(function (require, exports) {
     };
 
     /**
+     * Combines the color change of vector fill and text layers into one 
+     * history when we want to change them in tandem.
+     *
+     * @param {Document} doc
+     * @param {Immutable.Iterable.<Layer>} layers
+     * @param {Color} color
+     *
+     * @return {Promise}
+     */
+    var changeColors = function (doc, layers, color, actionOpts, transactionOpts) {
+        if (layers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var shapeLayers = Immutable.List(),
+            textLayers = Immutable.List();
+
+        layers.forEach(function (layer) {
+            if (layer.isVector) {
+                shapeLayers = shapeLayers.push(layer);
+            } else if (layer.isText) {
+                textLayers = textLayers.push(layer);
+            }
+        });
+
+        var transaction = descriptor.beginTransaction(transactionOpts);
+
+        if (!actionOpts) {
+            actionOpts = {
+                transaction: transaction
+            };
+        }
+        
+        var shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(shapeActions.setFillColor, doc, shapeLayers, color, actionOpts),
+            textPromise = textLayers.isEmpty() ? Promise.resolve() :
+                this.transfer(typeActions.setColor, doc, textLayers, color, actionOpts);
+
+        return Promise.join(shapePromise, textPromise)
+            .then(function () {
+                return descriptor.endTransaction(transaction);
+            });
+    };
+    changeColors.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: ["shapes.setFillColor", "type.setColor"]
+    };
+
+    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
@@ -2149,6 +2201,7 @@ define(function (require, exports) {
     exports.revealLayers = revealLayers;
     exports.resetIndex = resetIndex;
     exports.handleCanvasShift = handleCanvasShift;
+    exports.changeColors = changeColors;
     exports.getLayerIDsForDocumentID = getLayerIDsForDocumentID;
 
     exports.beforeStartup = beforeStartup;

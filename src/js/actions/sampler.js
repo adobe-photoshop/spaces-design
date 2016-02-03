@@ -211,16 +211,7 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var applyColor = function (doc, layers, color) {
-        var targetLayers = layers || doc.layers.selected;
-
-        this.dispatch(events.style.HIDE_HUD);
-
-        if (targetLayers.isEmpty()) {
-            return Promise.resolve();
-        }
-        
-        var shapeLayers = Immutable.List(),
-            textLayers = Immutable.List(),
+        var targetLayers = layers || doc.layers.selected,
             transactionOpts = {
                 historyStateInfo: {
                     name: nls.localize("strings.ACTIONS.SAMPLE_COLOR"),
@@ -228,32 +219,14 @@ define(function (require, exports) {
                 }
             };
 
-        targetLayers.forEach(function (layer) {
-            if (layer.isVector) {
-                shapeLayers = shapeLayers.push(layer);
-            } else if (layer.isText) {
-                textLayers = textLayers.push(layer);
-            }
-        });
+        this.dispatch(events.style.HIDE_HUD);
 
-        var transaction = descriptor.beginTransaction(transactionOpts),
-            actionOpts = {
-                transaction: transaction
-            },
-            shapePromise = shapeLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(shapeActions.setFillColor, doc, shapeLayers, color, actionOpts),
-            textPromise = textLayers.isEmpty() ? Promise.resolve() :
-                this.transfer(typeActions.setColor, doc, textLayers, color, actionOpts);
-
-        return Promise.join(shapePromise, textPromise)
-            .then(function () {
-                return descriptor.endTransaction(transaction);
-            });
+        return this.transfer(layerActions.changeColors, doc, targetLayers, color, null, transactionOpts);
     };
     applyColor.action = {
-        reads: [locks.JS_DOC],
+        reads: [],
         writes: [],
-        transfers: [shapeActions.setFillColor, typeActions.setColor]
+        transfers: ["layers.changeColors"]
     };
 
     /**
