@@ -153,7 +153,8 @@ define(function (require, exports) {
 
         var setFacePlayObject = textLayerLib.setPostScript(layerRefs, postscript),
             typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_FACE"), modal),
-            setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
+            setFacePromise = layerActionsUtil.playSimpleLayerActions(document, layers,
+                setFacePlayObject, true, typeOptions),
             updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
 
         return Promise.join(updatePromise, setFacePromise)
@@ -174,7 +175,7 @@ define(function (require, exports) {
     setPostScript.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updatePostScript, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updatePostScript", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -246,7 +247,7 @@ define(function (require, exports) {
     setFace.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateFace, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateFace", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -340,7 +341,7 @@ define(function (require, exports) {
     setColor.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateColor, layerActions.resetLayers],
+        transfers: ["type.updateColor", "layers.resetLayers"],
         modal: true
     };
 
@@ -389,7 +390,8 @@ define(function (require, exports) {
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
             typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_SIZE"), modal),
-            setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions),
+            setSizePromise = layerActionsUtil.playSimpleLayerActions(document, layers,
+                setSizePlayObject, true, typeOptions),
             updatePromise = this.transfer(updateSize, document, layers, size);
 
         return Promise.join(updatePromise, setSizePromise)
@@ -410,7 +412,7 @@ define(function (require, exports) {
     setSize.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateSize, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateSize", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -479,7 +481,7 @@ define(function (require, exports) {
     setTracking.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateTracking, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateTracking", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -550,7 +552,7 @@ define(function (require, exports) {
     setLeading.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateLeading, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateLeading", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -618,7 +620,7 @@ define(function (require, exports) {
     setAlignment.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateAlignment, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateAlignment", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -654,7 +656,7 @@ define(function (require, exports) {
     updateProperties.action = {
         reads: [],
         writes: [locks.JS_DOC],
-        transfers: [layerActions.initializeLayers],
+        transfers: ["layers.initializeLayers"],
         modal: true
     };
 
@@ -714,7 +716,7 @@ define(function (require, exports) {
     applyTextStyle.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [historyActions.newHistoryState, layerActions.resetLayers]
+        transfers: ["history.newHistoryState", "layers.resetLayers"]
     };
 
     /**
@@ -781,7 +783,7 @@ define(function (require, exports) {
     initFontList.action = {
         reads: [locks.PS_APP],
         writes: [locks.JS_TYPE],
-        transfers: [layerActions.resetLayers],
+        transfers: ["layers.resetLayers"],
         modal: true
     };
 
