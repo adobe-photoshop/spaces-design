@@ -1136,7 +1136,8 @@ define(function (require, exports) {
                 target: documentLib.referenceBy.id(document.id),
                 coalesce: !!options.coalesce,
                 suppressHistoryStateNotification: !!options.coalesce
-            }
+            },
+            isUserInteractionCommand: !!options.coalesce
         });
 
         var radiusDescriptor = contentLib.setRadius(radius),
