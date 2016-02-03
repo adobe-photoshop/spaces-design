@@ -215,7 +215,7 @@ define(function (require, exports, module) {
             if (!Immutable.is(oldMenu, this._applicationMenu)) {
                 this.emit("change");
             }
-        }, 200),
+        }, 400),
 
         /**
          * This is our main listener for most of the events in the app

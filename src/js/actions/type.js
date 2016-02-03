@@ -71,7 +71,8 @@ define(function (require, exports) {
                 quality: "draft"
             },
             canExecuteWhileModal: true,
-            ignoreTargetWhenModal: true
+            ignoreTargetWhenModal: true,
+            isUserInteractionCommand: !!coalesce
         };
 
         if (!modal) {
