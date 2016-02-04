@@ -193,14 +193,18 @@ define(function (require, exports, module) {
                 !Immutable.is(this.state.activeDocument, nextState.activeDocument);
         },
 
-        /** @ignore */
-        _handleColumnVisibilityToggle: function (columnName) {
+        /**
+         * Handle icon clicks, toggling visibility of one or both columns.
+         *
+         * @private
+         * @param {string} columnName
+         * @param {SyntheticEvent} event
+         */
+        _handleColumnVisibilityToggle: function (columnName, event) {
             var flux = this.getFlux(),
                 panelStore = flux.store("panel"),
-                modifierStore = flux.store("modifier"),
                 components = panelStore.components,
-                modifierState = modifierStore.getState(),
-                swapModifier = system.isMac ? modifierState.command : modifierState.control,
+                swapModifier = system.isMac ? event.metaKey : event.ctrlKey,
                 currentlyVisible,
                 nextState = {};
                 
