@@ -162,10 +162,7 @@ define(function (require, exports, module) {
             event.stopPropagation();
 
             // Presence of option/alt modifier determines whether all descendants are toggled
-            var flux = this.getFlux(),
-                modifierStore = flux.store("modifier"),
-                modifierState = modifierStore.getState(),
-                descendants = modifierState.alt,
+            var descendants = event.altKey,
                 nextExpandedState = !this.state.expanded;
 
             // The clicked layer may an have out-of-date document models due to
