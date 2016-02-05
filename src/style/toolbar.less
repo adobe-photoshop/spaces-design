@@ -41,23 +41,32 @@
     background-color: @bg-panel;
     color: @item-active;
     box-shadow: inset (-1 * @panel-border-width) 0 0 @bg-border-for-canvas, inset @hairline (@panel-border-width) 0 @bg-border;
-    
+    transition: height 0.2s linear;
+    overflow: hidden;
+
     .toolbar-button.tool-selected {
         display: flex;
+        opacity: 1;
     }
     
     .toolbar-button, .zoom {
-        display: none;
+        opacity: 0;
+    }
+    
+    ul {        
+        transition: transform 0.1s linear;    
     }
     
     &.expanded {
-        height: auto;
+        height: 100%;
         color: @bg-alt;
 
         .toolbar-button, .zoom {
             display: flex;
+            opacity: 1;
         }        
     }
+    
     .zoom {
         position: absolute;
         bottom: 1.3rem;
