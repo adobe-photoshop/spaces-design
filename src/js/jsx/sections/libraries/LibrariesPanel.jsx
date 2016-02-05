@@ -185,10 +185,16 @@ define(function (require, exports, module) {
             }
 
             var libraryState = this.getFlux().store("library").getState(),
-                isInitialized = libraryState.isInitialized;
+                isInitialized = libraryState.isInitialized,
+                containerClasses = classnames({
+                    "section-container": true,
+                    "section-container__collapsed": !this.props.visible,
+                    "libraries__container": true,
+                    "libraries__ready": isInitialized
+                });
 
             if (!isInitialized) {
-                return null;
+                return (<div className={containerClasses}/>);
             }
 
             var isConnected = libraryState.isConnected,
@@ -214,12 +220,6 @@ define(function (require, exports, module) {
                     </div>
                 );
             }
-
-            var containerClasses = classnames({
-                "section-container": true,
-                "section-container__collapsed": !this.props.visible,
-                "libraries__container": true
-            });
 
             return (
                 <div className={containerClasses}>

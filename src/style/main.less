@@ -141,6 +141,14 @@ input {
     &.main__ready .section-container__no-collapse {
         opacity: 1;
         transition: all 200ms ease;
+        
+        &.libraries__container {
+            opacity: 0;
+        }
+        
+        &.libraries__container.libraries__ready {
+            opacity: 1;
+        }
     }
 }
 

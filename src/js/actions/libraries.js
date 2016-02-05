@@ -1372,11 +1372,11 @@ define(function (require, exports) {
                 }.bind(this);
                 ccLibraries.addLoadedCollectionsListener(_handleLibrariesLoadedHelper);
                 
-                // `ccLibraries` will not emit the `LoadedCollections` (will empty collection) event 
-                // when the user log out Creative Cloud before it starts, so we have to manually call
-                // the event handler to notify the `Unload` event.
+                // `ccLibraries` will not emit the `LoadedCollections` event when the user sign out Creative Cloud
+                // before it is loaded. We have to check the size of libraries once, and call the event handler
+                // when it is empty.
                 setTimeout(function () {
-                    if (ccLibraries.getLoadedCollections.length === 0) {
+                    if (ccLibraries.getLoadedCollections().length === 0) {
                         _handleLibrariesLoadedHelper();
                     }
                 }, 1000);
