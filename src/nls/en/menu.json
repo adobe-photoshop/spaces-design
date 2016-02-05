@@ -236,6 +236,7 @@
         "LAYER_PANEL_PERFORMANCE_TEST": "Test Layer Panel Performance",
         "UPDATE_CURRENT_DOCUMENT": "Update Current Document",
         "RESET_RECESS": "Reset Design Space",
+        "LOAD_DEBUGGING_HELPERS": "Load Debugging Helpers",
         "TOGGLE_POLICY_FRAMES": "Show Policy Frames",
         "TOGGLE_POSTCONDITIONS": "Verify Postconditions",
         "TOGGLE_ACTION_TRANSFER_LOGGING": "Log Action Transfers",

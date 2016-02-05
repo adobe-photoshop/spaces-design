@@ -699,6 +699,52 @@ define(function (require, exports) {
         writes: [locks.JS_PREF],
         transfers: [preferencesActions.setPreference]
     };
+    
+    /**
+     * Debug-only method to toggle action transfer logging
+     *
+     * @return {Promise}
+     */
+    var loadDebuggingHelpers = function () {
+        if (!__PG_DEBUG__) {
+            return Promise.resolve();
+        }
+
+        log.debug(["%c\nLoaded Debugging Helpers:\n",
+            "_printCurrentLayerDescriptor",
+            "_getFluxInstance",
+            "_getCurrentDocument",
+            "_getSelectedLayers",
+            "\n"
+        ].join("\n"), "color:black;");
+
+        _.merge(window, {
+            _printCurrentLayerDescriptor: function () {
+                var descriptor = require("adapter").ps.descriptor;
+                descriptor.get("layer")
+                    .then(function (result) {
+                        return JSON.stringify(result, null, " ");
+                    })
+                    .then(log.debug);
+            },
+            _getFluxInstance: function () {
+                return this.flux;
+            }.bind(this),
+            _getCurrentDocument: function () {
+                return this.flux.stores.application.getCurrentDocument();
+            }.bind(this),
+            _getSelectedLayers: function () {
+                return this.flux.stores.application.getCurrentDocument().layers.selected;
+            }
+        });
+
+        return Promise.resolve();
+    };
+    loadDebuggingHelpers.action = {
+        reads: [],
+        writes: [],
+        transfers: []
+    };
 
     /**
      * Event handlers initialized in beforeStartup.
@@ -838,6 +884,7 @@ define(function (require, exports) {
     exports.toggleActionTransferLogging = toggleActionTransferLogging;
     exports.logDescriptor = logDescriptor;
     exports.logHeadlights = logHeadlights;
+    exports.loadDebuggingHelpers = loadDebuggingHelpers;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;

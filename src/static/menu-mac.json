@@ -759,6 +759,10 @@
                     "debug": true
                 },
                 {
+                    "id": "LOAD_DEBUGGING_HELPERS",
+                    "debug": true
+                },
+                {
                     "id": "RESET_RECESS",
                     "shortcut": {
                         "keyCode": true,

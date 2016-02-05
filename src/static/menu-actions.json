@@ -496,6 +496,10 @@
             "$action": "menu.resetRecess",
             "$enable-rule": "always-except-modal"
         },
+        "LOAD_DEBUGGING_HELPERS": {
+            "$action": "menu.loadDebuggingHelpers",
+            "$enable-rule": "always-except-modal"
+        },
         "TOGGLE_POLICY_FRAMES": {
             "$action": "menu.togglePolicyFrames",
             "$enable-rule": "always-except-modal"
