@@ -249,7 +249,8 @@ define(function (require, exports, module) {
                     document.layers.selected.isEmpty();
 
             if (!maskDisabled) {
-                maskDisabled = !document.layers.selectedLayersCanHaveVectorMask;
+                maskDisabled = !(document.layers.selectedLayersCanHaveVectorMask ||
+                    document.layers.selectedLayersCanMakeVectorMaskFromShape);
             }
 
             if (!maskDisabled) {

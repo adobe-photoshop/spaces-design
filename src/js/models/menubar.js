@@ -274,14 +274,18 @@ define(function (require, exports, module) {
                 (document !== null) &&
                 !document.unsupported &&
                 (document.layers !== null) &&
-                (document.layers.selectedNormalized.size === 2) &&
+                (((document.layers.selectedNormalized.size === 2) &&
                 (document.layers.selected.some(function (layer) {
                     return layer.isVector;
                 })) &&
                 (document.layers.selected.some(function (layer) {
                     return document.layers.canSupportVectorMask(layer) &&
                         !layer.vectorMaskEnabled;
-                }))
+                }))) ||
+                ((document.layers.selectedNormalized.size === 1) &&
+                (document.layers.selected.some(function (layer) {
+                    return document.layers.canSupportVectorMask(layer);
+                }))))
         };
     };
 

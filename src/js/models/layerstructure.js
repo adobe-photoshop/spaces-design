@@ -581,11 +581,30 @@ define(function (require, exports, module) {
         "selectedLayersCanHaveVectorMask": function () {
             var layers = this.selected,
                 curLayer = layers.first();
-            return !layers.isEmpty() &&
+            return layers.size === 1 &&
                 !curLayer.isGroupEnd &&
                 !curLayer.isVector &&
                 !curLayer.isBackground &&
                 !curLayer.locked;
+        },
+
+        /**
+         * Determine whether a vector mask can be created from a shape on the current layer selection
+         *
+         * @return {boolean} if the layer selection can handle a vector mask
+         */
+        "selectedLayersCanMakeVectorMaskFromShape": function () {
+            var layers = this.selected;
+            return layers.size === 2 &&
+                layers.some(function (curLayer) {
+                    return curLayer.isVector;
+                }) &&
+                layers.some(function (curLayer) {
+                    return !curLayer.isGroupEnd &&
+                    !curLayer.isVector &&
+                    !curLayer.isBackground &&
+                    !curLayer.locked;
+                });
         },
 
         /**
