@@ -201,7 +201,7 @@ define(function (require, exports, module) {
         // TODO: it might be more efficient to also maintain sets of currently
         // held read and write locks instead of just traversing all the current
         // jobs and inspecting their read and write locks
-        var ids = Object.keys(this._current);
+        var ids = Object.getOwnPropertySymbols(this._current);
         return ids.some(function (id) {
             var job = this._current[id],
                 lockSet = job[set];
@@ -238,7 +238,7 @@ define(function (require, exports, module) {
      * @return {boolean} Indicates whether any lock is currently conflicted
      */
     AsyncDependencyQueue.prototype._checkWriteConflicts = function (writes) {
-        return this._checkLockSetConflicts("reads", writes) &&
+        return this._checkLockSetConflicts("reads", writes) ||
             this._checkLockSetConflicts("atomicReads", writes);
     };
 
@@ -252,12 +252,12 @@ define(function (require, exports, module) {
      * @return {boolean} Indicates whether any lock is currently conflicted
      */
     AsyncDependencyQueue.prototype._checkReadConflicts = function (reads) {
-        return this._checkLockSetConflicts("writes", reads) &&
+        return this._checkLockSetConflicts("writes", reads) ||
             this._checkLockSetConflicts("atomicWrites", reads);
     };
 
     AsyncDependencyQueue.prototype._checkAtomicWriteConflicts = function (atomicWrites) {
-        return this._checkLockSetConflicts("reads", atomicWrites) &&
+        return this._checkLockSetConflicts("reads", atomicWrites) ||
             this._checkLockSetConflicts("writes", atomicWrites);
     };
 
@@ -287,7 +287,6 @@ define(function (require, exports, module) {
         if (this._checkAtomicReadConflicts(atomicReads)) {
             return true;
         }
-
 
         return false;
     };
@@ -335,7 +334,7 @@ define(function (require, exports, module) {
             return;
         }
         
-        var ids = Object.keys(this._current);
+        var ids = Object.getOwnPropertySymbols(this._current);
         if (ids.length >= this._maxJobs) {
             // Too many jobs currently active; give up
             return;
@@ -385,7 +384,7 @@ define(function (require, exports, module) {
     AsyncDependencyQueue.prototype.pause = function () {
         this._isPaused = true;
 
-        var ids = Object.keys(this._current);
+        var ids = Object.getOwnPropertySymbols(this._current);
         if (ids.length > 0) {
             return Promise.settle(ids.map(function (id) {
                 return this._current[id].promise;
@@ -419,7 +418,7 @@ define(function (require, exports, module) {
      * @return {number}
      */
     AsyncDependencyQueue.prototype.active = function () {
-        return Object.keys(this._current).length;
+        return Object.getOwnPropertySymbols(this._current).length;
     };
 
     /**

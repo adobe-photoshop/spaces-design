@@ -58,7 +58,7 @@ define(function (require, exports, module) {
      * @const
      * @type {number}
      */
-    var CORES = window.navigator.hardwareConcurrency || 8;
+    var CORES = window.navigator.hardwareConcurrency * 32 || 256;
 
     /**
      * Suffix used to name throttled actions.
