@@ -193,29 +193,62 @@ define(function (require, exports) {
     };
 
     /**
+     * Commit panel-sizes changes to the plugin, including updating the transform
+     * and the cloaking rectangle.
+     *
+     * @return {Promise}
+     */
+    var commitPanelSizes = function () {
+        var transformPromise = this.transfer("ui.updateTransform"),
+            panelState = this.flux.stores.panel.getState(),
+            centerOffsets = panelState.centerOffsets,
+            offsetsPromise = adapterUI.setOverlayOffsets(centerOffsets)
+                .bind(this)
+                .then(function () {
+                    return this.transfer(setOverlayCloaking);
+                });
+
+        return Promise.join(transformPromise, offsetsPromise);
+    };
+    commitPanelSizes.action = {
+        reads: [locks.JS_PANEL],
+        writes: [locks.PS_APP],
+        transfers: [setOverlayCloaking, "ui.updateTransform"],
+        modal: true
+    };
+
+    /**
+     * A debounced function which calls the commitPanelSizes action.
+     *
+     * @private
+     * @param {FluxController} controller
+     */
+    var _commitPanelSizesDebounced = _.debounce(function (controller) {
+        controller.flux.actions.panel.commitPanelSizes();
+    }, 50);
+
+    /**
      * Parse the panel size information and dispatch the PANELS_RESIZED ui event
      *
      * @param {{toolbarWidth: number=, panelWidth: number=, headerHeight: number=}} sizes
      * @return {Promise}
      */
     var updatePanelSizes = function (sizes) {
-        var transformPromise = this.transfer("ui.updateTransform"),
-            dispatchPromise = this.dispatchAsync(events.panel.PANELS_RESIZED, sizes)
+        return this.dispatchAsync(events.panel.PANELS_RESIZED, sizes)
             .bind(this)
-                .then(function () {
-                    var centerOffsets = this.flux.store("panel").getState().centerOffsets;
-                    return adapterUI.setOverlayOffsets(centerOffsets);
-                })
-                .then(function () {
-                    return this.transfer(setOverlayCloaking);
-                });
+            .then(function () {
+                var panelState = this.flux.stores.panel.getState();
+                if (!panelState.panelsInitialized) {
+                    return;
+                }
 
-        return Promise.join(transformPromise, dispatchPromise);
+                _commitPanelSizesDebounced(this);
+            });
     };
     updatePanelSizes.action = {
         reads: [],
-        writes: [locks.JS_PANEL, locks.PS_APP],
-        transfers: [setOverlayCloaking, "ui.updateTransform"],
+        writes: [locks.JS_PANEL],
+        transfers: [],
         modal: true
     };
 
@@ -391,6 +424,7 @@ define(function (require, exports) {
     exports.setOverlayCloaking = setOverlayCloaking;
     exports.cloak = cloak;
     exports.updatePanelSizes = updatePanelSizes;
+    exports.commitPanelSizes = commitPanelSizes;
     exports.setOverlayOffsetsForFirstDocument = setOverlayOffsetsForFirstDocument;
     exports.setReferencePoint = setReferencePoint;
     exports.setColorStop = setColorStop;
