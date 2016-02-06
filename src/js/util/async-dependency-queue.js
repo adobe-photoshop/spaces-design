@@ -38,10 +38,17 @@ define(function (require, exports, module) {
      * @param {function (): Promise} fn
      * @param {Array.<string>} reads
      * @param {Array.<string>} writes 
+     * @param {Array.<string>} atomicReads
+     * @param {Array.<string>} atomicWrites
      */
-    var Job = function (fn, reads, writes) {
+    var Job = function (fn, reads, writes, atomicReads, atomicWrites) {
+        // FIXME: move this closure into the controller and make it a requirement of the queue.
+
         // Ensure that the read set subsumes the write set
         reads = _.union(reads, writes);
+
+        // Ensure that the atomicRead set subsumes the atomicWrite set
+        atomicReads = _.union(atomicReads, atomicWrites);
 
         var deferred = {};
         deferred.promise = new Promise(function (resolve, reject) {
@@ -49,18 +56,20 @@ define(function (require, exports, module) {
             deferred.reject = reject;
         });
 
-        this.id = Job._idCounter++;
+        this.id = Symbol();
         this.fn = fn;
         this.reads = reads;
         this.writes = writes;
+        this.atomicReads = atomicReads;
+        this.atomicWrites = atomicWrites;
+
         this.deferred = deferred;
     };
 
     /**
-     * @private
-     * @type {number}
+     * @type {Symbol}
      */
-    Job._idCounter = 0;
+    Job.prototype.id = null;
 
     /**
      * @type {function(): Promise}
@@ -76,6 +85,16 @@ define(function (require, exports, module) {
      * @type {Array.<string>}
      */
     Job.prototype.writes = null;
+
+    /**
+     * @type {Array.<string>}
+     */
+    Job.prototype.atomicReads = null;
+
+    /**
+     * @type {Array.<string>}
+     */
+    Job.prototype.atomicWrites = null;
 
     /**
      * @type {{promise: Promise, resolve: function(), reject: function()}}
@@ -132,11 +151,13 @@ define(function (require, exports, module) {
      * @param {!function(): Promise} fn The asynchronous command to execute
      * @param {!Array.<string>} reads The set of read locks required
      * @param {!Array.<string>} writes The set of write locks required
+     * @param {!Array.<string>} atomicReads The set of atomic read locks required
+     * @param {!Array.<string>} atomicWrites The set of atomic write locks required
      * @return {Promise} Resolves once the job has completed execution with the
      *  resulting value; rejects if the job fails or is canceled before execution.
      */
-    AsyncDependencyQueue.prototype.push = function (fn, reads, writes) {
-        var job = new Job(fn, reads, writes);
+    AsyncDependencyQueue.prototype.push = function (fn, reads, writes, atomicReads, atomicWrites) {
+        var job = new Job(fn, reads, writes, atomicReads, atomicWrites);
 
         this._pending.push(job);
 
@@ -217,7 +238,8 @@ define(function (require, exports, module) {
      * @return {boolean} Indicates whether any lock is currently conflicted
      */
     AsyncDependencyQueue.prototype._checkWriteConflicts = function (writes) {
-        return this._checkLockSetConflicts("reads", writes);
+        return this._checkLockSetConflicts("reads", writes) &&
+            this._checkLockSetConflicts("atomicReads", writes);
     };
 
     /**
@@ -230,7 +252,44 @@ define(function (require, exports, module) {
      * @return {boolean} Indicates whether any lock is currently conflicted
      */
     AsyncDependencyQueue.prototype._checkReadConflicts = function (reads) {
-        return this._checkLockSetConflicts("writes", reads);
+        return this._checkLockSetConflicts("writes", reads) &&
+            this._checkLockSetConflicts("atomicWrites", reads);
+    };
+
+    AsyncDependencyQueue.prototype._checkAtomicWriteConflicts = function (atomicWrites) {
+        return this._checkLockSetConflicts("reads", atomicWrites) &&
+            this._checkLockSetConflicts("writes", atomicWrites);
+    };
+
+    AsyncDependencyQueue.prototype._checkAtomicReadConflicts = function (atomicReads) {
+        return this._checkLockSetConflicts("writes", atomicReads);
+    };
+
+    AsyncDependencyQueue.prototype._checkJobConflicts = function (job) {
+        // confirm that no reads or writes are in progress for the write set
+        var writes = job.writes;
+        if (this._checkWriteConflicts(writes)) {
+            return true;
+        }
+
+        // confirm that no writes are in progress for the read set
+        var reads = job.reads;
+        if (this._checkReadConflicts(reads)) {
+            return true;
+        }
+
+        var atomicWrites = job.atomicWrites;
+        if (this._checkAtomicWriteConflicts(atomicWrites)) {
+            return true;
+        }
+
+        var atomicReads = job.atomicReads;
+        if (this._checkAtomicReadConflicts(atomicReads)) {
+            return true;
+        }
+
+
+        return false;
     };
 
     /**
@@ -244,20 +303,12 @@ define(function (require, exports, module) {
      */
     AsyncDependencyQueue.prototype._pickJob = function () {
         var length = this._pending.length,
-            job, index, reads, writes;
+            job, index;
 
         for (index = 0; index < length; index++) {
             job = this._pending[index];
-            reads = job.reads;
-            writes = job.writes;
 
-            // confirm that no reads or writes are in progress for the write set
-            if (this._checkWriteConflicts(writes)) {
-                continue;
-            }
-
-            // confirm that no writes are in progress for the read set
-            if (this._checkReadConflicts(reads)) {
+            if (this._checkJobConflicts(job)) {
                 continue;
             }
 

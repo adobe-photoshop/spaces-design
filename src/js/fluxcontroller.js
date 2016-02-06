@@ -174,6 +174,22 @@ define(function (require, exports, module) {
     FluxController.prototype._transitiveWrites = null;
 
     /**
+     * Map from unsynchronized action functions to their transitive atomicRead lock set.
+     *
+     * @private
+     * @type {Map.<function, Set.<string>>}
+     */
+    FluxController.prototype._transitiveAtomicReads = null;
+
+    /**
+     * Map from unsynchronized action functions to their transitive atomicWrite lock set.
+     *
+     * @private
+     * @type {Map.<function, Set.<string>>}
+     */
+    FluxController.prototype._transitiveAtomicWrites = null;
+
+    /**
      * Per-action cache of action receivers
      * 
      * @private
@@ -328,7 +344,9 @@ define(function (require, exports, module) {
                     actionDependencies.set(action, dependencies);
 
                     var reads = actionObject.reads || locks.ALL_LOCKS,
-                        writes = actionObject.writes || locks.ALL_LOCKS;
+                        writes = actionObject.writes || locks.ALL_LOCKS,
+                        atomicReads = actionObject.atomicReads || reads,
+                        atomicWrites = actionObject.atomicWrites || writes;
 
                     // Assert uniqueness of read locks
                     var uniqueReads = _.uniq(reads);
@@ -336,6 +354,13 @@ define(function (require, exports, module) {
                         throw new Error("Redundant read lock specified for " + actionName);
                     } else {
                         reads = uniqueReads;
+                    }
+
+                    var uniqueAtomicReads = _.uniq(atomicReads);
+                    if (atomicReads.length !== uniqueAtomicReads.length) {
+                        throw new Error("Redundant atomicRead lock specified for " + actionName);
+                    } else {
+                        atomicReads = uniqueAtomicReads;
                     }
 
                     // Assert uniqueness of read locks
@@ -346,18 +371,32 @@ define(function (require, exports, module) {
                         writes = uniqueWrites;
                     }
 
+                    // Assert uniqueness of read locks
+                    var uniqueAtomicWrites = _.uniq(atomicWrites);
+                    if (atomicWrites.length !== uniqueAtomicWrites.length) {
+                        throw new Error("Redundant atomicWrite lock specified for " + actionName);
+                    } else {
+                        atomicWrites = uniqueAtomicWrites;
+                    }
+
                     // Calculate transitive lock sets based on the action's dependencies
                     dependencies.forEach(function (dependency) {
                         if (dependency.action) {
                             reads = reads.concat(dependency.action.reads || locks.ALL_LOCKS);
                             writes = writes.concat(dependency.action.writes || locks.ALL_LOCKS);
+                            atomicReads = atomicReads.concat(dependency.action.atomicReads || reads);
+                            atomicWrites = atomicWrites.concat(dependency.action.atomicWrites || writes);
                         } else {
                             reads = reads.concat(locks.ALL_LOCKS);
                             writes = writes.concat(locks.ALL_LOCKS);
+                            atomicReads = atomicReads.concat(reads);
+                            atomicWrites = atomicWrites.concat(writes);
                         }
                     });
                     this._transitiveReads.set(action, _.uniq(reads));
                     this._transitiveWrites.set(action, _.uniq(writes));
+                    this._transitiveAtomicReads.set(action, _.uniq(atomicReads));
+                    this._transitiveAtomicWrites.set(action, _.uniq(atomicWrites));
                 }
             }
             
@@ -368,10 +407,12 @@ define(function (require, exports, module) {
 
         this._transitiveReads = new Map();
         this._transitiveWrites = new Map();
+        this._transitiveAtomicReads = new Map();
+        this._transitiveAtomicWrites = new Map();
         this._actionsByName.forEach(function (action, actionName) {
             var actionObject = action.action;
-            // Validate action read locks
             if (actionObject) {
+                // Validate action read locks
                 if (actionObject.reads) {
                     actionObject.reads.forEach(function (lock, index) {
                         if (typeof lock !== "string") {
@@ -385,6 +426,26 @@ define(function (require, exports, module) {
                     actionObject.writes.forEach(function (lock, index) {
                         if (typeof lock !== "string") {
                             throw new Error("Write lock declaration " + index + " of " + actionName + " is invalid.");
+                        }
+                    });
+                }
+
+                // Validate action atomicRead locks
+                if (actionObject.atomicReads) {
+                    actionObject.atomicReads.forEach(function (lock, index) {
+                        if (typeof lock !== "string") {
+                            throw new Error("atomicRead lock declaration " + index + " of " + actionName +
+                                " is invalid.");
+                        }
+                    });
+                }
+
+                // Validate action atomicWrite locks
+                if (actionObject.atomicWrites) {
+                    actionObject.atomicWrites.forEach(function (lock, index) {
+                        if (typeof lock !== "string") {
+                            throw new Error("atomicWrite lock declaration " + index + " of " + actionName +
+                                " is invalid.");
                         }
                     });
                 }
@@ -520,6 +581,8 @@ define(function (require, exports, module) {
                         nextReceiver = self._actionReceivers.get(nextAction),
                         reads = self._transitiveReads.get(nextAction),
                         writes = self._transitiveWrites.get(nextAction),
+                        atomicReads = self._transitiveAtomicReads.get(nextAction),
+                        atomicWrites = self._transitiveAtomicWrites.get(nextAction),
                         logTransfers = __PG_DEBUG__ &&
                             this.flux.store("preferences").getState().get("logActionTransfers"),
                         enqueued;
@@ -564,7 +627,7 @@ define(function (require, exports, module) {
                                 this._resetController(err);
                                 throw err;
                             });
-                    }.bind(self), reads, writes);
+                    }.bind(self), reads, writes, atomicReads, atomicWrites);
                 }
             },
 
@@ -901,7 +964,9 @@ define(function (require, exports, module) {
             action = module[name],
             actionName = namespace + "." + name,
             reads = this._transitiveReads.get(action),
-            writes = this._transitiveWrites.get(action);
+            writes = this._transitiveWrites.get(action),
+            atomicReads = this._transitiveAtomicReads.get(action),
+            atomicWrites = this._transitiveAtomicWrites.get(action);
 
         return function () {
             var args = Array.prototype.slice.call(arguments, 0),
@@ -944,7 +1009,7 @@ define(function (require, exports, module) {
 
                         throw err;
                     });
-            }.bind(self), reads, writes);
+            }.bind(self), reads, writes, atomicReads, atomicWrites);
 
             return jobPromise;
         };
