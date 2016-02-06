@@ -1212,5 +1212,5 @@ define(function (require, exports) {
     // which causes PS to set the fill color, and if there is an active document
     // with a shape layer selected, this will reset the color of that shape
     // But if document is initialized, we do a selection dance, avoiding this situation
-    exports._priority = 1;
+    exports._priority = 2;
 });

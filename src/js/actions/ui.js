@@ -464,5 +464,5 @@ define(function (require, exports) {
     // This module must have a higher priority than the tool action module.
     // Tool select handlers assume the presence of defaults first set in
     // tools.onBeforeStartup.
-    exports._priority = 99;
+    exports._priority = 1;
 });

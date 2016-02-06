@@ -280,6 +280,8 @@ define(function (require, exports, module) {
     const ACTION_OBJECT_PROPERTIES = new Set([
         "reads",
         "writes",
+        "reads",
+        "writes",
         "modal",
         "transfers",
         "allowFailure",
@@ -591,7 +593,7 @@ define(function (require, exports, module) {
                         enqueued = Date.now();
                         log.debug("Enqueuing transfer from %s to %s; %d/%d",
                             actionName, nextActionName,
-                            transferQueue.active(), transferQueue.pending());
+                            transferQueue.active(), transferQueue.pending() + 1);
                     }
 
                     return transferQueue.push(function () {
@@ -614,7 +616,7 @@ define(function (require, exports, module) {
                                     log.debug("Finished transfer from %s to %s in %dms with RTT %dms; %d/%d",
                                         actionName, nextActionName,
                                         elapsed, total,
-                                        transferQueue.active(), transferQueue.pending());
+                                        transferQueue.active(), transferQueue.pending() - 1);
                                 }
                             })
                             .catch(function (err) {
@@ -977,7 +979,7 @@ define(function (require, exports, module) {
             var actionReceiver = self._actionReceivers.get(action);
 
             log.debug("Enqueuing action %s; %d/%d",
-                actionName, actionQueue.active(), actionQueue.pending());
+                actionName, actionQueue.active(), actionQueue.pending() + 1);
 
             var jobPromise = actionQueue.push(function () {
                 var start = Date.now();
@@ -993,7 +995,7 @@ define(function (require, exports, module) {
                             total = finished - enqueued;
 
                         log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
-                            actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
+                            actionName, elapsed, total, actionQueue.active() - 1, actionQueue.pending());
 
                         if (__PG_DEBUG__) {
                             performance.recordAction(namespace, name, enqueued, start, finished);
