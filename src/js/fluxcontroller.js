@@ -76,6 +76,14 @@ define(function (require, exports, module) {
      * @type {number} 
      */
     var MAX_RETRY_WINDOW = 6400;
+    
+    /**
+     * Highlight actions in the console that take longer than the specific time (ms) to complete.
+     * 
+     * @const
+     * @type {number}
+     */
+    var SLOW_ACTION = 100;
 
     /**
      * Priority order comparator for action modules.
@@ -546,12 +554,13 @@ define(function (require, exports, module) {
                                 if (logTransfers) {
                                     var finished = Date.now(),
                                         elapsed = finished - start,
-                                        total = finished - enqueued;
+                                        total = finished - enqueued,
+                                        color = elapsed > SLOW_ACTION ? "color:red" : "";
 
-                                    log.debug("Finished transfer from %s to %s in %dms with RTT %dms; %d/%d",
+                                    log.debug("Finished transfer from %s to %s in %c%dms %cwith RTT %dms; %d/%d",
                                         actionName, nextActionName,
-                                        elapsed, total,
-                                        transferQueue.active(), transferQueue.pending());
+                                        color, elapsed, "color:blue",
+                                        total, transferQueue.active(), transferQueue.pending());
                                 }
                             })
                             .catch(function (err) {
@@ -925,10 +934,11 @@ define(function (require, exports, module) {
                     .tap(function () {
                         var finished = Date.now(),
                             elapsed = finished - start,
-                            total = finished - enqueued;
+                            total = finished - enqueued,
+                            color = elapsed > SLOW_ACTION ? "color:red" : "";
 
-                        log.debug("Finished action %s in %dms with RTT %dms; %d/%d",
-                            actionName, elapsed, total, actionQueue.active(), actionQueue.pending());
+                        log.debug("Finished action %s in %c%dms %cwith RTT %dms; %d/%d", actionName, color, elapsed,
+                            "color:blue", total, actionQueue.active(), actionQueue.pending());
 
                         if (__PG_DEBUG__) {
                             performance.recordAction(namespace, name, enqueued, start, finished);
