@@ -44,6 +44,17 @@ define(function (require, exports, module) {
         classnames = require("classnames");
 
     /**
+     * Immutable object that summarizes downsampled fills.
+     *
+     * @constructor
+     */
+    var FillRecord = Immutable.Record({
+        colors: null,
+        opacityPercentages: null,
+        enabledFlags: null
+    });
+
+    /**
      * VectorFill Component displays information of fills for non-type only sets of layers
      */
     var VectorFill = React.createClass({
@@ -105,16 +116,16 @@ define(function (require, exports, module) {
                     }
                 }),
                 opacityPercentages = collection.pluck(fills, "color")
-                .map(function (color) {
-                    return color && color.opacity;
-                }),
+                    .map(function (color) {
+                        return color && color.opacity;
+                    }),
                 enabledFlags = collection.pluck(fills, "enabled", false);
 
-            return {
+            return new FillRecord({
                 colors: colors,
                 opacityPercentages: opacityPercentages,
                 enabledFlags: enabledFlags
-            };
+            });
         },
 
         /**
