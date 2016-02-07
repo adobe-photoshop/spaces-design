@@ -670,6 +670,10 @@ define(function (require, exports) {
             document = this.flux.store("application").getCurrentDocument();
         }
 
+        if (!document) {
+            return Promise.resolve();
+        }
+
         var closeObj = documentLib.close(document.id),
             playOptions = {
                 interactionMode: descriptor.interactionMode.DISPLAY
