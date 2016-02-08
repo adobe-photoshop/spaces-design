@@ -107,6 +107,16 @@ define(function (require, exports, module) {
             };
         },
 
+        shouldComponentUpdate: function (nextProps, nextState) {
+            if (this.state.open !== nextState.open ||
+                this.state.leftPosition !== nextState.leftPosition ||
+                this.state.topPosition !== nextState.topPosition) {
+                return true;
+            } else {
+                return false;
+            }
+        },
+
         componentWillMount: function () {
             this.getFlux().store("dialog").registerDialog(this.props.id, this._getDismissalPolicy());
         },
@@ -172,6 +182,10 @@ define(function (require, exports, module) {
 
             if (this.state.open) {
                 this._target = null;
+                this.setState({
+                    leftPosition: null,
+                    topPosition: null
+                });
                 flux.actions.dialog.closeDialog(id);
             } else if (!this.props.disabled) {
                 this._target = event.currentTarget;
