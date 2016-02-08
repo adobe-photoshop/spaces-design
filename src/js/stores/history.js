@@ -448,9 +448,13 @@ define(function (require, exports, module) {
                 nextDocument = nextDocument.overlayVisibility(currentDocument);
 
                 // these will emit their own changes
-                this.flux.store("document").setDocument(nextDocument);
                 this.flux.store("export").setDocumentExports(documentID, nextDocumentExports);
-                this.emit("timetravel");
+                this.flux.store("document").setDocument(nextDocument)
+                    .bind(this)
+                    .then(function () {
+                        // Emit the event after the document store finished dispatching its `change` event.
+                        this.emit("timetravel");
+                    });
             }
         },
 
@@ -480,9 +484,13 @@ define(function (require, exports, module) {
             this._saved = this._saved.set(documentID, this._current.get(documentID));
 
             // these will emit their own changes
-            this.flux.store("document").setDocument(lastHistoryState.document);
             this.flux.store("export").setDocumentExports(lastHistoryState.documentExports);
-            this.emit("timetravel");
+            this.flux.store("document").setDocument(lastHistoryState.document)
+                .bind(this)
+                .then(function () {
+                    // Emit the event after the document store finished dispatching its `change` event.
+                    this.emit("timetravel");
+                });
         },
 
         /**
