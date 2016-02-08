@@ -59,6 +59,17 @@ define(function (require, exports, module) {
          */
         _target: null,
 
+        /**
+         * Dialogs currently need two passes to fully render, which rules out a
+         * naive implementation of shouldComponentUpdate. This flag makes a more
+         * complex implementation possible by tracking the render pass in progress.
+         * The flag is set when the component is between passes.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _changing: false,
+
         propTypes: {
             id: React.PropTypes.string.isRequired,
             onOpen: React.PropTypes.func,
@@ -105,6 +116,18 @@ define(function (require, exports, module) {
             return {
                 open: openDialogs.has(this.props.id)
             };
+        },
+
+        shouldComponentUpdate: function (nextProps, nextState) {
+            if (this.state.open !== nextState.open) {
+                this._changing = true;
+                return true;
+            } else if (this._changing) {
+                this._changing = false;
+                return true;
+            } else {
+                return false;
+            }
         },
 
         componentWillMount: function () {
