@@ -157,11 +157,14 @@ define(function (require, exports, module) {
          * @param {boolean=} dirty Whether to set the dirty bit, assuming the model has changed
          * @param {boolean=} suppressChange Whether or not to suppress the change event
          * @param {string=} changeEventName The event to emit. Default: "change".
+         * @return {Promise}
          */
         setDocument: function (nextDocument, dirty, suppressChange, changeEventName) {
-            var oldDocument = this._openDocuments[nextDocument.id];
+            var promise = Promise.resolve(),
+                oldDocument = this._openDocuments[nextDocument.id];
+
             if (Immutable.is(oldDocument, nextDocument)) {
-                return;
+                return promise;
             }
 
             if (dirty) {
@@ -171,7 +174,7 @@ define(function (require, exports, module) {
             this._openDocuments[nextDocument.id] = nextDocument;
 
             if (suppressChange) {
-                return;
+                return promise;
             }
 
             // Notify change of layer state.
@@ -195,15 +198,20 @@ define(function (require, exports, module) {
                 .every(function (layer) {
                     return layer.initialized;
                 });
+                
+            if (!initialized) {
+                return promise;
+            }
 
-            if (initialized) {
+            return promise
                 // Performance Hack: delay emitting the `change` event so that the browser can start rendering for
                 // changes made by LayerFace (triggered by the layer state listener callback).
-                Promise.delay(0).bind(this).then(function () {
+                .delay(0)
+                .bind(this)
+                .then(function () {
                     // Include the document in the event payload
                     this.emit(changeEventName || "change", nextDocument);
                 });
-            }
         },
 
         /**
