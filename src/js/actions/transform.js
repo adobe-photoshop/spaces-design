@@ -564,7 +564,10 @@ define(function (require, exports) {
                 return descriptor.endTransaction(transaction);
             })
             .then(function () {
-                return this.transfer(layerActions.resetIndex, document);
+                var boundsPromise = this.transfer(layerActions.resetBounds, document, document.layers.allSelected),
+                    indexPromise = this.transfer(layerActions.resetIndex, document);
+
+                return Promise.join(boundsPromise, indexPromise);
             });
 
         return Promise.join(dispatchPromise, swapPromise);
@@ -572,7 +575,7 @@ define(function (require, exports) {
     swapLayers.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [layerActions.resetIndex],
+        transfers: [layerActions.resetIndex, layerActions.resetBounds],
         post: ["verify.layers.verifySelectedBounds"]
     };
 
