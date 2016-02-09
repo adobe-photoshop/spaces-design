@@ -261,164 +261,173 @@ define(function (require, exports, module) {
 
         render: function () {
             var documentIDs = this.state.documentIDs,
-                activeDocument = this.state.activeDocument;
+                activeDocument = this.state.activeDocument,
+                hasActiveDocument = activeDocument && this.state.activeDocumentInitialized && documentIDs.size > 0;
 
-            if (activeDocument && this.state.activeDocumentInitialized && documentIDs.size > 0) {
-                var panelStore = this.getFlux().store("panel"),
-                    components = panelStore.components,
-                    documentProperties = {
-                        transformPanels: [],
-                        appearancePanels: [],
-                        effectPanels: [],
-                        exportPanels: [],
-                        layerPanels: []
+            var panelStore = this.getFlux().store("panel"),
+                components = panelStore.components,
+                documentPanels = {
+                    transformPanels: [],
+                    appearancePanels: [],
+                    effectPanels: [],
+                    exportPanels: [],
+                    layerPanels: [],
+                    librariesPanel: null
+                };
+                
+            this.state.mountedDocuments.forEach(function (document) {
+                var documentID = document.id,
+                    current = documentID === activeDocument.id,
+                    disabled = document && document.unsupported,
+                    panelProps = {
+                        key: documentID,
+                        disabled: disabled,
+                        document: document,
+                        active: current,
+                        shouldPanelGrow: !this.state[components.LAYERS_PANEL] &&
+                            !this.state[components.LIBRARIES_PANEL]
                     };
                     
-                this.state.mountedDocuments.forEach(function (document) {
-                    var documentID = document.id,
-                        current = documentID === activeDocument.id,
-                        disabled = document && document.unsupported,
-                        panelProps = {
-                            key: documentID,
-                            disabled: disabled,
-                            document: document,
-                            active: current,
-                            shouldPanelGrow: !this.state[components.LAYERS_PANEL] &&
-                                !this.state[components.LIBRARIES_PANEL]
-                        };
-                        
-                    documentProperties.transformPanels.push(
-                        <TransformPanel {...panelProps} />
-                    );
-                    
-                    documentProperties.appearancePanels.push(
-                        <AppearancePanel
-                            {...panelProps}
-                            ref={current && components.APPEARANCE_PANEL}
-                            visible={!disabled && this.state[components.APPEARANCE_PANEL]}
-                            onVisibilityToggle=
-                                {this._handlePanelVisibilityToggle
-                                    .bind(this, components.APPEARANCE_PANEL)} />
-                    );
-                    
-                    documentProperties.effectPanels.push(
-                        <EffectsPanel
-                            {...panelProps}
-                            ref={current && components.EFFECTS_PANEL}
-                            visible={!disabled && this.state[components.EFFECTS_PANEL]}
-                            onVisibilityToggle=
-                                {this._handlePanelVisibilityToggle.bind(this, components.EFFECTS_PANEL)} />
-                    );
-                    
-                    documentProperties.exportPanels.push(
-                        <ExportPanel
-                            {...panelProps}
-                            ref={current && components.EXPORT_PANEL}
-                            visible={!disabled && this.state[components.EXPORT_PANEL]}
-                            onVisibilityToggle=
-                                {this._handlePanelVisibilityToggle.bind(this, components.EXPORT_PANEL)} />
-                    );
-                    
-                    documentProperties.layerPanels.push(
-                        <LayersPanel
-                            {...panelProps}
-                            visible={this.state[components.LAYERS_PANEL]}
-                            ref={current && components.LAYERS_PANEL}
-                            onVisibilityToggle=
-                                {this._handlePanelVisibilityToggle.bind(this, components.LAYERS_PANEL)} />
-                    );
-                }, this);
-
-                var propertiesButtonClassNames = classnames({
-                        "toolbar-button": true,
-                        "tool-selected": this.state[components.PROPERTIES_COL]
-                    }),
-                    layersButtonClassNames = classnames({
-                        "toolbar-button": true,
-                        "tool-selected": this.state[components.LAYERS_LIBRARY_COL]
-                    }),
-                    panelCollapse = nls.localize("strings.TOOLTIPS.PANEL_COLUMN_COLLAPSE"),
-                    panelExpand = nls.localize("strings.TOOLTIPS.PANEL_COLUMN_EXPAND"),
-                    layerColumnTitle = nls.localize("strings.TOOLTIPS.LAYERS_LIBRARIES") +
-                        (this.state[components.LAYERS_LIBRARY_COL] ? panelCollapse : panelExpand),
-                    propertiesColumnTitle = nls.localize("strings.TOOLTIPS.PROPERTIES") +
-                        (this.state[components.PROPERTIES_COL] ? panelCollapse : panelExpand),
-                    handlePropertiesColumnVisibilityToggle =
-                        this._handleColumnVisibilityToggle.bind(this, components.PROPERTIES_COL),
-                    handleLayersLibraryColumnVisibilityToggle =
-                        this._handleColumnVisibilityToggle.bind(this, components.LAYERS_LIBRARY_COL);
-
-                var librariesPanel = (
-                    <LibrariesPanel
-                        key="libraries-panel"
-                        className="section__active"
-                        ref={components.LIBRARIES_PANEL}
-                        disabled={activeDocument && activeDocument.unsupported}
-                        document={activeDocument}
-                        visible={this.state[components.LIBRARIES_PANEL]}
-                        onVisibilityToggle={this._handlePanelVisibilityToggle.bind(this,
-                        components.LIBRARIES_PANEL)} />
+                documentPanels.transformPanels.push(
+                    <TransformPanel {...panelProps} />
                 );
+                
+                documentPanels.appearancePanels.push(
+                    <AppearancePanel
+                        {...panelProps}
+                        ref={current && components.APPEARANCE_PANEL}
+                        visible={!disabled && this.state[components.APPEARANCE_PANEL]}
+                        onVisibilityToggle=
+                            {this._handlePanelVisibilityToggle
+                                .bind(this, components.APPEARANCE_PANEL)} />
+                );
+                
+                documentPanels.effectPanels.push(
+                    <EffectsPanel
+                        {...panelProps}
+                        ref={current && components.EFFECTS_PANEL}
+                        visible={!disabled && this.state[components.EFFECTS_PANEL]}
+                        onVisibilityToggle=
+                            {this._handlePanelVisibilityToggle.bind(this, components.EFFECTS_PANEL)} />
+                );
+                
+                documentPanels.exportPanels.push(
+                    <ExportPanel
+                        {...panelProps}
+                        ref={current && components.EXPORT_PANEL}
+                        visible={!disabled && this.state[components.EXPORT_PANEL]}
+                        onVisibilityToggle=
+                            {this._handlePanelVisibilityToggle.bind(this, components.EXPORT_PANEL)} />
+                );
+                
+                documentPanels.layerPanels.push(
+                    <LayersPanel
+                        {...panelProps}
+                        visible={this.state[components.LAYERS_PANEL]}
+                        ref={current && components.LAYERS_PANEL}
+                        onVisibilityToggle=
+                            {this._handlePanelVisibilityToggle.bind(this, components.LAYERS_PANEL)} />
+                );
+            }, this);
+            
+            documentPanels.librariesPanel = (
+                <LibrariesPanel
+                    key="libraries-panel"
+                    className="section__active"
+                    ref={components.LIBRARIES_PANEL}
+                    disabled={activeDocument && activeDocument.unsupported}
+                    document={activeDocument}
+                    visible={this.state[components.LIBRARIES_PANEL]}
+                    onVisibilityToggle={this._handlePanelVisibilityToggle.bind(this,
+                    components.LIBRARIES_PANEL)} />
+            );
 
-                if (this.props.singleColumnModeEnabled) {
-                    return (
-                        <div className="panel-set__container panel-set__container__small-screen">
-                            <div ref="panelSet"
-                                 className="panel-set">
-                                <PanelColumn visible={true}>
-                                    {documentProperties.transformPanels}
-                                    {documentProperties.appearancePanels}
-                                    {documentProperties.effectPanels}
-                                    {documentProperties.exportPanels}
-                                    {documentProperties.layerPanels}
-                                    {librariesPanel}
-                                </PanelColumn>
-                            </div>
-                        </div>
-                    );
-                } else {
-                    return (
-                        <div className="panel-set__container">
-                            <div ref="panelSet"
-                                 className="panel-set">
-                                <PanelColumn visible={this.state[components.PROPERTIES_COL]}
-                                             onVisibilityToggle={handlePropertiesColumnVisibilityToggle}>
-                                    {documentProperties.transformPanels}
-                                    {documentProperties.appearancePanels}
-                                    {documentProperties.effectPanels}
-                                    {documentProperties.exportPanels}
-                                </PanelColumn>
-                                <PanelColumn visible={this.state[components.LAYERS_LIBRARY_COL]}
-                                             onVisibilityToggle= {handleLayersLibraryColumnVisibilityToggle}>
-                                    {documentProperties.layerPanels}
-                                    {librariesPanel}
-                                </PanelColumn>
-                            </div>
-                            <IconBar>
-                                <Button className={propertiesButtonClassNames}
-                                    title={propertiesColumnTitle}
-                                    disabled={false}
-                                    onClick=
-                                    {this._handleColumnVisibilityToggle.bind(this, components.PROPERTIES_COL)}>
-                                    <SVGIcon
-                                        CSSID="properties" />
-                                </Button>
-                                <Button className={layersButtonClassNames}
-                                    title={layerColumnTitle}
-                                    disabled={false}
-                                    onClick=
-                                    {this._handleColumnVisibilityToggle.bind(this, components.LAYERS_LIBRARY_COL)}>
-                                    <SVGIcon
-                                        CSSID="layers" />
-                                </Button>
-                            </IconBar>
-                        </div>
-                    );
-                }
-            } else if (this.state.recentFilesInitialized) {
-                return (
-                    <div className="panel-set panel-set__active null-state">
-                        <PanelColumn ref="panelSet" visible="true">
+            var propertiesButtonClassNames = classnames({
+                    "toolbar-button": true,
+                    "tool-selected": this.state[components.PROPERTIES_COL]
+                }),
+                layersButtonClassNames = classnames({
+                    "toolbar-button": true,
+                    "tool-selected": this.state[components.LAYERS_LIBRARY_COL]
+                }),
+                panelCollapse = nls.localize("strings.TOOLTIPS.PANEL_COLUMN_COLLAPSE"),
+                panelExpand = nls.localize("strings.TOOLTIPS.PANEL_COLUMN_EXPAND"),
+                layerColumnTitle = nls.localize("strings.TOOLTIPS.LAYERS_LIBRARIES") +
+                    (this.state[components.LAYERS_LIBRARY_COL] ? panelCollapse : panelExpand),
+                propertiesColumnTitle = nls.localize("strings.TOOLTIPS.PROPERTIES") +
+                    (this.state[components.PROPERTIES_COL] ? panelCollapse : panelExpand),
+                handlePropertiesColumnVisibilityToggle =
+                    this._handleColumnVisibilityToggle.bind(this, components.PROPERTIES_COL),
+                handleLayersLibraryColumnVisibilityToggle =
+                    this._handleColumnVisibilityToggle.bind(this, components.LAYERS_LIBRARY_COL);
+            
+            var documentPanelSet,
+                documentPanelSetClassName = classnames({
+                    "panel-set": true,
+                    "panel-set__small-screen": this.props.singleColumnModeEnabled,
+                    "panel-set__not-visible": !hasActiveDocument
+                });
+
+            if (this.props.singleColumnModeEnabled) {
+                documentPanelSet = (
+                    <div className={documentPanelSetClassName}>
+                        <PanelColumn visible={hasActiveDocument}>
+                            {documentPanels.transformPanels}
+                            {documentPanels.appearancePanels}
+                            {documentPanels.effectPanels}
+                            {documentPanels.exportPanels}
+                            {documentPanels.layerPanels}
+                            {documentPanels.librariesPanel}
+                        </PanelColumn>
+                    </div>
+                );
+            } else {
+                documentPanelSet = (
+                    <div className={documentPanelSetClassName}>
+                        <PanelColumn visible={hasActiveDocument && this.state[components.PROPERTIES_COL]}
+                                     onVisibilityToggle={handlePropertiesColumnVisibilityToggle}>
+                            {documentPanels.transformPanels}
+                            {documentPanels.appearancePanels}
+                            {documentPanels.effectPanels}
+                            {documentPanels.exportPanels}
+                        </PanelColumn>
+                        <PanelColumn visible={hasActiveDocument && this.state[components.LAYERS_LIBRARY_COL]}
+                                     onVisibilityToggle= {handleLayersLibraryColumnVisibilityToggle}>
+                            {documentPanels.layerPanels}
+                            {documentPanels.librariesPanel}
+                        </PanelColumn>
+                        <IconBar>
+                            <Button className={propertiesButtonClassNames}
+                                title={propertiesColumnTitle}
+                                disabled={false}
+                                onClick=
+                                {this._handleColumnVisibilityToggle.bind(this, components.PROPERTIES_COL)}>
+                                <SVGIcon
+                                    CSSID="properties" />
+                            </Button>
+                            <Button className={layersButtonClassNames}
+                                title={layerColumnTitle}
+                                disabled={false}
+                                onClick=
+                                {this._handleColumnVisibilityToggle.bind(this, components.LAYERS_LIBRARY_COL)}>
+                                <SVGIcon
+                                    CSSID="layers" />
+                            </Button>
+                        </IconBar>
+                    </div>
+                );
+            }
+
+            var noDocPanelSet,
+                noDocPanelSetClassName = classnames({
+                    "panel-set": true,
+                    "panel-set__not-visible": hasActiveDocument
+                });
+            
+            if (this.state.recentFilesInitialized) {
+                noDocPanelSet = (
+                    <div className={noDocPanelSetClassName}>
+                        <PanelColumn visible="true">
                             <RecentFiles recentFiles={this.state.recentFiles} />
                             <ArtboardPresets />
                         </PanelColumn>
@@ -426,16 +435,20 @@ define(function (require, exports, module) {
                     </div>
                 );
             } else {
-                return (
-                    <div className="panel-set__container">
-                        <div ref="panelSet"
-                             className="panel-set">
-                            <PanelColumn visible={true} />
-                        </div>
+                noDocPanelSet = (
+                    <div className={noDocPanelSetClassName}>
+                        <PanelColumn visible="true" />
                         <IconBar />
                     </div>
                 );
             }
+            
+            return (
+                <div className="panel-set__container" ref="panelSet">
+                    {documentPanelSet}
+                    {noDocPanelSet}
+                </div>
+            );
         }
     });
 

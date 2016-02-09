@@ -55,13 +55,6 @@ define(function (require, exports) {
         historyActions = require("./history"),
         preferencesActions = require("./preferences"),
         LibrarySyncStatus = require("js/models/library_sync_status");
-
-    /**
-     * The external CC Libraries API is loaded here asynchronously, used in beforeStartup
-     *
-     * @type {Promise}
-     */
-    var apiLoadPromise = Promise.promisify($S)("file://shared/libs/cc-libraries-api.min.js");
         
     /**
      * For image elements, their extensions signify their representation type
@@ -1202,7 +1195,7 @@ define(function (require, exports) {
     };
     
     /**
-     * Handle libraries load event. 
+     * Handle libraries load/unload event. 
      *
      * @private
      * @return {Promise}
@@ -1280,7 +1273,29 @@ define(function (require, exports) {
         }.bind(this);
         descriptor.addListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
-        return apiLoadPromise
+        return Promise.resolve();
+    };
+    beforeStartup.action = {
+        reads: [locks.JS_PREF],
+        writes: []
+    };
+
+    /**
+     * Libraries loadedCollections event handlers.
+     *
+     * @private
+     * @type {function}
+     */
+    var _handleLibrariesLoadedHelper;
+
+    /**
+     * After startup, load the libraries
+     *
+     * @return {Promise}
+     */
+    var afterStartup = function () {
+        // Load external CC Libraries API asynchronously. The loaded API is exposed as a global instance `ccLibraries`
+        return Promise.promisify($S)("file://shared/libs/cc-libraries-api.min.js")
             .timeout(3000, "CC Libraries API load timeout, please don't restart and notify the chatroom!")
             .bind(this)
             .then(function () {
@@ -1344,49 +1359,33 @@ define(function (require, exports) {
                         ELEMENT_COLORTHEME_TYPE
                     ]
                 });
+
+                if (_handleLibrariesLoadedHelper) {
+                    ccLibraries.removeLoadedCollectionsListener(_handleLibrariesLoadedHelper);
+                }
+
+                // Listen to the load event of CC Libraries. The event has two scenarios:
+                //     loaded: Libraries data is ready for use. Fired after user sign in creative cloud.
+                //     unloaded: Libraries data is cleared. Fired after user sign out creative cloud.
+                _handleLibrariesLoadedHelper = function () {
+                    return this.flux.actions.libraries.handleLibrariesLoaded();
+                }.bind(this);
+                ccLibraries.addLoadedCollectionsListener(_handleLibrariesLoadedHelper);
+                
+                // `ccLibraries` will not emit the `LoadedCollections` event when the user sign out Creative Cloud
+                // before it is loaded. We have to check the size of libraries once, and call the event handler
+                // when it is empty.
+                setTimeout(function () {
+                    if (ccLibraries.getLoadedCollections().length === 0) {
+                        _handleLibrariesLoadedHelper();
+                    }
+                }, 1000);
             });
-    };
-    beforeStartup.action = {
-        reads: [locks.JS_PREF],
-        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES]
-    };
-
-    /**
-     * Libraries loadedCollections event handlers.
-     *
-     * @private
-     * @type {function}
-     */
-    var _handleLibrariesLoadedHelper;
-
-    /**
-     * After startup, load the libraries
-     *
-     * @return {Promise}
-     */
-    var afterStartup = function () {
-        var ccLibraries = this.flux.store("library").getLibrariesAPI();
-
-        if (_handleLibrariesLoadedHelper) {
-            ccLibraries.removeLoadedCollectionsListener(_handleLibrariesLoadedHelper);
-        }
-
-        // Listen to the load event of CC Libraries. The event has two scenarios:
-        //     loaded: Libraries data is ready for use. Fired after user sign in creative cloud.
-        //     unloaded: Libraries data is cleared. Fired after user sign out creative cloud.
-        _handleLibrariesLoadedHelper = function () {
-            return this.flux.actions.libraries.handleLibrariesLoaded();
-        }.bind(this);
-        ccLibraries.addLoadedCollectionsListener(_handleLibrariesLoadedHelper);
-        
-        // Trigger the load event callback manually for initial start up.
-        return this.transfer(handleLibrariesLoaded);
     };
     afterStartup.action = {
         reads: [locks.JS_LIBRARIES, locks.CC_LIBRARIES],
-        writes: [],
-        modal: true,
-        transfers: [handleLibrariesLoaded]
+        writes: [locks.JS_LIBRARIES, locks.CC_LIBRARIES],
+        modal: true
     };
     
     /**

@@ -65,6 +65,14 @@ define(function (require, exports, module) {
          * @type {string}
          */
         _selectedLibraryID: null,
+        
+        /**
+         * Whether the CC Libraries is fully initialized and its state (e.g. 
+         * `_libraryCollection`,`_serviceConnected`) are properly assigned.
+         * 
+         * @type {boolean}
+         */
+        _isInitialized: false,
 
         /**
          * @type {boolean}
@@ -158,6 +166,7 @@ define(function (require, exports, module) {
                 currentLibraryID: this._selectedLibraryID,
                 currentLibrary: this.getLibraryByID(this._selectedLibraryID),
                 editStatus: this._editStatusByDocumentID,
+                isInitialized: this._isInitialized,
                 isConnected: this._serviceConnected,
                 isSyncing: this._isSyncing,
                 isPlacingGraphic: this._isPlacingGraphic,
@@ -185,6 +194,7 @@ define(function (require, exports, module) {
 
         /** @ignore */
         _handleLibrariesUnloaded: function () {
+            this._isInitialized = true;
             this._handleReset();
 
             this.emit("change");
@@ -212,6 +222,7 @@ define(function (require, exports, module) {
          */
         _handleLibrariesLoaded: function (payload) {
             this._serviceConnected = true;
+            this._isInitialized = true;
             this._libraryCollection = payload.collection;
             this._updateLibraries(payload.lastSelectedLibraryID);
             
