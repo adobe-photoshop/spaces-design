@@ -639,7 +639,7 @@ define(function (require, exports, module) {
      * If First launch is open, no documents will be shown
      *
      * @param {Object.<number, Document>} documents List of open documents
-     * @param {Document} currentDocument 
+     * @param {Document=} currentDocument optional currently active document to be "checked" in the menu
      * @param {boolean} appIsModal true if the app is in a globally modal state
      * @return {MenuBar}
      */
@@ -661,7 +661,7 @@ define(function (require, exports, module) {
                     "label": label,
                     "command": id,
                     "enabled": !appIsModal,
-                    "checked": document.id === currentDocument.id,
+                    "checked": currentDocument && document.id === currentDocument.id,
                     "shortcut": (index < 9) ? new MenuShortcut({
                         "keyChar": (index + 1).toString(),
                         "modifiers": shortcutModifierBits
