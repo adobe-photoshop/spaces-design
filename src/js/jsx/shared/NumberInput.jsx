@@ -152,16 +152,11 @@ define(function (require, exports, module) {
 
             var value;
             try {
-                var trimValue = _.trimRight(rawValue, this.props.suffix);
+                var trimValue = _.trimRight(rawValue, this.props.suffix),
+                    normalizedValue = nls.normalizeDecimalExpr(trimValue);
 
-                if (nls.commaDecimalSeparator) {
-                    // Replace decimal separator , with . and replace argument separator ; with ,
-                    trimValue.replace(new RegExp("\\,|\\;", "g"), function (match) {
-                        return match === "," ? "." : ",";
-                    });
-                }
                 /*jslint evil: true */
-                value = mathjs.eval(trimValue);
+                value = mathjs.eval(normalizedValue);
                 /*jslint evil: false */
 
                 // Run it through our simple parser to get rid of complex and big numbers
@@ -201,7 +196,7 @@ define(function (require, exports, module) {
             case "number":
                 if (_.isFinite(value)) {
                     var roundedValue = mathjs.round(value, this.props.precision),
-                        localeValue = roundedValue.toLocaleString();
+                        localeValue = nls.formatDecimal(roundedValue);
 
                     formattedValue = String(localeValue) + this.props.suffix;
                 } else {

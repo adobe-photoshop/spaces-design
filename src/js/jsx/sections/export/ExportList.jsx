@@ -42,20 +42,6 @@ define(function (require, exports, module) {
         nls = require("js/util/nls");
 
     /**
-     * The options for the scale datalist
-     * @private
-     * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
-     */
-    var _scaleOptions = Immutable.OrderedMap(ExportAsset.SCALES
-        .map(function (scale) {
-            var obj = {
-                id: scale.toString(),
-                title: scale.toLocaleString()
-            };
-            return [scale.toString(), obj];
-        }));
-
-    /**
      * The options for the format datalist
      * @private
      * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
@@ -158,8 +144,9 @@ define(function (require, exports, module) {
             }
 
             var scale = exportAsset.scale,
-                scaleOption = _scaleOptions.has(scale.toString()) ?
-                    _scaleOptions.get(scale.toString()) : _scaleOptions.get("1"),
+                scaleOptions = this.props.scaleOptions,
+                scaleOption = scaleOptions.has(scale.toString()) ?
+                    scaleOptions.get(scale.toString()) : scaleOptions.get("1"),
                 formatOptionId = exportAsset.formatOptionIndex.toString(),
                 formatOption = _formatOptions.get(formatOptionId) || { title: "-" },
                 keySuffix = this.props.faceKey,
@@ -172,7 +159,7 @@ define(function (require, exports, module) {
                         <Datalist
                             list={scaleListID}
                             className="dialog-export-scale"
-                            options={_scaleOptions.toList()}
+                            options={scaleOptions.toList()}
                             value={scaleOption.title}
                             selected={scaleOption.id}
                             onChange={this._handleUpdateScale}
@@ -215,6 +202,26 @@ define(function (require, exports, module) {
             layers: React.PropTypes.instanceOf(Immutable.Iterable) // undefined => doc-level export
         },
 
+        getInitialState: function () {
+            /**
+             * The options for the scale datalist
+             *
+             * @type {Immutable.OrderedMap.<string, {id: string, title: string}>}
+             */
+            var scaleOptions = Immutable.OrderedMap(ExportAsset.SCALES
+                .map(function (scale) {
+                    var obj = {
+                        id: scale.toString(),
+                        title: nls.formatDecimal(scale)
+                    };
+                    return [scale.toString(), obj];
+                }));
+
+            return {
+                scaleOptions: scaleOptions
+            };
+        },
+
         render: function () {
             var document = this.props.document,
                 layers = this.props.layers,
@@ -238,7 +245,8 @@ define(function (require, exports, module) {
                         index={k}
                         key={key}
                         faceKey={key}
-                        exportAssets={i} />
+                        exportAssets={i}
+                        scaleOptions={this.state.scaleOptions} />
                 );
             }, this);
 

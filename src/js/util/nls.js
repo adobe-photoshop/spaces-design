@@ -24,6 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
+    var descriptor = require("adapter").ps.descriptor;
+
     var objectUtil = require("js/util/object");
 
     // We resolve this in webpack
@@ -53,12 +55,89 @@ define(function (require, exports) {
     };
 
     /**
-     * The following tests whether or not decimals are separated by comma in the current locale.
+     * The operating system-specified decimal separator, for example "." or ",".
      *
-     * @type {boolean}
+     * @private
+     * @type {?string}
      */
-    var commaDecimalSeparator = Number(0.5).toLocaleString().indexOf(",") > 0;
+    var _decimalSeparator = null;
+
+    /**
+     * A number formatter for the operating-system specified decimal separator.
+     *
+     * @private
+     * @type {?Intl.NumberFormat}
+     */
+    var _numberFormat = null;
+
+    /**
+     * Initialize the operatin system-specified decimal separator. This must be
+     * called before getDecimalSeparator can be used.
+     *
+     * @see getDecimalSeparator
+     * @return {Promise}
+     */
+    var initLocaleInfo = function () {
+        return descriptor.getProperty("application", "localeInfo")
+            .bind(this)
+            .tap(function (localeInfo) {
+                _decimalSeparator = localeInfo.decimalPoint || ".";
+
+                var formatLocale;
+                if (_decimalSeparator === ".") {
+                    formatLocale = "en";
+                } else {
+                    formatLocale = "fr";
+                }
+                
+                _numberFormat = new Intl.NumberFormat(formatLocale, {
+                    useGrouping: false
+                });
+            });
+    };
+
+    /**
+     * The operating system-specified decimal separator, for example "." or ",".
+     * This must only be called after initDecimalSeparator has resolved.
+     *
+     * @return {string}
+     */
+    var getDecimalSeparator = function () {
+        return _decimalSeparator;
+    };
+
+    /**
+     * Format a decimal number as a string using the operating system-specified
+     * decimal separator.
+     *
+     * @param {number} value
+     * @return {string}
+     */
+    var formatDecimal = function (value) {
+        return _numberFormat.format(value);
+    };
+
+    /**
+     * Convert a string decimal expression with operating-system specified decimal
+     * separators into one that uses "." instead.
+     *
+     * @param {string} expr
+     * @return {string}
+     */
+    var normalizeDecimalExpr = function (expr) {
+        if (_decimalSeparator === ",") {
+            // Replace decimal separator , with . and replace argument separator ; with ,
+            expr = expr.replace(new RegExp("\\,|\\;", "g"), function (match) {
+                return match === "," ? "." : ",";
+            });
+        }
+
+        return expr;
+    };
 
     exports.localize = localize;
-    exports.commaDecimalSeparator = commaDecimalSeparator;
+    exports.initLocaleInfo = initLocaleInfo;
+    exports.getDecimalSeparator = getDecimalSeparator;
+    exports.formatDecimal = formatDecimal;
+    exports.normalizeDecimalExpr = normalizeDecimalExpr;
 });
