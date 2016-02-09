@@ -519,18 +519,28 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var propertyRefs = layers.map(function (layer) {
-            var property = _boundsPropertyForLayer(layer);
+        var layersWithBounds = layers
+            .filterNot(function (layer) {
+                // We don't track bounds of non-artboard groups or adjustment layers
+                return layer.isGroupEnd ||
+                    (layer.isGroup && !layer.isArtboard) ||
+                    layer.isAdjustment;
+            });
 
-            return [
-                documentLib.referenceBy.id(document.id),
-                layerLib.referenceBy.id(layer.id),
-                {
-                    _ref: "property",
-                    _property: property
-                }
-            ];
-        }).toArray();
+        var propertyRefs = layersWithBounds
+            .map(function (layer) {
+                var property = _boundsPropertyForLayer(layer);
+
+                return [
+                    documentLib.referenceBy.id(document.id),
+                    layerLib.referenceBy.id(layer.id),
+                    {
+                        _ref: "property",
+                        _property: property
+                    }
+                ];
+            })
+            .toArray();
 
         return descriptor.batchGet(propertyRefs)
             .bind(this)
@@ -540,7 +550,7 @@ define(function (require, exports) {
                         documentID: document.id
                     };
 
-                payload.bounds = layers.map(function (layer) {
+                payload.bounds = layersWithBounds.map(function (layer) {
                     return {
                         layerID: layer.id,
                         descriptor: bounds[index++]
@@ -548,8 +558,7 @@ define(function (require, exports) {
                 });
 
                 this.dispatch(events.document.history.RESET_BOUNDS, payload);
-            })
-            .then(function () {
+
                 return this.transfer(guides.queryCurrentGuides);
             });
     };
