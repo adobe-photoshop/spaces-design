@@ -169,11 +169,11 @@ define(function (require, exports, module) {
             this._enableOverlaysDebounced = _.debounce(this._setOverlays.bind(this), 100);
 
             // HACK: Do not reset panel sizes because they should remain constant.
-            this._panelWidth = 0;
-            this._columnCount = 0;
-            this._iconBarWidth = 0;
-            this._headerHeight = 0;
-            this._toolbarWidth = 0;
+            this._panelWidth = -1;
+            this._columnCount = -1;
+            this._iconBarWidth = -1;
+            this._headerHeight = -1;
+            this._toolbarWidth = -1;
 
             this._handleReset();
         },
@@ -195,12 +195,19 @@ define(function (require, exports, module) {
         
         /** @ignore */
         getState: function () {
+            var panelsInitialized = this._panelWidth >= 0 &&
+                this._columnCount >= 0 &&
+                this._iconBarWidth >= 0 &&
+                this._headerHeight >= 0 &&
+                this._toolbarWidth >= 0;
+
             return {
                 centerOffsets: this.getCenterOffsets(),
                 overlaysEnabled: this._overlaysEnabled,
                 marqueeEnabled: this._marqueeEnabled,
                 marqueeStart: this._marqueeStart,
-                referencePoint: this._referencePoint
+                referencePoint: this._referencePoint,
+                panelsInitialized: panelsInitialized
             };
         },
         
