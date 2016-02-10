@@ -91,6 +91,7 @@ input[type="text"].face__name {
 
 .face:hover {
     background-color: @list-hover-color;
+    transition: background-color 300ms ease-in-out;
     
     .face__name {
         color: @item-hover;
@@ -101,12 +102,14 @@ input[type="text"].face__name {
 .layer__selected + .layer-group {
     .face, .face:hover {
         background-color: @list-select-child-color;
+        transition: background-color 300ms ease-in-out;
     }
 }
 
 // Layer direct selection state
 .face__selected,
 .layer__selected + .layer-group .face__selected {
+    transition: background-color 300ms ease-in-out;
     &, &:hover {
         background-color: @list-select-color;
     }
@@ -127,7 +130,7 @@ input[type="text"].face__name {
 }
 
 // Layer Group collapsed state
-.layer__collapsed + .layer-group{
+.layer__collapsed + .layer-group {
     display: none;
 }
 
