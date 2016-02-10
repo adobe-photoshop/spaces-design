@@ -90,16 +90,13 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps) {
-            if (this.props.disabled !== nextProps.disabled ||
-                this.props.active !== nextProps.active) {
-                return true;
+            // If the panel is remaining invisible, no need to re-render.
+            if (!nextProps.visible && !this.props.visible) {
+                return false;
             }
 
-            if (this.props.visible !== nextProps.visible) {
-                return true;
-            }
-
-            return this.props.active !== nextProps.active ||
+            return this.props.disabled !== nextProps.disabled ||
+                this.props.visible !== nextProps.visible ||
                 !Immutable.is(_getFaces(this.props), _getFaces(nextProps)) ||
                 !Immutable.is(_getDepths(this.props), _getDepths(nextProps));
         },
@@ -132,7 +129,6 @@ define(function (require, exports, module) {
                 sectionClasses = classnames({
                     "layers": true,
                     "section": true,
-                    "section__active": this.props.active,
                     "section__collapsed": !this.props.visible
                 });
 

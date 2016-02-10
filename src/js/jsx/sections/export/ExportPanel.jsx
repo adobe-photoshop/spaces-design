@@ -60,11 +60,13 @@ define(function (require, exports, module) {
                 exportStore = flux.store("export"),
                 toolStore = flux.store("tool"),
                 modal = toolStore.getModalToolState(),
-                documentExports = exportStore.getDocumentExports(documentID);
+                documentExports = exportStore.getDocumentExports(documentID),
+                exportState = exportStore.getState();
 
             return {
                 documentExports: documentExports,
-                exportState: exportStore.getState(),
+                serviceBusy: exportState.serviceBusy,
+                serviceAvailable: exportState.serviceAvailable,
                 modal: modal
             };
         },
@@ -90,20 +92,22 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            if (this.props.disabled !== nextProps.disabled ||
-                this.props.active !== nextProps.active ||
-                this.state.modal !== nextState.modal) {
-                return true;
-            }
-
+            var selectedLayersChanged = !Immutable.is(this.props.document.layers.selected,
+                nextProps.document.layers.selected);
+            
             // If the panel is remaining invisible and the selection state hasn't changed, no need to re-render.
             // A new layer selection could change the enabled state of the title header buttons
-            if (!nextProps.visible && !this.props.visible &&
-                Immutable.is(this.props.document.layers.selected, nextProps.document.layers.selected)) {
+            if (!nextProps.visible && !this.props.visible && !selectedLayersChanged) {
                 return false;
             }
 
-            return true;
+            return this.props.disabled !== nextProps.disabled ||
+                this.props.visible !== nextProps.visible ||
+                this.state.modal !== nextState.modal ||
+                this.state.documentExports !== nextState.documentExports ||
+                this.state.serviceBusy !== nextState.serviceBusy ||
+                this.state.serviceAvailable !== nextState.serviceAvailable ||
+                selectedLayersChanged;
         },
 
         /**
@@ -232,9 +236,8 @@ define(function (require, exports, module) {
         render: function () {
             var document = this.props.document,
                 documentExports = this.state.documentExports,
-                exportState = this.state.exportState,
                 disabled = this.props.disabled,
-                exportDisabled = this.state.exportDisabled || exportState.serviceBusy || !exportState.serviceAvailable,
+                exportDisabled = this.state.exportDisabled || this.state.serviceBusy || !this.state.serviceAvailable,
                 selectedLayers,
                 supportedLayers,
                 containerContents;
@@ -281,14 +284,13 @@ define(function (require, exports, module) {
             var sectionClasses = classnames({
                 "export": true,
                 "section": true,
-                "section__active": this.props.active,
                 "section__collapsed": !this.props.visible,
                 "section__expand": this.props.shouldPanelGrow
             });
 
             var exportButtonClasses = classnames({
                 "button-plus": true,
-                "loader-animation": exportState.serviceBusy
+                "loader-animation": this.state.serviceBusy
             });
             
             return (
@@ -335,7 +337,7 @@ define(function (require, exports, module) {
                                 title={nls.localize("strings.TOOLTIPS.EXPORT_EXPORT_ASSETS")}
                                 onClick={this._exportAssetsClickHandler}>
                                 <SVGIcon
-                                    CSSID={exportState.serviceBusy ? "loader" : "export"} />
+                                    CSSID={this.state.serviceBusy ? "loader" : "export"} />
                             </Button>
                         </div>
                     </TitleHeader>

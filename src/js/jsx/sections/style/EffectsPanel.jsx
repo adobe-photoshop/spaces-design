@@ -94,22 +94,24 @@ define(function (require, exports, module) {
             event.stopPropagation();
         },
 
-        shouldComponentUpdate: function (nextProps) {
-            if (this.props.disabled !== nextProps.disabled ||
-                this.props.active !== nextProps.active) {
-                return true;
-            }
-
-            if (!Immutable.is(this.props.document.layers.selected,
-                nextProps.document.layers.selected)) {
-                return true;
-            }
-
-            if (!nextProps.visible && !this.props.visible) {
+        shouldComponentUpdate: function (nextProps, nextState) {
+            // Only compare the existence of clipboard.
+            var clipboardChanged = !!this.state.clipboard !== !!nextState.clipboard,
+                selectedLayerChanged = !Immutable.is(this.props.document.layers.selected,
+                    nextProps.document.layers.selected);
+            
+            // If the panel is remaining invisible and the clipboard/selected layer is unchanged, no need to re-render.
+            // - Copying layer effects will update buttons in the panel header.
+            // - Deselect layers will remove the panel
+            if (!nextProps.visible && !this.props.visible && !clipboardChanged && !selectedLayerChanged) {
                 return false;
             }
 
-            return true;
+            return this.props.disabled !== nextProps.disabled ||
+                this.props.visible !== nextProps.visible ||
+                this.props.shouldPanelGrow !== nextProps.shouldPanelGrow ||
+                clipboardChanged ||
+                selectedLayerChanged;
         },
 
         getStateFromFlux: function () {
@@ -223,9 +225,7 @@ define(function (require, exports, module) {
             var sectionClasses = classnames({
                 "effects": true,
                 "section": true,
-                "section__active": this.props.active,
                 "section__collapsed": !this.props.visible,
-                "section__sibling-collapsed": !this.props.visibleSibling,
                 "section__expand": this.props.shouldPanelGrow
             });
 

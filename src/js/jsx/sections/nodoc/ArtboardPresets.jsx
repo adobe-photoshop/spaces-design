@@ -67,7 +67,7 @@ define(function (require, exports, module) {
             }, this);
 
             return (
-                <section className="artboard-presets section section__active">
+                <section className="artboard-presets section">
                     <TitleHeader title={nls.localize("strings.NO_DOC.ARTBOARD_PRESETS_TITLE")} />
                     <div className="section-container artboard-launcher__body">
                         <ul className="link-list__list">

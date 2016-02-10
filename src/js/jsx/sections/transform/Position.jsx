@@ -53,8 +53,7 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            return this.props.active !== nextProps.active ||
-                this.state.disabled !== nextState.disabled ||
+            return this.state.disabled !== nextState.disabled ||
                 this.props.referencePoint !== nextProps.referencePoint ||
                 !Immutable.is(this.state.xValues, nextState.xValues) ||
                 !Immutable.is(this.state.yValues, nextState.yValues) ||
