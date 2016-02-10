@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     var Immutable = require("immutable"),
         _ = require("lodash");
 
-    var objUtil = require("js/util/object");
+    var objUtil = require("js/util/object"),
+        nls = require("js/util/nls");
 
     /**
      * Possible statuses of exports asset in the state machine
@@ -162,7 +163,7 @@ define(function (require, exports, module) {
          */
         derivedSuffix: function () {
             var qualitySuffix = (this.quality === 32 || this.quality === 100) ? "" : "-" + this.quality.toString(),
-                scaleSuffix = "@" + this.scale.toLocaleString() + "x";
+                scaleSuffix = "@" + nls.formatDecimal(this.scale) + "x";
 
             return scaleSuffix + qualitySuffix;
         },

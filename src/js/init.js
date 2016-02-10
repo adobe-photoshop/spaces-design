@@ -27,9 +27,11 @@ define(function (require) {
     var Promise = require("bluebird");
 
     var ui = require("./util/ui"),
+        nls = require("./util/nls"),
         main = require("./main");
 
     var stylesReady = ui.getPSColorStop(),
+        localeReady = nls.initLocaleInfo(),
         windowReady = new Promise(function (resolve) {
             if (window.document.readyState === "complete") {
                 resolve();
@@ -38,7 +40,7 @@ define(function (require) {
             }
         });
 
-    Promise.join(stylesReady, windowReady, function (stop) {
+    Promise.join(stylesReady, localeReady, windowReady, function (stop) {
         main.startup(stop);
         window.addEventListener("beforeunload", main.shutdown.bind(main));
     });
