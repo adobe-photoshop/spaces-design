@@ -715,7 +715,8 @@ define(function (require, exports) {
             documentID = typeof documentSpec === "number" ? documentSpec : documentSpec.id,
             document = flux.stores.document.getDocument(documentID),
             documentRef = documentLib.referenceBy.id(documentID),
-            uninitialized = !document.layers;
+            historyUninitialized = !flux.stores.history.hasInitializedHistory(documentID),
+            layersUninitialized = !document.layers;
 
         var selectPromise = descriptor.playObject(documentLib.select(documentRef))
             .bind(this)
@@ -723,7 +724,11 @@ define(function (require, exports) {
                 var updateTransformPromise = this.transfer(ui.updateTransform),
                     initPromise;
 
-                if (uninitialized) {
+                if (!layersUninitialized && historyUninitialized) {
+                    // Initialize the document history because it is being selected for the first time
+                    // but its layers are already initialized
+                    initPromise = this.transfer(historyActions.queryCurrentHistory, documentID);
+                } else if (layersUninitialized) {
                     // The now-active document has yet to be fully initialized.
                     initPromise = this.transfer(updateDocument);
                 } else {
@@ -735,7 +740,7 @@ define(function (require, exports) {
 
         // If the document has already been initialized, dispatch the change event immediately
         var initializedPromise;
-        if (!uninitialized) {
+        if (!layersUninitialized) {
             var resetPromise = this.transfer(layerActions.resetLinkedLayers, document),
                 dispatchPromise = this.dispatchAsync(events.document.SELECT_DOCUMENT, {
                     selectedDocumentID: documentID
@@ -763,8 +768,7 @@ define(function (require, exports) {
         reads: [locks.JS_TOOL],
         writes: [locks.JS_APP, locks.PS_APP],
         transfers: ["layers.resetLinkedLayers", historyActions.queryCurrentHistory,
-            ui.updateTransform, toolActions.select, "panel.cloak", guideActions.queryCurrentGuides,
-            toolActions.changeVectorMaskMode, updateDocument],
+            ui.updateTransform, toolActions.select, toolActions.changeVectorMaskMode, updateDocument],
         lockUI: true,
         post: ["verify.documents.verifyActiveDocument"],
         hideOverlays: true
