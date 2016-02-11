@@ -53,9 +53,9 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps, nextState) {
             return this.state.referencePoint !== nextState.referencePoint ||
-                this.props.active !== nextProps.active ||
                 this.props.disabled !== nextProps.disabled ||
-                !Immutable.is(this.props.document, nextProps.document);
+                !Immutable.is(this.props.document.layers.selected, nextProps.document.layers.selected) ||
+                !Immutable.is(this.props.document.bounds, nextProps.document.bounds);
         },
 
         /**
@@ -71,8 +71,7 @@ define(function (require, exports, module) {
         render: function () {
             var sectionClasses = classnames({
                 "transform": true,
-                "section": true,
-                "section__active": this.props.active
+                "section": true
             });
             
             var positionRotateClasses = classnames("formline",
@@ -99,7 +98,6 @@ define(function (require, exports, module) {
                         <div className="formline formline__padded-first-child formline__space-between">
                             <div className="control-group">
                                 <Size
-                                    active={this.props.active}
                                     document={this.props.document}
                                     referencePoint={this.state.referencePoint}/>
                             </div>
@@ -181,7 +179,6 @@ define(function (require, exports, module) {
                         <div className={positionRotateClasses}>
                             <div className="control-group">
                                 <Position
-                                    active={this.props.active}
                                     document={this.props.document}
                                     referencePoint={this.state.referencePoint} />
                             </div>

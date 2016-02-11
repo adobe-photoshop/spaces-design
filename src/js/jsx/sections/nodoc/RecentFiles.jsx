@@ -75,13 +75,13 @@ define(function (require, exports, module) {
 
             if (recentFilesLimited.isEmpty()) {
                 return (
-                    <section className="recent-files section section__active">
+                    <section className="recent-files section">
                         <TitleHeader title={nls.localize("strings.NO_DOC.RECENT_FILES_TITLE")} />
                     </section>
                );
             } else {
                 return (
-                    <section className="recent-files section section__active">
+                    <section className="recent-files section">
                         <TitleHeader title={nls.localize("strings.NO_DOC.RECENT_FILES_TITLE")} />
                         <div className="section-container">
                             <ul className="link-list__list">

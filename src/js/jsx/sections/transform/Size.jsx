@@ -47,8 +47,7 @@ define(function (require, exports, module) {
         shouldComponentUpdate: function (nextProps, nextState) {
             // Calculations that are usually done here are done in
             // componentWillReceiveProps
-            return this.props.active !== nextProps.active ||
-                this.props.referencePoint !== nextProps.referencePoint ||
+            return this.props.referencePoint !== nextProps.referencePoint ||
                 this.state.disabled !== nextState.disabled ||
                 this.state.proportional !== nextState.proportional ||
                 !Immutable.is(this.state.layers, nextState.layers) ||

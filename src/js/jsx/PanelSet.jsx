@@ -279,67 +279,118 @@ define(function (require, exports, module) {
                 var documentID = document.id,
                     current = documentID === activeDocument.id,
                     disabled = document && document.unsupported,
+                    sectionClassnames = classnames({
+                        "panel-section": true,
+                        "panel-section__no-selected-layer": document.layers.selected.isEmpty(),
+                        "panel-section__not-visible": !current
+                    }),
                     panelProps = {
-                        key: documentID,
                         disabled: disabled,
                         document: document,
-                        active: current,
                         shouldPanelGrow: !this.state[components.LAYERS_PANEL] &&
                             !this.state[components.LIBRARIES_PANEL]
                     };
-                    
-                documentPanels.transformPanels.push(
-                    <TransformPanel {...panelProps} />
-                );
                 
+                var appearancePanelVisible = !disabled && this.state[components.APPEARANCE_PANEL],
+                    effectsPanelVisible = !disabled && this.state[components.EFFECTS_PANEL],
+                    exportPanelVisible = !disabled && this.state[components.EXPORT_PANEL],
+                    layersPanelVisible = this.state[components.LAYERS_PANEL],
+                    transformClassnames = classnames(sectionClassnames, {
+                        "panel-transform-section": true
+                    }),
+                    appearanceClassnames = classnames(sectionClassnames, {
+                        "panel-appearance-section": true,
+                        "panel-section__collapsed": !appearancePanelVisible
+                    }),
+                    effectsClassnames = classnames(sectionClassnames, {
+                        "panel-effects-section": true,
+                        "panel-section__collapsed": !effectsPanelVisible
+                    }),
+                    exportClassnames = classnames(sectionClassnames, {
+                        "panel-export-section": true,
+                        "panel-section__collapsed": !exportPanelVisible
+                    }),
+                    layersClassnames = classnames(sectionClassnames, {
+                        "panel-layers-section": true,
+                        "panel-section__collapsed": !layersPanelVisible
+                    });
+
+                documentPanels.transformPanels.push(
+                    <div className={transformClassnames} key={documentID}>
+                        <TransformPanel
+                            {...panelProps}
+                            key="transform" />
+                    </div>
+                );
+
                 documentPanels.appearancePanels.push(
-                    <AppearancePanel
-                        {...panelProps}
-                        ref={current && components.APPEARANCE_PANEL}
-                        visible={!disabled && this.state[components.APPEARANCE_PANEL]}
-                        onVisibilityToggle=
-                            {this._handlePanelVisibilityToggle
-                                .bind(this, components.APPEARANCE_PANEL)} />
+                    <div className={appearanceClassnames} key={documentID}>
+                        <AppearancePanel
+                            {...panelProps}
+                            key="appearance"
+                            ref={current && components.APPEARANCE_PANEL}
+                            visible={appearancePanelVisible}
+                            onVisibilityToggle=
+                                {this._handlePanelVisibilityToggle
+                                    .bind(this, components.APPEARANCE_PANEL)} />
+                    </div>
                 );
                 
                 documentPanels.effectPanels.push(
-                    <EffectsPanel
-                        {...panelProps}
-                        ref={current && components.EFFECTS_PANEL}
-                        visible={!disabled && this.state[components.EFFECTS_PANEL]}
-                        onVisibilityToggle=
-                            {this._handlePanelVisibilityToggle.bind(this, components.EFFECTS_PANEL)} />
+                    <div className={effectsClassnames} key={documentID}>
+                        <EffectsPanel
+                            {...panelProps}
+                            key="effect"
+                            ref={current && components.EFFECTS_PANEL}
+                            visible={effectsPanelVisible}
+                            onVisibilityToggle=
+                                {this._handlePanelVisibilityToggle.bind(this, components.EFFECTS_PANEL)} />
+                    </div>
                 );
                 
                 documentPanels.exportPanels.push(
-                    <ExportPanel
-                        {...panelProps}
-                        ref={current && components.EXPORT_PANEL}
-                        visible={!disabled && this.state[components.EXPORT_PANEL]}
-                        onVisibilityToggle=
-                            {this._handlePanelVisibilityToggle.bind(this, components.EXPORT_PANEL)} />
+                    <div className={exportClassnames} key={documentID}>
+                        <ExportPanel
+                            {...panelProps}
+                            key="export"
+                            ref={current && components.EXPORT_PANEL}
+                            visible={exportPanelVisible}
+                            onVisibilityToggle=
+                                {this._handlePanelVisibilityToggle.bind(this, components.EXPORT_PANEL)} />
+                    </div>
                 );
                 
                 documentPanels.layerPanels.push(
-                    <LayersPanel
-                        {...panelProps}
-                        visible={this.state[components.LAYERS_PANEL]}
-                        ref={current && components.LAYERS_PANEL}
-                        onVisibilityToggle=
-                            {this._handlePanelVisibilityToggle.bind(this, components.LAYERS_PANEL)} />
+                    <div className={layersClassnames} key={documentID}>
+                        <LayersPanel
+                            {...panelProps}
+                            key="layers"
+                            visible={layersPanelVisible}
+                            ref={current && components.LAYERS_PANEL}
+                            onVisibilityToggle=
+                                {this._handlePanelVisibilityToggle.bind(this, components.LAYERS_PANEL)} />
+                    </div>
                 );
             }, this);
             
+            var librariesPanelVisible = this.state[components.LIBRARIES_PANEL],
+                librariesClassnames = classnames({
+                    "panel-section": true,
+                    "panel-section__collapsed": !librariesPanelVisible,
+                    "panel-libraries-section": true
+                });
+            
             documentPanels.librariesPanel = (
-                <LibrariesPanel
-                    key="libraries-panel"
-                    className="section__active"
-                    ref={components.LIBRARIES_PANEL}
-                    disabled={activeDocument && activeDocument.unsupported}
-                    document={activeDocument}
-                    visible={this.state[components.LIBRARIES_PANEL]}
-                    onVisibilityToggle={this._handlePanelVisibilityToggle.bind(this,
-                    components.LIBRARIES_PANEL)} />
+                <div className={librariesClassnames}>
+                    <LibrariesPanel
+                        key="libraries-panel"
+                        ref={components.LIBRARIES_PANEL}
+                        disabled={activeDocument && activeDocument.unsupported}
+                        document={activeDocument}
+                        visible={librariesPanelVisible}
+                        onVisibilityToggle={this._handlePanelVisibilityToggle.bind(this,
+                            components.LIBRARIES_PANEL)} />
+                </div>
             );
 
             var propertiesButtonClassNames = classnames({

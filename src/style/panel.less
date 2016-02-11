@@ -34,6 +34,47 @@
     box-shadow: inset @panel-border-width 0 0 @bg-border-for-canvas;
 }
 
+.panel-section {
+    display: flex;
+    flex-shrink: 1;
+    flex-grow: 1;
+}
+
+.panel-transform-section, .panel-appearance-section {
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.panel-effects-section{
+    min-height: 24rem;
+}
+
+.panel-export-section{
+    min-height: 18rem;
+}
+
+.panel-layers-section, .panel-libraries-section {
+    min-height: 50%;
+}
+
+.panel-section__collapsed {
+    min-height: 4.6rem;
+    height: 4.6rem;
+    flex-grow: 0;
+}
+
+.panel-appearance-section, .panel-effects-section {
+    &.panel-section__no-selected-layer {
+        flex-grow: 0;
+        height: auto;
+        min-height: 0;
+    }
+}
+
+.panel-section__not-visible {
+    display: none;
+}
+
 .panel-set__container {
     height: 100%;
     max-height: 100%;
@@ -60,26 +101,7 @@
     display: block;
 }
 
-.panel__hide{
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 0.5rem;
-    width: 1.5rem;
-    height: 2.5rem;
-    z-index: 10;
-    line-height: 2.5rem;
-    text-align: center;
-    background-color: @bg-panel;
-    border-top-left-radius: 0.2rem;
-    border-bottom-left-radius: 0.2rem;
-}
-
-.panel:hover .panel__hide{
-    display: block;
-}
-
-.panel__tab-bar .button-simple{
+.panel__tab-bar .button-simple {
     width: @toolbar-button-size;
     height: @toolbar-button-size;
 }
@@ -97,22 +119,12 @@
     flex-direction: column;
 }
 
-.panel__visible + .panel:nth-child(2){
+.panel__visible + .panel:nth-child(2) {
     border-right: @panel-border-width solid @bg-border;
 }
 
-.panel__visible{
+.panel__visible {
     display: flex;
-}
-
-.panel__element {
-    height: 100%;
-    display: none;
-}
-
-.panel__element__active {
-    display: flex;
-    flex-direction: column;
 }
 
 .properties {
@@ -161,22 +173,15 @@
 }
 
 .section {
-    display: none;
+    display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     flex-shrink: 1;
     border-bottom: @panel-border-width solid @bg-border;
-    &:last-child {
-        border-bottom: none;
+    
+    &.export {
+        border-bottom: 0;
     }
-}
-
-.section__hidden {
-    display: none;
-}
-
-.section__active {
-    display: flex;
 }
 
 .section.section__collapsed {
@@ -230,14 +235,6 @@
 .recent-files .section-container {
     padding-bottom: 1rem;
     flex-shrink: 1;
-}
-
-.effects.section__active {
-    min-height: 24rem;
-}
-
-.export.section__active {
-    min-height: 18rem;
 }
 
 .effects.section__collapsed,
@@ -301,14 +298,7 @@
 .layers {
     flex-grow: 1;
     flex-shrink: 1;
-}
-
-.layers, .libraries {
-    min-height: 50%;
-
-    &.section__collapsed {
-        min-height: 0;
-    }
+    width: 100%;
 }
 
 .generate-columns(@panel-column-width);
@@ -421,6 +411,10 @@
     .panel {
         border-right: @hairline solid @bg-border;
     }
+    
+    .export {
+        border-bottom: @panel-border-width solid @bg-border;
+    }
 
     .section.section__collapsed {
         flex-grow: 0;
@@ -429,13 +423,13 @@
         border-bottom: @panel-border-width solid @bg-border;
     }
 
-    .libraries, .layers {
+    .panel-libraries-section, .panel-layers-section {
         flex-grow: 1;
         flex-basis: 20rem;
     }
 
-    .export, .effects {
-        height: 15%;
+    .panel-export-section, .panel-effects-section {
+        max-height: 15%;
         flex-grow: 0;
         min-height: 0;
         
@@ -443,21 +437,43 @@
             height: auto;
         }
     }
-
-    .layers, .libraries {
-        min-height: 7rem;
+    
+    .panel-libraries-section, .panel-layers-section {
+        min-height: 0;
     }
 
     .layers, .libraries, .export, .effects {
+        min-height: 0;
+        
         &.section__collapsed {
             min-height: 3.2rem;
+            flex-grow: 1;
             flex-basis: 0;
         }
+    }
+    
+    .libraries, .layers {
+        min-height: 10rem;
     }
 
     .appearance, .type {
         height: 18rem;
         flex-grow: 0;
+    }
+    
+    .panel-section__collapsed {
+        flex-grow: 0;
+        flex-basis: auto;
+        min-height: 3.2rem;
+        height: 3.2rem;
+    }
+    
+    .panel-appearance-section, .panel-effects-section {
+        &.panel-section__no-selected-layer {
+            flex-grow: 0;
+            height: auto;
+            min-height: 0;
+        }
     }
 }
 

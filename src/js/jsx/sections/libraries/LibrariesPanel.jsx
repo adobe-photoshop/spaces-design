@@ -64,12 +64,13 @@ define(function (require, exports, module) {
         _setTooltipThrottled: null,
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            if (this.props.disabled !== nextProps.disabled) {
-                return true;
-            }
-
+            // If the panel is remaining invisible, no need to re-render.
             if (!nextProps.visible && !this.props.visible) {
                 return false;
+            }
+
+            if (this.props.disabled !== nextProps.disabled) {
+                return true;
             }
 
             if (this.state.isDropTarget && nextState.isDropTarget) {
