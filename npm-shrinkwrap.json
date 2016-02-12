@@ -196,14 +196,19 @@
       "resolved": "https://registry.npmjs.org/scriptjs/-/scriptjs-2.5.8.tgz"
     },
     "spaces-adapter": {
-      "version": "1.2.1",
-      "from": "git+https://github.com/adobe-photoshop/spaces-adapter.git#v1.2.1",
-      "resolved": "git+https://github.com/adobe-photoshop/spaces-adapter.git#e08f1c6731278e607259877f245c5591fef81157",
+      "version": "1.2.2",
+      "from": "adobe-photoshop/spaces-adapter#v1.2.2",
+      "resolved": "git://github.com/adobe-photoshop/spaces-adapter.git#9ea589715a6ff750a988a29a411dccfa5dc6d1fb",
       "dependencies": {
         "qunitjs": {
           "version": "1.20.0",
           "from": "https://registry.npmjs.org/qunitjs/-/qunitjs-1.20.0.tgz",
           "resolved": "https://registry.npmjs.org/qunitjs/-/qunitjs-1.20.0.tgz"
+        },
+        "semver": {
+          "version": "5.1.0",
+          "from": "https://registry.npmjs.org/semver/-/semver-5.1.0.tgz",
+          "resolved": "https://registry.npmjs.org/semver/-/semver-5.1.0.tgz"
         }
       }
     },
