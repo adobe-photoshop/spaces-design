@@ -96,11 +96,21 @@ define(function (require, exports, module) {
          * @return {Promise}
          */
         _updatePanelSizes: function () {
-            var node = ReactDOM.findDOMNode(this.refs.panelSet),
+            var iconBarNode = ReactDOM.findDOMNode(this.refs.iconBar),
+                iconBarWidth;
+
+            if (iconBarNode) {
+                iconBarWidth = iconBarNode.getBoundingClientRect().width;
+            } else {
+                iconBarWidth = 0;
+            }
+
+            var panelNode = ReactDOM.findDOMNode(this.refs.panelSet),
                 panelWidth;
 
-            if (node) {
-                panelWidth = node.getBoundingClientRect().width;
+            if (panelNode) {
+                // The panel width includes the iconBar width.
+                panelWidth = panelNode.getBoundingClientRect().width - iconBarWidth;
             } else {
                 panelWidth = 0;
             }
@@ -122,6 +132,7 @@ define(function (require, exports, module) {
 
             return this.getFlux().actions.panel.updatePanelSizes({
                 panelWidth: panelWidth,
+                iconBarWidth: iconBarWidth,
                 columnCount: columnCount
             });
         },
@@ -447,7 +458,7 @@ define(function (require, exports, module) {
                             {documentPanels.layerPanels}
                             {documentPanels.librariesPanel}
                         </PanelColumn>
-                        <IconBar>
+                        <IconBar ref="iconBar">
                             <Button className={propertiesButtonClassNames}
                                 title={propertiesColumnTitle}
                                 disabled={false}
@@ -482,14 +493,14 @@ define(function (require, exports, module) {
                             <RecentFiles recentFiles={this.state.recentFiles} />
                             <ArtboardPresets />
                         </PanelColumn>
-                        <IconBar />
+                        <IconBar ref="iconBar" />
                     </div>
                 );
             } else {
                 noDocPanelSet = (
                     <div className={noDocPanelSetClassName}>
                         <PanelColumn visible="true" />
-                        <IconBar />
+                        <IconBar ref="iconBar" />
                     </div>
                 );
             }
