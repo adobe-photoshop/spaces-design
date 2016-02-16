@@ -36,15 +36,13 @@ define(function (require, exports) {
      * window.
      */
     var runTests = function () {
-        if (__PG_DEBUG__) {
-            var href = window.location.href,
-                baseHref = href.substring(0, href.lastIndexOf("src/index.html")),
-                testHref = baseHref + "test/index.html";
+        var href = window.location.href,
+            baseHref = href.substring(0, href.lastIndexOf("src/index.html")),
+            testHref = baseHref + "test/index.html";
 
-            window.setTimeout(function () {
-                window.location.href = testHref;
-            }, 0);
-        }
+        window.setTimeout(function () {
+            window.location.href = testHref;
+        }, 0);
 
         return Promise.resolve();
     };
@@ -308,10 +306,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var togglePolicyFrames = function () {
-        if (!__PG_DEBUG__) {
-            return Promise.resolve();
-        }
-
         var preferencesStore = this.flux.store("preferences"),
             preferences = preferencesStore.getState(),
             enabled = preferences.get("policyFramesEnabled");
@@ -330,10 +324,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var togglePostconditions = function () {
-        if (!__PG_DEBUG__) {
-            return Promise.resolve();
-        }
-
         var preferencesStore = this.flux.store("preferences"),
             preferences = preferencesStore.getState(),
             enabled = preferences.get("postConditionsEnabled");
@@ -352,10 +342,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var toggleActionTransferLogging = function () {
-        if (!__PG_DEBUG__) {
-            return Promise.resolve();
-        }
-
         var preferencesStore = this.flux.store("preferences"),
             preferences = preferencesStore.getState(),
             enabled = preferences.get("logActionTransfers");
@@ -376,10 +362,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var logDescriptor = function (options) {
-        if (!__PG_DEBUG__) {
-            return Promise.resolve();
-        }
-
         options = _.merge({ toggle: true }, options);
 
         var preferencesStore = this.flux.store("preferences"),
@@ -456,10 +438,6 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var logHeadlights = function (options) {
-        if (!__PG_DEBUG__) {
-            return Promise.resolve();
-        }
-        
         options = _.merge({ toggle: true }, options);
 
         var preferencesStore = this.flux.store("preferences"),
@@ -495,18 +473,13 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var loadDebuggingHelpers = function () {
-        if (!__PG_DEBUG__) {
-            return Promise.resolve();
-        }
-
-        log.debug(`%c
-            |  Loaded Debugging Helpers:
-            |
-            |  _printCurrentLayerDescriptor
-            |  _getFluxInstance
-            |  _getCurrentDocument
-            |  _getSelectedLayers
-            `.replace(/\n.+\|/g, "\n"), "color:black;");
+        log.debug(["%c",
+            "Loaded Debugging Helpers:",
+            "",
+            "_printCurrentLayerDescriptor",
+            "_getFluxInstance",
+            "_getCurrentDocument",
+            "_getSelectedLayers"].join("\n"), "color:black;");
 
         _.merge(window, {
             _printCurrentLayerDescriptor: function () {

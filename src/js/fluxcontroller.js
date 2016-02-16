@@ -42,7 +42,8 @@ define(function (require, exports, module) {
 
     // Using contexts, we load action files automatically
     var storeContext = require.context("./stores", true, /^\.\/.*\.js$/),
-        actionContext = require.context("./actions", true, /^\.\/.*\.js$/),
+        // Do not compile the "debug" module in production mode.
+        actionContext = require.context("./actions", true, __PG_DEBUG__ ? /^\.\/.*\.js$/ : /^\.\/((?!debug).)*\.js$/),
         actionIndex = actionContext.keys().reduce(function (actionMap, actionKey) {
             // "tool/superselect/type.js => tool.superselect.type"
             var actionId = actionKey.substring(2, actionKey.indexOf(".js")).replace(/\//gi, ".");
