@@ -38,8 +38,7 @@ define(function (require, exports) {
         objUtil = require("js/util/object"),
         log = require("js/util/log"),
         headlights = require("js/util/headlights"),
-        policyActions = require("./policy"),
-        preferencesActions = require("./preferences");
+        policyActions = require("./policy");
 
     var macMenuJSON = require("static/menu-mac.json"),
         winMenuJSON = require("static/menu-win.json"),
@@ -162,263 +161,6 @@ define(function (require, exports) {
     };
 
     /**
-     * Temporary helper function to easily open the testrunner. This should
-     * eventually replaced with a action that opens the testrunner in a new
-     * window.
-     */
-    var runTests = function () {
-        if (__PG_DEBUG__) {
-            var href = window.location.href,
-                baseHref = href.substring(0, href.lastIndexOf("src/index.html")),
-                testHref = baseHref + "test/index.html";
-
-            window.setTimeout(function () {
-                window.location.href = testHref;
-            }, 0);
-        }
-
-        return Promise.resolve();
-    };
-    runTests.action = {
-        reads: [],
-        writes: []
-    };
-
-    /**
-     * An action that always fails, for testing purposes.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var actionFailure = function () {
-        return Promise.reject(new Error("Test: action failure"));
-    };
-    actionFailure.action = {
-        reads: [],
-        writes: []
-    };
-
-    /**
-     * An action with a transfer that always fails, for testing purposes.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var transferFailure = function () {
-        return this.transfer(actionFailure)
-            .catch(function () {
-                // Failed transfers always cause a controller reset, so
-                // catching these failures doesn't really help.
-            });
-    };
-    transferFailure.action = {
-        reads: [],
-        writes: [],
-        transfers: [actionFailure]
-    };
-
-    /**
-     * A flag for testing purposes which, if set, will cause onReset to fail.
-     * 
-     * @private
-     * @type {boolean}
-     */
-    var _failOnReset = false;
-
-    /**
-     * An action that always fails, for testing purposes, and which causes onReset
-     * to fail as well.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var resetFailure = function () {
-        _failOnReset = true;
-        return Promise.reject(new Error("Test: reset failure"));
-    };
-    resetFailure.action = {
-        reads: [],
-        writes: []
-    };
-
-    /**
-     * An action that always fails, for testing purposes, and which causes onReset
-     * to fail as well.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var corruptModel = function () {
-        var applicationStore = this.flux.store("application"),
-            documentStore = this.flux.store("document"),
-            document = applicationStore.getCurrentDocument();
-
-        if (document) {
-            var index = document.layers.index,
-                nextIndex = index.unshift(null),
-                nextDocument = document.setIn(["layers", "index"], nextIndex);
-
-            documentStore._openDocuments[document.id] = nextDocument;
-        }
-
-        return Promise.reject(new Error("Test: corrupt model"));
-    };
-    corruptModel.action = {
-        reads: [],
-        writes: []
-    };
-
-    /**
-     * Run layer panel performance tests.   
-     *
-     * @private
-     * @return {Promise}
-     */
-    var layerPanelPerformanceTest = function () {
-        var flux = this.flux,
-            applicationStore = flux.store("application"),
-            document = applicationStore.getCurrentDocument(),
-            openDocuments = applicationStore.getOpenDocuments();
-
-        if (openDocuments.size !== 1 || !document.name.match(/vermilion/i)) {
-            window.alert(
-                "To run the performance test, the current document must be " +
-                "the Vermilion file, and there should be only one open document");
-            return Promise.resolve();
-        }
-
-        var continueTest = window.confirm("Please start the Timeline recording, and then hit OK to begin the test.");
-
-        if (!continueTest) {
-            return Promise.resolve();
-        }
-
-        // Mute the other time stamps to make the timeline cleaner.
-        var timeStamp = log.timeStamp;
-        log.timeStamp = _.noop;
-
-        var layerFaceElements,
-            artboardElement,
-            artboardIconElement,
-            artboardVisibilityElement,
-            delayBetweenTest = 1500,
-            artboards = document.layers.roots.map(function (root) {
-                return document.layers.byID(root.id);
-            });
-
-        return flux.actions.groups.setGroupExpansion(document, artboards, true, true)
-            .then(function () {
-                flux.actions.layers.deselectAll(document);
-            })
-            .then(function () {
-                layerFaceElements = window.document.querySelectorAll(".face__depth-6");
-                artboardElement = window.document.querySelector(".face__depth-0");
-                artboardIconElement = window.document.querySelector(".face__depth-0 .face__kind");
-                artboardVisibilityElement = window.document.querySelector(".face__depth-0 .face__button_visibility");
-                layerFaceElements[0].scrollIntoViewIfNeeded();
-            })
-            // Test Layer Selection
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Layer selection 1");
-                layerFaceElements[0].click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Layer selection 2");
-                layerFaceElements[1].click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Layer selection 3");
-                layerFaceElements[2].click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Layer selection 4");
-                layerFaceElements[3].click();
-            })
-            .delay(delayBetweenTest)
-            // Test Art board Selection
-            .then(function () {
-                artboardElement.scrollIntoViewIfNeeded();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board selection 1");
-                artboardElement.click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board deselection 1");
-                layerFaceElements[0].click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board selection 2");
-                artboardElement.click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board deselection 2");
-                layerFaceElements[0].click();
-            })
-            .delay(delayBetweenTest)
-            // Test Art board expand/collapse
-            .then(function () {
-                timeStamp("Art board collapse 1");
-                artboardIconElement.click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board expand 1");
-                artboardIconElement.click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board collapse 2");
-                artboardIconElement.click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board expand 2");
-                artboardIconElement.click();
-            })
-            .delay(delayBetweenTest)
-            // Test Art board visibility
-            .then(function () {
-                timeStamp("Art board not-visible 1");
-                artboardVisibilityElement.click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board visible 1");
-                artboardVisibilityElement.click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board not-visible 2");
-                artboardVisibilityElement.click();
-            })
-            .delay(delayBetweenTest)
-            .then(function () {
-                timeStamp("Art board visible 2");
-                artboardVisibilityElement.click();
-            })
-            .delay(delayBetweenTest)
-            // Done
-            .finally(function () {
-                timeStamp("End of test");
-                log.timeStamp = timeStamp;
-                window.alert("Please stop recording and check for the result");
-            });
-    };
-    layerPanelPerformanceTest.action = {
-        reads: [],
-        writes: []
-    };
-
-    /**
      * Resolve an action path into a callable action function
      *
      * @private
@@ -468,65 +210,6 @@ define(function (require, exports) {
 
         action($payload);
     };
-
-    /**
-     * Reload the page.
-     *
-     * @private
-     * @return {Promise}
-     */
-    var resetRecess = function () {
-        window.location.reload();
-        return Promise.resolve();
-    };
-    resetRecess.action = {
-        reads: [],
-        writes: []
-    };
-
-    /**
-     * Debug only method to toggle pointer policy area visualization
-     *
-     * @return {Promise}
-     */
-    var togglePolicyFrames = function () {
-        if (!__PG_DEBUG__) {
-            return Promise.resolve();
-        }
-
-        var preferencesStore = this.flux.store("preferences"),
-            preferences = preferencesStore.getState(),
-            enabled = preferences.get("policyFramesEnabled");
-
-        return this.transfer(preferencesActions.setPreference, "policyFramesEnabled", !enabled);
-    };
-    togglePolicyFrames.action = {
-        reads: [],
-        writes: [locks.JS_PREF],
-        transfers: [preferencesActions.setPreference]
-    };
-
-    /**
-     * Debug only method to toggle post condition verification
-     *
-     * @return {Promise}
-     */
-    var togglePostconditions = function () {
-        if (!__PG_DEBUG__) {
-            return Promise.resolve();
-        }
-
-        var preferencesStore = this.flux.store("preferences"),
-            preferences = preferencesStore.getState(),
-            enabled = preferences.get("postConditionsEnabled");
-
-        return this.transfer(preferencesActions.setPreference, "postConditionsEnabled", !enabled);
-    };
-    togglePostconditions.action = {
-        reads: [],
-        writes: [locks.JS_PREF],
-        transfers: [preferencesActions.setPreference]
-    };
     
     /**
      * This handler will be triggered when the user confirm or cancel the new layer 
@@ -547,28 +230,6 @@ define(function (require, exports) {
         reads: [],
         writes: [locks.JS_MENU, locks.PS_MENU],
         transfers: [policyActions.restoreAllPolicies]
-    };
-
-    /**
-     * Debug-only method to toggle action transfer logging
-     *
-     * @return {Promise}
-     */
-    var toggleActionTransferLogging = function () {
-        if (!__PG_DEBUG__) {
-            return Promise.resolve();
-        }
-
-        var preferencesStore = this.flux.store("preferences"),
-            preferences = preferencesStore.getState(),
-            enabled = preferences.get("logActionTransfers");
-
-        return this.transfer(preferencesActions.setPreference, "logActionTransfers", !enabled);
-    };
-    toggleActionTransferLogging.action = {
-        reads: [],
-        writes: [locks.JS_PREF],
-        transfers: [preferencesActions.setPreference]
     };
 
     /**
@@ -605,6 +266,14 @@ define(function (require, exports) {
         }.bind(this);
 
         this.flux.store("menu").on("change", _menuChangeHandler);
+        
+        if (!__PG_DEBUG__) {
+            var debugMenuIndex = rawMenuObj.menu.findIndex(function (menu) {
+                return menu.id === "DEBUG";
+            });
+
+            rawMenuObj.menu.splice(debugMenuIndex, 1);
+        }
 
         // Menu store waits for this event to parse descriptors
         this.dispatch(events.menus.INIT_MENUS, {
@@ -667,11 +336,6 @@ define(function (require, exports) {
         this.flux.store("menu").removeListener("change", _menuChangeHandler);
         descriptor.removeListener("toolModalStateChanged", _toolModalStateChangedHandler);
 
-        // For debugging purposes only
-        if (_failOnReset) {
-            return Promise.reject();
-        }
-
         return Promise.resolve();
     };
     onReset.action = {
@@ -682,19 +346,8 @@ define(function (require, exports) {
     exports.native = native;
     exports.nativeModal = nativeModal;
     exports.openURL = openURL;
-    exports.runTests = runTests;
-    exports.actionFailure = actionFailure;
-    exports.transferFailure = transferFailure;
-    exports.resetFailure = resetFailure;
-    exports.corruptModel = corruptModel;
-    exports.layerPanelPerformanceTest = layerPanelPerformanceTest;
-    exports.resetRecess = resetRecess;
     exports.handleExecutedPlaceCommand = handleExecutedPlaceCommand;
     exports._playMenuCommand = _playMenuCommand;
-
-    exports.togglePolicyFrames = togglePolicyFrames;
-    exports.togglePostconditions = togglePostconditions;
-    exports.toggleActionTransferLogging = toggleActionTransferLogging;
 
     exports.beforeStartup = beforeStartup;
     exports.afterStartup = afterStartup;

@@ -707,32 +707,8 @@
             ]
         },
         {
-            "id": "HELP",
-            "isOSHelpMenu": true,
+            "id": "DEBUG",
             "submenu": [
-                {
-                    "id": "HELPX"
-                },
-                {
-                    "id": "FORUM"
-                },
-                {
-                    "id": "TWITTER"
-                },
-
-                {
-                    "separator": true
-                },
-                {
-                    "id": "SHORTCUTS"
-                },
-                {
-                    "id": "OPEN_FIRST_LAUNCH"
-                },
-                {
-                    "separator": true,
-                    "debug": true
-                },
                 {
                     "id": "RUN_TESTS",
                     "shortcut": {
@@ -783,6 +759,10 @@
                     "debug": true
                 },
                 {
+                    "id": "LOAD_DEBUGGING_HELPERS",
+                    "debug": true
+                },
+                {
                     "id": "RESET_RECESS",
                     "shortcut": {
                         "keyCode": true,
@@ -810,6 +790,39 @@
                 {
                     "id": "TOGGLE_ACTION_TRANSFER_LOGGING",
                     "debug": true
+                },
+                {
+                    "id": "TOGGLE_DESCRIPTOR_LOGGING",
+                    "debug": true
+                },
+                {
+                    "id": "TOGGLE_HEADLIGHTS_LOGGING",
+                    "debug": true
+                }
+            ]
+        },
+        {
+            "id": "HELP",
+            "isOSHelpMenu": true,
+            "submenu": [
+                {
+                    "id": "HELPX"
+                },
+                {
+                    "id": "FORUM"
+                },
+                {
+                    "id": "TWITTER"
+                },
+
+                {
+                    "separator": true
+                },
+                {
+                    "id": "SHORTCUTS"
+                },
+                {
+                    "id": "OPEN_FIRST_LAUNCH"
                 }
             ]
         }

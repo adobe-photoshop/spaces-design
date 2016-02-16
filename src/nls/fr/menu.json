@@ -232,9 +232,7 @@
         "OPEN_DOCUMENT_TWO": "Nom du document 2",
         "OPEN_DOCUMENT_THREE": "…etc..."
     },
-    "HELP": {
-        "$MENU": "Aide",
-        "ABOUT_WIN": "A propos de Photoshop…",
+    "DEBUG": {
         "RUN_TESTS": "Exécution des tests...",
         "ACTION_FAILURE": "Echec de l'action test...",
         "TRANSFER_FAILURE": "Echec du transfert de test…",
@@ -245,7 +243,11 @@
         "TOGGLE_POLICY_FRAMES": "Afficher les cadres de politique",
         "TOGGLE_POSTCONDITIONS": "Vérifier les postconditions",
         "TOGGLE_ACTION_TRANSFER_LOGGING": "Transferts d'action du journal",
-        "OPEN_FIRST_LAUNCH": "Introduction à l'espace de conception",
+        "OPEN_FIRST_LAUNCH": "Introduction à l'espace de conception"    
+    },
+    "HELP": {
+        "$MENU": "Aide",
+        "ABOUT_WIN": "A propos de Photoshop…",
         "SHORTCUTS": "Raccourcis clavier",
         "TWITTER": "L'espace de conception sur Twitter",
         "HELPX": "Aide de l'espace de conception",

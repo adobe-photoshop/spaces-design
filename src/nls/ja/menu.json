@@ -232,9 +232,7 @@
         "OPEN_DOCUMENT_TWO": "ドキュメントの名前 2",
         "OPEN_DOCUMENT_THREE": "...など..."
     },
-    "HELP": {
-        "$MENU": "ヘルプ",
-        "ABOUT_WIN": "Photoshop について...",
+    "DEBUG": {
         "RUN_TESTS": "テストを実行...",
         "ACTION_FAILURE": "テストアクションエラー...",
         "TRANSFER_FAILURE": "テスト転送エラー…",
@@ -244,7 +242,11 @@
         "RESET_RECESS": "デザインスペースをリセット",
         "TOGGLE_POLICY_FRAMES": "ポリシーのフレームを表示",
         "TOGGLE_POSTCONDITIONS": "事後条件を確認",
-        "TOGGLE_ACTION_TRANSFER_LOGGING": "ログアクションの転送",
+        "TOGGLE_ACTION_TRANSFER_LOGGING": "ログアクションの転送"
+    },
+    "HELP": {
+        "$MENU": "ヘルプ",
+        "ABOUT_WIN": "Photoshop について...",
         "OPEN_FIRST_LAUNCH": "デザインスペースの概要",
         "SHORTCUTS": "キーボードショートカット",
         "TWITTER": "Twitter でデザインスペースをチェック",

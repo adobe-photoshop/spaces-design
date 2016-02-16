@@ -527,10 +527,12 @@ define(function (require, exports, module) {
         });
 
         if (__PG_DEBUG__) {
-            return updatedMenu.updateSubmenuItems("HELP", {
+            return updatedMenu.updateSubmenuItems("DEBUG", {
                 "TOGGLE_POLICY_FRAMES": { "checked": preferences.get("policyFramesEnabled", false) },
                 "TOGGLE_POSTCONDITIONS": { "checked": preferences.get("postConditionsEnabled", false) },
-                "TOGGLE_ACTION_TRANSFER_LOGGING": { "checked": preferences.get("logActionTransfers", false) }
+                "TOGGLE_ACTION_TRANSFER_LOGGING": { "checked": preferences.get("logActionTransfers", false) },
+                "TOGGLE_DESCRIPTOR_LOGGING": { "checked": preferences.get("descriptorLoggingEnabled", false) },
+                "TOGGLE_HEADLIGHTS_LOGGING": { "checked": preferences.get("headlightsLoggingEnabled", false) }
             });
         } else {
             return updatedMenu;

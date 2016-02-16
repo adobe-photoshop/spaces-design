@@ -182,7 +182,7 @@ define(function (require, exports, module) {
                 preferenceStore = flux.store("preferences"),
                 applicationStore = flux.store("application"),
                 applicationState = applicationStore.getState(),
-                policyFrames = preferenceStore.getState().get("policyFramesEnabled"),
+                policyFrames = __PG_DEBUG__ && preferenceStore.getState().get("policyFramesEnabled"),
                 document = applicationStore.getCurrentDocument(),
                 appIsModal = flux.store("dialog").getState().appIsModal;
 

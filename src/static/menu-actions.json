@@ -462,37 +462,30 @@
             "$enable-rule": "always"
         }
     },
-    "HELP": {
+    "DEBUG": {
         "$enable-rule": "always",
-        "ABOUT_WIN": {
-            "$action": "menu.native",
-            "$payload": {
-                "commandID": 1
-            },
-            "$enable-rule": "always-except-modal"
-        },
         "RUN_TESTS": {
-            "$action": "menu.runTests",
+            "$action": "debug.runTests",
             "$enable-rule": "always-except-modal"
         },
         "ACTION_FAILURE": {
-            "$action": "menu.actionFailure",
+            "$action": "debug.actionFailure",
             "$enable-rule": "always-except-modal"
         },
         "TRANSFER_FAILURE": {
-            "$action": "menu.transferFailure",
+            "$action": "debug.transferFailure",
             "$enable-rule": "always-except-modal"
         },
         "RESET_FAILURE": {
-            "$action": "menu.resetFailure",
+            "$action": "debug.resetFailure",
             "$enable-rule": "always-except-modal"
         },
         "CORRUPT_MODEL": {
-            "$action": "menu.corruptModel",
+            "$action": "debug.corruptModel",
             "$enable-rule": "always-except-modal"
         },
         "LAYER_PANEL_PERFORMANCE_TEST": {
-            "$action": "menu.layerPanelPerformanceTest",
+            "$action": "debug.layerPanelPerformanceTest",
             "$enable-rule": "always-except-modal"
         },
         "UPDATE_CURRENT_DOCUMENT": {
@@ -500,19 +493,41 @@
             "$enable-rule": "have-document"
         },
         "RESET_RECESS": {
-            "$action": "menu.resetRecess",
+            "$action": "debug.resetRecess",
+            "$enable-rule": "always-except-modal"
+        },
+        "LOAD_DEBUGGING_HELPERS": {
+            "$action": "debug.loadDebuggingHelpers",
             "$enable-rule": "always-except-modal"
         },
         "TOGGLE_POLICY_FRAMES": {
-            "$action": "menu.togglePolicyFrames",
+            "$action": "debug.togglePolicyFrames",
             "$enable-rule": "always-except-modal"
         },
         "TOGGLE_POSTCONDITIONS": {
-            "$action": "menu.togglePostconditions",
+            "$action": "debug.togglePostconditions",
             "$enable-rule": "always-except-modal"
         },
         "TOGGLE_ACTION_TRANSFER_LOGGING": {
-            "$action": "menu.toggleActionTransferLogging",
+            "$action": "debug.toggleActionTransferLogging",
+            "$enable-rule": "always-except-modal"
+        },
+        "TOGGLE_DESCRIPTOR_LOGGING": {
+            "$action": "debug.logDescriptor",
+            "$enable-rule": "always-except-modal"
+        },
+        "TOGGLE_HEADLIGHTS_LOGGING": {
+            "$action": "debug.logHeadlights",
+            "$enable-rule": "always-except-modal"
+        }
+    },
+    "HELP": {
+        "$enable-rule": "always",
+        "ABOUT_WIN": {
+            "$action": "menu.native",
+            "$payload": {
+                "commandID": 1
+            },
             "$enable-rule": "always-except-modal"
         },
         "OPEN_FIRST_LAUNCH": {

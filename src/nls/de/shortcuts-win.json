@@ -60,7 +60,7 @@
             "RETURN_TO_STANDARD": "ß",
             "MINIMIZE": "m"
         },
-        "HELP": {
+        "DEBUG": {
             "RUN_TESTS": "?",
             "UPDATE_CURRENT_DOCUMENT": "#",
             "RESET_RECESS": "'"
