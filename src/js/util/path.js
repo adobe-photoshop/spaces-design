@@ -82,6 +82,13 @@ define(function (require, exports) {
         return filename.substring(index + 1);
     };
 
+    // Helper function, finds paths that match in subpaths to a particular path
+    var _getMatchingPaths = function (matchingSoFar, key, keyIndex) {
+        return matchingSoFar.filter(function (pathComponents) {
+            return pathComponents[keyIndex] === key;
+        });
+    };
+
     /**
      * Given a list of paths, reduces them to shortest unique paths
      * Example:
@@ -98,13 +105,6 @@ define(function (require, exports) {
      * @return {Immutable.Iterable.<string>} Unique path for each file that's as short as possible
      */
     var getShortestUniquePaths = function (paths) {
-        // Helper function, finds paths that match in subpaths to a particular path
-        var _getMatchingPaths = function (matchingSoFar, key, keyIndex) {
-            return matchingSoFar.filter(function (pathComponents) {
-                return pathComponents[keyIndex] === key;
-            });
-        };
-
         // Break down all paths and reverse them
         var allPathComponents = paths.map(function (path) {
                 return path.split(sep).reverse();
@@ -112,18 +112,16 @@ define(function (require, exports) {
             shortestPathLengths = allPathComponents.map(function (path) {
                 var keyIndex = 0,
                     currentKey,
-                    unique = false,
                     matchingPaths = allPathComponents;
 
-                while (!unique && keyIndex < path.length) {
+                while (keyIndex < path.length) {
                     currentKey = path[keyIndex];
                     matchingPaths = _getMatchingPaths(matchingPaths, currentKey, keyIndex);
+                    keyIndex++;
 
                     if (matchingPaths.size === 1) {
-                        unique = true;
+                        break;
                     }
-                    
-                    keyIndex++;
                 }
                 return keyIndex;
             });

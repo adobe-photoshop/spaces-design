@@ -42,6 +42,43 @@ define(function (require, exports) {
     var _idMap = {};
 
     /**
+     * Map from vnd.adobe.element type to library strings.SEARCH.CATEGORIES keys
+     *
+     * @const
+     * @type {Object.<string, string>}
+     */
+    const VALID_ASSET_TYPES = {
+        "image": "GRAPHIC",
+        "characterstyle": "CHARACTERSTYLE",
+        "layerstyle": "LAYERSTYLE"
+    };
+
+    /**
+     * map from item categories to svg icon class name
+     *
+     * @const
+     * @type {Object.<string, string>}
+     */
+    const CATEGORY_MAP_ICON = {
+        "GRAPHIC": "libraries-addGraphic",
+        "CHARACTERSTYLE": "libraries-addCharStyle",
+        "LAYERSTYLE": "libraries-addLayerStyle"
+    };
+
+    /**
+     * Find SVG class for library item based on what type of asset it is
+     *
+     * @private
+     * @param {Array.<string>} categories
+     * @return {string}
+     */
+    var _getSVGClass = function (categories) {
+        var type = categories[categories.length - 1];
+
+        return CATEGORY_MAP_ICON[type] || "libraries-cc";
+    };
+
+    /**
      * Make list of certain library info so search store can create search options
      *
      * @private
@@ -53,17 +90,8 @@ define(function (require, exports) {
             libraries = libStore.getState().libraries,
             currentDocument = appStore.getCurrentDocument();
 
-        // Map from vnd.adobe.element type to library strings.SEARCH.CATEGORIES keys
-        var VALID_ASSET_TYPES = {
-            "image": "GRAPHIC",
-            "characterstyle": "CHARACTERSTYLE",
-            "layerstyle": "LAYERSTYLE"
-        };
-
-        _idMap = {};
-
-        return libraries.reduce(function (allMaps, library) {
-            var libMap = Immutable.List();
+        var allMaps = [];
+        libraries.forEach(function (library) {
             library.elements.forEach(function (element) {
                 var id = element.id.replace(/-/g, "."),
                     title = element.displayName,
@@ -96,7 +124,7 @@ define(function (require, exports) {
 
                     _idMap[id] = { asset: element, type: categoryKey };
 
-                    libMap = libMap.push({
+                    allMaps.push({
                         id: id,
                         name: title,
                         pathInfo: library.name + ": " + nls.localize("strings.SEARCH.CATEGORIES." + categoryKey),
@@ -105,27 +133,9 @@ define(function (require, exports) {
                     });
                 }
             });
-            return allMaps.concat(libMap);
-        }, Immutable.List());
-    };
+        });
 
-    /**
-     * Find SVG class for library item based on what type of asset it is
-     *
-     * @private
-     * @param {Array.<string>} categories 
-     * @return {string}
-     */
-    var _getSVGClass = function (categories) {
-        var type = categories[categories.length - 1],
-            // map from item categories to svg icon class name
-            CATEGORY_MAP_ICON = {
-                "GRAPHIC": "libraries-addGraphic",
-                "CHARACTERSTYLE": "libraries-addCharStyle",
-                "LAYERSTYLE": "libraries-addLayerStyle"
-            };
-
-        return CATEGORY_MAP_ICON[type] || "libraries-cc";
+        return Immutable.List(allMaps);
     };
 
     /**
