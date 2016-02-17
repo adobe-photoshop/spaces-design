@@ -1048,6 +1048,11 @@ define(function (require, exports) {
                 }
             };
 
+        // Short-circuit to avoid creating a useless history state
+        if (textLayers.isEmpty() && vectorLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
         var transaction = descriptor.beginTransaction(transactionOpts),
             actionOpts = {
                 transaction: transaction,
