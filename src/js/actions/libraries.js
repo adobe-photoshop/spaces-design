@@ -1309,9 +1309,17 @@ define(function (require, exports) {
                     vulcanCall: function (requestType, requestPayload, responseType, callback) {
                         descriptor.getProperty("application", "designSpaceLibrariesInfo")
                             .then(function (imsInfo) {
-                                var port = imsInfo.port;
+                                var callbackObj = {};
 
-                                callback(JSON.stringify({ port: port }));
+                                if (imsInfo.port) {
+                                    callbackObj.port = imsInfo.port;
+                                }
+
+                                if (imsInfo.token) {
+                                    callbackObj.token = imsInfo.token;
+                                }
+                                
+                                callback(JSON.stringify(callbackObj));
                             });
                     },
                     // Enable and log CC Libraries analytic events
