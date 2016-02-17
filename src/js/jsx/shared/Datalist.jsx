@@ -76,12 +76,12 @@ define(function (require, exports, module) {
             onChange: React.PropTypes.func,
 
             /**
-             * Callback to handle input change
+             * Callback to handle change of the component's text input
              * 
-             * @callback Datalist~onChange
+             * @callback Datalist~onInput
              * @param {string} value - the current value of the input
              */
-            onInputChange: React.PropTypes.func,
+            onInput: React.PropTypes.func,
             
             /**
              * Callback to handle input keydown
@@ -159,6 +159,7 @@ define(function (require, exports, module) {
                 filterIcon: null,
                 changeOnBlur: true,
                 onChange: _.noop,
+                onInput: _.noop,
                 onHighlightedChange: _.noop,
                 onListOpen: _.noop,
                 onClose: _.noop,
@@ -434,37 +435,28 @@ define(function (require, exports, module) {
         },
 
         /**
-         * When the input changes, update the filter value.
+         * When the input changes, update the filter value. Open the select menu if closed.
          *
          * @private
          * @param {SyntheticEvent} event
          * @param {string} value
          */
-        _handleInputChange: function (event, value) {
+        _handleInput: function (event, value) {
             this.setState({
                 filter: value
             });
+
+            var select = this.refs.select;
+            if (!select) {
+                this._handleInputClick(event);
+            }
 
             if (this.state.filter !== value) {
                 this._updateAutofill(value);
             }
             
-            if (this.props.onInputChange) {
-                this.props.onInputChange(value);
-            }
-        },
-
-        /**
-         * If the select menu is closed, open it if the underlying input receives
-         * any "change" event.
-         *
-         * @private
-         * @param {Event} event
-         */
-        _handleInputDOMChange: function (event) {
-            var select = this.refs.select;
-            if (!select) {
-                this._handleInputClick(event);
+            if (this.props.onInput) {
+                this.props.onInput(event, value);
             }
         },
 
@@ -755,8 +747,7 @@ define(function (require, exports, module) {
                         onFocus={this._handleInputFocus}
                         onBlur={this._handleInputBlur}
                         onKeyDown={this._handleInputKeyDown}
-                        onInputChange={this._handleInputChange}
-                        onDOMChange={this._handleInputDOMChange}
+                        onInput={this._handleInput}
                         onClick={this._handleInputClick} />
                     {autocomplete}
                     {dialog}

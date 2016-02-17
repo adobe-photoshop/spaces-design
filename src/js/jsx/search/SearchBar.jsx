@@ -416,7 +416,7 @@ define(function (require, exports, module) {
          * Perform action based on ID
          *
          * @private
-         * @type {Datalist~onInputChange}
+         * @type {Datalist~onChange}
          */
         _handleChange: function (id) {
             if (id === null) {
@@ -455,9 +455,10 @@ define(function (require, exports, module) {
          * Handle input change. 
          *
          * @private
-         * @type {Datalist~onInputChange}
+         * @param {SyntheticEvent} event
+         * @param {Datalist~onInput} value
          */
-        _handleInputChange: function (value) {
+        _handleInput: function (event, value) {
             var nextHasInputValue = value.length !== 0;
             
             if (nextHasInputValue !== this.state.hasInputValue) {
@@ -570,7 +571,7 @@ define(function (require, exports, module) {
                         neverSelectAllInput={true}
                         changeOnBlur={false}
                         onChange={this._handleChange}
-                        onInputChange={this._handleInputChange}
+                        onInput={this._handleInput}
                         onKeyDown={this._handleKeyDown} />
                     {clearInputBtn}
                 </div>

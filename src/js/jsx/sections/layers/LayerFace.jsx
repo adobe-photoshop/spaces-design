@@ -199,18 +199,6 @@ define(function (require, exports, module) {
         },
 
         /**
-         * Not implemented yet, but will call the handler being passed from PagesPanel
-         * to skip to the next layer and make it editable
-         * 
-         * @private
-         * @param {SyntheticEvent} event
-         */
-        _skipToNextLayerName: function (event) {
-            // TODO: Skip to next layer on the tree
-            event.stopPropagation();
-        },
-
-        /**
          * Grabs the correct modifier by processing event modifier keys
          * and calls the select action with correct modifier.
          * 
@@ -694,7 +682,6 @@ define(function (require, exports, module) {
                                         disabled={this.props.disabled || !nameEditable}
                                         onFocus={this._handleInputFocusChange.bind(this, true)}
                                         onBlur={this._handleInputFocusChange.bind(this, false)}
-                                        onKeyDown={this._skipToNextLayerName}
                                         onChange={this._handleLayerNameChange}
                                         allowEmpty={false}>
                                     </TextInput>

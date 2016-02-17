@@ -126,7 +126,7 @@ define(function (require, exports, module) {
                 this._changing = false;
                 return true;
             } else {
-                return false;
+                return this.state.open;
             }
         },
 

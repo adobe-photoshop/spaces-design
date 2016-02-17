@@ -192,10 +192,14 @@ define(function (require, exports, module) {
          * @param {SyntheticEvent} event
          */
         _handleLibraryNameInputKeydown: function (event) {
-            if (event.key === "Return" || event.key === "Enter") {
+            switch (event.key) {
+            case "Return":
+            case "Enter":
                 this._handleConfirmCommand();
-            } else if (event.key === "Escape") {
+                break;
+            case "Escape":
                 this._handleCancelCommand();
+                break;
             }
         },
         
