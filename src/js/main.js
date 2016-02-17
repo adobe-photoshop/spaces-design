@@ -96,7 +96,7 @@ define(function (require, exports) {
         if (!adapter.isPluginCompatible()) {
             var message = "Plugin version " + _formatVersion(adapter.version) +
                 " is incompatible with the required version, " +
-                 _formatVersion(adapter.compatiblePluginVersion);
+                adapter.compatiblePluginVersion;
 
             if (__PG_DEBUG__) {
                 log.error(message);
