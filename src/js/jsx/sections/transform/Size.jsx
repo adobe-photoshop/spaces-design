@@ -39,7 +39,8 @@ define(function (require, exports, module) {
         collection = require("js/util/collection");
 
     var MAX_LAYER_SIZE = 32000,
-        MIN_LAYER_SIZE = 0.1;
+        DEFAULT_MIN_LAYER_SIZE = 1,
+        VECTOR_MIN_LAYER_SIZE = 0.1;
 
     var Size = React.createClass({
         mixins: [FluxMixin, CoalesceMixin],
@@ -53,6 +54,22 @@ define(function (require, exports, module) {
                 !Immutable.is(this.state.layers, nextState.layers) ||
                 !Immutable.is(this.state.widths, nextState.widths) ||
                 !Immutable.is(this.state.heights, nextState.heights);
+        },
+
+        /**
+         * Get a minimum layer size appropriate for the current layer selection.
+         *
+         * @private
+         * @param {Document} document
+         * @return {number}
+         */
+        _getMinLayerSize: function (document) {
+            var layers = document.layers.allSelected,
+                allVectorLeaves = layers.every(function (layer) {
+                    return layer.isGroup || layer.isGroupEnd || layer.isVector;
+                });
+
+            return allVectorLeaves ? VECTOR_MIN_LAYER_SIZE : DEFAULT_MIN_LAYER_SIZE;
         },
 
         /**
@@ -90,7 +107,8 @@ define(function (require, exports, module) {
                 layers: layers,
                 widths: widths,
                 heights: heights,
-                proportional: proportional
+                proportional: proportional,
+                minLayerSize: this._getMinLayerSize(document)
             });
         },
 
@@ -144,7 +162,7 @@ define(function (require, exports, module) {
             }
 
             var document = this.props.document,
-                newWidth = math.clamp(this.state.scrubWidth + deltaX, MIN_LAYER_SIZE, MAX_LAYER_SIZE),
+                newWidth = math.clamp(this.state.scrubWidth + deltaX, this.state.minLayerSize, MAX_LAYER_SIZE),
                 currentWidth = collection.uniformValue(this.state.widths);
             
             if (newWidth !== currentWidth) {
@@ -158,6 +176,11 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * End the active width scrub.
+         *
+         * @private
+         */
         _handleWScrubEnd: function () {
             this.setState({
                 scrubWidth: null
@@ -196,7 +219,7 @@ define(function (require, exports, module) {
             }
 
             var document = this.props.document,
-                newHeight = math.clamp(this.state.scrubHeight + deltaX, MIN_LAYER_SIZE, MAX_LAYER_SIZE),
+                newHeight = math.clamp(this.state.scrubHeight + deltaX, this.state.minLayerSize, MAX_LAYER_SIZE),
                 currentHeight = collection.uniformValue(this.state.heights);
 
             if (newHeight !== currentHeight) {
@@ -210,6 +233,11 @@ define(function (require, exports, module) {
             }
         },
 
+        /**
+         * End the active height scrub.
+         *
+         * @private
+         */
         _handleHScrubEnd: function () {
             this.setState({
                 scrubHeight: null
@@ -340,7 +368,7 @@ define(function (require, exports, module) {
                         onChange={this._handleWidthChange}
                         onKeyDown={this._handleWidthKeyDown}
                         ref="width"
-                        min={MIN_LAYER_SIZE}
+                        min={this.state.minLayerSize}
                         max={MAX_LAYER_SIZE}
                         size="column-5" />
                     {proportionalToggle}
@@ -359,7 +387,7 @@ define(function (require, exports, module) {
                         disabled={this.state.disabled}
                         onChange={this._handleHeightChange}
                         ref="height"
-                        min={MIN_LAYER_SIZE}
+                        min={this.state.minLayerSize}
                         max={MAX_LAYER_SIZE}
                         size="column-5" />
                     </div>
