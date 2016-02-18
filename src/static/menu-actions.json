@@ -508,6 +508,10 @@
             "$action": "debug.togglePostconditions",
             "$enable-rule": "always-except-modal"
         },
+        "TOGGLE_ACTION_LOGGING": {
+            "$action": "debug.toggleActionLogging",
+            "$enable-rule": "always-except-modal"
+        },
         "TOGGLE_ACTION_TRANSFER_LOGGING": {
             "$action": "debug.toggleActionTransferLogging",
             "$enable-rule": "always-except-modal"

@@ -781,7 +781,8 @@ define(function (require, exports, module) {
     FluxController.prototype._applyAction = function (action, actionReceiver, params, parentActionName) {
         var flux = this.flux,
             actionObject = action.action,
-            actionName = this._actionNames.get(action);
+            actionName = this._actionNames.get(action),
+            logActions = __PG_DEBUG__ && this.flux.store("preferences").getState().get("logActions");
 
         if (!actionObject) {
             throw new Error("Action " + actionName + " is not a valid action");
@@ -800,7 +801,7 @@ define(function (require, exports, module) {
             actionTitle = "action " + actionName;
         }
 
-        if (__PG_DEBUG__) {
+        if (logActions) {
             log.timeStamp("Executing " + actionTitle);
         }
 
@@ -860,7 +861,7 @@ define(function (require, exports, module) {
                     this._setAllowFailure(false);
                 }
         
-                if (__PG_DEBUG__) {
+                if (logActions) {
                     log.timeStamp("Finished " + actionTitle);
                 }
 
@@ -915,31 +916,40 @@ define(function (require, exports, module) {
 
         return function () {
             var args = Array.prototype.slice.call(arguments, 0),
-                enqueued = Date.now();
+                logActions = __PG_DEBUG__ && self.flux.store("preferences").getState().get("logActions");
 
             // The receiver of the action, augmented to include a transfer
             // function that allows it to safely transfer control to another action
             var actionReceiver = self._actionReceivers.get(action);
 
-            log.debug("Enqueuing action %s; %d/%d",
-                actionName, actionQueue.active(), actionQueue.pending());
+            if (logActions) {
+                var enqueued = Date.now();
+
+                log.debug("Enqueuing action %s; %d/%d",
+                    actionName, actionQueue.active(), actionQueue.pending());
+            }
 
             var jobPromise = actionQueue.push(function () {
-                var start = Date.now();
+                if (logActions) {
+                    var start = Date.now();
 
-                log.debug("Executing action %s after waiting %dms; %d/%d",
-                    actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
+                    log.debug("Executing action %s after waiting %dms; %d/%d",
+                        actionName, start - enqueued, actionQueue.active(), actionQueue.pending());
+                }
 
                 return this._applyAction(action, actionReceiver, args)
                     .bind(this)
                     .tap(function () {
-                        var finished = Date.now(),
-                            elapsed = finished - start,
-                            total = finished - enqueued,
-                            color = elapsed > SLOW_ACTION ? "color:red" : "";
+                        var finished = Date.now();
 
-                        log.debug("Finished action %s in %c%dms %cwith RTT %dms; %d/%d", actionName, color, elapsed,
-                            "color:blue", total, actionQueue.active(), actionQueue.pending());
+                        if (logActions) {
+                            var elapsed = finished - start,
+                                total = finished - enqueued,
+                                color = elapsed > SLOW_ACTION ? "color:red" : "";
+
+                            log.debug("Finished action %s in %c%dms %cwith RTT %dms; %d/%d", actionName, color, elapsed,
+                                "color:blue", total, actionQueue.active(), actionQueue.pending());
+                        }
 
                         if (__PG_DEBUG__) {
                             performance.recordAction(namespace, name, enqueued, start, finished);
@@ -1069,6 +1079,12 @@ define(function (require, exports, module) {
      * @return {Promise} Resolves once all the applied methods have resolved
      */
     FluxController.prototype._invokeActionMethods = function (methodName, params) {
+        var logActions = __PG_DEBUG__ && this.flux.store("preferences").getState().get("logActions");
+
+        if (logActions) {
+            log.timeStamp("Executing controller " + methodName);
+        }
+
         var getParam = function (name) {
             if (typeof params === "object") {
                 return params[name];
@@ -1076,8 +1092,6 @@ define(function (require, exports, module) {
                 return params;
             }
         };
-
-        log.timeStamp("Executing controller " + methodName);
 
         var allMethodPromises = Object.keys(actionIndex)
                 .filter(function (moduleName) {
@@ -1099,7 +1113,9 @@ define(function (require, exports, module) {
                 return results;
             }, {})
             .tap(function () {
-                log.timeStamp("Finished controller " + methodName);
+                if (logActions) {
+                    log.timeStamp("Finished controller " + methodName);
+                }
             });
     };
 

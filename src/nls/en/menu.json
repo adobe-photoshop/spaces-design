@@ -239,6 +239,7 @@
         "LOAD_DEBUGGING_HELPERS": "Load Debugging Helpers",
         "TOGGLE_POLICY_FRAMES": "Show Policy Frames",
         "TOGGLE_POSTCONDITIONS": "Verify Postconditions",
+        "TOGGLE_ACTION_LOGGING": "Log Actions",
         "TOGGLE_ACTION_TRANSFER_LOGGING": "Log Action Transfers",
         "TOGGLE_DESCRIPTOR_LOGGING": "Log Descriptor Events",
         "TOGGLE_HEADLIGHTS_LOGGING": "Log Headlights Events"

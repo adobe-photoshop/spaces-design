@@ -337,6 +337,24 @@ define(function (require, exports) {
     };
 
     /**
+     * Debug-only method to toggle action logging
+     *
+     * @return {Promise}
+     */
+    var toggleActionLogging = function () {
+        var preferencesStore = this.flux.store("preferences"),
+            preferences = preferencesStore.getState(),
+            enabled = preferences.get("logActions");
+
+        return this.transfer("preferences.setPreference", "logActions", !enabled);
+    };
+    toggleActionLogging.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        transfers: ["preferences.setPreference"]
+    };
+
+    /**
      * Debug-only method to toggle action transfer logging
      *
      * @return {Promise}
@@ -554,6 +572,7 @@ define(function (require, exports) {
     exports.resetRecess = resetRecess;
     exports.togglePolicyFrames = togglePolicyFrames;
     exports.togglePostconditions = togglePostconditions;
+    exports.toggleActionLogging = toggleActionLogging;
     exports.toggleActionTransferLogging = toggleActionTransferLogging;
     exports.logDescriptor = logDescriptor;
     exports.logHeadlights = logHeadlights;

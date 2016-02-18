@@ -762,6 +762,10 @@
                     "debug": true
                 },
                 {
+                    "id": "TOGGLE_ACTION_LOGGING",
+                    "debug": true
+                },
+                {
                     "id": "TOGGLE_ACTION_TRANSFER_LOGGING",
                     "debug": true
                 },
