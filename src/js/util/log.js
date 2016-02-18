@@ -43,6 +43,15 @@ define(function (require, exports, module) {
     if (!loglevel.hasOwnProperty("timeStamp")) {
         loglevel.timeStamp = console.timeStamp.bind(console);
     }
+    
+    /**
+     * Return the time (in ms) elapsed since page load.
+     * 
+     * @return {Number}
+     */
+    loglevel.timeElapsed = function () {
+        return Date.now() - performance.timing.domLoading;
+    };
 
     module.exports = loglevel;
 });
