@@ -170,6 +170,17 @@ define(function (require, exports, module) {
                 prevProps.singleColumnModeEnabled !== this.props.singleColumnModeEnabled) {
                 this._updatePanelSizes();
             }
+
+            // Turn on the ready state to start the fade-in transition. This only happens 
+            // once at the initial display. To trigger the CSS transition, the state must be 
+            // set AFTER the panel components are flushed to the DOM.
+            if (!this.state.ready && this._isActiveDocumentInitialized()) {
+                // Set the state in a `setTimeout` callback to make sure the PanelSet 
+                // is painted before the transition. This will prevent possible flashing.
+                window.setTimeout(function () {
+                    this.setState({ ready: true });
+                }.bind(this), 0);
+            }
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
@@ -198,6 +209,7 @@ define(function (require, exports, module) {
                 }, this);
 
             return panelVisibilityChanged ||
+                this.state.ready !== nextState.ready ||
                 this.state.activeDocumentInitialized !== nextState.activeDocumentInitialized ||
                 this.state.recentFilesInitialized !== nextState.recentFilesInitialized ||
                 (nextState.documentIDs.size === 0 && !Immutable.is(this.state.recentFiles, nextState.recentFiles)) ||
@@ -269,11 +281,19 @@ define(function (require, exports, module) {
             this.getFlux().actions.preferences.setPreferences(nextState);
             headlights.logEvent("user-interface", "panel-toggle", panelName);
         },
+        
+        /**
+         * True if the current docuemnt is initialized and its panels should be displayed.
+         * 
+         * @return {boolean}
+         */
+        _isActiveDocumentInitialized: function () {
+            return this.state.activeDocument && this.state.activeDocumentInitialized && this.state.documentIDs.size > 0;
+        },
 
         render: function () {
-            var documentIDs = this.state.documentIDs,
-                activeDocument = this.state.activeDocument,
-                hasActiveDocument = activeDocument && this.state.activeDocumentInitialized && documentIDs.size > 0;
+            var activeDocument = this.state.activeDocument,
+                activeDocumentInitialized = this._isActiveDocumentInitialized();
 
             var panelStore = this.getFlux().store("panel"),
                 components = panelStore.components,
@@ -427,13 +447,14 @@ define(function (require, exports, module) {
                 documentPanelSetClassName = classnames({
                     "panel-set": true,
                     "panel-set__small-screen": this.props.singleColumnModeEnabled,
-                    "panel-set__not-visible": !hasActiveDocument
+                    "panel-set__not-visible": !activeDocumentInitialized,
+                    "panel-set__ready": this.state.ready
                 });
 
             if (this.props.singleColumnModeEnabled) {
                 documentPanelSet = (
                     <div className={documentPanelSetClassName}>
-                        <PanelColumn visible={hasActiveDocument}>
+                        <PanelColumn visible={activeDocumentInitialized}>
                             {documentPanels.transformPanels}
                             {documentPanels.appearancePanels}
                             {documentPanels.effectPanels}
@@ -446,14 +467,14 @@ define(function (require, exports, module) {
             } else {
                 documentPanelSet = (
                     <div className={documentPanelSetClassName}>
-                        <PanelColumn visible={hasActiveDocument && this.state[components.PROPERTIES_COL]}
+                        <PanelColumn visible={activeDocumentInitialized && this.state[components.PROPERTIES_COL]}
                                      onVisibilityToggle={handlePropertiesColumnVisibilityToggle}>
                             {documentPanels.transformPanels}
                             {documentPanels.appearancePanels}
                             {documentPanels.effectPanels}
                             {documentPanels.exportPanels}
                         </PanelColumn>
-                        <PanelColumn visible={hasActiveDocument && this.state[components.LAYERS_LIBRARY_COL]}
+                        <PanelColumn visible={activeDocumentInitialized && this.state[components.LAYERS_LIBRARY_COL]}
                                      onVisibilityToggle= {handleLayersLibraryColumnVisibilityToggle}>
                             {documentPanels.layerPanels}
                             {documentPanels.librariesPanel}
@@ -483,7 +504,7 @@ define(function (require, exports, module) {
             var noDocPanelSet,
                 noDocPanelSetClassName = classnames({
                     "panel-set": true,
-                    "panel-set__not-visible": hasActiveDocument
+                    "panel-set__not-visible": activeDocumentInitialized
                 });
             
             if (this.state.recentFilesInitialized) {
