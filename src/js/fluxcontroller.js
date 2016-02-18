@@ -548,6 +548,7 @@ define(function (require, exports, module) {
                                 actionName, nextActionName,
                                 start - enqueued,
                                 transferQueue.active(), transferQueue.pending());
+                            log.timeStamp("Executing transfer from " + actionName + " to " + nextActionName);
                         }
 
                         return self._applyAction(nextAction, nextReceiver, params, actionName)
@@ -562,6 +563,7 @@ define(function (require, exports, module) {
                                         actionName, nextActionName,
                                         color, elapsed, "color:blue",
                                         total, transferQueue.active(), transferQueue.pending());
+                                    log.timeStamp("Finished transfer from " + actionName + " to " + nextActionName);
                                 }
                             })
                             .catch(function (err) {
