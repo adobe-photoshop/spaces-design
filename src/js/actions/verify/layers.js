@@ -24,7 +24,8 @@
 define(function (require, exports) {
     "use strict";
 
-    var Promise = require("bluebird"),
+    var _ = require("lodash"),
+        Promise = require("bluebird"),
         Immutable = require("immutable");
         
     var descriptor = require("adapter").ps.descriptor,
@@ -131,22 +132,27 @@ define(function (require, exports) {
             return Promise.resolve();
         }
         
-        var docRef = documentLib.referenceBy.current,
+        var layerIDIndex = [],
+            docRef = documentLib.referenceBy.current,
             layers = currentDocument.layers.allSelected.toList(),
             propertyRefs = layers
-                .map(function (layer) {
-                    var property = layerActions._boundsPropertyForLayer(layer);
+                .reduce(function (propArray, layer) {
+                    var properties = layerActions._boundsPropertiesForLayer(layer),
+                        propertyRefs = properties.map(function (property) {
+                            layerIDIndex.push(layer.id);
 
-                    return [
-                        docRef,
-                        layerLib.referenceBy.id(layer.id),
-                        {
-                            _ref: "property",
-                            _property: property
-                        }
-                    ];
-                })
-                .toArray();
+                            return [
+                                docRef,
+                                layerLib.referenceBy.id(layer.id),
+                                {
+                                    _ref: "property",
+                                    _property: property
+                                }
+                            ];
+                        });
+
+                    return propArray.concat(propertyRefs);
+                }, []);
 
         return descriptor.batchGet(propertyRefs)
             .bind(this)
@@ -155,18 +161,20 @@ define(function (require, exports) {
                     throw new Error("Incorrect bounds count: " + propertyRefs.length + " instead of " + results.length);
                 }
 
-                results = results.map(function (descriptor, index) {
-                    var layer = layers.get(index);
+                var testPayload = layers.map(function (layer) {
+                    var descriptorProps = results.filter(function (result, index) {
+                        return layer.id === layerIDIndex[index];
+                    });
 
                     return {
                         layerID: layer.id,
-                        descriptor: descriptor
+                        descriptor: _.merge.apply(_, descriptorProps)
                     };
                 });
-
+                
                 var currentDocument = applicationStore.getCurrentDocument(),
                     currentLayers = currentDocument.layers,
-                    nextLayers = currentLayers.resetBounds(results);
+                    nextLayers = currentLayers.resetBounds(testPayload);
 
                 if (!Immutable.is(currentLayers, nextLayers)) {
                     throw new Error("Bounds mismatch");

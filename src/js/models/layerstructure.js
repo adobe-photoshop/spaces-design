@@ -1210,7 +1210,11 @@ define(function (require, exports, module) {
                 descriptor.artboardEnabled = layer.isArtboard;
 
                 var nextBounds = layer.bounds.resetFromDescriptor(descriptor),
-                    nextLayer = layer.set("bounds", nextBounds);
+                    nextRadii = Radii.fromLayerDescriptor(descriptor),
+                    nextLayer = layer.merge({
+                        "bounds": nextBounds,
+                        "radii": nextRadii
+                    });
 
                 layers.set(layerID, nextLayer);
             }, this);
