@@ -49,13 +49,11 @@ define(function (require, exports, module) {
         propTypes: {
             // Value for the input
             value: React.PropTypes.string.isRequired,
-            // Event handler for changed value of the input. This is called whenever the input value is changed.
-            onInputChange: React.PropTypes.func,
             // Event handler for committed value of the input. This is called when user hit Return/Enter or when 
             // the input loses focus. (also look at the allowEmpty option for different behavior)
             onChange: React.PropTypes.func,
-            // Event handler for changed value of input, called regardless of continuous being true or not
-            onDOMChange: React.PropTypes.func,
+            // Event handler for input event, which is triggered when the contents of the input change
+            onInput: React.PropTypes.func,
             // Event handler for when input receives focus
             onFocus: React.PropTypes.func,
             // Event handler for when input loses focus
@@ -79,8 +77,7 @@ define(function (require, exports, module) {
             return {
                 value: "",
                 onChange: _.identity,
-                onInputChange: _.identity,
-                onDOMChange: _.identity,
+                onInput: _.identity,
                 onFocus: _.identity,
                 disabled: false,
                 doubleClickToEdit: false,
@@ -176,10 +173,7 @@ define(function (require, exports, module) {
                 selectDisabled: true
             });
 
-            this.props.onInputChange(event, nextValue);
-
-            // Only used by Datalist
-            this.props.onDOMChange(event);
+            this.props.onInput(event, nextValue);
         },
 
         /**

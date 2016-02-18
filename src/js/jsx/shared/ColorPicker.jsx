@@ -581,9 +581,7 @@ define(function (require, exports, module) {
          * @param {KeyboardEvent} event
          */
         _handleKeyDown: function (event) {
-            var key = event.key;
-
-            switch (key) {
+            switch (event.key) {
             case "Tab":
                 if (event.shiftKey) {
                     this.props.onShiftTabPress();
