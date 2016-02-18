@@ -32,7 +32,9 @@ define(function (require, exports) {
 
     var Color = require("js/models/color"),
         log = require("js/util/log"),
-        locks = require("js/locks");
+        locks = require("js/locks"),
+        layerActions = require("../layers"),
+        documentActions = require("../documents");
 
     /**
      * Layers can be moved using type tool by holding down cmd
@@ -249,7 +251,71 @@ define(function (require, exports) {
         modal: true
     };
 
+    /**
+     * Handle the deleteTextLayer event for the type tool by removing the
+     * client-side layer model.
+     *
+     * @param {object} event
+     * @param {boolean} layersReplaced If true, completely reset the document
+     *  instead of just deleting the referenced layer.
+     * @return {Promise}
+     */
+    var handleDeletedLayer = function (event, layersReplaced) {
+        var applicationStore = this.flux.store("application"),
+            document = applicationStore.getCurrentDocument();
+
+        if (!document) {
+            throw new Error("Unexpected deleteTextLayer event: no active document");
+        }
+
+        if (layersReplaced) {
+            return this.transfer(documentActions.updateDocument);
+        } else {
+            var layerID = event.layerID,
+                layer = document.layers.byID(layerID);
+
+            if (!layer) {
+                log.warn("Unable to handle deleted text layer because it does not exist: " + layerID);
+                return this.transfer(documentActions.updateDocument);
+            }
+
+            return this.transfer(layerActions.removeLayers, document, layer, true);
+        }
+    };
+    handleDeletedLayer.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        modal: true,
+        transfers: ["layers.removeLayers", "documents.updateDocument"]
+    };
+
+    /**
+     * Handle the toolModalStateChanged event, when it indicates a type tool
+     * cancelation, by resetting the selected layers.
+     *
+     * @return {Promise}
+     */
+    var handleTypeModalStateCanceled = function () {
+        var application = this.flux.store("application"),
+            document = application.getCurrentDocument();
+
+        if (!document) {
+            throw new Error("Unexpected toolModalStateChanged event: no active document");
+        }
+
+        return this.transfer(layerActions.resetLayers, document, document.layers.selected);
+    };
+    handleTypeModalStateCanceled.action = {
+        reads: [locks.JS_APP, locks.JS_DOC],
+        writes: [],
+        modal: true,
+        transfers: ["layers.resetLayers"],
+        post: ["verify.layers.verifySelectedBounds"]
+    };
+
     exports.select = select;
     exports.deselect = deselect;
     exports.updateTextPropertiesHandler = updateTextPropertiesHandler;
+    exports.handleDeletedLayer = handleDeletedLayer;
+    exports.handleTypeModalStateCanceled = handleTypeModalStateCanceled;
 });
