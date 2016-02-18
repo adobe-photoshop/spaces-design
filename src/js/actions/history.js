@@ -77,6 +77,33 @@ define(function (require, exports) {
     };
 
     /**
+     * Initialize a document's history state assuming it is both new and clean.
+     *
+     * @param {number} documentID document for which to query history
+     * @param {boolean=} quiet If true, this will not dispatch a history event
+     * @return {Promise}
+     */
+    var initNewHistory = function (documentID, quiet) {
+        var payload = {
+            source: "init",
+            documentID: documentID,
+            totalStates: 1,
+            currentState: 0
+        };
+
+        if (!quiet) {
+            this.dispatch(events.history.PS_HISTORY_EVENT, payload);
+        }
+
+        return Promise.resolve(payload);
+    };
+    initNewHistory.action = {
+        reads: [],
+        writes: [locks.JS_HISTORY],
+        modal: true
+    };
+
+    /**
      * Helper function to load a state from history store based on a count offset
      * and then to fix it up with the latest selection state, visibility state, and
      * then reset border policies.  Selected layers are also initialized in case the current
@@ -481,6 +508,7 @@ define(function (require, exports) {
     };
 
     exports.queryCurrentHistory = queryCurrentHistory;
+    exports.initNewHistory = initNewHistory;
     exports.incrementHistory = incrementHistory;
     exports.decrementHistory = decrementHistory;
     exports.newHistoryState = newHistoryState;
