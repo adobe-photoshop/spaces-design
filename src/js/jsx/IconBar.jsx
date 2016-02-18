@@ -25,13 +25,9 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
-        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
-        classnames = require("classnames"),
-        _ = require("lodash");
-
-    var os = require("adapter").os;
+        classnames = require("classnames");
 
     var Button = require("js/jsx/shared/Button"),
         SVGIcon = require("js/jsx/shared/SVGIcon"),
@@ -40,52 +36,6 @@ define(function (require, exports, module) {
 
     var PanelSet = React.createClass({
         mixins: [FluxMixin],
-        
-        /**
-         * Update the sizes of the panels.
-         *
-         * @private
-         * @param {boolean=} unmounting
-         * @return {Promise}
-         */
-        _updatePanelSizes: function (unmounting) {
-            var iconBarWidth;
-            if (unmounting) {
-                iconBarWidth = 0;
-            } else {
-                var node = ReactDOM.findDOMNode(this);
-                if (node) {
-                    iconBarWidth = node.getBoundingClientRect().width;
-                } else {
-                    iconBarWidth = 0;
-                }
-            }
-
-            return this.getFlux().actions.panel.updatePanelSizes({
-                iconBarWidth: iconBarWidth
-            });
-        },
-
-        /**
-         * Debounced version of _updatePanelSizes
-         *
-         * @private
-         */
-        _updatePanelSizesDebounced: null,
-
-        componentDidMount: function () {
-            this._updatePanelSizesDebounced = _.debounce(function () {
-                return this._updatePanelSizes();
-            }.bind(this), 500);
-
-            os.addListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
-            this._updatePanelSizes();
-        },
-
-        componentWillUnmount: function () {
-            os.removeListener("displayConfigurationChanged", this._updatePanelSizesDebounced);
-            this._updatePanelSizes(true);
-        },
 
         render: function () {
             var panelTabBarClassNames = classnames({
