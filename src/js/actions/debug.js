@@ -392,43 +392,66 @@ define(function (require, exports) {
         }
 
         var blockStyle = "color:gray;",
-            eventStyle = "font-weight:bold";
-    
+            groupStyle = "color:blue;font-weight:normal",
+            // Each descriptor log has a unique ID to help mapping between console message and timeline stamp.
+            descritorID = 500;
+
         descriptor.__getAsync = descriptor.__getAsync || descriptor._getAsync;
         descriptor.__batchPlayAsync = descriptor.__batchPlayAsync || descriptor._batchPlayAsync;
         descriptor.__eventHandler = descriptor.__eventHandler || function (eventID, obj) {
-            log.debug("[Descriptor] PS Event: %c%s\n%c%s", eventStyle, eventID, blockStyle,
+            log.debug("[Descriptor] Received PS Event: %c%s\n%c%s", "font-weight:bold", eventID, blockStyle,
                 JSON.stringify(obj, null, " "));
         };
 
         if (enabled) {
             descriptor._getAsync = function (reference, options) {
-                log.debug("[Descriptor] get: \n%c%s", blockStyle,
-                    JSON.stringify(reference, null, ""));
+                var id = descritorID++,
+                    start = new Date();
+
+                log.groupCollapsed("%c[Descriptor] Executing get - %d", groupStyle, id);
+                log.trace("Trace");
+                log.debug("Params:\n%c%s", blockStyle, JSON.stringify(reference, null, " "));
+                log.groupEnd();
+                log.timeStamp("[Descriptor] Executing get - " + id);
 
                 return descriptor.__getAsync(reference, options).then(function (result) {
-                    log.debug("[Descriptor] get result: \n%c%s", blockStyle,
-                        JSON.stringify(result, null, "  "));
-
+                    var end = new Date();
+                    
+                    log.groupCollapsed("%c[Descriptor] Finished get in %dms - %d", groupStyle, end - start, id);
+                    log.trace("Trace");
+                    log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, " "));
+                    log.groupEnd();
+                    log.timeStamp("[Descriptor] Finished get - " + id);
                     return result;
                 });
             };
 
             descriptor._batchPlayAsync = function (commands, options) {
                 var commandNames = commands.map(function (c) { return c.name; }).join(", "),
-                    isHitTest = commandNames === "hitTest";
+                    isHitTest = commandNames === "hitTest",
+                    id = descritorID++,
+                    start = new Date();
 
                 if (!isHitTest) {
                     var str = "(" + JSON.stringify(commands, null, " ") + ", " +
                         JSON.stringify(options, null, " ") + ");";
 
-                    log.debug("[Descriptor] batchPlay: %c%s\n%c%s", eventStyle,
-                        commandNames, blockStyle, str);
+                    log.groupCollapsed("%c[Descriptor] Executing batchPlay: %s - %d", groupStyle, commandNames, id);
+                    log.trace("Trace");
+                    log.debug("Params:\n%c%s", blockStyle, str);
+                    log.groupEnd();
+                    log.timeStamp("[Descriptor] Executing batchPlay - " + id);
                 }
                 return descriptor.__batchPlayAsync(commands, options).tap(function (result) {
                     if (!isHitTest) {
-                        log.debug("[Descriptor] batchPlay result: \n%c%s", blockStyle,
-                            JSON.stringify(result, null, "  "));
+                        var end = new Date();
+
+                        log.groupCollapsed("%c[Descriptor] Finished batchPlay: %s in %dms - %d", groupStyle,
+                            commandNames, end - start, id);
+                        log.trace("Trace");
+                        log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, " "));
+                        log.groupEnd();
+                        log.timeStamp("[Descriptor] Finished batchPlay - " + id);
                     }
                 });
             };
@@ -532,13 +555,13 @@ define(function (require, exports) {
      *
      * @return {Promise}
      */
-    var afterStartup = function () {
+    var beforeStartup = function () {
         var logDescriptorPromise = this.transfer("debug.logDescriptor", { toggle: false }),
             logHeadlightsPromise = this.transfer("debug.logHeadlights", { toggle: false });
 
         return Promise.join(logDescriptorPromise, logHeadlightsPromise);
     };
-    afterStartup.action = {
+    beforeStartup.action = {
         reads: [],
         writes: [],
         transfers: ["debug.logDescriptor", "debug.logHeadlights"]
@@ -578,6 +601,6 @@ define(function (require, exports) {
     exports.logHeadlights = logHeadlights;
     exports.loadDebuggingHelpers = loadDebuggingHelpers;
 
-    exports.afterStartup = afterStartup;
+    exports.beforeStartup = beforeStartup;
     exports.onReset = onReset;
 });
