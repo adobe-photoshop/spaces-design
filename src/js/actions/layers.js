@@ -254,23 +254,23 @@ define(function (require, exports) {
     };
 
     /**
-     * The property on the Photoshop layer descriptor that corresponds to bounds.
+     * The list of properties on the Photoshop layer descriptor that corresponds to bounds.
      *
      * @private
      * @param {Layer} layer
      * @return {string}
      */
-    var _boundsPropertyForLayer = function (layer) {
+    var _boundsPropertiesForLayer = function (layer) {
         var property;
 
         if (layer.isArtboard) {
-            property = "artboard";
+            property = ["artboard"];
         } else if (layer.isVector) {
-            property = "pathBounds";
+            property = ["pathBounds", "keyOriginType"];
         } else if (layer.isText) {
-            property = "boundingBox";
+            property = ["boundingBox"];
         } else {
-            property = "boundsNoMask";
+            property = ["boundsNoMask"];
         }
 
         return property;
@@ -519,41 +519,50 @@ define(function (require, exports) {
             return Promise.resolve();
         }
 
-        var layersWithBounds = layers
-            .filterNot(function (layer) {
-                // We don't track bounds of non-artboard groups or adjustment layers
-                return layer.isGroupEnd ||
-                    (layer.isGroup && !layer.isArtboard) ||
-                    layer.isAdjustment;
-            });
+        var layerIDIndex = [],
+            layersWithBounds = layers
+                .filterNot(function (layer) {
+                    // We don't track bounds of non-artboard groups or adjustment layers
+                    return layer.isGroupEnd ||
+                        (layer.isGroup && !layer.isArtboard) ||
+                        layer.isAdjustment;
+                });
 
         var propertyRefs = layersWithBounds
-            .map(function (layer) {
-                var property = _boundsPropertyForLayer(layer);
+            .toArray()
+            .reduce(function (propArray, layer) {
+                var properties = _boundsPropertiesForLayer(layer),
+                    propertyRefs = properties.map(function (property) {
+                        layerIDIndex.push(layer.id);
+                        
+                        return [
+                            documentLib.referenceBy.id(document.id),
+                            layerLib.referenceBy.id(layer.id),
+                            {
+                                _ref: "property",
+                                _property: property
+                            }
+                        ];
+                    });
 
-                return [
-                    documentLib.referenceBy.id(document.id),
-                    layerLib.referenceBy.id(layer.id),
-                    {
-                        _ref: "property",
-                        _property: property
-                    }
-                ];
-            })
-            .toArray();
+                return propArray.concat(propertyRefs);
+            }, []);
 
         return descriptor.batchGet(propertyRefs)
             .bind(this)
-            .then(function (bounds) {
-                var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
-                    payload = {
-                        documentID: document.id
-                    };
+            .then(function (boundProps) {
+                var payload = {
+                    documentID: document.id
+                };
 
                 payload.bounds = layersWithBounds.map(function (layer) {
+                    var descriptorProps = boundProps.filter(function (props, index) {
+                        return layer.id === layerIDIndex[index];
+                    });
+                    
                     return {
                         layerID: layer.id,
-                        descriptor: bounds[index++]
+                        descriptor: _.merge.apply(_, descriptorProps)
                     };
                 });
 
@@ -2155,7 +2164,7 @@ define(function (require, exports) {
     exports.onReset = onReset;
 
     exports._getLayersForDocument = _getLayersForDocument;
-    exports._boundsPropertyForLayer = _boundsPropertyForLayer;
+    exports._boundsPropertiesForLayer = _boundsPropertiesForLayer;
 
     exports.afterStartup = afterStartup;
 });

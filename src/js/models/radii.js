@@ -82,6 +82,18 @@ define(function (require, exports, module) {
     }));
 
     /**
+     * Updates the radii object with new properties
+     *
+     * @param {object} descriptor Photoshop layer descriptor
+     * @return {Radii}
+     */
+    Radii.prototype.resetFromDescriptor = function (descriptor) {
+        var newRadiiObject = Radii.fromLayerDescriptor(descriptor);
+
+        return this.merge(newRadiiObject);
+    };
+
+    /**
      * Construct a Radii object from the given Photoshop layer descriptor.
      *
      * @param {object} descriptor
