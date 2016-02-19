@@ -39,10 +39,21 @@ define(function (require, exports, module) {
         // Otherwise, only log information, warnings and errors
         loglevel.setLevel(loglevel.levels.INFO);
     }
-
-    if (!loglevel.hasOwnProperty("timeStamp")) {
-        loglevel.timeStamp = console.timeStamp.bind(console);
-    }
+    
+    ["timeStamp", "group", "groupCollapsed", "groupEnd", "trace"].forEach(function (api) {
+        if (!loglevel.hasOwnProperty(api)) {
+            loglevel[api] = console[api].bind(console);
+        }
+    });
+    
+    /**
+     * Return the time (in ms) elapsed since page load.
+     * 
+     * @return {Number}
+     */
+    loglevel.timeElapsed = function () {
+        return Date.now() - performance.timing.domLoading;
+    };
 
     module.exports = loglevel;
 });

@@ -127,18 +127,18 @@ define(function (require, exports) {
 
         var startupPromises = _controller.start()
             .then(function () {
-                log.debug("Actions loaded: %dms", Date.now() - startTime);
+                log.debug("Actions loaded at %dms", log.timeElapsed());
             });
 
         var renderPromise = new Promise(function (resolve) {
             ReactDOM.render(new Main(props), window.document.querySelector(".app"), function () {
-                log.debug("Main component mounted: %dms", Date.now() - startTime);
+                log.debug("Main component mounted at %dms", log.timeElapsed());
                 resolve();
             });
         });
 
         Promise.join(renderPromise, startupPromises, function () {
-            log.info("Startup complete: %dms", Date.now() - startTime);
+            log.info("Startup complete at %dms (self %dms)", log.timeElapsed(), Date.now() - startTime);
         });
     };
 
