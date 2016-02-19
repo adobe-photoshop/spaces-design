@@ -352,7 +352,7 @@ define(function (require, exports) {
     var toggleActionLogging = function () {
         var preferencesStore = this.flux.store("preferences"),
             preferences = preferencesStore.getState(),
-            enabled = preferences.get("logActions");
+            enabled = preferences.get("logActions", true);
 
         return this.transfer("preferences.setPreference", "logActions", !enabled);
     };
@@ -436,11 +436,10 @@ define(function (require, exports) {
                 }).then(function (result) {
                     var end = new Date();
 
-                    log.groupCollapsed("%c[Descriptor] Finished get in %c%dms%c - %d", groupStyle,
+                    log.groupCollapsed("%c[Descriptor] Finished get - %d in %c%dms", groupStyle,
+                        descriptorID,
                         end - start > SLOW_DESCRIPTOR ? redText : blueText,
-                        end - start,
-                        blueText,
-                        descriptorID);
+                        end - start);
                     log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, " "));
                     log.groupEnd();
                     log.timeStamp("[Descriptor] Finished get - " + descriptorID);
@@ -460,7 +459,7 @@ define(function (require, exports) {
 
             var summarizeCommands = function (commands) {
                 if (commands.length === 0) {
-                    return "EMPTY";
+                    return "";
                 }
 
                 commands = commands.map(function (c) { return c.name; });
@@ -489,7 +488,7 @@ define(function (require, exports) {
 
             descriptor._batchPlayAsync = function (commands, options) {
                 var commandNames = summarizeCommands(commands),
-                    isHitTest = commandNames === "[hitTest]",
+                    isHitTest = commandNames === "hitTest",
                     start = new Date(),
                     descriptorID;
 
@@ -511,12 +510,11 @@ define(function (require, exports) {
                     if (!isHitTest) {
                         var end = new Date();
 
-                        log.groupCollapsed("%c[Descriptor] Finished batchPlay: [%s] in %c%dms%c - %d", groupStyle,
+                        log.groupCollapsed("%c[Descriptor] Finished batchPlay: [%s] - %d in %c%dms", groupStyle,
                             commandNames,
+                            descriptorID,
                             end - start > SLOW_DESCRIPTOR ? redText : blueText,
-                            end - start,
-                            blueText,
-                            descriptorID);
+                            end - start);
                         log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, " "));
                         log.groupEnd();
                         log.timeStamp("[Descriptor] Finished batchPlay - " + descriptorID);

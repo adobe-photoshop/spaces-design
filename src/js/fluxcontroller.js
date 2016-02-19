@@ -784,7 +784,7 @@ define(function (require, exports, module) {
         var flux = this.flux,
             actionObject = action.action,
             actionName = this._actionNames.get(action),
-            logActions = __PG_DEBUG__ && this.flux.store("preferences").getState().get("logActions");
+            logActions = __PG_DEBUG__ && this.flux.store("preferences").getState().get("logActions", true);
 
         if (!actionObject) {
             throw new Error("Action " + actionName + " is not a valid action");
@@ -918,7 +918,7 @@ define(function (require, exports, module) {
 
         return function () {
             var args = Array.prototype.slice.call(arguments, 0),
-                logActions = __PG_DEBUG__ && self.flux.store("preferences").getState().get("logActions");
+                logActions = __PG_DEBUG__ && self.flux.store("preferences").getState().get("logActions", true);
 
             // The receiver of the action, augmented to include a transfer
             // function that allows it to safely transfer control to another action
@@ -1081,7 +1081,7 @@ define(function (require, exports, module) {
      * @return {Promise} Resolves once all the applied methods have resolved
      */
     FluxController.prototype._invokeActionMethods = function (methodName, params) {
-        var logActions = __PG_DEBUG__ && this.flux.store("preferences").getState().get("logActions");
+        var logActions = __PG_DEBUG__ && this.flux.store("preferences").getState().get("logActions", true);
 
         if (logActions) {
             log.timeStamp("Executing controller " + methodName);
