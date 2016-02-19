@@ -53,14 +53,26 @@ define(function (require, exports, module) {
          * 
          * @private
          * @param {string} itemID ID of selected option
+         * @param {function=} noOptionsFn function to execute if there are no options
          */
-        _handleOption: function (itemID) {
+        _handleOption: function (itemID, noOptionsFn) {
+            var searchStore = this.getFlux().store("search");
             this._closeSearchBar()
                 .bind(this)
                 .then(function () {
-                    if (itemID) {
-                        var searchStore = this.getFlux().store("search");
-                        searchStore.handleExecute(itemID);
+                    // If there is a noOptionsFn, this indicates we want the default option,
+                    // that is present in the datalist when there are no results available,
+                    // to execute some behavior if selected. E.g. Selecting the filter
+                    // "Adobe Stock" defaults into "Search Adobe Stock..." and upon selection
+                    // we want it to execute a function to open the Stock homepage 
+                    if (noOptionsFn) {
+                        noOptionsFn(itemID);
+                    }
+                    // If there is noOptionsFn, this indicates the datalist has results available.
+                    else {
+                        if (itemID) {
+                            searchStore.handleExecute(itemID);
+                        }
                     }
                 });
         },

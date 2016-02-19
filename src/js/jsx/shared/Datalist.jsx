@@ -305,7 +305,8 @@ define(function (require, exports, module) {
          */
         _handleInputKeyDown: function (event) {
             var dialog = this.refs.dialog,
-                select = this.refs.select;
+                select = this.refs.select,
+                selectedID;
 
             if (!select) {
                 switch (event.key) {
@@ -324,10 +325,25 @@ define(function (require, exports, module) {
                 }
             }
 
-            var cbOptions = this.props.onKeyDown(event, this.state.lastHighlightedID),
-                options = _.merge({ preventListDefault: false }, cbOptions);
+            // Finishes the autofill within the datalist
+            if (event.key === "Tab") {
+                selectedID = this.state.filter + this.refs.autocomplete.innerHTML;
+                this.setState({
+                    filter: selectedID
+                });
+            } else {
+                // The only time that the lastHighlightedID is undefined is when there is a partial string match 
+                // but the entire string does not match. Example: When user correctly spells the first word 
+                // of a search but incorrectly spells the second word of the search (i.e. Smart ojct). In that case
+                // take the first highlighted selection of the options list, skipping the header.
+                selectedID = this.state.lastHighlightedID ? this.state.lastHighlightedID : null;
+            }
 
-            if (!options.preventListDefault) {
+            var optionsList = select ? select.props.options : null,
+                cbOptions = this.props.onKeyDown(event, selectedID, optionsList),
+                preventList = _.merge({ preventListDefault: false }, cbOptions);
+
+            if (!preventList.preventListDefault) {
                 switch (event.key) {
                 case "ArrowUp":
                     select.selectPrev();
@@ -380,7 +396,8 @@ define(function (require, exports, module) {
          */
         _handleSelectClick: function (event, action) {
             var selectedID = action !== "apply" ? null : this.state.lastHighlightedID,
-                options = _.merge({ dontCloseDialog: false }, this.props.onChange(selectedID));
+                // The filter within datalist is the user input that in turn filters the datalist
+                options = _.merge({ dontCloseDialog: false }, this.props.onChange(selectedID, this.state.filter));
 
             if (!options.dontCloseDialog) {
                 var dialog = this.refs.dialog;
@@ -595,7 +612,18 @@ define(function (require, exports, module) {
                 });
             }
 
-            if (this.props.startFocused && this.refs.textInput) {
+            if (!this.refs.select) {
+                return;
+            }
+
+            var currentOptions = this.refs.select._getOptions(),
+                id;
+
+            if (currentOptions && currentOptions.size === 1) {
+                id = currentOptions.first().id;
+            }
+
+            if (this.props.startFocused && this.refs.textInput && id !== this.props.placeholderOption.id) {
                 this.focus();
             }
         },
@@ -695,23 +723,24 @@ define(function (require, exports, module) {
             }
 
             var dialog = searchableOptions && (
-                    <Dialog
-                        ref="dialog"
-                        id={"datalist-" + this.props.list + this._uniqkey}
-                        className={this.props.className}
-                        onOpen={this._handleDialogOpen}
-                        onClose={this._handleDialogClose}>
-                        <Select
-                            ref="select"
-                            options={searchableOptions}
-                            defaultSelected={selectedID}
-                            useAutofill={this.props.useAutofill}
-                            sorted={this.props.sorted}
-                            onChange={this._handleSelectChange}
-                            onClick={this._handleSelectClick}
-                            onClose={this._handleSelectClose} />
-                    </Dialog>
-                );
+                <Dialog
+                    ref="dialog"
+                    id={"datalist-" + this.props.list + this._uniqkey}
+                    className={this.props.className}
+                    onOpen={this._handleDialogOpen}
+                    onClose={this._handleDialogClose}>
+                    <Select
+                        ref="select"
+                        scrollToSearch={this.props.scrollToSearch}
+                        options={searchableOptions}
+                        defaultSelected={selectedID}
+                        useAutofill={this.props.useAutofill}
+                        sorted={this.props.sorted}
+                        onChange={this._handleSelectChange}
+                        onClick={this._handleSelectClick}
+                        onClose={this._handleSelectClose} />
+                </Dialog>
+            );
 
             var size = this.props.size,
                 svg = null;

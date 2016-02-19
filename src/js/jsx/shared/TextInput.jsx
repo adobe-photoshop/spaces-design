@@ -139,6 +139,12 @@ define(function (require, exports, module) {
                 });
             }
         },
+
+        componentWilUnmount: function () {
+            if (this._acquireFocusPromise && this._acquireFocusPromise.isPending()) {
+                this._acquireFocusPromise.cancel();
+            }
+        },
         
         /**
          * Return the text input's current value
@@ -151,6 +157,7 @@ define(function (require, exports, module) {
         
         /**
          * Update the text input's current value
+         * @param {string} value updated
          */
         setValue: function (value) {
             this.setState({
@@ -333,13 +340,16 @@ define(function (require, exports, module) {
                 return;
             }
 
-            this.acquireFocus()
+            this._acquireFocusPromise = this.acquireFocus()
                 .bind(this)
                 .then(function () {
                     this.setState({
                         editing: true,
                         selectDisabled: false
                     });
+                })
+                .finally(function () {
+                    this._acquireFocusPromise = null;
                 });
         },
 
