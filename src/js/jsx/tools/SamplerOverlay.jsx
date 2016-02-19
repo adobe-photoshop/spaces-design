@@ -45,7 +45,7 @@ define(function (require, exports, module) {
     var DEBOUNCE_DELAY = 200;
 
     var SamplerOverlay = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui", "style")],
+        mixins: [FluxMixin, StoreWatchMixin("tool", "document", "application", "ui", "panel", "style")],
 
         /**
          * Keeps track of current mouse position so we can rerender the overlaid layers correctly
@@ -92,6 +92,7 @@ define(function (require, exports, module) {
                 applicationStore = flux.store("application"),
                 toolStore = flux.store("tool"),
                 styleStore = flux.store("style"),
+                panelStore = flux.store("panel"),
                 modalState = toolStore.getModalToolState(),
                 currentTool = toolStore.getCurrentTool(),
                 currentDocument = applicationStore.getCurrentDocument(),
@@ -103,7 +104,8 @@ define(function (require, exports, module) {
                 tool: currentTool,
                 modalState: modalState,
                 sampleTypes: sampleTypes,
-                samplePoint: samplePoint
+                samplePoint: samplePoint,
+                canvasBounds: panelStore.getCloakRect()
             };
         },
 
@@ -527,11 +529,19 @@ define(function (require, exports, module) {
                 return;
             }
 
+            var canvasBounds = this.state.canvasBounds,
+                mouseX = this._currentMouseX,
+                mouseY = this._currentMouseY;
+
+            if (!canvasBounds ||
+                mouseX < canvasBounds.left || mouseX > canvasBounds.right ||
+                mouseY < canvasBounds.top || mouseY > canvasBounds.bottom) {
+                return;
+            }
+
             var scale = this._scale,
                 layerTree = this.state.document.layers,
                 uiStore = this.getFlux().store("ui"),
-                mouseX = this._currentMouseX,
-                mouseY = this._currentMouseY,
                 canvasMouse = uiStore.transformWindowToCanvas(mouseX, mouseY),
                 highlightFound = false;
 
