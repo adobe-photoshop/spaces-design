@@ -26,9 +26,11 @@ define(function (require) {
 
     var Promise = require("bluebird");
 
+    var descriptor = require("adapter").ps.descriptor,
+        appLib = require("adapter").lib.application;
+
     var ui = require("./util/ui"),
-        nls = require("./util/nls"),
-        main = require("./main");
+        nls = require("./util/nls");
 
     var stylesReady = ui.getPSColorStop(),
         localeReady = nls.initLocaleInfo(),
@@ -40,8 +42,23 @@ define(function (require) {
             }
         });
 
-    Promise.join(stylesReady, localeReady, windowReady, function (stop) {
-        main.startup(stop);
-        window.addEventListener("beforeunload", main.shutdown.bind(main));
+    var appRef = appLib.referenceBy.current,
+        rangeOpts = {
+            range: "document",
+            index: 1
+        };
+
+    descriptor.getPropertyRange(appRef, rangeOpts, "documentID", {
+        cache: {
+            id: "documentIDs",
+            set: true
+        }
+    });
+
+    require(["./main"], function (main) {
+        Promise.join(stylesReady, localeReady, windowReady, function (stop) {
+            main.startup(stop);
+            window.addEventListener("beforeunload", main.shutdown.bind(main));
+        });
     });
 });

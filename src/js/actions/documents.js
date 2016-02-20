@@ -257,9 +257,15 @@ define(function (require, exports) {
             rangeOpts = {
                 range: "document",
                 index: 1
+            },
+            getOpts = {
+                cache: {
+                    id: "documentIDs",
+                    delete: true
+                }
             };
 
-        return descriptor.getPropertyRange(appRef, rangeOpts, "documentID")
+        return descriptor.getPropertyRange(appRef, rangeOpts, "documentID", getOpts)
             .bind(this)
             .then(function (documentIDs) {
                 if (documentIDs.length === 0) {
