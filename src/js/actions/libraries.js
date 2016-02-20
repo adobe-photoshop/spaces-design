@@ -817,6 +817,7 @@ define(function (require, exports) {
             appStore = flux.store("application"),
             libState = flux.store("library").getState(),
             uiStore = flux.store("ui"),
+            toolStore = flux.store("tool"),
             currentDocument = appStore.getCurrentDocument(),
             currentLibrary = libState.currentLibrary,
             pixelRatio = window.devicePixelRatio;
@@ -828,7 +829,7 @@ define(function (require, exports) {
         location.x = uiStore.zoomWindowToCanvas(location.x) / pixelRatio;
         location.y = uiStore.zoomWindowToCanvas(location.y) / pixelRatio;
 
-        return Promise
+        var createLayerPromise = Promise
             .fromCallback(function (done) {
                 var representation = _findPlacableGraphicRepresentation(element);
 
@@ -893,12 +894,22 @@ define(function (require, exports) {
                         }
                     });
             });
+
+        var currentTool = toolStore.getCurrentTool(),
+            toolPromise;
+        if (currentTool.id === "superselectVector") {
+            toolPromise = this.transfer("tools.select", toolStore.getToolByID("newSelect"));
+        } else {
+            toolPromise = Promise.resolve();
+        }
+
+        return Promise.join(toolPromise, createLayerPromise);
     };
     createLayerFromElement.action = {
-        reads: [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP],
+        reads: [locks.CC_LIBRARIES, locks.JS_DOC, locks.JS_UI, locks.JS_APP, locks.JS_TOOL],
         writes: [locks.JS_LIBRARIES, locks.PS_DOC],
         transfers: [layerActions.getLayerIDsForDocumentID, layerActions.addLayers,
-            "libraries.handleCompletePlacingGraphic"]
+            "libraries.handleCompletePlacingGraphic", "tools.select"]
     };
         
     /**
