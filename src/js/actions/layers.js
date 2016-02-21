@@ -146,13 +146,14 @@ define(function (require, exports) {
      * @return {Promise.<Array.<object>>}
      */
     var _getLayersByRef = function (references, lazy) {
-        var layerPropertiesPromise = descriptor.batchMultiGetProperties(references, _layerProperties),
+        var layerPropertiesPromise = references.length === 0 ? Promise.resolve([]) :
+                descriptor.batchMultiGetProperties(references, _layerProperties),
             optionalProperties = lazy ? _optionalLayerProperties : _allOptionalLayerProperties,
-            optionalPropertiesPromise = descriptor.batchMultiGetProperties(references, optionalProperties,
-                { continueOnError: true });
+            optionalPropertiesPromise = references.length === 0 ? Promise.resolve([]) :
+                descriptor.batchMultiGetProperties(references, optionalProperties, { continueOnError: true });
 
         var extensionPromise;
-        if (lazy) {
+        if (lazy || references.length === 0) {
             extensionPromise = Promise.resolve();
         } else {
             var extensionPlayObjects = references.map(function (ref) {
@@ -207,42 +208,43 @@ define(function (require, exports) {
                 ];
             });
 
-        var lazyPropertiesPromise = descriptor.batchMultiGetProperties(targetRefs, _lazyLayerProperties, {
-            continueOnError: true
-        });
-
-        var extensionPromise;
-        if (doc.hasBackgroundLayer && doc.numberOfLayers === 0 && targetLayers.length === 1) {
-            // Special case for background-only documents, which can't contain metadata
-            extensionPromise = Promise.resolve([{}]);
-        } else {
-            var extensionPlayObjects = targetRefs.map(function (refObj) {
-                var layerRef = refObj[1];
-                return layerLib.getExtensionData(docRef, layerRef, METADATA_NAMESPACE);
-            });
-
-            extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
-                .map(function (extensionData) {
-                    var extensionDataRoot = extensionData[METADATA_NAMESPACE];
-                    return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
-                });
-        }
-
         return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise,
             function (required, optional) {
                 return _.zipWith(required, optional, _.merge);
             })
             .tap(function (properties) {
-                var propertiesByID = _.indexBy(properties, "layerID");
+                var extensionPromise;
+                if (doc.hasBackgroundLayer && doc.numberOfLayers === 0 && targetLayers.length === 1) {
+                    // Special case for background-only documents, which can't contain metadata
+                    extensionPromise = Promise.resolve([{}]);
+                } else if (targetLayers.length !== 0) {
+                    var extensionPlayObjects = targetRefs.map(function (refObj) {
+                        var layerRef = refObj[1];
+                        return layerLib.getExtensionData(docRef, layerRef, METADATA_NAMESPACE);
+                    });
+
+                    extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
+                        .map(function (extensionData) {
+                            var extensionDataRoot = extensionData[METADATA_NAMESPACE];
+                            return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
+                        });
+                } else {
+                    extensionPromise = Promise.resolve([]);
+                }
 
                 return extensionPromise.then(function (allData) {
+                    var lazyPropertiesPromise = targetLayers.length === 0 ? Promise.resolve([]) :
+                            descriptor.batchMultiGetProperties(targetRefs, _lazyLayerProperties,
+                                { continueOnError: true });
+
                     return lazyPropertiesPromise.each(function (lazyProperties, index) {
                         if (!lazyProperties) {
                             // A background will not have a layer ID
                             return;
                         }
 
-                        var lazyLayerID = lazyProperties.layerID,
+                        var propertiesByID = _.indexBy(properties, "layerID"),
+                            lazyLayerID = lazyProperties.layerID,
                             extensionData = allData[index];
 
                         _.merge(propertiesByID[lazyLayerID], lazyProperties, extensionData);
