@@ -36,6 +36,7 @@ define(function (require, exports, module) {
         TypeTool = require("./superselect/type"),
         system = require("js/util/system"),
         shortcuts = require("js/util/shortcuts"),
+        nls = require("js/util/nls"),
         SuperselectOverlay = require("js/jsx/tools/SuperselectOverlay"),
         ArtboardAdderOverlay = require("js/jsx/tools/ArtboardAdderOverlay"),
         EventPolicy = require("js/models/eventpolicy"),
@@ -101,7 +102,7 @@ define(function (require, exports, module) {
     var SuperSelectTool = function () {
         this.id = "newSelect";
         this.icon = "newSelect";
-        this.name = "Super Select";
+        this.name = nls.localize("strings.TOOLS.NAMES.SELECT");
         this.nativeToolName = _nativeToolName;
         this.dragging = false;
         this.dragEvent = null;

@@ -65,6 +65,8 @@ define(function (require, exports) {
      */
     var _currentTransformPolicyID = null;
 
+    var directSelectToolID = "superselectVector";
+
     /**
      * Installs the defaults on a given shape tool
      * 
@@ -645,6 +647,7 @@ define(function (require, exports) {
             dispatchPromise,
             removePromise,
             policyPromise,
+            directSelectShortcutPromise,
             createMaskOptions = {
                 historyStateInfo: {
                     name: nls.localize("strings.ACTIONS.ADD_VECTOR_MASK"),
@@ -706,8 +709,13 @@ define(function (require, exports) {
                     this.dispatch(events.tool.VECTOR_MASK_POLICY_CHANGE, policyID);
                 });
             removePromise = Promise.resolve();
+
+            directSelectShortcutPromise = this.transfer(shortcuts.addShortcut, utilShortcuts.GLOBAL.TOOLS.VECTOR_SELECT,
+                {}, _vectorSelectMaskHandler, directSelectToolID,
+                true, nls.localize("strings.TOOLS.NAMES.DIRECT_SELECTION_TOOL"));
         } else {
             // delete empty masks when leaving mask mode
+            var shortcutStore = this.flux.store("shortcut");
             removePromise = this.transfer(layers.resetLayers, currentDocument, currentLayer)
                 .bind(this)
                 .then(function () {
@@ -745,6 +753,10 @@ define(function (require, exports) {
                     }
                 });
 
+            if (shortcutStore.getByID(directSelectToolID)) {
+                directSelectShortcutPromise = this.transfer(shortcuts.removeShortcut, directSelectToolID);
+            }
+
             var pointerPolicyID = toolStore.getVectorMaskPolicyID();
          
             if (pointerPolicyID) {
@@ -766,11 +778,13 @@ define(function (require, exports) {
 
                 firstLaunch = false;
                 return Promise.join(initPromise, defaultPromise, resetPromise, dispatchPromise, policyPromise,
-                    removePromise);
+                    removePromise, directSelectShortcutPromise);
             } else if (!vectorMaskMode) {
-                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise, removePromise);
+                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise,
+                    removePromise, directSelectShortcutPromise);
             } else {
-                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise, removePromise)
+                return Promise.join(initPromise, resetPromise, dispatchPromise, policyPromise,
+                    removePromise, directSelectShortcutPromise)
                 .then(function () {
                     return UI.setSuppressTargetPaths(false);
                 })
@@ -782,16 +796,18 @@ define(function (require, exports) {
                     }
                 });
             }
-        } else if (currentTool.id === "newSelect" || currentTool.id === "superselectVector") {
+        } else if (currentTool.id === "newSelect" || currentTool.id === directSelectToolID) {
             if (!vectorMaskMode) {
                 return this.transfer(selectTool, toolStore.getToolByID("newSelect"))
                 .then(function () {
-                    return Promise.join(initPromise, dispatchPromise, policyPromise, removePromise);
+                    return Promise.join(initPromise, dispatchPromise, policyPromise,
+                        removePromise, directSelectShortcutPromise);
                 });
             } else {
-                return this.transfer(selectTool, toolStore.getToolByID("superselectVector"))
+                return this.transfer(selectTool, toolStore.getToolByID(directSelectToolID))
                 .then(function () {
-                    return Promise.join(initPromise, dispatchPromise, policyPromise, removePromise);
+                    return Promise.join(initPromise, dispatchPromise, policyPromise,
+                        removePromise, directSelectShortcutPromise);
                 })
                 .bind(this)
                 .then(function () {
@@ -821,7 +837,8 @@ define(function (require, exports) {
         writes: [locks.JS_TOOL, locks.PS_DOC],
         modal: true,
         transfers: [selectTool, policy.addPointerPolicies, policy.removePointerPolicies,
-            installShapeDefaults, "layers.resetLayers", mask.createVectorMaskFromShape]
+            installShapeDefaults, "layers.resetLayers", mask.createVectorMaskFromShape,
+            "shortcuts.removeShortcut", "shortcuts.addShortcut"]
     };
 
     /**
@@ -896,7 +913,7 @@ define(function (require, exports) {
                         !_.isEqual(canvasRectangle, newCanvasRectangle) ||
                         activeTool !== newTool) {
                     documentLayerBounds = nextDocumentLayerBounds;
-                    topSelectedLayers = nextTopSelectedLayers,
+                    topSelectedLayers = nextTopSelectedLayers;
                     uiTransformMatrix = newxUiTransformMatrix;
                     activeTool = newTool;
                     canvasRectangle = newCanvasRectangle;
@@ -974,10 +991,9 @@ define(function (require, exports) {
 
             return specs;
         }.bind(this), []);
-    
+
         _vectorMaskHandler = function () {
             var vectorMode = toolStore.getVectorMode();
-            
             this.flux.actions.tools.changeVectorMaskMode(!vectorMode);
         }.bind(this);
 
@@ -985,21 +1001,28 @@ define(function (require, exports) {
             key: utilShortcuts.GLOBAL.TOOLS.MASK_SELECT,
             modifiers: {},
             fn: _vectorMaskHandler,
-            name: "Vector Mask"
+            name: nls.localize("strings.TOOLS.NAMES.VECTOR_MASK_MODE")
         });
 
         _vectorSelectMaskHandler = function () {
             if (toolStore.getVectorMode()) {
-                flux.actions.tools.select(toolStore.getToolByID("superselectVector"));
+                flux.actions.tools.select(toolStore.getToolByID(directSelectToolID));
             }
         }.bind(this);
 
-        shortcutSpecs.push({
-            key: utilShortcuts.GLOBAL.TOOLS.VECTOR_SELECT,
-            modifiers: {},
-            fn: _vectorSelectMaskHandler,
-            name: "Super Select Vector"
-        });
+        if (toolStore.getVectorMode()) {
+            _vectorSelectMaskHandler = function () {
+                flux.actions.select(toolStore.getToolByID(directSelectToolID));
+            }.bind(this);
+
+            shortcutSpecs.push({
+                key: utilShortcuts.GLOBAL.TOOLS.VECTOR_SELECT,
+                modifiers: {},
+                id: directSelectToolID,
+                fn: _vectorSelectMaskHandler,
+                name: toolStore.getToolByID(directSelectToolID).name
+            });
+        }
 
         return this.transfer(shortcuts.addShortcuts, shortcutSpecs);
     };

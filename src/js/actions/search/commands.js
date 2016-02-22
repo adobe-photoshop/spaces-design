@@ -72,7 +72,7 @@ define(function (require, exports) {
     };
     
     /**
-     * Get a shortcut as a string for themen menu entry shortcut object
+     * Get a shortcut as a string for menu entry shortcut object
      *
      * @private
      * @param {object} fullShortcut
@@ -114,7 +114,7 @@ define(function (require, exports) {
     };
     
     /**
-     * Make list of recent documents info so search store can create search options
+     * Make list of shortcut commands info so search store can create search options
      * 
      * @private
      * @return {Immutable.List.<object>}
@@ -258,7 +258,7 @@ define(function (require, exports) {
     };
     
     /**
-     * Register recent document info for search
+     * Register menu commands and associated shortcuts for search
      */
     var registerMenuCommandSearch = function () {
         var menuCommandPayload = {

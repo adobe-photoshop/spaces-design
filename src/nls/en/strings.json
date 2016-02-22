@@ -150,13 +150,17 @@
     },
     "TITLE_TRANSFORM": "Transform",
     "TOOLS": {
-        "superselectVector": "A - Select Vector Tool",
-        "newSelect": "V - Select Tool",
-        "rectangle": "R - Rectangle Tool",
-        "ellipse": "E - Ellipse Tool",
-        "pen": "P - Pen Tool",
-        "typeCreateOrEdit": "T - Type Tool",
-        "sampler": "I - Sampler Tool"
+        "NAMES" : {
+            "DIRECT_SELECTION_TOOL": "Direct Selection Tool",
+            "VECTOR_MASK_MODE": "Vector Mask Mode",
+            "ELLIPSE": "Ellipse Tool",
+            "PEN": "Pen Tool",
+            "SUPER_SELECT_TYPE": "Superselect-Type",
+            "RECTANGLE": "Rectangle Tool",
+            "EYEDROPPER": "Sampler Tool",
+            "SELECT": "Select Tool",
+            "TYPE": "Type Tool"
+        }
     },
     "TOOLTIPS": {
         "SELECT_NEXT_DOCUMENT": "Select Next Document",
@@ -274,7 +278,16 @@
         "EXPORT_DIALOG": "Export",
         "REFERENCE_POINT_TOOL": "Set reference point",
         "VECTOR_MASK_MODE": "Mask mode",
-        "SEARCH": "Search"
+        "SEARCH": "Search",
+        "TOOLS": {
+            "superselectVector": "A - Select Vector Tool",
+            "newSelect": "V - Select Tool",
+            "rectangle": "R - Rectangle Tool",
+            "ellipse": "E - Ellipse Tool",
+            "pen": "P - Pen Tool",
+            "typeCreateOrEdit": "T - Type Tool",
+            "sampler": "I - Sampler Tool"
+        }
     },
     "LAYER_KIND": {
         "ANY": "Any Layer",
