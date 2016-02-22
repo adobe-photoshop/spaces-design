@@ -869,6 +869,7 @@ define(function (require, exports) {
             toolStore = this.flux.store("tool"),
             panelStore = this.flux.store("panel"),
             documentLayerBounds,
+            topSelectedLayers,
             activeTool,
             canvasRectangle,
             uiTransformMatrix;
@@ -884,15 +885,18 @@ define(function (require, exports) {
 
             if (currentDocument) {
                 var nextDocumentLayerBounds = currentDocument.layers.selectedChildBounds,
+                    nextTopSelectedLayers = currentDocument.layers.selectedTopAncestors,
                     newxUiTransformMatrix = uiStore.getCurrentTransformMatrix(),
                     newCanvasRectangle = panelStore.getCloakRect(),
                     newTool = toolStore.getCurrentTool();
                     
                 if (!Immutable.is(documentLayerBounds, nextDocumentLayerBounds) ||
+                        !Immutable.is(topSelectedLayers, nextTopSelectedLayers) ||
                         !_.isEqual(uiTransformMatrix, newxUiTransformMatrix) ||
                         !_.isEqual(canvasRectangle, newCanvasRectangle) ||
                         activeTool !== newTool) {
                     documentLayerBounds = nextDocumentLayerBounds;
+                    topSelectedLayers = nextTopSelectedLayers,
                     uiTransformMatrix = newxUiTransformMatrix;
                     activeTool = newTool;
                     canvasRectangle = newCanvasRectangle;
