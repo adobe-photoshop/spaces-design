@@ -123,7 +123,8 @@ define(function (require, exports, module) {
                 marqueeStart: panelState.marqueeStart,
                 modalState: modalState,
                 leafBounds: leafModifier,
-                vectorMaskMode: vectorMaskMode
+                vectorMaskMode: vectorMaskMode,
+                canvasBounds: panelStore.getCloakRect()
             };
         },
 
@@ -479,16 +480,24 @@ define(function (require, exports, module) {
                 return;
             }
 
+            var canvasBounds = this.state.canvasBounds,
+                mouseX = this._currentMouseX,
+                mouseY = this._currentMouseY;
+
+            if (!canvasBounds ||
+                mouseX < canvasBounds.left || mouseX > canvasBounds.right ||
+                mouseY < canvasBounds.top || mouseY > canvasBounds.bottom) {
+                return;
+            }
+
             var marquee = this.state.marqueeEnabled,
                 layerTree = this.state.document.layers,
                 scale = this._scale,
                 uiStore = this.getFlux().store("ui"),
-                mouseX = this._currentMouseX,
-                mouseY = this._currentMouseY,
                 canvasMouse = uiStore.transformWindowToCanvas(mouseX, mouseY),
                 highlightFound = false,
                 underPolicy = this._positionUnderAlwaysPropagatePolicy(mouseX, mouseY);
-            
+
             // Yuck, we gotta traverse backwards, and D3 doesn't offer reverse iteration
             _.forEachRight(d3.selectAll(".artboard-name-rect")[0], function (element) {
                 var layer = d3.select(element),

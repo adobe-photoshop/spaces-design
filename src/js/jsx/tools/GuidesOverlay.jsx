@@ -87,7 +87,8 @@ define(function (require, exports, module) {
                 document: currentDocument,
                 tool: currentTool,
                 modalState: modalState || appIsModal,
-                overlaysEnabled: panelState.overlaysEnabled
+                overlaysEnabled: panelState.overlaysEnabled,
+                canvasBounds: panelStore.getCloakRect()
             };
         },
 
@@ -289,6 +290,14 @@ define(function (require, exports, module) {
                 self = this;
 
             if (self._currentMouseDown) {
+                return;
+            }
+
+            var canvasBounds = this.state.canvasBounds;
+            if (!canvasBounds ||
+                mouseX < canvasBounds.left || mouseX > canvasBounds.right ||
+                mouseY < canvasBounds.top || mouseY > canvasBounds.bottom) {
+                self._debouncedHighlight.cancel();
                 return;
             }
             
