@@ -137,8 +137,18 @@ define(function (require, exports) {
             optionalProperties = _optionalDocumentProperties;
         }
 
-        var documentPropertiesPromise = descriptor.multiGetProperties(reference, properties),
-            optionalPropertiesPromise = descriptor.multiGetOptionalProperties(reference, optionalProperties);
+        var documentPropertiesPromise = descriptor
+                .multiGetProperties(reference, properties, {
+                    cache: {
+                        id: "documentProperties"
+                    }
+                }),
+            optionalPropertiesPromise = descriptor
+                .multiGetOptionalProperties(reference, optionalProperties, {
+                    cache: {
+                        id: "documentOptionalProperties"
+                    }
+                });
 
         // fetch exports metadata via document extension data
         var nameSpace = global.EXTENSION_DATA_NAMESPACE,
@@ -260,8 +270,7 @@ define(function (require, exports) {
             },
             getOpts = {
                 cache: {
-                    id: "documentIDs",
-                    delete: true
+                    id: "documentIDs"
                 }
             };
 

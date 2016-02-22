@@ -191,11 +191,17 @@ define(function (require, exports) {
             };
 
         var requiredPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _layerProperties, {
-            failOnMissingProperty: true
+            failOnMissingProperty: true,
+            cache: {
+                id: "layerProperties"
+            }
         });
 
         var optionalPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _optionalLayerProperties, {
-            failOnMissingProperty: false
+            failOnMissingProperty: false,
+            cache: {
+                id: "layerOptionalProperties"
+            }
         });
 
         var targetLayers = doc.targetLayers || [],
