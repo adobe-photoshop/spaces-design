@@ -31,8 +31,7 @@ define(function (require) {
         documentLib = require("adapter").lib.document;
 
     var ui = require("./util/ui"),
-        nls = require("./util/nls"),
-        global = require("./util/global");
+        nls = require("./util/nls");
 
     var stylesReady = ui.getPSColorStop(),
         localeReady = nls.initLocaleInfo(),
