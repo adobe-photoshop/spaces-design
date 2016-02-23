@@ -961,6 +961,10 @@ define(function (require, exports, module) {
                         return bounds && bounds.area > 0;
                     });
 
+            if (layer.vectorMaskEnabled) {
+                childBounds = childBounds.push(layer.bounds);
+            }
+
             return Bounds.union(childBounds);
         case Layer.KINDS.GROUPEND:
             return null;
