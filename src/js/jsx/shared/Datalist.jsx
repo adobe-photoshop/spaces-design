@@ -538,7 +538,7 @@ define(function (require, exports, module) {
                     if (this.refs.autocomplete) {
                         var style = ReactDOM.findDOMNode(this.refs.autocomplete).style;
                         if (suggestionWidth > 0) {
-                            style.left = hiddenWidth + "px";
+                            style.left = Math.round(hiddenWidth) + "px";
                             style.width = suggestionWidth + "px";
                             style.visibility = "visible";
                         } else {
