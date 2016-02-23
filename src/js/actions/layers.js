@@ -64,6 +64,7 @@ define(function (require, exports) {
         "layerLocking",
         "itemIndex",
         "background",
+        "bounds",
         "boundsNoMask",
         "boundsNoEffects",
         "mode"
@@ -269,6 +270,8 @@ define(function (require, exports) {
             property = ["pathBounds", "keyOriginType"];
         } else if (layer.isText) {
             property = ["boundingBox"];
+        } else if (layer.isGroup && layer.vectorMaskEnabled) {
+            property = ["bounds", "vectorMaskEnabled"];
         } else {
             property = ["boundsNoMask"];
         }
@@ -524,7 +527,7 @@ define(function (require, exports) {
                 .filterNot(function (layer) {
                     // We don't track bounds of non-artboard groups or adjustment layers
                     return layer.isGroupEnd ||
-                        (layer.isGroup && !layer.isArtboard) ||
+                        (layer.isGroup && !(layer.isArtboard || layer.vectorMaskEnabled)) ||
                         layer.isAdjustment;
                 });
 

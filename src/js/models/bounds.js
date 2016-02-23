@@ -164,6 +164,12 @@ define(function (require, exports, module) {
             switch (layerKind) {
                 // Photoshop's group / adjustment bounds are not useful, so ignore them.
             case Layer.KINDS.GROUP:
+                if (descriptor.vectorMaskEnabled) {
+                    boundsObject = descriptor.bounds;
+                } else {
+                    return null;
+                }
+                break;
             case Layer.KINDS.GROUPEND:
             case Layer.KINDS.ADJUSTMENT:
                 return null;
