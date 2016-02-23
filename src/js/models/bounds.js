@@ -183,18 +183,20 @@ define(function (require, exports, module) {
                 boundsObject = descriptor.boundsNoMask;
                 break;
             }
-
-            var model = {};
-
-            model.top = boundsObject.top._value;
-            model.left = boundsObject.left._value;
-            model.bottom = boundsObject.bottom._value;
-            model.right = boundsObject.right._value;
-
-            boundsObject = model;
+            
+            if (boundsObject) {
+                boundsObject = {
+                    top: boundsObject.top._value,
+                    left: boundsObject.left._value,
+                    bottom: boundsObject.bottom._value,
+                    right: boundsObject.right._value
+                };
+            }
         }
 
-        delete boundsObject._obj;
+        if (boundsObject) {
+            delete boundsObject._obj;
+        }
 
         return boundsObject;
     };

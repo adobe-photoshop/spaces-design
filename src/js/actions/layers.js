@@ -1,4 +1,4 @@
-/*
+    /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -54,6 +54,7 @@ define(function (require, exports) {
     /**
      * Properties to be included when requesting layer
      * descriptors from Photoshop.
+     * 
      * @private
      * @type {Array.<string>} 
      */
@@ -64,30 +65,52 @@ define(function (require, exports) {
         "layerLocking",
         "itemIndex",
         "background",
-        "bounds",
-        "boundsNoMask",
-        "boundsNoEffects",
-        "mode"
+        "layerKind",
+        "layerSectionExpanded",
+        "artboardEnabled",
+        "smartObject",
+        "vectorMaskEnabled",
+        "vectorMaskEmpty",
+        "textWarningLevel"
     ];
-
+    
     /**
-     * Basic optional properties to request of layer descriptors from Photoshop.
-     * When initializing documents, these are the only properties requested for
-     * non-selected layers.
+     * Required properties for children of the selected layers
      * 
      * @private
      * @type {Array.<string>} 
      */
-    var _optionalLayerProperties = [
-        "boundingBox",
-        "layerKind",
+    var _lazySelectedChildLayerProperties = [
+        "layerID", // redundant but useful for matching results
         "artboard",
-        "artboardEnabled",
-        "smartObject",
-        "layerSectionExpanded",
-        "vectorMaskEnabled",
-        "vectorMaskEmpty",
-        "textWarningLevel"
+        "bounds",
+        "boundingBox",
+        "boundsNoMask",
+        "boundsNoEffects",
+        "pathBounds",
+        "mode"
+    ];
+    
+    
+    /**
+     * Required properties for the selected layers
+     * 
+     * @private
+     * @type {Array.<string>} 
+     */
+    var _lazySelectedLayerProperties = [
+        "layerID",
+        "globalAngle",
+        "proportionalScaling",
+        "adjustment",
+        "AGMStrokeStyleInfo",
+        "textKey",
+        "fillEnabled",
+        "fillOpacity",
+        "keyOriginType",
+        "layerEffects",
+        "opacity",
+        "layerFXVisible" // the following are required but this is not enforced
     ];
 
     /**
@@ -98,33 +121,7 @@ define(function (require, exports) {
      * @private
      * @type {Array.<string>}
      */
-    var _lazyLayerProperties = [
-        "layerID", // redundant but useful for matching results
-        "globalAngle",
-        "pathBounds",
-        "proportionalScaling",
-        "adjustment",
-        "AGMStrokeStyleInfo",
-        "textKey",
-        "fillEnabled",
-        "fillOpacity",
-        "keyOriginType",
-        "layerEffects",
-        "layerFXVisible", // the following are required but this is not enforced
-        "opacity"
-    ];
-
-    /**
-     * All optional properties to request of layer descriptors from Photoshop.
-     * When resetting any layer(s), these properties are requested. This is the
-     * union of _optionalLayerProperties and _lazyLayerProperties.
-     *
-     * @private
-     * @type {Array.<string>}
-     */
-    var _allOptionalLayerProperties = _lazyLayerProperties
-        .slice(1)
-        .concat(_optionalLayerProperties);
+    var _lazyLayerProperties = _lazySelectedLayerProperties.concat(_lazySelectedChildLayerProperties.slice(1));
 
     /**
      * Namespace for extension metadata.
@@ -148,9 +145,8 @@ define(function (require, exports) {
     var _getLayersByRef = function (references, lazy) {
         var layerPropertiesPromise = references.length === 0 ? Promise.resolve([]) :
                 descriptor.batchMultiGetProperties(references, _layerProperties),
-            optionalProperties = lazy ? _optionalLayerProperties : _allOptionalLayerProperties,
             optionalPropertiesPromise = references.length === 0 ? Promise.resolve([]) :
-                descriptor.batchMultiGetProperties(references, optionalProperties, { continueOnError: true });
+                descriptor.batchMultiGetProperties(references, _lazyLayerProperties, { continueOnError: true });
 
         var extensionPromise;
         if (lazy || references.length === 0) {
@@ -196,24 +192,17 @@ define(function (require, exports) {
             failOnMissingProperty: true
         });
 
-        var optionalPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _optionalLayerProperties, {
-            failOnMissingProperty: false
-        });
-
-        var targetLayers = doc.targetLayers || [],
-            targetRefs = targetLayers.map(function (target) {
-                return [
-                    docRef,
-                    layerLib.referenceBy.index(startIndex + target._index)
-                ];
-            });
-
-        return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise,
-            function (required, optional) {
-                return _.zipWith(required, optional, _.merge);
-            })
+        return requiredPropertiesPromise
             .tap(function (properties) {
-                var extensionPromise;
+                var extensionPromise,
+                    targetLayers = doc.targetLayers || [],
+                    targetRefs = targetLayers.map(function (target) {
+                        return [
+                            docRef,
+                            layerLib.referenceBy.index(startIndex + target._index)
+                        ];
+                    });
+
                 if (doc.hasBackgroundLayer && doc.numberOfLayers === 0 && targetLayers.length === 1) {
                     // Special case for background-only documents, which can't contain metadata
                     extensionPromise = Promise.resolve([{}]);
@@ -233,9 +222,76 @@ define(function (require, exports) {
                 }
 
                 return extensionPromise.then(function (allData) {
-                    var lazyPropertiesPromise = targetLayers.length === 0 ? Promise.resolve([]) :
-                            descriptor.batchMultiGetProperties(targetRefs, _lazyLayerProperties,
-                                { continueOnError: true });
+                    var lazyPropertiesPromise = Promise.resolve([]);
+
+                    if (targetLayers.length !== 0) {
+                        var depth = 0,
+                            targetIndex = targetLayers.length - 1,
+                            selectedChildLayerIDs = [],
+                            propertiesIndex = targetLayers[targetIndex]._index,
+                            startIndex,
+                            count = 0;
+
+                        while (propertiesIndex >= 0) {
+                            var layerProperties = properties[propertiesIndex],
+                                targetLayerIndex = targetIndex >= 0 ? targetLayers[targetIndex]._index : -1,
+                                layerKind = Layer.KIND_TO_NAME[layerProperties.layerKind];
+
+                            if (depth > 0) {
+                                startIndex = propertiesIndex;
+                                count++;
+
+                                // skip to the next target layer as the current one is one of the child layers.
+                                if (propertiesIndex === targetLayerIndex) {
+                                    targetIndex--;
+                                } else {
+                                    selectedChildLayerIDs.push(layerProperties.layerID);
+                                }
+
+                                if (layerKind === Layer.KINDS.GROUPEND) {
+                                    depth--;
+                                }
+
+                                if (layerKind === Layer.KINDS.GROUP) {
+                                    depth++;
+                                }
+                            } else if (targetLayerIndex === propertiesIndex) {
+                                startIndex = propertiesIndex;
+                                count++;
+                                targetIndex--;
+
+                                if (!layerProperties.artboardEnabled && layerKind === Layer.KINDS.GROUP) {
+                                    // Increase the current depth to include all child layers of the selected layer.
+                                    // Excluding art board since it does not rely on its child properties.
+                                    depth = 1;
+                                }
+                            }
+
+                            propertiesIndex--;
+                        }
+
+                        var lazyRangeOpts = {
+                            range: "layer",
+                            index: startIndex + 1,
+                            count: count
+                        };
+                        
+                        var lazySelectedPropertiesPromise = descriptor.batchMultiGetProperties(targetRefs,
+                                _lazySelectedLayerProperties, { continueOnError: true }),
+                            lazyChildPropertiesPromise = descriptor.getPropertiesRange(docRef, lazyRangeOpts,
+                                _lazySelectedChildLayerProperties, { continueOnError: true });
+
+                        lazyPropertiesPromise = Promise.join(lazySelectedPropertiesPromise,
+                            lazyChildPropertiesPromise, function (selectedProperties, selectedChildProperties) {
+                                var propertiesByID = _.indexBy(selectedChildProperties, "layerID");
+
+                                selectedProperties.forEach(function (prop) {
+                                    _.merge(propertiesByID[prop.layerID], prop);
+                                });
+
+                                return selectedChildProperties;
+                            });
+                    }
 
                     return lazyPropertiesPromise.each(function (lazyProperties, index) {
                         if (!lazyProperties) {
@@ -246,7 +302,7 @@ define(function (require, exports) {
                         var propertiesByID = _.indexBy(properties, "layerID"),
                             lazyLayerID = lazyProperties.layerID,
                             extensionData = allData[index];
-
+                        
                         _.merge(propertiesByID[lazyLayerID], lazyProperties, extensionData);
                     });
                 });
@@ -974,7 +1030,7 @@ define(function (require, exports) {
     select.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [revealLayers, resetSelection, initializeLayers, tools.changeVectorMaskMode],
+        transfers: [revealLayers, initializeLayers, tools.changeVectorMaskMode],
         post: ["verify.layers.verifyLayerSelection"]
     };
 
