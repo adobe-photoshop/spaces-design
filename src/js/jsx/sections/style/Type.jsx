@@ -660,9 +660,10 @@ define(function (require, exports, module) {
                             onHighlightedChange={this._handleTypefaceChange}/>
                     </div>
                     <div className="formline formline__space-between">
-                        <div className={"control-group control-group__vertical column-4"}>
-                            <NumberInput
+                        <div className={"control-group control-group__vertical column-5"}>
+                        <NumberInput
                                 value={locked ? null : sizes}
+                                size="column-5"
                                 precision={2}
                                 min={toPixels(MIN_FONT_SIZE_PTS)}
                                 max={toPixels(MAX_FONT_SIZE_PTS)}
