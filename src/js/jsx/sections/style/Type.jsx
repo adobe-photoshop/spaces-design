@@ -661,7 +661,7 @@ define(function (require, exports, module) {
                     </div>
                     <div className="formline formline__space-between">
                         <div className={"control-group control-group__vertical column-5"}>
-                        <NumberInput
+                            <NumberInput
                                 value={locked ? null : sizes}
                                 size="column-5"
                                 precision={2}
