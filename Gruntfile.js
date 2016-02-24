@@ -26,22 +26,46 @@
 module.exports = function (grunt) {
     "use strict";
     
-    // If main task is debug, this flag gets set at the beginning
-    if (grunt.cli.tasks[0] === "debug") {
-        grunt.option("DEV_MODE", true);
-    }
+    /**
+     * Given an array of locales, this sets the configuration of certain tasks
+     * that rely on the list of locales
+     *
+     * @param {Array.<string>} locales
+     */
+    var setLocales = function (locales) {
+        grunt.config.set(["concat-json", "i18n", "files"],
+            locales.map(function (locale) {
+                return {
+                    dest: "build/nls/" + locale + ".json",
+                    src: "*.json",
+                    cwd: "src/nls/" + locale
+                };
+            })
+        );
+        grunt.config.set(["merge-json", "i18n", "files"],
+            locales.reduce(function (map, locale) {
+                // No need to merge English
+                if (locale === "en") {
+                    return map;
+                }
 
-    // Matches every root folder in src/nls into a locale name
-    // If we are in dev mode, compiles only English
-    var DEV_MODE = grunt.option("DEV_MODE") !== undefined,
-        ALL_LOCALES = DEV_MODE ? ["en"] : grunt.file.expand({
-            filter: "isDirectory",
-            cwd: "src/nls"
-        }, "*");
+                var source = "build/nls/" + locale + ".json",
+                    target = "build/nls/" + locale + ".json";
 
-    process.env.SPACES_LOCALES = ALL_LOCALES;
-    process.env.SPACES_DEV_MODE = DEV_MODE;
-    
+                map[target] = ["build/nls/en.json", source];
+                return map;
+            }, {})
+        );
+        grunt.config.set(["uglify", "files"],
+            locales.reduce(function (map, locale) {
+                var target = "build/spaces-design-" + locale + ".js";
+
+                map[target] = [target];
+                return map;
+            }, {})
+        );
+    };
+
     grunt.initConfig({
         eslint: {
             options: {
@@ -117,15 +141,7 @@ module.exports = function (grunt) {
         // Concatenates the multiple dictionary files
         // into a single json file per locale
         "concat-json": {
-            i18n: {
-                files: ALL_LOCALES.map(function (locale) {
-                    return {
-                        dest: "build/nls/" + locale + ".json",
-                        src: "*.json",
-                        cwd: "src/nls/" + locale
-                    };
-                })
-            },
+            i18n: { /* Set by setLocales above */ },
             options: {
                 space: " "
             }
@@ -133,20 +149,7 @@ module.exports = function (grunt) {
         // Merges the non-en locale dictionaries with English so any missing string
         // is replaced by the English one
         "merge-json": {
-            i18n: {
-                files: ALL_LOCALES.reduce(function (map, locale) {
-                    // No need to merge English
-                    if (locale === "en") {
-                        return map;
-                    }
-
-                    var source = "build/nls/" + locale + ".json",
-                        target = "build/nls/" + locale + ".json";
-
-                    map[target] = ["build/nls/en.json", source];
-                    return map;
-                }, {})
-            },
+            i18n: { /* Set by setLocales above */ },
             options: {
                 space: " "
             }
@@ -197,7 +200,6 @@ module.exports = function (grunt) {
                     "build/style.css": "src/style/main.less"
                 },
                 options: {
-                    sourceMap: grunt.option("DEV_MODE"),
                     sourceMapFileInline: true,
                     outputSourceFiles: true,
                     sourceMapRootpath: "../"
@@ -205,7 +207,6 @@ module.exports = function (grunt) {
             }
         },
         webpack: {
-            options: require("./webpack.config.js"),
             compile: {
                 watch: false
             },
@@ -224,14 +225,9 @@ module.exports = function (grunt) {
                     define: {
                         __PG_DEBUG__: false
                     }
-                },
-                files: ALL_LOCALES.reduce(function (map, locale) {
-                    var target = "build/spaces-design-" + locale + ".js";
-
-                    map[target] = [target];
-                    return map;
-                }, {})
-            }
+                }
+            },
+            files: { /* Set by setLocales above */ }
         },
         concurrent: {
             test: ["eslint", "jscs", "jsdoc", "jsonlint", "lintspaces"],
@@ -284,12 +280,52 @@ module.exports = function (grunt) {
     grunt.registerTask("i18n", "Prepares the localization dictionaries",
         ["clean:i18n", "concat-json", "merge-json"]
     );
-    grunt.registerTask("compile", "Bundles Design Space in Release mode, for all locales",
-        ["checkDependencies", "test", "clean:build", "i18n", "copy:img", "copy:htmlRelease",
-         "less", "webpack:compile", "uglify", "clean:i18n"]
-    );
-    grunt.registerTask("debug", "Bundles Design Space in Debug mode, for English only",
-        ["checkDependencies", "clean", "i18n", "copy:img", "copy:htmlDebug", "less", "concurrent:build"]
-    );
+
+    grunt.registerTask("compile",
+        "Bundles Design Space in Release mode, in locale provided (all otherwise)",
+        function () {
+            var locales = [];
+            if (this.args.length > 0) {
+                locales = this.args;
+            } else {
+                // If not passed in, we read the nls folder for all available languages
+                locales = grunt.file.expand({
+                    filter: "isDirectory",
+                    cwd: "src/nls"
+                }, "*");
+            }
+
+            process.env.SPACES_DEV_MODE = false;
+            process.env.SPACES_LOCALES = locales;
+            setLocales(locales);
+
+            grunt.config.set("webpack.options", require("./webpack.config.js"));
+            
+            grunt.task.run(["checkDependencies", "test", "clean:build", "i18n", "copy:img", "copy:htmlRelease",
+                "less", "webpack:compile", "uglify", "clean:i18n"]);
+        });
+
+    grunt.registerTask("debug",
+        "Bundles Design Space in Debug mode, for English only",
+        function () {
+            var locales = [];
+            if (this.args.length > 0) {
+                locales = this.args;
+            } else {
+                // In debug case, we want to default to English
+                locales = ["en"];
+            }
+
+            process.env.SPACES_DEV_MODE = true;
+            process.env.SPACES_LOCALES = locales;
+            setLocales(locales);
+            
+            grunt.config.set("less.style.options.sourceMap", true);
+            grunt.config.set("webpack.options", require("./webpack.config.js"));
+            
+            grunt.task.run(["checkDependencies", "clean", "i18n", "copy:img", "copy:htmlDebug",
+                "less", "concurrent:build"]);
+        });
+
     grunt.registerTask("default", "Runs linter tests", ["test"]);
 };
