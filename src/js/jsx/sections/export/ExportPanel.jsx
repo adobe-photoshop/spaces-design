@@ -234,6 +234,10 @@ define(function (require, exports, module) {
         },
 
         render: function () {
+            if (this.props.document.layers.selected.some(function(l) { return !l.allInitialized; })) {
+                return null;
+            }
+            
             var document = this.props.document,
                 documentExports = this.state.documentExports,
                 disabled = this.props.disabled,

@@ -69,6 +69,10 @@ define(function (require, exports, module) {
         },
         
         render: function () {
+            if (this.props.document.layers.selected.some(function(l) { return !l.allInitialized; })) {
+                return null;
+            }
+            
             var sectionClasses = classnames({
                 "transform": true,
                 "section": true

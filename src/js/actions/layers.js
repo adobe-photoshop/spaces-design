@@ -142,8 +142,8 @@ define(function (require, exports) {
      *  Otherwise, fetch all properties.
      * @return {Promise.<Array.<object>>}
      */
-    var _getLayersByRef = function (references, lazy) {
-        var layerPropertiesPromise = references.length === 0 ? Promise.resolve([]) :
+    var _getLayersByRef = function (references, lazy, basic) {
+        var layerPropertiesPromise = basic === false || references.length === 0 ? Promise.resolve([]) :
                 descriptor.batchMultiGetProperties(references, _layerProperties),
             optionalPropertiesPromise = references.length === 0 ? Promise.resolve([]) :
                 descriptor.batchMultiGetProperties(references, _lazyLayerProperties, { continueOnError: true });
@@ -165,7 +165,16 @@ define(function (require, exports) {
 
         return Promise.join(layerPropertiesPromise, optionalPropertiesPromise, extensionPromise,
             function (required, optional, extension) {
-                return _.zipWith(required, optional, extension, _.merge);
+                optional.forEach(function(properties) {
+                    properties.partialInitialized = true;
+                    properties.allInitialized = true;
+                });
+                
+                if (basic === false) {
+                    return _.zipWith(optional, extension, _.merge);
+                } else {
+                    return _.zipWith(required, optional, extension, _.merge);
+                }
             });
     };
 
@@ -191,125 +200,130 @@ define(function (require, exports) {
         var requiredPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _layerProperties, {
             failOnMissingProperty: true
         });
-
+        
         return requiredPropertiesPromise
-            .tap(function (properties) {
-                var extensionPromise,
-                    targetLayers = doc.targetLayers || [],
-                    targetRefs = targetLayers.map(function (target) {
-                        return [
-                            docRef,
-                            layerLib.referenceBy.index(startIndex + target._index)
-                        ];
-                    });
-
-                if (doc.hasBackgroundLayer && doc.numberOfLayers === 0 && targetLayers.length === 1) {
-                    // Special case for background-only documents, which can't contain metadata
-                    extensionPromise = Promise.resolve([{}]);
-                } else if (targetLayers.length !== 0) {
-                    var extensionPlayObjects = targetRefs.map(function (refObj) {
-                        var layerRef = refObj[1];
-                        return layerLib.getExtensionData(docRef, layerRef, METADATA_NAMESPACE);
-                    });
-
-                    extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
-                        .map(function (extensionData) {
-                            var extensionDataRoot = extensionData[METADATA_NAMESPACE];
-                            return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
-                        });
-                } else {
-                    extensionPromise = Promise.resolve([]);
-                }
-
-                return extensionPromise.then(function (allData) {
-                    var lazyPropertiesPromise = Promise.resolve([]);
-
-                    if (targetLayers.length !== 0) {
-                        var depth = 0,
-                            targetIndex = targetLayers.length - 1,
-                            selectedChildLayerIDs = [],
-                            propertiesIndex = targetLayers[targetIndex]._index,
-                            startIndex,
-                            count = 0;
-
-                        while (propertiesIndex >= 0) {
-                            var layerProperties = properties[propertiesIndex],
-                                targetLayerIndex = targetIndex >= 0 ? targetLayers[targetIndex]._index : -1,
-                                layerKind = Layer.KIND_TO_NAME[layerProperties.layerKind];
-
-                            if (depth > 0) {
-                                startIndex = propertiesIndex;
-                                count++;
-
-                                // skip to the next target layer as the current one is one of the child layers.
-                                if (propertiesIndex === targetLayerIndex) {
-                                    targetIndex--;
-                                } else {
-                                    selectedChildLayerIDs.push(layerProperties.layerID);
-                                }
-
-                                if (layerKind === Layer.KINDS.GROUPEND) {
-                                    depth--;
-                                }
-
-                                if (layerKind === Layer.KINDS.GROUP) {
-                                    depth++;
-                                }
-                            } else if (targetLayerIndex === propertiesIndex) {
-                                startIndex = propertiesIndex;
-                                count++;
-                                targetIndex--;
-
-                                if (!layerProperties.artboardEnabled && layerKind === Layer.KINDS.GROUP) {
-                                    // Increase the current depth to include all child layers of the selected layer.
-                                    // Excluding art board since it does not rely on its child properties.
-                                    depth = 1;
-                                }
-                            }
-
-                            propertiesIndex--;
-                        }
-
-                        var lazyRangeOpts = {
-                            range: "layer",
-                            index: startIndex + 1,
-                            count: count
-                        };
-                        
-                        var lazySelectedPropertiesPromise = descriptor.batchMultiGetProperties(targetRefs,
-                                _lazySelectedLayerProperties, { continueOnError: true }),
-                            lazyChildPropertiesPromise = descriptor.getPropertiesRange(docRef, lazyRangeOpts,
-                                _lazySelectedChildLayerProperties, { continueOnError: true });
-
-                        lazyPropertiesPromise = Promise.join(lazySelectedPropertiesPromise,
-                            lazyChildPropertiesPromise, function (selectedProperties, selectedChildProperties) {
-                                var propertiesByID = _.indexBy(selectedChildProperties, "layerID");
-
-                                selectedProperties.forEach(function (prop) {
-                                    _.merge(propertiesByID[prop.layerID], prop);
-                                });
-
-                                return selectedChildProperties;
-                            });
-                    }
-
-                    return lazyPropertiesPromise.each(function (lazyProperties, index) {
-                        if (!lazyProperties) {
-                            // A background will not have a layer ID
-                            return;
-                        }
-
-                        var propertiesByID = _.indexBy(properties, "layerID"),
-                            lazyLayerID = lazyProperties.layerID,
-                            extensionData = allData[index];
-                        
-                        _.merge(propertiesByID[lazyLayerID], lazyProperties, extensionData);
-                    });
-                });
-            })
             .then(function (properties) {
                 return properties.reverse();
             });
+
+        // return requiredPropertiesPromise
+        //     .tap(function (properties) {
+        //         var extensionPromise,
+        //             targetLayers = doc.targetLayers || [],
+        //             targetRefs = targetLayers.map(function (target) {
+        //                 return [
+        //                     docRef,
+        //                     layerLib.referenceBy.index(startIndex + target._index)
+        //                 ];
+        //             });
+        // 
+        //         if (doc.hasBackgroundLayer && doc.numberOfLayers === 0 && targetLayers.length === 1) {
+        //             // Special case for background-only documents, which can't contain metadata
+        //             extensionPromise = Promise.resolve([{}]);
+        //         } else if (targetLayers.length !== 0) {
+        //             var extensionPlayObjects = targetRefs.map(function (refObj) {
+        //                 var layerRef = refObj[1];
+        //                 return layerLib.getExtensionData(docRef, layerRef, METADATA_NAMESPACE);
+        //             });
+        // 
+        //             extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
+        //                 .map(function (extensionData) {
+        //                     var extensionDataRoot = extensionData[METADATA_NAMESPACE];
+        //                     return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
+        //                 });
+        //         } else {
+        //             extensionPromise = Promise.resolve([]);
+        //         }
+        // 
+        //         return extensionPromise.then(function (allData) {
+        //             var lazyPropertiesPromise = Promise.resolve([]);
+        // 
+        //             if (targetLayers.length !== 0) {
+        //                 var depth = 0,
+        //                     targetIndex = targetLayers.length - 1,
+        //                     selectedChildLayerIDs = [],
+        //                     propertiesIndex = targetLayers[targetIndex]._index,
+        //                     startIndex,
+        //                     count = 0;
+        // 
+        //                 while (propertiesIndex >= 0) {
+        //                     var layerProperties = properties[propertiesIndex],
+        //                         targetLayerIndex = targetIndex >= 0 ? targetLayers[targetIndex]._index : -1,
+        //                         layerKind = Layer.KIND_TO_NAME[layerProperties.layerKind];
+        // 
+        //                     if (depth > 0) {
+        //                         startIndex = propertiesIndex;
+        //                         count++;
+        // 
+        //                         // skip to the next target layer as the current one is one of the child layers.
+        //                         if (propertiesIndex === targetLayerIndex) {
+        //                             targetIndex--;
+        //                         } else {
+        //                             selectedChildLayerIDs.push(layerProperties.layerID);
+        //                         }
+        // 
+        //                         if (layerKind === Layer.KINDS.GROUPEND) {
+        //                             depth--;
+        //                         }
+        // 
+        //                         if (layerKind === Layer.KINDS.GROUP) {
+        //                             depth++;
+        //                         }
+        //                     } else if (targetLayerIndex === propertiesIndex) {
+        //                         startIndex = propertiesIndex;
+        //                         count++;
+        //                         targetIndex--;
+        // 
+        //                         if (!layerProperties.artboardEnabled && layerKind === Layer.KINDS.GROUP) {
+        //                             // Increase the current depth to include all child layers of the selected layer.
+        //                             // Excluding art board since it does not rely on its child properties.
+        //                             depth = 1;
+        //                         }
+        //                     }
+        // 
+        //                     propertiesIndex--;
+        //                 }
+        // 
+        //                 var lazyRangeOpts = {
+        //                     range: "layer",
+        //                     index: startIndex + 1,
+        //                     count: count
+        //                 };
+        //                 
+        //                 var lazySelectedPropertiesPromise = descriptor.batchMultiGetProperties(targetRefs,
+        //                         _lazySelectedLayerProperties, { continueOnError: true }),
+        //                     lazyChildPropertiesPromise = descriptor.getPropertiesRange(docRef, lazyRangeOpts,
+        //                         _lazySelectedChildLayerProperties, { continueOnError: true });
+        // 
+        //                 lazyPropertiesPromise = Promise.join(lazySelectedPropertiesPromise,
+        //                     lazyChildPropertiesPromise, function (selectedProperties, selectedChildProperties) {
+        //                         var propertiesByID = _.indexBy(selectedChildProperties, "layerID");
+        // 
+        //                         selectedProperties.forEach(function (prop) {
+        //                             _.merge(propertiesByID[prop.layerID], prop);
+        //                         });
+        // 
+        //                         return selectedChildProperties;
+        //                     });
+        //             }
+        // 
+        //             return lazyPropertiesPromise.each(function (lazyProperties, index) {
+        //                 if (!lazyProperties) {
+        //                     // A background will not have a layer ID
+        //                     return;
+        //                 }
+        // 
+        //                 var propertiesByID = _.indexBy(properties, "layerID"),
+        //                     lazyLayerID = lazyProperties.layerID,
+        //                     extensionData = allData[index];
+        //                 
+        //                 _.merge(propertiesByID[lazyLayerID], lazyProperties, extensionData);
+        //             });
+        //         });
+        //     })
+        //     .then(function (properties) {
+        //         return properties.reverse();
+        //     });
     };
 
     /**
@@ -488,14 +502,11 @@ define(function (require, exports) {
         }
 
         var docRef = documentLib.referenceBy.id(document.id),
+            selectedLayers = layers.filter(function (layer) { return layer.selected; }),
             layersPromise;
 
         if (lazy) {
-            var selectedLayerRefs = layers
-                .filter(function (layer) {
-                    return layer.selected;
-                })
-                .map(function (layer) {
+            var selectedLayerRefs = selectedLayers.map(function (layer) {
                     return [
                         docRef,
                         layerLib.referenceBy.id(layer.id)
@@ -540,23 +551,83 @@ define(function (require, exports) {
                 ];
             }).toArray();
 
-            layersPromise = _getLayersByRef(layerRefs);
+            layersPromise = _getLayersByRef(layerRefs, false, false);
+        }
+        
+        var idMapSelectedLayers = _.indexBy(selectedLayers.toJS(), "id"),
+            parentNodes = selectedLayers.reduce(function (nodes, layer) {
+                if (!layer.isArtboard) {
+                    nodes.push(document.layers.nodes.get(layer.id));
+                }
+                return nodes;
+            }, []),
+            parentNode,
+            layer,
+            selectedChildLayers = [],
+            topLayers = selectedLayers.map(function (layer) {
+                return document.layers.topAncestor(layer);
+            }).toArray();
+
+        while(parentNodes.length !== 0) {
+            parentNode = parentNodes.pop();
+            if (!parentNode.children) {
+                continue;
+            }
+            
+            parentNode.children.forEach(function (childNode) {
+                parentNodes.push(childNode);
+
+                var layer = document.layers.byID(childNode.id);
+
+                if (!idMapSelectedLayers[layer.id] && !layer.partialInitialized) {
+                    selectedChildLayers.push(layer);
+                }
+            });
+        }
+        
+        selectedChildLayers = selectedChildLayers.concat(topLayers);
+        
+        var selecteChildLayerPromise = Promise.resolve([]);
+        
+        if (selectedChildLayers.length !== 0) {
+            var childLayerRefs = selectedChildLayers.reduce(function(unlayers, layer) {
+                if (!layer.partialInitialized) {
+                    unlayers.push(layer);
+                }
+                return unlayers;
+            }, [])
+            .map(function (layer) {
+                return [
+                    docRef,
+                    layerLib.referenceBy.id(layer.id)
+                ];
+            });
+            
+            if (childLayerRefs.length !== 0) {
+                selecteChildLayerPromise = descriptor.batchMultiGetProperties(childLayerRefs,
+                    _lazySelectedChildLayerProperties, { continueOnError: true });    
+            }
         }
 
-        return layersPromise
+        return Promise.join(layersPromise, selecteChildLayerPromise, function(properties, childProperties) {
+                childProperties.forEach(function(properties) {
+                    properties.partialInitialized = true;
+                });
+
+                return properties.concat(childProperties);
+            })
             .bind(this)
             .then(function (descriptors) {
-                var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
-                    payload = {
+                var payload = {
                         documentID: storedDocument.id,
                         suppressDirty: suppressDirty,
                         lazy: lazy
                     };
 
-                payload.layers = layers.map(function (layer) {
+                payload.layers = descriptors.map(function (descriptor) {
                     return {
-                        layerID: layer.id,
-                        descriptor: descriptors[index++]
+                        layerID: descriptor.layerID,
+                        descriptor: descriptor
                     };
                 });
                 this.dispatch(events.document.history.RESET_LAYERS, payload);
@@ -782,7 +853,7 @@ define(function (require, exports) {
         }
 
         var uninitializedLayers = layerSpec.filterNot(function (layer) {
-            return layer.initialized;
+            return layer.allInitialized;
         });
 
         return this.transfer(resetLayers, document, uninitializedLayers, true);
@@ -802,21 +873,22 @@ define(function (require, exports) {
      *  the document is closed.
      */
     var initializeLayersBackground = function (document) {
+        return Promise.resolve();
         var flux = this.flux,
             documentStore = flux.store("document");
-
+        
         document = documentStore.getDocument(document.id);
         if (!document) {
             return Promise.resolve();
         }
-
+        
         var uninitializedLayers = document.layers.uninitialized;
         if (uninitializedLayers.isEmpty()) {
             return Promise.resolve();
         }
-
+        
         var firstUninitializedLayers = uninitializedLayers.take(50);
-
+        
         return this.transfer(initializeLayers, document, firstUninitializedLayers)
             .bind(this)
             .then(function () {
@@ -1006,7 +1078,9 @@ define(function (require, exports) {
             dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
                 .bind(this)
                 .then(function () {
-                    return this.transfer(initializeLayers, document, nextSelected);
+                    var currentDoc = this.flux.store("application").getCurrentDocument();
+                    
+                    return this.transfer(initializeLayers, currentDoc, currentDoc.layers.selected);
                 });
             revealPromise = this.transfer(revealLayers, document, nextSelected);
         }

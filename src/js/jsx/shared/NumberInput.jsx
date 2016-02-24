@@ -202,6 +202,7 @@ define(function (require, exports, module) {
                 } else {
                     formattedValue = "";
                     log.warn("Non-finite value in NumberInput: ", value);
+                    console.trace();
                 }
                 break;
             case "string":

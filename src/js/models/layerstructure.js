@@ -304,7 +304,7 @@ define(function (require, exports, module) {
          */
         "uninitialized": function () {
             return this.all.filterNot(function (layer) {
-                return layer.initialized;
+                return layer.allInitialized;
             }, this);
         },
 
