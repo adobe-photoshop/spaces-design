@@ -207,6 +207,7 @@ module.exports = function (grunt) {
             }
         },
         webpack: {
+            options: require("./webpack.config.js"),
             compile: {
                 watch: false
             },
@@ -298,8 +299,6 @@ module.exports = function (grunt) {
             process.env.SPACES_DEV_MODE = false;
             process.env.SPACES_LOCALES = locales;
             setLocales(locales);
-
-            grunt.config.set("webpack.options", require("./webpack.config.js"));
             
             grunt.task.run(["checkDependencies", "test", "clean:build", "i18n", "copy:img", "copy:htmlRelease",
                 "less", "webpack:compile", "uglify", "clean:i18n"]);
@@ -321,7 +320,6 @@ module.exports = function (grunt) {
             setLocales(locales);
             
             grunt.config.set("less.style.options.sourceMap", true);
-            grunt.config.set("webpack.options", require("./webpack.config.js"));
             
             grunt.task.run(["checkDependencies", "clean", "i18n", "copy:img", "copy:htmlDebug",
                 "less", "concurrent:build"]);

@@ -39,7 +39,8 @@ var devMode = process.env.SPACES_DEV_MODE === "true",
 
 // We need grunt to build the nls and less files, so don't allow webpack by itself
 if (!locales) {
-    throw new Error("Please compile using `grunt compile` instead of webpack directly");
+    // throw new Error("Please compile using `grunt compile` instead of webpack directly");
+    return [];
 }
 
 var buildConfigs = languages.map(function (lang) {
