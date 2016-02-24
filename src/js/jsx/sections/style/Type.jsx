@@ -628,7 +628,7 @@ define(function (require, exports, module) {
                         <div className="control-group__vertical">
                             <Label
                                 size="column-4"
-                                className={"label__medium__left-aligned"}
+                                className={"label__medium__left-aligned opacity-label"}
                                 title={nls.localize("strings.TOOLTIPS.SET_OPACITY")}>
                                 {nls.localize("strings.STYLE.OPACITY")}
                             </Label>
