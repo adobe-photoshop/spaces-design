@@ -170,20 +170,19 @@ define(function (require, exports) {
      * @param {number} assetIndex index of this asset within the layer's list
      * @param {ExportAsset} asset asset to export
      * @param {string=} baseDir Optional directory path in to which assets should be exported
-     * @param {string=} prefix Optional prefix to apply to the fileName
+     * @param {string=} baseFilename Base file name to which things may be prefixed/suffixed
+     * @param {string=} prefix Optional prefix to apply to the baseFilename
      * @return {Promise}
      */
-    var _exportAsset = function (document, layer, assetIndex, asset, baseDir, prefix) {
-        var baseName = (layer ? layer.name : document.nameWithoutExtension) ||
-                nls.localize("strings.EXPORT.EXPORT_DOCUMENT_FILENAME"),
-            fileName = baseName + asset.suffix,
-            _layers = layer ? Immutable.List.of(layer) : null;
-
-        fileName = prefix ? prefix + "-" + fileName : fileName;
+    var _exportAsset = function (document, layer, assetIndex, asset, baseDir, baseFilename, prefix) {
+        var _layers = layer ? Immutable.List.of(layer) : null,
+            filename = (prefix ? prefix + "-" : "") +
+                (baseFilename || nls.localize("strings.EXPORT.EXPORT_DOCUMENT_FILENAME")) +
+                asset.suffix;
 
         headlights.logEvent("export", "asset", "scale-" + asset.scale + "-setting-" + asset.format);
 
-        return _exportService.exportAsset(document, layer, asset, fileName, baseDir)
+        return _exportService.exportAsset(document, layer, asset, filename, baseDir)
             .bind(this)
             .then(
                 function (pathArray) {
@@ -789,16 +788,29 @@ define(function (require, exports) {
                     .return(quickAddPromise)
                     .then(function () {
                         // fetch documentExports anew, in case quick-add added any assets
-                        var documentExports = this.flux.stores.export.getDocumentExports(documentID, true);
+                        var documentExports = this.flux.stores.export.getDocumentExports(documentID, true),
+                            baseNameCountMap = new Map();
 
                         // Iterate over the layers, find the associated export assets, and export them
                         var exportList = layersList.flatMap(function (layer) {
-                            var prefix = prefixMap && prefixMap.get(layer.id);
+                            var filename = layer.name,
+                                prefix = prefixMap && prefixMap.get(layer.id);
+
+                            // Avoid naming collision by suffixing filename if a same-named layer
+                            // has already been processed
+                            if (baseNameCountMap.has(filename)) {
+                                var count = baseNameCountMap.get(filename) + 1;
+
+                                baseNameCountMap.set(filename, count);
+                                filename = filename + " " + count;
+                            } else {
+                                baseNameCountMap.set(filename, 1);
+                            }
 
                             return documentExports.getLayerExports(layer.id)
                                 .map(function (asset, index) {
                                     return _exportAsset.call(this, document, layer,
-                                        index, asset, _lastFolderPath, prefix);
+                                        index, asset, _lastFolderPath, filename, prefix);
                                 }, this);
                         }, this);
 
@@ -855,11 +867,12 @@ define(function (require, exports) {
                 .then(_setServiceBusy.bind(this, true))
                 .then(function () {
                     // fetch documentExports anew, in case quick-add added any assets
-                    var documentExports = this.flux.stores.export.getDocumentExports(document.id, true);
+                    var documentExports = this.flux.stores.export.getDocumentExports(document.id, true),
+                        filename = document.nameWithoutExtension;
 
                     // Iterate over the root document assets, and export them
                     var exportList = documentExports.rootExports.map(function (asset, index) {
-                        return _exportAsset.call(this, document, null, index, asset, _lastFolderPath);
+                        return _exportAsset.call(this, document, null, index, asset, _lastFolderPath, filename);
                     }, this);
 
                     _batchExports.call(this, exportList);
