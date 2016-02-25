@@ -80,15 +80,14 @@ define(function (require, exports) {
      * @private
      * @type {Array.<string>} 
      */
-    var _lazySelectedChildLayerProperties = [
+    var _lazyLayerBoundProperties = [
         "layerID", // redundant but useful for matching results
         "artboard",
         "bounds",
         "boundingBox",
         "boundsNoMask",
         "boundsNoEffects",
-        "pathBounds",
-        "mode"
+        "pathBounds"
     ];
     
     
@@ -99,7 +98,7 @@ define(function (require, exports) {
      * @type {Array.<string>} 
      */
     var _lazySelectedLayerProperties = [
-        "layerID",
+        "layerID", // redundant but useful for matching results
         "globalAngle",
         "proportionalScaling",
         "adjustment",
@@ -110,6 +109,7 @@ define(function (require, exports) {
         "keyOriginType",
         "layerEffects",
         "opacity",
+        "mode",
         "layerFXVisible" // the following are required but this is not enforced
     ];
 
@@ -121,7 +121,7 @@ define(function (require, exports) {
      * @private
      * @type {Array.<string>}
      */
-    var _lazyLayerProperties = _lazySelectedLayerProperties.concat(_lazySelectedChildLayerProperties.slice(1));
+    var _lazyLayerProperties = _lazySelectedLayerProperties.concat(_lazyLayerBoundProperties.slice(1));
 
     /**
      * Namespace for extension metadata.
@@ -165,9 +165,9 @@ define(function (require, exports) {
 
         return Promise.join(layerPropertiesPromise, optionalPropertiesPromise, extensionPromise,
             function (required, optional, extension) {
-                optional.forEach(function(properties) {
-                    properties.partialInitialized = true;
-                    properties.allInitialized = true;
+                optional.forEach(function (properties) {
+                    properties.boundsInitialized = true;
+                    properties.initialized = true;
                 });
                 
                 if (basic === false) {
@@ -205,125 +205,6 @@ define(function (require, exports) {
             .then(function (properties) {
                 return properties.reverse();
             });
-
-        // return requiredPropertiesPromise
-        //     .tap(function (properties) {
-        //         var extensionPromise,
-        //             targetLayers = doc.targetLayers || [],
-        //             targetRefs = targetLayers.map(function (target) {
-        //                 return [
-        //                     docRef,
-        //                     layerLib.referenceBy.index(startIndex + target._index)
-        //                 ];
-        //             });
-        // 
-        //         if (doc.hasBackgroundLayer && doc.numberOfLayers === 0 && targetLayers.length === 1) {
-        //             // Special case for background-only documents, which can't contain metadata
-        //             extensionPromise = Promise.resolve([{}]);
-        //         } else if (targetLayers.length !== 0) {
-        //             var extensionPlayObjects = targetRefs.map(function (refObj) {
-        //                 var layerRef = refObj[1];
-        //                 return layerLib.getExtensionData(docRef, layerRef, METADATA_NAMESPACE);
-        //             });
-        // 
-        //             extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
-        //                 .map(function (extensionData) {
-        //                     var extensionDataRoot = extensionData[METADATA_NAMESPACE];
-        //                     return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
-        //                 });
-        //         } else {
-        //             extensionPromise = Promise.resolve([]);
-        //         }
-        // 
-        //         return extensionPromise.then(function (allData) {
-        //             var lazyPropertiesPromise = Promise.resolve([]);
-        // 
-        //             if (targetLayers.length !== 0) {
-        //                 var depth = 0,
-        //                     targetIndex = targetLayers.length - 1,
-        //                     selectedChildLayerIDs = [],
-        //                     propertiesIndex = targetLayers[targetIndex]._index,
-        //                     startIndex,
-        //                     count = 0;
-        // 
-        //                 while (propertiesIndex >= 0) {
-        //                     var layerProperties = properties[propertiesIndex],
-        //                         targetLayerIndex = targetIndex >= 0 ? targetLayers[targetIndex]._index : -1,
-        //                         layerKind = Layer.KIND_TO_NAME[layerProperties.layerKind];
-        // 
-        //                     if (depth > 0) {
-        //                         startIndex = propertiesIndex;
-        //                         count++;
-        // 
-        //                         // skip to the next target layer as the current one is one of the child layers.
-        //                         if (propertiesIndex === targetLayerIndex) {
-        //                             targetIndex--;
-        //                         } else {
-        //                             selectedChildLayerIDs.push(layerProperties.layerID);
-        //                         }
-        // 
-        //                         if (layerKind === Layer.KINDS.GROUPEND) {
-        //                             depth--;
-        //                         }
-        // 
-        //                         if (layerKind === Layer.KINDS.GROUP) {
-        //                             depth++;
-        //                         }
-        //                     } else if (targetLayerIndex === propertiesIndex) {
-        //                         startIndex = propertiesIndex;
-        //                         count++;
-        //                         targetIndex--;
-        // 
-        //                         if (!layerProperties.artboardEnabled && layerKind === Layer.KINDS.GROUP) {
-        //                             // Increase the current depth to include all child layers of the selected layer.
-        //                             // Excluding art board since it does not rely on its child properties.
-        //                             depth = 1;
-        //                         }
-        //                     }
-        // 
-        //                     propertiesIndex--;
-        //                 }
-        // 
-        //                 var lazyRangeOpts = {
-        //                     range: "layer",
-        //                     index: startIndex + 1,
-        //                     count: count
-        //                 };
-        //                 
-        //                 var lazySelectedPropertiesPromise = descriptor.batchMultiGetProperties(targetRefs,
-        //                         _lazySelectedLayerProperties, { continueOnError: true }),
-        //                     lazyChildPropertiesPromise = descriptor.getPropertiesRange(docRef, lazyRangeOpts,
-        //                         _lazySelectedChildLayerProperties, { continueOnError: true });
-        // 
-        //                 lazyPropertiesPromise = Promise.join(lazySelectedPropertiesPromise,
-        //                     lazyChildPropertiesPromise, function (selectedProperties, selectedChildProperties) {
-        //                         var propertiesByID = _.indexBy(selectedChildProperties, "layerID");
-        // 
-        //                         selectedProperties.forEach(function (prop) {
-        //                             _.merge(propertiesByID[prop.layerID], prop);
-        //                         });
-        // 
-        //                         return selectedChildProperties;
-        //                     });
-        //             }
-        // 
-        //             return lazyPropertiesPromise.each(function (lazyProperties, index) {
-        //                 if (!lazyProperties) {
-        //                     // A background will not have a layer ID
-        //                     return;
-        //                 }
-        // 
-        //                 var propertiesByID = _.indexBy(properties, "layerID"),
-        //                     lazyLayerID = lazyProperties.layerID,
-        //                     extensionData = allData[index];
-        //                 
-        //                 _.merge(propertiesByID[lazyLayerID], lazyProperties, extensionData);
-        //             });
-        //         });
-        //     })
-        //     .then(function (properties) {
-        //         return properties.reverse();
-        //     });
     };
 
     /**
@@ -562,13 +443,12 @@ define(function (require, exports) {
                 return nodes;
             }, []),
             parentNode,
-            layer,
             selectedChildLayers = [],
             topLayers = selectedLayers.map(function (layer) {
                 return document.layers.topAncestor(layer);
             }).toArray();
 
-        while(parentNodes.length !== 0) {
+        while (parentNodes.length !== 0) {
             parentNode = parentNodes.pop();
             if (!parentNode.children) {
                 continue;
@@ -579,7 +459,7 @@ define(function (require, exports) {
 
                 var layer = document.layers.byID(childNode.id);
 
-                if (!idMapSelectedLayers[layer.id] && !layer.partialInitialized) {
+                if (!idMapSelectedLayers[layer.id] && !layer.boundsInitialized) {
                     selectedChildLayers.push(layer);
                 }
             });
@@ -590,8 +470,8 @@ define(function (require, exports) {
         var selecteChildLayerPromise = Promise.resolve([]);
         
         if (selectedChildLayers.length !== 0) {
-            var childLayerRefs = selectedChildLayers.reduce(function(unlayers, layer) {
-                if (!layer.partialInitialized) {
+            var childLayerRefs = selectedChildLayers.reduce(function (unlayers, layer) {
+                if (!layer.boundsInitialized) {
                     unlayers.push(layer);
                 }
                 return unlayers;
@@ -605,13 +485,14 @@ define(function (require, exports) {
             
             if (childLayerRefs.length !== 0) {
                 selecteChildLayerPromise = descriptor.batchMultiGetProperties(childLayerRefs,
-                    _lazySelectedChildLayerProperties, { continueOnError: true });    
+                    _lazyLayerBoundProperties, { continueOnError: true });
             }
         }
 
-        return Promise.join(layersPromise, selecteChildLayerPromise, function(properties, childProperties) {
-                childProperties.forEach(function(properties) {
-                    properties.partialInitialized = true;
+        return Promise
+            .join(layersPromise, selecteChildLayerPromise, function (properties, childProperties) {
+                childProperties.forEach(function (properties) {
+                    properties.boundsInitialized = true;
                 });
 
                 return properties.concat(childProperties);
@@ -619,10 +500,10 @@ define(function (require, exports) {
             .bind(this)
             .then(function (descriptors) {
                 var payload = {
-                        documentID: storedDocument.id,
-                        suppressDirty: suppressDirty,
-                        lazy: lazy
-                    };
+                    documentID: storedDocument.id,
+                    suppressDirty: suppressDirty,
+                    lazy: lazy
+                };
 
                 payload.layers = descriptors.map(function (descriptor) {
                     return {
@@ -853,7 +734,7 @@ define(function (require, exports) {
         }
 
         var uninitializedLayers = layerSpec.filterNot(function (layer) {
-            return layer.allInitialized;
+            return layer.initialized;
         });
 
         return this.transfer(resetLayers, document, uninitializedLayers, true);
@@ -873,7 +754,6 @@ define(function (require, exports) {
      *  the document is closed.
      */
     var initializeLayersBackground = function (document) {
-        return Promise.resolve();
         var flux = this.flux,
             documentStore = flux.store("document");
         

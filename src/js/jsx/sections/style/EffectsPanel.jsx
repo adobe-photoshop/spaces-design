@@ -216,10 +216,6 @@ define(function (require, exports, module) {
             if (this.props.document.layers.selected.isEmpty()) {
                 return null;
             }
-            
-            if (this.props.document.layers.selected.some(function(l) { return !l.allInitialized; })) {
-                return null;
-            }
 
             var containerClasses = classnames({
                 "section-container": true,

@@ -283,6 +283,8 @@ define(function (require, exports, module) {
          */
         initialized: false,
 
+        boundsInitialized: false,
+
         /** 
          * indicates if the vector mask has any path components.
          *
@@ -297,11 +299,7 @@ define(function (require, exports, module) {
          */
         textWarningLevel: 0,
         
-        descriptor: null,
-        
-        partialInitialized: false,
-        
-        allInitialized: false
+        descriptor: null
     });
     
     /**
@@ -640,24 +638,14 @@ define(function (require, exports, module) {
      * @param {object|Immutable.Record} document Document descriptor or Document model
      * @param {object} layerDescriptor
      * @param {boolean} selected Whether or not this layer is currently selected
-     * @param {boolean=} initialized
      * @return {Layer}
      */
-    Layer.fromDescriptor = function (document, layerDescriptor, selected, initialized) {
+    Layer.fromDescriptor = function (document, layerDescriptor, selected) {
         var id = layerDescriptor.layerID,
             artboardEnabled = layerDescriptor.artboardEnabled,
             exportEnabled = artboardEnabled && layerDescriptor.exportEnabled !== false || layerDescriptor.exportEnabled,
             documentID,
             resolution;
-            
-        if (layerDescriptor.layerID === 1795) {
-            console.info("layerDescriptor", layerDescriptor);
-            
-            Object.observe(layerDescriptor, function() {
-                console.info("layerDescriptor changed");
-                console.trace();
-            })
-        }
 
         // handle either style of document param
         if (document instanceof Immutable.Record) {
@@ -695,9 +683,8 @@ define(function (require, exports, module) {
                 vectorMaskEmpty: layerDescriptor.vectorMaskEmpty,
                 textWarningLevel: layerDescriptor.textWarningLevel,
                 isLinked: _extractIsLinked(layerDescriptor),
-                initialized: initialized || selected,
-                partialInitialized: layerDescriptor.partialInitialized,
-                allInitialized: layerDescriptor.allInitialized,
+                boundsInitialized: layerDescriptor.boundsInitialized,
+                initialized: layerDescriptor.initialized,
                 descriptor: Immutable.Map(layerDescriptor)
                 // if not explicitly marked as initialized, then it is initialized iff it is selected
             };
@@ -719,16 +706,11 @@ define(function (require, exports, module) {
      *
      * @param {object} layerDescriptor
      * @param {Document} previousDocument
-     * @param {boolean=} lazy If true, layer will be marked as initialized iff it is selected
      * @return {Layer}
      */
-    Layer.prototype.resetFromDescriptor = function (layerDescriptor, previousDocument, lazy) {
+    Layer.prototype.resetFromDescriptor = function (layerDescriptor, previousDocument) {
         layerDescriptor = _.assign(this.descriptor.toJS(), layerDescriptor);
-        
-        if (!layerDescriptor.layerLocking) {
-            console.info("LayerID", layerDescriptor.layerID);
-        }
-        
+
         var Bounds = require("./bounds"),
             Fill = require("./fill"),
             resolution = previousDocument.resolution,
@@ -755,9 +737,8 @@ define(function (require, exports, module) {
                 vectorMaskEmpty: layerDescriptor.vectorMaskEmpty,
                 textWarningLevel: layerDescriptor.textWarningLevel,
                 isLinked: _extractIsLinked(layerDescriptor),
-                initialized: lazy ? this.selected : true,
-                partialInitialized: layerDescriptor.partialInitialized,
-                allInitialized: layerDescriptor.allInitialized,
+                boundsInitialized: layerDescriptor.boundsInitialized,
+                initialized: layerDescriptor.initialized,
                 descriptor: Immutable.Map(layerDescriptor)
             };
 
