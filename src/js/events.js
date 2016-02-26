@@ -96,6 +96,8 @@ define(function (require, exports, module) {
         },
         export: {
             ASSET_CHANGED: "exportAssetChangedQuietly",
+            ASSET_ADDED: "exportAssetAddedQuietly",
+            DELETE_ASSET: "exportDeleteLayerAssetQuietly",
             SERVICE_STATUS_CHANGED: "exportServiceStatusChanged",
             SET_AS_REQUESTED: "exportSetStatusRequested",
             SET_STATE_PROPERTY: "setUseArtboardPrefix",

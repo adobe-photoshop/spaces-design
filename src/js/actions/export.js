@@ -262,10 +262,10 @@ define(function (require, exports) {
             }
         };
 
-        return this.dispatchAsync(events.export.history.ASSET_ADDED, payload)
+        return this.dispatchAsync(events.export.ASSET_ADDED, payload)
             .bind(this)
             .then(function () {
-                return _syncExportMetadata.call(this, documentID, layerIDs);
+                return _syncExportMetadata.call(this, documentID, layerIDs, true);
             });
     };
 
@@ -365,11 +365,15 @@ define(function (require, exports) {
      *
      * If an array of props are supplied then they are added to the list beginning at the supplied index.
      *
+     * suppressHistory is temporarily forced ON: the default is true, and a falsy value will be ignored.
+     * There are no known uses of false.  The hope is that this can easily be switched back after
+     * photoshop is enhanced to support our metadata in history states.
+     *
      * @param {Document} document
      * @param {Immutable.Iterable.<Layer>=} layers set of selected layers
      * @param {number} assetIndex index of this asset within the layer's list to append props 
      * @param {object|Array.<object>} props ExportAsset-like properties to be merged, or an array thereof
-     * @param {boolean=} suppressHistory Optional, if truthy then do not supply photoshop with historyStateInfo
+     * @param {boolean=} suppressHistory Optional.  Temporarily disabled.  Always true.
      * @param {boolean=} suppressErrors Optional, if truthy then swallow any errors
      * @return {Promise}
      */
@@ -393,14 +397,17 @@ define(function (require, exports) {
             }
         };
 
-        var event = suppressHistory ?
+        // Temporarily: we should always suppressHistory
+        var _suppressHistory = true;
+
+        var event = _suppressHistory ?
             events.export.ASSET_CHANGED :
             events.export.history.ASSET_CHANGED;
 
         return this.dispatchAsync(event, payload)
             .bind(this)
             .then(function () {
-                return _syncExportMetadata.call(this, documentID, layerIDs, suppressHistory);
+                return _syncExportMetadata.call(this, documentID, layerIDs, _suppressHistory);
             })
             .catch(function (e) {
                 if (suppressErrors) {
@@ -608,10 +615,10 @@ define(function (require, exports) {
                 }
             };
 
-        return this.dispatchAsync(events.export.history.DELETE_ASSET, payload)
+        return this.dispatchAsync(events.export.DELETE_ASSET, payload)
             .bind(this)
             .then(function () {
-                return _syncExportMetadata.call(this, documentID, layerIDs);
+                return _syncExportMetadata.call(this, documentID, layerIDs, true);
             });
     };
     deleteExportAsset.action = {
