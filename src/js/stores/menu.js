@@ -42,7 +42,7 @@ define(function (require, exports, module) {
          * Current application menubar
          * 
          * @private
-         * @type {MenuBar}
+         * @type {?MenuBar}
          */
         _applicationMenu: null,
         
@@ -130,7 +130,7 @@ define(function (require, exports, module) {
          * @private
          */
         _handleReset: function () {
-            this._applicationMenu = new MenuBar();
+            this._applicationMenu = null;
             this._isExecutingPlaceCommand = false;
         },
         
@@ -189,6 +189,11 @@ define(function (require, exports, module) {
          */
         _updateMenuItemsHelper: _.debounce(function (docStore, appStore, dialogStore,
             preferencesStore, historyStore, exportStore, toolStore) {
+            var oldMenu = this._applicationMenu;
+            if (!oldMenu) {
+                return;
+            }
+
             var document = appStore.getCurrentDocument(),
                 openDocuments = docStore.getAllDocuments(),
                 appIsModal = dialogStore.getState().appIsModal,
@@ -197,8 +202,7 @@ define(function (require, exports, module) {
                 hasNextHistoryState = document && historyStore.hasNextState(document.id),
                 exportEnabled = exportStore.getState().serviceAvailable,
                 preferences = preferencesStore.getState(),
-                vectorMaskMode = toolStore.getVectorMode(),
-                oldMenu = this._applicationMenu;
+                vectorMaskMode = toolStore.getVectorMode();
                 
             this._applicationMenu = this._applicationMenu.updateMenuItems(openDocuments, document,
                 hasPreviousHistoryState, hasNextHistoryState, appIsModal, appIsInputModal, exportEnabled,
@@ -249,7 +253,11 @@ define(function (require, exports, module) {
                 var recentFiles = appStore.getRecentFiles(),
                     oldMenu = this._applicationMenu;
 
-                this._applicationMenu = this._applicationMenu.updateRecentFiles(recentFiles);
+                if (!oldMenu) {
+                    return;
+                }
+
+                this._applicationMenu = oldMenu.updateRecentFiles(recentFiles);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
                     this.emit("change");
@@ -265,8 +273,12 @@ define(function (require, exports, module) {
             this.waitFor(["document", "application"], function (docStore, appStore) {
                 var document = appStore.getCurrentDocument(),
                     oldMenu = this._applicationMenu;
-                    
-                this._applicationMenu = this._applicationMenu.updateViewMenuItems(document);
+
+                if (!oldMenu) {
+                    return;
+                }
+
+                this._applicationMenu = oldMenu.updateViewMenuItems(document);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
                     this.emit("change");
@@ -283,7 +295,11 @@ define(function (require, exports, module) {
                 var colorStop = panelStore.getColorStop(),
                     oldMenu = this._applicationMenu;
 
-                this._applicationMenu = this._applicationMenu.updateColorThemeItems(colorStop);
+                if (!oldMenu) {
+                    return;
+                }
+
+                this._applicationMenu = oldMenu.updateColorThemeItems(colorStop);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
                     this.emit("change");
@@ -299,8 +315,12 @@ define(function (require, exports, module) {
             this.waitFor(["preferences"], function (preferencesStore) {
                 var preferences = preferencesStore.getState(),
                     oldMenu = this._applicationMenu;
-                    
-                this._applicationMenu = this._applicationMenu.updatePreferenceBasedMenuItems(preferences);
+
+                if (!oldMenu) {
+                    return;
+                }
+
+                this._applicationMenu = oldMenu.updatePreferenceBasedMenuItems(preferences);
 
                 if (!Immutable.is(oldMenu, this._applicationMenu)) {
                     this.emit("change");

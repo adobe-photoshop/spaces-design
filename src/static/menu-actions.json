@@ -516,6 +516,10 @@
             "$action": "debug.toggleActionTransferLogging",
             "$enable-rule": "always-except-modal"
         },
+        "TOGGLE_CONCURRENT_ACTION_EXECUTION": {
+            "$action": "debug.toggleConcurrentExecution",
+            "$enable-rule": "always-except-modal"
+        },
         "TOGGLE_DESCRIPTOR_LOGGING": {
             "$action": "debug.logDescriptor",
             "$enable-rule": "always-except-modal"

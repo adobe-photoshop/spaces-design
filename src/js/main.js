@@ -123,6 +123,12 @@ define(function (require, exports) {
             window.__LOG_UTIL__ = log;
             window.__PERF_UTIL__ = performanceUtil;
             window.__REACT_PERF__ = ReactPerf;
+
+            // Disable concurrent execution, if necessary, before starting the controller.
+            if (!_controller.flux.stores.preferences.get("concurrentActionExecution", true)) {
+                log.warn("Disabling concurrent action execution.");
+                _controller.setConcurrentExecution(false);
+            }
         }
 
         var startupPromises = _controller.start()

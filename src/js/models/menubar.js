@@ -532,6 +532,7 @@ define(function (require, exports, module) {
                 "TOGGLE_POSTCONDITIONS": { "checked": preferences.get("postConditionsEnabled", false) },
                 "TOGGLE_ACTION_LOGGING": { "checked": preferences.get("logActions", true) },
                 "TOGGLE_ACTION_TRANSFER_LOGGING": { "checked": preferences.get("logActionTransfers", false) },
+                "TOGGLE_CONCURRENT_ACTION_EXECUTION": { "checked": preferences.get("concurrentActionExecution", true) },
                 "TOGGLE_DESCRIPTOR_LOGGING": { "checked": preferences.get("descriptorLoggingEnabled", false) },
                 "TOGGLE_HEADLIGHTS_LOGGING": { "checked": preferences.get("headlightsLoggingEnabled", false) }
             });

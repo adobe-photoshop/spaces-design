@@ -41,7 +41,7 @@ define(function (require, exports) {
     var setup = function () {
         var testStore = new TestStore(),
             testStores = { test: testStore },
-            controller = new FluxController(testStores),
+            controller = new FluxController({ testStores: testStores }),
             flux = controller.flux;
 
         this.flux = flux;

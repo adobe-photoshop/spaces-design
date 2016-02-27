@@ -108,11 +108,19 @@ define(function (require, exports, module) {
      * Manages the lifecycle of a Fluxxor instance.
      *
      * @constructor
+     * @param {object=} options
+     * @param {object=} options.testStores
+     * @param {boolean=} options.concurrentExecution
      */
-    var FluxController = function (testStores) {
+    var FluxController = function (options) {
         EventEmitter.call(this);
 
-        this._actionQueue = new AsyncDependencyQueue(CORES);
+        options = options || {};
+
+        this._concurrentExecution = options.hasOwnProperty("concurrentExecution") ?
+            options.concurrentExecution : true;
+
+        this._actionQueue = this._makeQueue();
         this._initActionNames();
         this._initActionLocks();
         this._synchronizedActions = new Map();
@@ -120,7 +128,7 @@ define(function (require, exports, module) {
 
         var actions = this._synchronizeAllModules(actionIndex),
             stores = this._initializeAllStores(storeContext),
-            allStores = _.merge(stores, testStores || {});
+            allStores = _.merge(stores, options.testStores || {});
 
         this._flux = new Fluxxor.Flux(allStores, actions);
         this._resetHelper = synchronization.throttle(this._resetWithDelay, this);
@@ -134,6 +142,14 @@ define(function (require, exports, module) {
      * @type {?Fluxxor.Flux}
      */
     FluxController.prototype._flux = null;
+
+    /**
+     * Whether or not to allow concurrent action execution.
+     *
+     * @private
+     * @type {boolean}
+     */
+    FluxController.prototype._concurrentExecution = true;
 
     /**
      * Whether the flux instance is running
@@ -447,7 +463,7 @@ define(function (require, exports, module) {
     FluxController.prototype._resetActionReceivers = function () {
         this._actionReceivers.forEach(function (receiver) {
             // Reset the receiver, clearing it's transfer queue
-            receiver._reset();
+            receiver._queue.removeAll();
         }, this);
     };
 
@@ -469,29 +485,28 @@ define(function (require, exports, module) {
         }
 
         var actionQueue = this._actionQueue,
-            transferQueue = new AsyncDependencyQueue(CORES),
+            transferQueue = this._makeQueue(),
             currentTransfers = new Set(actionObject.transfers || []),
             self = this,
             resolvedPromise;
 
         var receiver = Object.create(proto, {
             /**
-             * Provides direct controller access to actions
-             * @type {FluxController} 
+             * Private reference to the receiver's async queue.
+             *
+             * @private
+             * @type {AsyncDependencyQueue}
              */
-            controller: {
-                value: self
+            _queue: {
+                value: transferQueue
             },
 
             /**
-             * Reset the action receiver. Clears all jobs from the transfer queue.
-             *
-             * @private
+             * Provides direct controller access to actions
+             * @type {FluxController}
              */
-            _reset: {
-                value: function () {
-                    transferQueue.removeAll();
-                }
+            controller: {
+                value: self
             },
 
             /**
@@ -1268,6 +1283,32 @@ define(function (require, exports, module) {
         this._resetPending = true;
         this._lockUI();
         this._resetHelper();
+    };
+
+    FluxController.prototype._getMaxJobs = function () {
+        return this._concurrentExecution ? (CORES * 4) : 1;
+    };
+
+    FluxController.prototype._makeQueue = function () {
+        var maxJobs = this._getMaxJobs();
+
+        return new AsyncDependencyQueue(maxJobs);
+    };
+
+    /**
+     * Indicates that actions should be executed either concurrently (true) or
+     * serially (false).
+     *
+     * @param {boolean} concurrentExecution
+     */
+    FluxController.prototype.setConcurrentExecution = function (concurrentExecution) {
+        this._concurrentExecution = concurrentExecution;
+
+        var maxJobs = this._getMaxJobs();
+        this._actionQueue.setMaxJobs(maxJobs);
+        this._actionReceivers.forEach(function (receiver) {
+            receiver._queue.setMaxJobs(maxJobs);
+        }, this);
     };
 
     module.exports = FluxController;

@@ -241,6 +241,7 @@
         "TOGGLE_POSTCONDITIONS": "Verify Postconditions",
         "TOGGLE_ACTION_LOGGING": "Log Actions",
         "TOGGLE_ACTION_TRANSFER_LOGGING": "Log Action Transfers",
+        "TOGGLE_CONCURRENT_ACTION_EXECUTION": "Concurrent Action Execution",
         "TOGGLE_DESCRIPTOR_LOGGING": "Log Descriptor Events",
         "TOGGLE_HEADLIGHTS_LOGGING": "Log Headlights Events"
     },

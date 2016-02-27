@@ -379,6 +379,27 @@ define(function (require, exports) {
         writes: [locks.JS_PREF],
         transfers: ["preferences.setPreference"]
     };
+
+    /**
+     * Debug-only method to toggle serial/concurrent action execution.
+     *
+     * @return {Promise}
+     */
+    var toggleConcurrentExecution = function () {
+        var preferencesStore = this.flux.store("preferences"),
+            preferences = preferencesStore.getState(),
+            enabled = preferences.get("concurrentActionExecution", true),
+            nextEnabled = !enabled;
+
+        this.controller.setConcurrentExecution(nextEnabled);
+
+        return this.transfer("preferences.setPreference", "concurrentActionExecution", nextEnabled);
+    };
+    toggleConcurrentExecution.action = {
+        reads: [],
+        writes: [locks.JS_PREF],
+        transfers: ["preferences.setPreference"]
+    };
     
     /**
      * Debug-only method to toggle Descriptor Event logging
@@ -573,7 +594,7 @@ define(function (require, exports) {
         writes: [locks.JS_PREF],
         transfers: ["preferences.setPreference"]
     };
-    
+
     /**
      * Debug-only method to toggle action transfer logging
      *
@@ -663,6 +684,7 @@ define(function (require, exports) {
     exports.togglePostconditions = togglePostconditions;
     exports.toggleActionLogging = toggleActionLogging;
     exports.toggleActionTransferLogging = toggleActionTransferLogging;
+    exports.toggleConcurrentExecution = toggleConcurrentExecution;
     exports.logDescriptor = logDescriptor;
     exports.logHeadlights = logHeadlights;
     exports.loadDebuggingHelpers = loadDebuggingHelpers;

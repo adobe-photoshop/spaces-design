@@ -381,5 +381,14 @@ define(function (require, exports, module) {
         return this.active() === 0 && this.pending() === 0;
     };
 
+    /**
+     * Set the maximum number of concurrently executing jobs.
+     *
+     * @param {number} maxJobs
+     */
+    AsyncDependencyQueue.prototype.setMaxJobs = function (maxJobs) {
+        this._maxJobs = maxJobs;
+    };
+
     module.exports = AsyncDependencyQueue;
 });
