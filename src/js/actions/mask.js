@@ -314,7 +314,7 @@ define(function (require, exports) {
         }
 
         var currentLayer = currentLayers.first(),
-            bounds = currentLayer.bounds,
+            bounds = boundsLib.bounds(currentDocument.layers.childBounds(currentLayer)),
             options = {
                 historyStateInfo: {
                     name: nls.localize("strings.ACTIONS.ADD_VECTOR_MASK"),

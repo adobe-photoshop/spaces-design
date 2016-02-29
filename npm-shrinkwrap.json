@@ -196,8 +196,8 @@
       "resolved": "https://registry.npmjs.org/scriptjs/-/scriptjs-2.5.8.tgz"
     },
     "spaces-adapter": {
-      "version": "1.2.2",
-      "from": "adobe-photoshop/spaces-adapter#v1.2.2",
+      "version": "1.2.3",
+      "from": "adobe-photoshop/spaces-adapter#v1.2.3",
       "resolved": "git://github.com/adobe-photoshop/spaces-adapter.git#9ea589715a6ff750a988a29a411dccfa5dc6d1fb",
       "dependencies": {
         "qunitjs": {

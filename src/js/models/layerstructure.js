@@ -961,7 +961,7 @@ define(function (require, exports, module) {
                         return bounds && bounds.area > 0;
                     });
 
-            if (layer.vectorMaskEnabled) {
+            if (layer.vectorMaskEnabled && layer.bounds) {
                 childBounds = childBounds.push(layer.bounds);
             }
 
