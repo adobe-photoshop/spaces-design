@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var React = require("react"),
+        ReactDOM = require("react-dom"),
         Fluxxor = require("fluxxor"),
         FluxMixin = Fluxxor.FluxMixin(React),
         classnames = require("classnames"),
@@ -47,7 +48,7 @@ define(function (require, exports, module) {
          * set `_renderCollapsedLayers` to true, and force update its child LayerGroups to 
          * render the collapsed layers for faster future expand actions (in `componentDidMount`).
          * 
-         * @type {Boolean}
+         * @type {boolean}
          */
         _renderCollapsedLayers: false,
         
@@ -55,6 +56,18 @@ define(function (require, exports, module) {
          * @type {number}
          */
         _forceUpdateTimerID: null,
+        
+        /**
+         * Used to determine whether to scroll to selected layer. When a selected layer has a new index,
+         * it may become invisible if the new index is outside of the visible area. If so, we need to
+         * scroll the layer into the visible area. Operations that will change layer index:
+         * - drag-and-drop layer
+         * - menu items (e.g. Bring Forward `cmd+]`)
+         * - undo/redo layer ordering
+         *
+         * @type {boolean}
+         */
+        _selectedLayerHasNewIndex: false,
 
         propTypes: {
             /**
@@ -75,7 +88,7 @@ define(function (require, exports, module) {
             document: React.PropTypes.instanceOf(Document).isRequired,
 
             /**
-             * @type {Boolean}
+             * @type {boolean}
              */
             disabled: React.PropTypes.bool,
 
@@ -83,7 +96,7 @@ define(function (require, exports, module) {
              * True if the LayerGroup should render collapsed layers. This is controlled by the 
              * root LayerGroup.
              * 
-             * @type {Boolean}
+             * @type {boolean}
              */
             renderCollapsedLayers: React.PropTypes.bool
         },
@@ -97,12 +110,31 @@ define(function (require, exports, module) {
                     this.forceUpdate();
                 }.bind(this), 2000);
             }
+
+            this._scrollIntoFirstSelectedLayer();
         },
 
         componentWillUnmount: function () {
             if (this._forceUpdateTimerID) {
                 window.clearTimeout(this._forceUpdateTimerID);
             }
+        },
+
+        componentWillReceiveProps: function (nextProps) {
+            this._selectedLayerHasNewIndex = nextProps.layerNodes.some(function (layerNode) {
+                var layer = nextProps.document.layers.byID(layerNode.id);
+
+                if (layer.selected) {
+                    var index = this.props.document.layers.indexOf(layer),
+                        nextIndex = nextProps.document.layers.indexOf(layer);
+                    
+                    if (index !== nextIndex) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }, this);
         },
         
         shouldComponentUpdate: function () {
@@ -111,6 +143,25 @@ define(function (require, exports, module) {
             // consolidating the validations in one place (e.g. in the LayerPanel or the root LayerGroup),
             // which allows us to skip rendering a subtree if its children remain unchanged.
             return true;
+        },
+        
+        componentDidUpdate: function () {
+            if (this._selectedLayerHasNewIndex) {
+                this._selectedLayerHasNewIndex = false;
+                this._scrollIntoFirstSelectedLayer();
+            }
+        },
+
+        /**
+         * Scroll into the first selected layer if it is not within the visible area.
+         */
+        _scrollIntoFirstSelectedLayer: function () {
+            var firstSelectedLayer = this.props.document.layers.selected.first(),
+                layerNode = ReactDOM.findDOMNode(this.refs[firstSelectedLayer.key]);
+                
+            if (layerNode) {
+                layerNode.scrollIntoViewIfNeeded();
+            }
         },
 
         render: function () {
@@ -142,7 +193,7 @@ define(function (require, exports, module) {
                     });
 
                     results.push(
-                        <li key={layer.key} className={className}>
+                        <li key={layer.key} className={className} ref={layer.key}>
                             <LayerFace
                                 key={layer.key}
                                 disabled={this.props.disabled}

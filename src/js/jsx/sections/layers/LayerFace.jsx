@@ -56,15 +56,6 @@ define(function (require, exports, module) {
          */
         _isDragEventTarget: false,
 
-        /**
-         * Used to suppress scrolling into view when the selection is changed
-         * by clicking directly on a layer face.
-         *
-         * @private
-         * @type {boolean}
-         */
-        _suppressNextScrollTo: false,
-
         getInitialState: function () {
             return {
                 isDropTarget: false,
@@ -83,8 +74,7 @@ define(function (require, exports, module) {
                 // Exclude face attributes that are already represented by the component's state.
                 return layer.face.merge({ selected: null, expanded: null, visible: null });
             };
-            
-            // Drag states
+
             if (!_.eq(this.state, nextState)) {
                 return true;
             }
@@ -114,36 +104,12 @@ define(function (require, exports, module) {
         },
         
         componentDidMount: function () {
-            // Scroll into view if the current layer is the first selected layers.
-            if (this.props.document.layers.selected.last() === this.props.layer) {
-                this._scrollIntoView(false);
-            }
-            
             this.getFlux().store("document").addLayerStateListener(this.props.layer.id,
                 this._handleLayerStateChange);
-        },
-        
-        componentDidUpdate: function (prevProps, prevState) {
-            if (this._suppressNextScrollTo) {
-                this._suppressNextScrollTo = false;
-                return;
-            }
-
-            this._scrollIntoView(prevState.selected);
         },
 
         componentWillUnmount: function () {
             this.getFlux().store("document").removeLayerStateListener(this.props.layer.id);
-        },
-        
-        _scrollIntoView: function (prevSelected) {
-            if (this.state.selected && !prevSelected) {
-                var node = ReactDOM.findDOMNode(this);
-
-                if (node) {
-                    node.scrollIntoViewIfNeeded();
-                }
-            }
         },
 
         /**
@@ -179,7 +145,7 @@ define(function (require, exports, module) {
         /**
          * Handle change of layer name input's focus state.
          *
-         * @param {Boolean} hasFocus
+         * @param {boolean} hasFocus
          */
         _handleInputFocusChange: function (hasFocus) {
             this.setState({
@@ -207,7 +173,6 @@ define(function (require, exports, module) {
          */
         _handleLayerClick: function (event) {
             event.stopPropagation();
-            this._suppressNextScrollTo = true;
 
             var modifier = "select";
 
