@@ -181,6 +181,7 @@ define(function (require, exports, module) {
         _handleScrubMove: function (e) {
             if (this.state.scrubbing) {
                 e.stopPropagation();
+                e.preventDefault();
 
                 var coords = this._getScrubPosition(e),
                     deltaX = coords.x - this._initialScrubX,
