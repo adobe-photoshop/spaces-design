@@ -407,8 +407,9 @@ define(function (require, exports) {
         descriptor.__getAsync = descriptor.__getAsync || descriptor._getAsync;
         descriptor.__batchPlayAsync = descriptor.__batchPlayAsync || descriptor._batchPlayAsync;
         descriptor.__eventHandler = descriptor.__eventHandler || function (eventID, obj) {
-            log.debug("[Descriptor] Received PS Event: %c%s\n%c%s", "font-weight:bold", eventID, blockStyle,
-                JSON.stringify(obj, null, " "));
+            log.groupCollapsed("%c[Descriptor] Received PS Event: %s", groupStyle, eventID);
+            log.debug("%c%s", blockStyle, JSON.stringify(obj, null, "  "));
+            log.groupEnd();
         };
 
         if (enabled) {
@@ -430,7 +431,7 @@ define(function (require, exports) {
 
                     log.groupCollapsed("%c[Descriptor] Executing get - %d", groupStyle, descriptorID);
                     log.trace("Trace");
-                    log.debug("Params:\n%c%s", blockStyle, JSON.stringify(reference, null, " "));
+                    log.debug("Params:\n%c%s", blockStyle, JSON.stringify(reference, null, "  "));
                     log.groupEnd();
                     log.timeStamp("[Descriptor] Executing get - " + descriptorID);
                 }).then(function (result) {
@@ -440,7 +441,7 @@ define(function (require, exports) {
                         descriptorID,
                         end - start > SLOW_DESCRIPTOR ? redText : blueText,
                         end - start);
-                    log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, " "));
+                    log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, "  "));
                     log.groupEnd();
                     log.timeStamp("[Descriptor] Finished get - " + descriptorID);
                     return result;
@@ -496,8 +497,8 @@ define(function (require, exports) {
                     descriptorID = id;
 
                     if (!isHitTest) {
-                        var str = "(" + JSON.stringify(commands, null, " ") + ", " +
-                            JSON.stringify(options, null, " ") + ");";
+                        var str = "(" + JSON.stringify(commands, null, "  ") + ", " +
+                            JSON.stringify(options, null, "  ") + ");";
 
                         log.groupCollapsed("%c[Descriptor] Executing batchPlay: [%s] - %d", groupStyle,
                             commandNames, descriptorID);
@@ -515,7 +516,7 @@ define(function (require, exports) {
                             descriptorID,
                             end - start > SLOW_DESCRIPTOR ? redText : blueText,
                             end - start);
-                        log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, " "));
+                        log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, "  "));
                         log.groupEnd();
                         log.timeStamp("[Descriptor] Finished batchPlay - " + descriptorID);
                     }
@@ -593,7 +594,7 @@ define(function (require, exports) {
                 var descriptor = require("adapter").ps.descriptor;
                 descriptor.get("layer")
                     .then(function (result) {
-                        return JSON.stringify(result, null, " ");
+                        return JSON.stringify(result, null, "  ");
                     })
                     .then(log.debug);
             },
