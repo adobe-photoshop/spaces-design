@@ -157,8 +157,8 @@ define(function (require, exports, module) {
          */
         _scrollIntoFirstSelectedLayer: function () {
             var firstSelectedLayer = this.props.document.layers.selected.first(),
-                layerNode = ReactDOM.findDOMNode(this.refs[firstSelectedLayer.key]);
-                
+                layerNode = firstSelectedLayer ? ReactDOM.findDOMNode(this.refs[firstSelectedLayer.key]) : null;
+            
             if (layerNode) {
                 layerNode.scrollIntoViewIfNeeded();
             }
