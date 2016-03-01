@@ -36,6 +36,7 @@ define(function (require, exports) {
         OS = require("adapter").os;
 
     var Layer = require("js/models/layer"),
+        Bounds = require("js/models/bounds"),
         collection = require("js/util/collection"),
         documentActions = require("./documents"),
         historyActions = require("./history"),
@@ -130,6 +131,135 @@ define(function (require, exports) {
      * @type {string}
      */
     var METADATA_NAMESPACE = global.EXTENSION_DATA_NAMESPACE;
+
+    var multiGetRef = function (docRef, layerRef, properties) {
+        return {
+            name: "get",
+            descriptor: {
+                "null": {
+                    "_multiGetRef": [
+                        {
+                            _propertyList: properties
+                        },
+                        layerRef,
+                        docRef
+                    ]
+                }
+                
+            },
+            "options": {
+                useMultiGet: true,
+                failOnMissingProperty: false
+            }
+        };
+    };
+    
+    var getLayerDescriptors = function (document, layers, options) {
+        layers = layers.toArray();
+        
+        if (layers.length === 0) {
+            return Promise.resolve([]);
+        }
+
+        options = _.merge({
+            getEssentialProperties: true,
+            getBoundsProperties: true,
+            getSelectedProperties: true,
+            getExtensionData: true
+        }, options);
+
+        var docRef = documentLib.referenceBy.id(document.id),
+            essentialDescriptorCommands = [],
+            selectedDescriptorCommands = [];
+            
+        layers.forEach(function (layer) {
+            var layerRef = layerLib.referenceBy.id(layer.id);
+            
+            if (options.getEssentialProperties) {
+                essentialDescriptorCommands.push(multiGetRef(docRef, layerRef, _layerProperties));
+            }
+            if (options.getSelectedProperties) {
+                selectedDescriptorCommands.push(multiGetRef(docRef, layerRef, _lazySelectedLayerProperties));
+            }
+        });
+        
+        var essentialPropertiesPromise = essentialDescriptorCommands.length === 0 ? Promise.resolve([]) :
+                descriptor.batchPlay(essentialDescriptorCommands),
+            selectedPropertiesPromise = selectedDescriptorCommands.length === 0 ? Promise.resolve([]) :
+                descriptor.batchPlay(selectedDescriptorCommands);
+
+        var extensionPromise = Promise.resolve([]);
+        if (options.getExtensionData) {
+            var extensionPlayObjects = layers.map(function (layer) {
+                var layerRef = layerLib.referenceBy.id(layer.id);
+
+                return layerLib.getExtensionData(docRef, layerRef, METADATA_NAMESPACE);
+            });
+
+            extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
+                .map(function (extensionData) {
+                    var extensionDataRoot = extensionData[METADATA_NAMESPACE];
+                    return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
+                });
+        }
+        
+
+        return Promise.join(
+            essentialPropertiesPromise,
+            selectedPropertiesPromise,
+            extensionPromise,
+            function (essential, selected, extension) {
+                selected.forEach(function (properties) {
+                    properties.initialized = true;
+                });
+                
+                if (extension.length !== 0) {
+                    layers.forEach(function (layer, index) {
+                        extension[index].layerID = layer.id;
+                    });
+                }
+                
+                var boundsDescriptorCommands = [];
+                
+                if (options.getBoundsProperties) {
+                    var essentialDescriptors = essential;
+                    
+                    if (!options.getEssentialProperties) {
+                        essentialDescriptors = layers.map(function (layer) {
+                            return layer.descriptor.toJS();
+                        });
+                    }
+                    
+                    essentialDescriptors.forEach(function (d) {
+                        var requiredBounds = Bounds.getRequiredBoundsName(d),
+                            layerRef = layerLib.referenceBy.id(d.layerID);
+                            
+                        if (requiredBounds) {
+                            boundsDescriptorCommands.push(multiGetRef(docRef, layerRef, ["layerID", requiredBounds]));
+                        }
+                    });
+                }
+
+                var boundsPromise = boundsDescriptorCommands.length === 0 ? Promise.resolve([]) :
+                        descriptor.batchPlay(boundsDescriptorCommands);
+
+                return boundsPromise.then(function (bounds) {
+                    bounds.forEach(function (properties) {
+                        properties.boundsInitialized = true;
+                    });
+                    
+                    var layerIdMapProperties = {};
+                    
+                    _.flatten([essential, selected, extension, bounds]).forEach(function (properties) {
+                        var layerID = properties.layerID;
+
+                        layerIdMapProperties[layerID] = _.merge(layerIdMapProperties[layerID] || {}, properties);
+                    });
+                    
+                    return _.values(layerIdMapProperties);
+                });
+            });
+    };
 
     /**
      * Get layer descriptors for the given layer references. Only the
@@ -425,14 +555,17 @@ define(function (require, exports) {
                         .toArray();
                 }.bind(this));
         } else {
-            var layerRefs = layers.map(function (layer) {
-                return [
-                    docRef,
-                    layerLib.referenceBy.id(layer.id)
-                ];
-            }).toArray();
-
-            layersPromise = _getLayersByRef(layerRefs, false, false);
+            // var layerRefs = layers.map(function (layer) {
+            //     return [
+            //         docRef,
+            //         layerLib.referenceBy.id(layer.id)
+            //     ];
+            // }).toArray();
+            // 
+            // layersPromise = _getLayersByRef(layerRefs, false, false);
+            // 
+            // 
+            layersPromise = getLayerDescriptors(document, layers, { getEssentialProperties: false });
         }
         
         var idMapSelectedLayers = _.indexBy(selectedLayers.toJS(), "id"),
@@ -465,28 +598,31 @@ define(function (require, exports) {
             });
         }
         
-        selectedChildLayers = selectedChildLayers.concat(topLayers);
+        selectedChildLayers = Immutable.List(selectedChildLayers.concat(topLayers));
         
         var selecteChildLayerPromise = Promise.resolve([]);
         
-        if (selectedChildLayers.length !== 0) {
-            var childLayerRefs = selectedChildLayers.reduce(function (unlayers, layer) {
-                if (!layer.boundsInitialized) {
-                    unlayers.push(layer);
-                }
-                return unlayers;
-            }, [])
-            .map(function (layer) {
-                return [
-                    docRef,
-                    layerLib.referenceBy.id(layer.id)
-                ];
+        if (selectedChildLayers.size !== 0) {
+            // var childLayerRefs = selectedChildLayers.reduce(function (unlayers, layer) {
+            //     if (!layer.boundsInitialized) {
+            //         unlayers.push(layer);
+            //     }
+            //     return unlayers;
+            // }, [])
+            // .map(function (layer) {
+            //     return [
+            //         docRef,
+            //         layerLib.referenceBy.id(layer.id)
+            //     ];
+            // });
+            // 
+            // if (childLayerRefs.length !== 0) {
+            selecteChildLayerPromise = getLayerDescriptors(document, selectedChildLayers, {
+                getEssentialProperties: false,
+                getSelectedProperties: false,
+                getExtensionData: false
             });
-            
-            if (childLayerRefs.length !== 0) {
-                selecteChildLayerPromise = descriptor.batchMultiGetProperties(childLayerRefs,
-                    _lazyLayerBoundProperties, { continueOnError: true });
-            }
+            // }
         }
 
         return Promise

@@ -409,7 +409,7 @@ define(function (require, exports) {
         descriptor.__batchPlayAsync = descriptor.__batchPlayAsync || descriptor._batchPlayAsync;
         descriptor.__eventHandler = descriptor.__eventHandler || function (eventID, obj) {
             log.debug("[Descriptor] Received PS Event: %c%s\n%c%s", "font-weight:bold", eventID, blockStyle,
-                JSON.stringify(obj, null, " "));
+                JSON.stringify(obj, null, "  "));
         };
 
         if (enabled) {
@@ -432,7 +432,7 @@ define(function (require, exports) {
 
                     log.groupCollapsed("%c[Descriptor] Executing get - %d (%d)", groupStyle, descriptorID, executing);
                     log.trace("Trace");
-                    log.debug("Params:\n%c%s", blockStyle, JSON.stringify(reference, null, " "));
+                    log.debug("Params:\n%c%s", blockStyle, JSON.stringify(reference, null, "  "));
                     log.groupEnd();
                     log.timeStamp("[Descriptor] Executing get - " + descriptorID);
                 }).then(function (result) {
@@ -444,7 +444,7 @@ define(function (require, exports) {
                         end - start > SLOW_DESCRIPTOR ? redText : blueText,
                         end - start,
                         blueText, executing);
-                    log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, " "));
+                    log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, "  "));
                     log.groupEnd();
                     log.timeStamp("[Descriptor] Finished get - " + descriptorID);
                     return result;
@@ -499,7 +499,7 @@ define(function (require, exports) {
                 return batchPlayAsync(commands, options, function (id) {
                     descriptorID = id;
                     if (!isHitTest) {
-                        var str = "(" + JSON.stringify(commands, null, " ") + ", " +
+                        var str = "(" + JSON.stringify(commands, null, "  ") + ", " +
                             JSON.stringify(options, null, " ") + ");";
 
                         executing++;
@@ -520,7 +520,7 @@ define(function (require, exports) {
                             end - start > SLOW_DESCRIPTOR ? redText : blueText,
                             end - start,
                             blueText, executing);
-                        log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, " "));
+                        log.debug("Result:\n%c%s", blockStyle, JSON.stringify(result, null, "  "));
                         log.groupEnd();
                         log.timeStamp("[Descriptor] Finished batchPlay - " + descriptorID);
                     }

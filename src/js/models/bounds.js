@@ -200,6 +200,31 @@ define(function (require, exports, module) {
 
         return boundsObject;
     };
+    
+    Bounds.getRequiredBoundsName = function (descriptor) {
+        var layerKind = descriptor.layerKindName || Layer.KIND_TO_NAME[descriptor.layerKind];
+
+        // artboards are also groups. so we handle them separately 
+        if (descriptor.artboardEnabled) {
+            return "artboard";
+        } else if (layerKind === Layer.KINDS.VECTOR && descriptor.hasOwnProperty("pathBounds")) {
+            return "pathBounds";
+        } else {
+            switch (layerKind) {
+            case Layer.KINDS.GROUP:
+                return descriptor.vectorMaskEnabled ? "bounds" : null;
+            case Layer.KINDS.GROUPEND:
+            case Layer.KINDS.ADJUSTMENT:
+                return null;
+            case Layer.KINDS.TEXT:
+                return "boundingBox";
+            case Layer.KINDS.VECTOR:
+                return "boundsNoEffects";
+            default:
+                return "boundsNoMask";
+            }
+        }
+    };
 
     /**
      * Updates the bound object with new properties
