@@ -183,20 +183,47 @@ define(function (require, exports, module) {
                 boundsObject = descriptor.boundsNoMask;
                 break;
             }
-
-            var model = {};
-
-            model.top = boundsObject.top._value;
-            model.left = boundsObject.left._value;
-            model.bottom = boundsObject.bottom._value;
-            model.right = boundsObject.right._value;
-
-            boundsObject = model;
+            
+            if (boundsObject) {
+                boundsObject = {
+                    top: boundsObject.top._value,
+                    left: boundsObject.left._value,
+                    bottom: boundsObject.bottom._value,
+                    right: boundsObject.right._value
+                };
+            }
         }
 
-        delete boundsObject._obj;
+        if (boundsObject) {
+            delete boundsObject._obj;
+        }
 
         return boundsObject;
+    };
+    
+    Bounds.getRequiredBoundsName = function (descriptor) {
+        var layerKind = descriptor.layerKindName || Layer.KIND_TO_NAME[descriptor.layerKind];
+
+        // artboards are also groups. so we handle them separately 
+        if (descriptor.artboardEnabled) {
+            return "artboard";
+        } else if (layerKind === Layer.KINDS.VECTOR && descriptor.hasOwnProperty("pathBounds")) {
+            return "pathBounds";
+        } else {
+            switch (layerKind) {
+            case Layer.KINDS.GROUP:
+                return descriptor.vectorMaskEnabled ? "bounds" : null;
+            case Layer.KINDS.GROUPEND:
+            case Layer.KINDS.ADJUSTMENT:
+                return null;
+            case Layer.KINDS.TEXT:
+                return "boundingBox";
+            case Layer.KINDS.VECTOR:
+                return "boundsNoEffects";
+            default:
+                return "boundsNoMask";
+            }
+        }
     };
 
     /**

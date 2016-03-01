@@ -302,6 +302,11 @@ define(function (require, exports) {
                             .then(function () {
                                 var currentDoc = flux.stores.application.getCurrentDocument();
                                 
+                                return this.transfer("layers.resetLayers", currentDoc, currentDoc.layers.selected);
+                            })
+                            .then(function () {
+                                var currentDoc = flux.stores.application.getCurrentDocument();
+                                
                                 if (currentDoc.unsupported) {
                                     return this.transfer(layerActions.deselectAll, currentDoc);
                                 }
@@ -323,7 +328,8 @@ define(function (require, exports) {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC, locks.JS_APP],
         modal: true,
-        transfers: [historyActions.queryCurrentHistory, "layers.deselectAll", "application.updateRecentFiles"],
+        transfers: [historyActions.queryCurrentHistory, "layers.deselectAll", "application.updateRecentFiles",
+            "layers.resetLayers"],
         hideOverlays: true
     };
 

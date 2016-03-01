@@ -1,4 +1,4 @@
-/*
+    /*
  * Copyright (c) 2014 Adobe Systems Incorporated. All rights reserved.
  *  
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -36,6 +36,7 @@ define(function (require, exports) {
         OS = require("adapter").os;
 
     var Layer = require("js/models/layer"),
+        Bounds = require("js/models/bounds"),
         collection = require("js/util/collection"),
         documentActions = require("./documents"),
         historyActions = require("./history"),
@@ -54,6 +55,7 @@ define(function (require, exports) {
     /**
      * Properties to be included when requesting layer
      * descriptors from Photoshop.
+     * 
      * @private
      * @type {Array.<string>} 
      */
@@ -64,30 +66,52 @@ define(function (require, exports) {
         "layerLocking",
         "itemIndex",
         "background",
-        "bounds",
-        "boundsNoMask",
-        "boundsNoEffects",
-        "mode"
+        "layerKind",
+        "layerSectionExpanded",
+        "artboardEnabled",
+        "smartObject",
+        "vectorMaskEnabled",
+        "vectorMaskEmpty",
+        "textWarningLevel"
     ];
-
+    
     /**
-     * Basic optional properties to request of layer descriptors from Photoshop.
-     * When initializing documents, these are the only properties requested for
-     * non-selected layers.
+     * Required properties for children of the selected layers
      * 
      * @private
      * @type {Array.<string>} 
      */
-    var _optionalLayerProperties = [
-        "boundingBox",
-        "layerKind",
+    var _lazyLayerBoundProperties = [
+        "layerID", // redundant but useful for matching results
         "artboard",
-        "artboardEnabled",
-        "smartObject",
-        "layerSectionExpanded",
-        "vectorMaskEnabled",
-        "vectorMaskEmpty",
-        "textWarningLevel"
+        "bounds",
+        "boundingBox",
+        "boundsNoMask",
+        "boundsNoEffects",
+        "pathBounds"
+    ];
+    
+    
+    /**
+     * Required properties for the selected layers
+     * 
+     * @private
+     * @type {Array.<string>} 
+     */
+    var _lazySelectedLayerProperties = [
+        "layerID", // redundant but useful for matching results
+        "globalAngle",
+        "proportionalScaling",
+        "adjustment",
+        "AGMStrokeStyleInfo",
+        "textKey",
+        "fillEnabled",
+        "fillOpacity",
+        "keyOriginType",
+        "layerEffects",
+        "opacity",
+        "mode",
+        "layerFXVisible" // the following are required but this is not enforced
     ];
 
     /**
@@ -98,33 +122,7 @@ define(function (require, exports) {
      * @private
      * @type {Array.<string>}
      */
-    var _lazyLayerProperties = [
-        "layerID", // redundant but useful for matching results
-        "globalAngle",
-        "pathBounds",
-        "proportionalScaling",
-        "adjustment",
-        "AGMStrokeStyleInfo",
-        "textKey",
-        "fillEnabled",
-        "fillOpacity",
-        "keyOriginType",
-        "layerEffects",
-        "layerFXVisible", // the following are required but this is not enforced
-        "opacity"
-    ];
-
-    /**
-     * All optional properties to request of layer descriptors from Photoshop.
-     * When resetting any layer(s), these properties are requested. This is the
-     * union of _optionalLayerProperties and _lazyLayerProperties.
-     *
-     * @private
-     * @type {Array.<string>}
-     */
-    var _allOptionalLayerProperties = _lazyLayerProperties
-        .slice(1)
-        .concat(_optionalLayerProperties);
+    var _lazyLayerProperties = _lazySelectedLayerProperties.concat(_lazyLayerBoundProperties.slice(1));
 
     /**
      * Namespace for extension metadata.
@@ -133,6 +131,135 @@ define(function (require, exports) {
      * @type {string}
      */
     var METADATA_NAMESPACE = global.EXTENSION_DATA_NAMESPACE;
+
+    var multiGetRef = function (docRef, layerRef, properties) {
+        return {
+            name: "get",
+            descriptor: {
+                "null": {
+                    "_multiGetRef": [
+                        {
+                            _propertyList: properties
+                        },
+                        layerRef,
+                        docRef
+                    ]
+                }
+                
+            },
+            "options": {
+                useMultiGet: true,
+                failOnMissingProperty: false
+            }
+        };
+    };
+    
+    var getLayerDescriptors = function (document, layers, options) {
+        layers = layers.toArray();
+        
+        if (layers.length === 0) {
+            return Promise.resolve([]);
+        }
+
+        options = _.merge({
+            getEssentialProperties: true,
+            getBoundsProperties: true,
+            getSelectedProperties: true,
+            getExtensionData: true
+        }, options);
+
+        var docRef = documentLib.referenceBy.id(document.id),
+            essentialDescriptorCommands = [],
+            selectedDescriptorCommands = [];
+            
+        layers.forEach(function (layer) {
+            var layerRef = layerLib.referenceBy.id(layer.id);
+            
+            if (options.getEssentialProperties) {
+                essentialDescriptorCommands.push(multiGetRef(docRef, layerRef, _layerProperties));
+            }
+            if (options.getSelectedProperties) {
+                selectedDescriptorCommands.push(multiGetRef(docRef, layerRef, _lazySelectedLayerProperties));
+            }
+        });
+        
+        var essentialPropertiesPromise = essentialDescriptorCommands.length === 0 ? Promise.resolve([]) :
+                descriptor.batchPlay(essentialDescriptorCommands),
+            selectedPropertiesPromise = selectedDescriptorCommands.length === 0 ? Promise.resolve([]) :
+                descriptor.batchPlay(selectedDescriptorCommands);
+
+        var extensionPromise = Promise.resolve([]);
+        if (options.getExtensionData) {
+            var extensionPlayObjects = layers.map(function (layer) {
+                var layerRef = layerLib.referenceBy.id(layer.id);
+
+                return layerLib.getExtensionData(docRef, layerRef, METADATA_NAMESPACE);
+            });
+
+            extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
+                .map(function (extensionData) {
+                    var extensionDataRoot = extensionData[METADATA_NAMESPACE];
+                    return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
+                });
+        }
+        
+
+        return Promise.join(
+            essentialPropertiesPromise,
+            selectedPropertiesPromise,
+            extensionPromise,
+            function (essential, selected, extension) {
+                selected.forEach(function (properties) {
+                    properties.initialized = true;
+                });
+                
+                if (extension.length !== 0) {
+                    layers.forEach(function (layer, index) {
+                        extension[index].layerID = layer.id;
+                    });
+                }
+                
+                var boundsDescriptorCommands = [];
+                
+                if (options.getBoundsProperties) {
+                    var essentialDescriptors = essential;
+                    
+                    if (!options.getEssentialProperties) {
+                        essentialDescriptors = layers.map(function (layer) {
+                            return layer.descriptor.toJS();
+                        });
+                    }
+                    
+                    essentialDescriptors.forEach(function (d) {
+                        var requiredBounds = Bounds.getRequiredBoundsName(d),
+                            layerRef = layerLib.referenceBy.id(d.layerID);
+                            
+                        if (requiredBounds) {
+                            boundsDescriptorCommands.push(multiGetRef(docRef, layerRef, ["layerID", requiredBounds]));
+                        }
+                    });
+                }
+
+                var boundsPromise = boundsDescriptorCommands.length === 0 ? Promise.resolve([]) :
+                        descriptor.batchPlay(boundsDescriptorCommands);
+
+                return boundsPromise.then(function (bounds) {
+                    bounds.forEach(function (properties) {
+                        properties.boundsInitialized = true;
+                    });
+                    
+                    var layerIdMapProperties = {};
+                    
+                    _.flatten([essential, selected, extension, bounds]).forEach(function (properties) {
+                        var layerID = properties.layerID;
+
+                        layerIdMapProperties[layerID] = _.merge(layerIdMapProperties[layerID] || {}, properties);
+                    });
+                    
+                    return _.values(layerIdMapProperties);
+                });
+            });
+    };
 
     /**
      * Get layer descriptors for the given layer references. Only the
@@ -145,14 +272,14 @@ define(function (require, exports) {
      *  Otherwise, fetch all properties.
      * @return {Promise.<Array.<object>>}
      */
-    var _getLayersByRef = function (references, lazy) {
-        var layerPropertiesPromise = descriptor.batchMultiGetProperties(references, _layerProperties),
-            optionalProperties = lazy ? _optionalLayerProperties : _allOptionalLayerProperties,
-            optionalPropertiesPromise = descriptor.batchMultiGetProperties(references, optionalProperties,
-                { continueOnError: true });
+    var _getLayersByRef = function (references, lazy, basic) {
+        var layerPropertiesPromise = basic === false || references.length === 0 ? Promise.resolve([]) :
+                descriptor.batchMultiGetProperties(references, _layerProperties),
+            optionalPropertiesPromise = references.length === 0 ? Promise.resolve([]) :
+                descriptor.batchMultiGetProperties(references, _lazyLayerProperties, { continueOnError: true });
 
         var extensionPromise;
-        if (lazy) {
+        if (lazy || references.length === 0) {
             extensionPromise = Promise.resolve();
         } else {
             var extensionPlayObjects = references.map(function (ref) {
@@ -168,7 +295,16 @@ define(function (require, exports) {
 
         return Promise.join(layerPropertiesPromise, optionalPropertiesPromise, extensionPromise,
             function (required, optional, extension) {
-                return _.zipWith(required, optional, extension, _.merge);
+                optional.forEach(function (properties) {
+                    properties.boundsInitialized = true;
+                    properties.initialized = true;
+                });
+                
+                if (basic === false) {
+                    return _.zipWith(optional, extension, _.merge);
+                } else {
+                    return _.zipWith(required, optional, extension, _.merge);
+                }
             });
     };
 
@@ -194,61 +330,8 @@ define(function (require, exports) {
         var requiredPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _layerProperties, {
             failOnMissingProperty: true
         });
-
-        var optionalPropertiesPromise = descriptor.getPropertiesRange(docRef, rangeOpts, _optionalLayerProperties, {
-            failOnMissingProperty: false
-        });
-
-        var targetLayers = doc.targetLayers || [],
-            targetRefs = targetLayers.map(function (target) {
-                return [
-                    docRef,
-                    layerLib.referenceBy.index(startIndex + target._index)
-                ];
-            });
-
-        var lazyPropertiesPromise = descriptor.batchMultiGetProperties(targetRefs, _lazyLayerProperties, {
-            continueOnError: true
-        });
-
-        var extensionPromise;
-        if (doc.hasBackgroundLayer && doc.numberOfLayers === 0 && targetLayers.length === 1) {
-            // Special case for background-only documents, which can't contain metadata
-            extensionPromise = Promise.resolve([{}]);
-        } else {
-            var extensionPlayObjects = targetRefs.map(function (refObj) {
-                var layerRef = refObj[1];
-                return layerLib.getExtensionData(docRef, layerRef, METADATA_NAMESPACE);
-            });
-
-            extensionPromise = descriptor.batchPlayObjects(extensionPlayObjects)
-                .map(function (extensionData) {
-                    var extensionDataRoot = extensionData[METADATA_NAMESPACE];
-                    return (extensionDataRoot && extensionDataRoot.exportsMetadata) || {};
-                });
-        }
-
-        return Promise.join(requiredPropertiesPromise, optionalPropertiesPromise,
-            function (required, optional) {
-                return _.zipWith(required, optional, _.merge);
-            })
-            .tap(function (properties) {
-                var propertiesByID = _.indexBy(properties, "layerID");
-
-                return extensionPromise.then(function (allData) {
-                    return lazyPropertiesPromise.each(function (lazyProperties, index) {
-                        if (!lazyProperties) {
-                            // A background will not have a layer ID
-                            return;
-                        }
-
-                        var lazyLayerID = lazyProperties.layerID,
-                            extensionData = allData[index];
-
-                        _.merge(propertiesByID[lazyLayerID], lazyProperties, extensionData);
-                    });
-                });
-            })
+        
+        return requiredPropertiesPromise
             .then(function (properties) {
                 return properties.reverse();
             });
@@ -430,14 +513,11 @@ define(function (require, exports) {
         }
 
         var docRef = documentLib.referenceBy.id(document.id),
+            selectedLayers = layers.filter(function (layer) { return layer.selected; }),
             layersPromise;
 
         if (lazy) {
-            var selectedLayerRefs = layers
-                .filter(function (layer) {
-                    return layer.selected;
-                })
-                .map(function (layer) {
+            var selectedLayerRefs = selectedLayers.map(function (layer) {
                     return [
                         docRef,
                         layerLib.referenceBy.id(layer.id)
@@ -475,30 +555,96 @@ define(function (require, exports) {
                         .toArray();
                 }.bind(this));
         } else {
-            var layerRefs = layers.map(function (layer) {
-                return [
-                    docRef,
-                    layerLib.referenceBy.id(layer.id)
-                ];
+            // var layerRefs = layers.map(function (layer) {
+            //     return [
+            //         docRef,
+            //         layerLib.referenceBy.id(layer.id)
+            //     ];
+            // }).toArray();
+            // 
+            // layersPromise = _getLayersByRef(layerRefs, false, false);
+            // 
+            // 
+            layersPromise = getLayerDescriptors(document, layers, { getEssentialProperties: false });
+        }
+        
+        var idMapSelectedLayers = _.indexBy(selectedLayers.toJS(), "id"),
+            parentNodes = selectedLayers.reduce(function (nodes, layer) {
+                if (!layer.isArtboard) {
+                    nodes.push(document.layers.nodes.get(layer.id));
+                }
+                return nodes;
+            }, []),
+            parentNode,
+            selectedChildLayers = [],
+            topLayers = selectedLayers.map(function (layer) {
+                return document.layers.topAncestor(layer);
             }).toArray();
 
-            layersPromise = _getLayersByRef(layerRefs);
+        while (parentNodes.length !== 0) {
+            parentNode = parentNodes.pop();
+            if (!parentNode.children) {
+                continue;
+            }
+            
+            parentNode.children.forEach(function (childNode) {
+                parentNodes.push(childNode);
+
+                var layer = document.layers.byID(childNode.id);
+
+                if (!idMapSelectedLayers[layer.id] && !layer.boundsInitialized) {
+                    selectedChildLayers.push(layer);
+                }
+            });
+        }
+        
+        selectedChildLayers = Immutable.List(selectedChildLayers.concat(topLayers));
+        
+        var selecteChildLayerPromise = Promise.resolve([]);
+        
+        if (selectedChildLayers.size !== 0) {
+            // var childLayerRefs = selectedChildLayers.reduce(function (unlayers, layer) {
+            //     if (!layer.boundsInitialized) {
+            //         unlayers.push(layer);
+            //     }
+            //     return unlayers;
+            // }, [])
+            // .map(function (layer) {
+            //     return [
+            //         docRef,
+            //         layerLib.referenceBy.id(layer.id)
+            //     ];
+            // });
+            // 
+            // if (childLayerRefs.length !== 0) {
+            selecteChildLayerPromise = getLayerDescriptors(document, selectedChildLayers, {
+                getEssentialProperties: false,
+                getSelectedProperties: false,
+                getExtensionData: false
+            });
+            // }
         }
 
-        return layersPromise
+        return Promise
+            .join(layersPromise, selecteChildLayerPromise, function (properties, childProperties) {
+                childProperties.forEach(function (properties) {
+                    properties.boundsInitialized = true;
+                });
+
+                return properties.concat(childProperties);
+            })
             .bind(this)
             .then(function (descriptors) {
-                var index = 0, // annoyingly, Immutable.Set.prototype.forEach does not provide an index
-                    payload = {
-                        documentID: storedDocument.id,
-                        suppressDirty: suppressDirty,
-                        lazy: lazy
-                    };
+                var payload = {
+                    documentID: storedDocument.id,
+                    suppressDirty: suppressDirty,
+                    lazy: lazy
+                };
 
-                payload.layers = layers.map(function (layer) {
+                payload.layers = descriptors.map(function (descriptor) {
                     return {
-                        layerID: layer.id,
-                        descriptor: descriptors[index++]
+                        layerID: descriptor.layerID,
+                        descriptor: descriptor
                     };
                 });
                 this.dispatch(events.document.history.RESET_LAYERS, payload);
@@ -746,19 +892,19 @@ define(function (require, exports) {
     var initializeLayersBackground = function (document) {
         var flux = this.flux,
             documentStore = flux.store("document");
-
+        
         document = documentStore.getDocument(document.id);
         if (!document) {
             return Promise.resolve();
         }
-
+        
         var uninitializedLayers = document.layers.uninitialized;
         if (uninitializedLayers.isEmpty()) {
             return Promise.resolve();
         }
-
+        
         var firstUninitializedLayers = uninitializedLayers.take(50);
-
+        
         return this.transfer(initializeLayers, document, firstUninitializedLayers)
             .bind(this)
             .then(function () {
@@ -948,7 +1094,9 @@ define(function (require, exports) {
             dispatchPromise = this.dispatchAsync(events.document.SELECT_LAYERS_BY_ID, payload)
                 .bind(this)
                 .then(function () {
-                    return this.transfer(initializeLayers, document, nextSelected);
+                    var currentDoc = this.flux.store("application").getCurrentDocument();
+                    
+                    return this.transfer(initializeLayers, currentDoc, currentDoc.layers.selected);
                 });
             revealPromise = this.transfer(revealLayers, document, nextSelected);
         }
@@ -972,7 +1120,7 @@ define(function (require, exports) {
     select.action = {
         reads: [],
         writes: [locks.PS_DOC, locks.JS_DOC],
-        transfers: [revealLayers, resetSelection, initializeLayers, tools.changeVectorMaskMode],
+        transfers: [revealLayers, initializeLayers, tools.changeVectorMaskMode],
         post: ["verify.layers.verifyLayerSelection"]
     };
 
