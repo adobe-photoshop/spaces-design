@@ -59,12 +59,6 @@ define(function (require, exports) {
     };
 
     /**
-     * @const
-     * @type {number}
-     */
-    var EVENT_DEBOUNCE_DELAY = 100;
-
-    /**
      * Filter out layers that can't generally be transformed like empty,
      * adjustment and background layers.
      *
@@ -1352,6 +1346,16 @@ define(function (require, exports) {
                         return this.transfer("history.newHistoryStateRogueSafe", currentDoc.id);
                     })
                     .then(function () {
+                        // We want resetIndex to play first since it doesn't update the bounds
+                        // and will prevent a blink in Position component 
+                        // in case layers actually change artboards
+                        if (event.moveToArtboard && event.moveToArtboard.length > 0) {
+                            return this.transfer("layers.resetIndex");
+                        } else {
+                            return Promise.resolve();
+                        }
+                    })
+                    .then(function () {
                         // We need to get the updated document model since selection may have changed
                         // due to drag optimization
                         currentDoc = appStore.getCurrentDocument();
@@ -1377,7 +1381,7 @@ define(function (require, exports) {
         reads: [locks.JS_APP, locks.JS_DOC],
         writes: [locks.JS_TOOL],
         transfers: ["layers.addLayers", "ui.updateTransform", "layers.resetLayers", "layers.resetBounds",
-            "history.newHistoryStateRogueSafe", "layers.select"],
+            "history.newHistoryStateRogueSafe", "layers.select", "layers.resetIndex"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"],
         hideOverlays: true
@@ -1390,7 +1394,6 @@ define(function (require, exports) {
      * @type {function()}
      */
     var _artboardTransformHandler,
-        _moveToArtboardHandler,
         _layerTransformHandler;
 
     var beforeStartup = function () {
@@ -1404,16 +1407,10 @@ define(function (require, exports) {
             this.flux.actions.transform.handleTransformLayer(event);
         }.bind(this);
 
-        _moveToArtboardHandler = _.debounce(function () {
-            // Undefined makes it use the most recent document model
-            return this.flux.actions.layers.resetIndex(undefined);
-        }.bind(this), EVENT_DEBOUNCE_DELAY);
-
         descriptor.addListener("transform", _layerTransformHandler);
         descriptor.addListener("move", _layerTransformHandler);
         descriptor.addListener("nudge", _layerTransformHandler);
         descriptor.addListener("editArtboardEvent", _artboardTransformHandler);
-        descriptor.addListener("moveToArtboard", _moveToArtboardHandler);
         return Promise.resolve();
     };
     beforeStartup.action = {
@@ -1430,7 +1427,6 @@ define(function (require, exports) {
         descriptor.removeListener("move", _layerTransformHandler);
         descriptor.removeListener("nudge", _layerTransformHandler);
         descriptor.removeListener("editArtboardEvent", _artboardTransformHandler);
-        descriptor.removeListener("moveToArtboard", _moveToArtboardHandler);
 
         return Promise.resolve();
     };

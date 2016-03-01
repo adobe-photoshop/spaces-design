@@ -55,6 +55,8 @@ define(function (require, exports, module) {
             return this.state.referencePoint !== nextState.referencePoint ||
                 this.props.disabled !== nextProps.disabled ||
                 !Immutable.is(this.props.document.layers.selected, nextProps.document.layers.selected) ||
+                !Immutable.is(this.props.document.layers.selectedRelativeChildBounds,
+                    nextProps.document.layers.selectedRelativeChildBounds) ||
                 !Immutable.is(this.props.document.bounds, nextProps.document.bounds);
         },
 
