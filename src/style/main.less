@@ -137,8 +137,11 @@ input {
 /* -- MASTER CONTAINER -- */
 
 .fade-in-mixin {
+    // For panels in no-doc state
     &.main__ready .section-container,
-    &.main__ready .section-container__no-collapse {
+    // For document panels when there are active documents.
+    .panel-set__ready .section-container,
+    .panel-set__ready .section-container__no-collapse {
         opacity: 1;
         transition: all 200ms ease;
         
