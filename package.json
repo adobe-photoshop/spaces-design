@@ -16,6 +16,10 @@
     "Ian Wehrman <wehrman@adobe.com>"
   ],
   "description": "Adobe Photoshop Design Space",
+  "enginesStrict": true,
+  "engines": {
+      "node": ">= 4.2.3"
+  },
   "scripts": {
     "test": "grunt test",
     "build": "grunt compile"
