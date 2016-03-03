@@ -721,8 +721,7 @@ define(function (require, exports) {
         var selectPromise = descriptor.playObject(documentLib.select(documentRef))
             .bind(this)
             .then(function () {
-                var updateTransformPromise = this.transfer(ui.updateTransform),
-                    initPromise;
+                var initPromise;
 
                 if (!layersUninitialized && historyUninitialized) {
                     // Initialize the document history because it is being selected for the first time
@@ -735,7 +734,11 @@ define(function (require, exports) {
                     initPromise = Promise.resolve();
                 }
 
-                return Promise.join(updateTransformPromise, initPromise);
+                return initPromise
+                    .bind(this)
+                    .then(function () {
+                        return this.transfer(ui.updateTransform);
+                    });
             });
 
         // If the document has already been initialized, dispatch the change event immediately
