@@ -31,7 +31,8 @@ define(function (require, exports, module) {
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        shortcuts = require("js/util/shortcuts");
+        shortcuts = require("js/util/shortcuts"),
+        nls = require("js/util/nls");
 
     /**
      * @implements {Tool}
@@ -47,7 +48,7 @@ define(function (require, exports, module) {
             backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE);
         
-        Tool.call(this, "ellipse", "Ellipse", "ellipseTool", "tool.ellipse.select");
+        Tool.call(this, "ellipse", nls.localize("strings.TOOLS.NAMES.ELLIPSE"), "ellipseTool", "tool.ellipse.select");
 
         this.keyboardPolicyList = [shiftUKeyPolicy, deleteKeyPolicy, backspaceKeyPolicy, escapeKeyPolicy];
         this.activationKey = shortcuts.GLOBAL.TOOLS.ELLIPSE;

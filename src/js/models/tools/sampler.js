@@ -32,14 +32,15 @@ define(function (require, exports, module) {
         EventPolicy = require("js/models/eventpolicy"),
         PointerEventPolicy = EventPolicy.PointerEventPolicy,
         SamplerOverlay = require("js/jsx/tools/SamplerOverlay"),
-        shortcuts = require("js/util/shortcuts");
+        shortcuts = require("js/util/shortcuts"),
+        nls = require("js/util/nls");
 
     /**
      * @implements {Tool}
      * @constructor
      */
     var SamplerTool = function () {
-        Tool.call(this, "sampler", "Sampler", "eyedropperTool");
+        Tool.call(this, "sampler", nls.localize("strings.TOOLS.NAMES.EYEDROPPER"), "eyedropperTool");
 
         this.icon = "eyedropper";
         this.activationKey = shortcuts.GLOBAL.TOOLS.SAMPLER;

@@ -31,14 +31,15 @@ define(function (require, exports, module) {
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        shortcutUtil = require("js/util/shortcuts");
+        shortcutUtil = require("js/util/shortcuts"),
+        nls = require("js/util/nls");
 
     /**
      * @implements {Tool}
      * @constructor
      */
     var PenTool = function () {
-        Tool.call(this, "pen", "Pen", "penTool");
+        Tool.call(this, "pen", nls.localize("strings.TOOLS.NAMES.PEN"), "penTool");
 
         var backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE),

@@ -73,7 +73,7 @@ define(function (require, exports, module) {
                     id={this.props.id}
                     style={this.props.style}>
                     <Button
-                        title={nls.localize("strings.TOOLS." + toolID)}
+                        title={nls.localize("strings.TOOLTIPS.TOOLS." + toolID)}
                         className={buttonClassName}
                         onClick={!this.props.disabled && this.props.onClick}
                         disabled={this.props.disabled}>

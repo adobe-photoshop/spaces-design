@@ -27,6 +27,7 @@ define(function (require, exports, module) {
     var util = require("adapter").util;
 
     var Tool = require("js/models/tool"),
+        nls = require("js/util/nls"),
         shortcuts = require("js/util/shortcuts");
 
     /**
@@ -34,7 +35,8 @@ define(function (require, exports, module) {
      * @constructor
      */
     var TypeTool = function () {
-        Tool.call(this, "typeCreateOrEdit", "Type", "typeCreateOrEditTool", "tool.type.select", "tool.type.deselect");
+        Tool.call(this, "typeCreateOrEdit", nls.localize("strings.TOOLS.NAMES.TYPE"), "typeCreateOrEditTool",
+            "tool.type.select", "tool.type.deselect");
 
         this.activationKey = shortcuts.GLOBAL.TOOLS.TYPE;
     };

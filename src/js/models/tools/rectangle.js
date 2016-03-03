@@ -32,7 +32,8 @@ define(function (require, exports, module) {
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
-        utilShortcuts = require("js/util/shortcuts");
+        utilShortcuts = require("js/util/shortcuts"),
+        nls = require("js/util/nls");
 
     /**
      * @implements {Tool}
@@ -48,7 +49,8 @@ define(function (require, exports, module) {
             backspaceKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,
                 OS.eventKind.KEY_DOWN, null, OS.eventKeyCode.BACKSPACE);
 
-        Tool.call(this, "rectangle", "Rectangle", "rectangleTool", "tool.rectangle.select");
+        Tool.call(this, "rectangle", nls.localize("strings.TOOLS.NAMES.RECTANGLE"),
+            "rectangleTool", "tool.rectangle.select");
        
         this.keyboardPolicyList = [shiftUKeyPolicy, deleteKeyPolicy, backspaceKeyPolicy, escapeKeyPolicy];
         this.activationKey = utilShortcuts.GLOBAL.TOOLS.RECTANGLE;

@@ -30,6 +30,7 @@ define(function (require, exports, module) {
         
     var Tool = require("js/models/tool"),
         EventPolicy = require("js/models/eventpolicy"),
+        nls = require("js/util/nls"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy;
 
     /**
@@ -37,7 +38,8 @@ define(function (require, exports, module) {
      * @constructor
      */
     var SuperSelectTypeTool = function () {
-        Tool.call(this, "superselectType", "Superselect-Type", "typeCreateOrEditTool");
+        Tool.call(this, "superselectType", nls.localize("strings.TOOLS.NAMES.SUPER_SELECT_TYPE"),
+            "typeCreateOrEditTool");
         this.icon = "typeCreateOrEdit";
 
         var escapeKeyPolicy = new KeyboardEventPolicy(UI.policyAction.PROPAGATE_TO_BROWSER,

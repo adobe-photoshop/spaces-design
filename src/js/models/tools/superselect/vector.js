@@ -30,6 +30,7 @@ define(function (require, exports, module) {
         
     var Tool = require("js/models/tool"),
         system = require("js/util/system"),
+        nls = require("js/util/nls"),
         EventPolicy = require("js/models/eventpolicy"),
         SuperselectVectorMaskOverlay = require("js/jsx/tools/SuperselectVectorMaskOverlay"),
         KeyboardEventPolicy = EventPolicy.KeyboardEventPolicy,
@@ -40,7 +41,8 @@ define(function (require, exports, module) {
      * @constructor
      */
     var SuperSelectVectorTool = function () {
-        Tool.call(this, "superselectVector", "Superselect - Direct Select", "directSelectTool");
+        Tool.call(this, "superselectVector", nls.localize("strings.TOOLS.NAMES.DIRECT_SELECTION_TOOL"),
+            "directSelectTool");
         this.icon = "directSelect";
         this.isMainTool = false;
         this.handleVectorMaskMode = true;
