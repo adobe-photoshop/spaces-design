@@ -58,16 +58,23 @@ define(function (require, exports, module) {
         _forceUpdateTimerID: null,
         
         /**
-         * Used to determine whether to scroll to selected layer. When a selected layer has a new index,
-         * it may become invisible if the new index is outside of the visible area. If so, we need to
-         * scroll the layer into the visible area. Operations that will change layer index:
+         * Used to determine whether to scroll to selected layer. 
+         * 
+         * When a selected layer has a new position, it may be outside of the visible area. If so, we need to
+         * scroll the layer into the visible area. Operations that will change layer position:
          * - drag-and-drop layer
          * - menu items (e.g. Bring Forward `cmd+]`)
          * - undo/redo layer ordering
          *
+         * When a layer is newly created or becomes selected, we will need to scroll it into visible area as well:
+         * - create new layer
+         * - copy-paste multiple layers
+         * - undo layer creation
+         * - delete layer
+         *
          * @type {boolean}
          */
-        _selectedLayerHasNewIndex: false,
+        _revealSelectedLayer: false,
 
         propTypes: {
             /**
@@ -121,14 +128,21 @@ define(function (require, exports, module) {
         },
 
         componentWillReceiveProps: function (nextProps) {
-            this._selectedLayerHasNewIndex = nextProps.layerNodes.some(function (layerNode) {
-                var layer = nextProps.document.layers.byID(layerNode.id);
+            this._revealSelectedLayer = nextProps.layerNodes.some(function (layerNode) {
+                var layer = this.props.document.layers.byID(layerNode.id),
+                    nextLayer = nextProps.document.layers.byID(layerNode.id);
+                
+                if ((!layer || !layer.selected) && nextLayer.selected) {
+                    // Layer is newly created or becomes selected.
+                    return true;
+                }
 
-                if (layer.selected) {
+                if (layer && nextLayer && nextLayer.selected) {
                     var index = this.props.document.layers.indexOf(layer),
-                        nextIndex = nextProps.document.layers.indexOf(layer);
+                        nextIndex = nextProps.document.layers.indexOf(nextLayer);
                     
                     if (index !== nextIndex) {
+                        // Layer has new position.
                         return true;
                     }
                 }
@@ -146,8 +160,8 @@ define(function (require, exports, module) {
         },
         
         componentDidUpdate: function () {
-            if (this._selectedLayerHasNewIndex) {
-                this._selectedLayerHasNewIndex = false;
+            if (this._revealSelectedLayer) {
+                this._revealSelectedLayer = false;
                 this._scrollIntoFirstSelectedLayer();
             }
         },
@@ -156,7 +170,7 @@ define(function (require, exports, module) {
          * Scroll into the first selected layer if it is not within the visible area.
          */
         _scrollIntoFirstSelectedLayer: function () {
-            var firstSelectedLayer = this.props.document.layers.selected.first(),
+            var firstSelectedLayer = this.props.document.layers.selected.last(),
                 layerNode = firstSelectedLayer ? ReactDOM.findDOMNode(this.refs[firstSelectedLayer.key]) : null;
             
             if (layerNode) {
@@ -193,8 +207,9 @@ define(function (require, exports, module) {
                     });
 
                     results.push(
-                        <li key={layer.key} className={className} ref={layer.key}>
+                        <li key={layer.key} className={className}>
                             <LayerFace
+                                ref={layer.key}
                                 key={layer.key}
                                 disabled={this.props.disabled}
                                 document={this.props.document}
