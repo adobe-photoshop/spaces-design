@@ -1081,11 +1081,8 @@ define(function (require, exports, module) {
      * @return {Promise} Resolves once all the applied methods have resolved
      */
     FluxController.prototype._invokeActionMethods = function (methodName, params) {
-        var logActions = __PG_DEBUG__ && this.flux.store("preferences").getState().get("logActions", true);
-
-        if (logActions) {
-            log.timeStamp("Executing controller " + methodName);
-        }
+        // For performance measurement purpose, this log is always enabled for production/debug mode.
+        log.timeStamp("Executing controller " + methodName);
 
         var getParam = function (name) {
             if (typeof params === "object") {
@@ -1115,9 +1112,8 @@ define(function (require, exports, module) {
                 return results;
             }, {})
             .tap(function () {
-                if (logActions) {
-                    log.timeStamp("Finished controller " + methodName);
-                }
+                // For performance measurement purpose, this log is always enabled for production/debug mode.
+                log.timeStamp("Finished controller " + methodName);
             });
     };
 
