@@ -18,7 +18,7 @@
   "description": "Adobe Photoshop Design Space",
   "enginesStrict": true,
   "engines": {
-      "node": ">= 4.2.3"
+    "node": ">= 4.2.3"
   },
   "scripts": {
     "test": "grunt test",
