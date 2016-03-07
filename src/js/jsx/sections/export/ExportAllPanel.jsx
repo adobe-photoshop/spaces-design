@@ -257,7 +257,9 @@ define(function (require, exports, module) {
             var allArtboardsExportComponents = artboardsSorted.map(layerExportComponent),
                 allNonABLayerExportComponents = nonABLayersFiltered.reverse().map(layerExportComponent),
                 allArtboardsExportEnabled = collection.pluck(artboardsSorted, "exportEnabled"),
-                allNonABLayersExportEnabled = collection.pluck(nonABLayersFiltered, "exportEnabled");
+                allNonABLayersExportEnabled = collection.pluck(nonABLayersFiltered, "exportEnabled"),
+                atLeastOneExportEnabled = allArtboardsExportEnabled.some(_.identity) ||
+                    allNonABLayersExportEnabled.some(_.identity);
 
             var panelClassnames = classnames("exports-panel__container");
 
@@ -313,7 +315,7 @@ define(function (require, exports, module) {
                         <div className="exports-panel__button-group">
                             <Button
                                 className="loader-animation"
-                                disabled={this.state.exportDisabled || serviceBusy}
+                                disabled={!atLeastOneExportEnabled || this.state.exportDisabled || serviceBusy}
                                 onClick={this._exportAllAssets.bind(this, prefixMap)}>
                                 {exportButton}
                             </Button>
