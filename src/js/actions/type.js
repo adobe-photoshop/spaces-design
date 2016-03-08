@@ -144,15 +144,16 @@ define(function (require, exports) {
      * @param {string} postscript Post script name of the described typeface
      * @param {string} family The type face family name, e.g., "Helvetica Neue"
      * @param {string} style The type face style name, e.g., "Oblique"
+     * @param {boolean=} coalesce
      * @return {Promise}
      */
-    var setPostScript = function (document, layers, postscript, family, style) {
+    var setPostScript = function (document, layers, postscript, family, style, coalesce) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             modal = this.flux.store("tool").getModalToolState();
 
         var setFacePlayObject = textLayerLib.setPostScript(layerRefs, postscript),
-            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_FACE"), modal),
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_FACE"), modal, coalesce),
             setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
             updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
 

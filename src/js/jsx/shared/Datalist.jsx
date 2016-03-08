@@ -119,7 +119,14 @@ define(function (require, exports, module) {
              * @param {string} lastHighlightedID - the last highlighted ID. This is equal to initialSelectedID 
              *                                     if the selection is confirmed (with onChange event fired).
              */
-            onClose: React.PropTypes.func
+            onClose: React.PropTypes.func,
+
+            /**
+             * Callback to handle dropdown list open
+             *
+             * @callback Datalist~onOpen
+             */
+            onOpen: React.PropTypes.func
         },
 
         /**
@@ -449,6 +456,10 @@ define(function (require, exports, module) {
          */
         _handleDialogOpen: function () {
             this._initialSelectedID = this.props.selected;
+
+            if (this.props.onOpen) {
+                this.props.onOpen();
+            }
         },
 
         /**

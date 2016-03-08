@@ -47,7 +47,8 @@ define(function (require, exports, module) {
         Color = require("js/models/color"),
         collection = require("js/util/collection"),
         unit = require("js/util/unit"),
-        mathUtil = require("js/util/math");
+        mathUtil = require("js/util/math"),
+        Coalesce = require("js/jsx/mixin/Coalesce");
 
     /**
      * Minimum and maximum values for font size, leading and tracking.
@@ -63,7 +64,7 @@ define(function (require, exports, module) {
         MAX_TRACKING = 10000;
 
     var Type = React.createClass({
-        mixins: [FluxMixin, StoreWatchMixin("font", "tool")],
+        mixins: [FluxMixin, StoreWatchMixin("font", "tool"), Coalesce],
 
         shouldComponentUpdate: function (nextProps, nextState) {
             var getProperties = function (document) {
@@ -183,9 +184,10 @@ define(function (require, exports, module) {
                 }),
                 family = this._getPostScriptFontFamily(postScriptName),
                 style = this._getPostScriptFontStyle(postScriptName),
-                flux = this.getFlux();
+                flux = this.getFlux(),
+                coalesce = this.shouldCoalesce();
 
-            flux.actions.type.setPostScriptThrottled(document, layers, postScriptName, family, style);
+            flux.actions.type.setPostScriptThrottled(document, layers, postScriptName, family, style, coalesce);
         },
 
         /**
@@ -657,6 +659,8 @@ define(function (require, exports, module) {
                             placeholderText={placeholderText}
                             options={this.state.typefaces}
                             size="column-full"
+                            onOpen={this.startCoalescing}
+                            onClose={this.stopCoalescing}
                             onHighlightedChange={this._handleTypefaceChange}/>
                     </div>
                     <div className="formline formline__space-between">
@@ -681,6 +685,8 @@ define(function (require, exports, module) {
                                 selected={postScriptFamilyName}
                                 options={familyFontOptions}
                                 size="column-22"
+                                onOpen={this.startCoalescing}
+                                onClose={this.stopCoalescing}
                                 onHighlightedChange={this._handleTypeWeightChange}/>
                         </div>
                     </div>
