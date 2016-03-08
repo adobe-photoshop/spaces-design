@@ -22,10 +22,25 @@
  */
 
 @first-launch-width: 86rem;
+@first-launch-bg: #282828;
+@first-launch-item-active: #D7D7D7;
+@first-launch-bg-alt: #424242;
+@first-launch-mid-bg-alt: mix(@item-active, @bg-alt, 70%);
+@first-launch-backdrop-color: rgba(14, 14, 14, 0.3);
+@first-launch-item-hover: #F4F4F4;
+@first-launch-item-inactive: #C2C2C2;
+@first-launch-underlines: #808080;
+@first-launch-item-disabled: #757575;
+@first-launch-icon-disabled: #919191;
+@first-launch-icon-hover: #F0F0F0;
+@first-launch-icon-active: #D7D7D7;
+@first-launch-icon-inactive: #DDDDDD;
+@first-launch-focus-highlight: #3691ff;
+@carousel-button-radius: 3.2rem;
 
 .first-launch__dialog, .keyboard-shortcut__dialog {
-    background-color: @bg-dialog;
-    color:@item-active;
+    background-color: @first-launch-bg;
+    color: @first-launch-item-active;
     line-height: normal;
     width: @first-launch-width;
     max-height: 66rem; //this is important for use with dialog.showModa()
@@ -47,8 +62,8 @@
         clear: both;
         line-height: 4.5rem;
         height: 4.5rem;
-        border-bottom: @hairline solid @bg-alt;
-        color: @mid-bg-alt;
+        border-bottom: @hairline solid @first-launch-bg-alt;
+        color: @first-launch-mid-bg-alt;
         
         .button-simple {
             display: inline-block;
@@ -61,7 +76,7 @@
 }
 
 .keyboard-shortcut__title {
-    border-bottom: @hairline solid @mid-bg-alt;
+    border-bottom: @hairline solid @first-launch-mid-bg-alt;
     font-size: 1.8rem;
     line-height: 4.8rem;
 }
@@ -85,7 +100,7 @@
 .keyboard-shortcut__instr {
     float: right;
     font-weight: bold;
-    color: @item-active;
+    color: @first-launch-item-active;
 }
 
 .first-launch__dialog::backdrop, .keyboard-shortcut__dialog::backdrop {
@@ -94,17 +109,17 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: @backdrop-color;
+    background-color: @first-launch-backdrop-color;
 }
 
 .first-launch__carousel {
-    background-color: @bg-dialog;
-    color: @item-active;
+    background-color: @first-launch-bg;
+    color: @first-launch-item-active;
     font-size: 2.5rem;
     width: 86rem;
     height: 66rem;
     position: relative;
-    }
+}
 
 .carousel__slide {
     position: absolute;
@@ -112,7 +127,7 @@
     width: 100%;
     height: 66rem;
     display: none;
-    opacity:0;
+    opacity: 0;
 }
 
 .carousel__slide__shown {
@@ -200,7 +215,7 @@
     }
 
     p {
-        color: @mid-bg-alt;
+        color: @first-launch-mid-bg-alt;
         font-size: 1.8rem;
     }
 }
@@ -214,7 +229,7 @@
     align-items: center;
     flex-direction: row;
     padding-top: 3.6rem;
-    border-top: @underlines solid @hairline;
+    border-top: @first-launch-underlines solid @hairline;
     
     .dot {
         display: flex;
@@ -225,7 +240,7 @@
         height: 7.2rem;
         svg {
             display: block;
-            fill: @icon-disabled;
+            fill: @first-launch-icon-disabled;
             width: 10rem;
             height: 3.6rem;
             align-self: flex-start;
@@ -233,24 +248,24 @@
 
         h3 {
             font-size: @text-large;
-            color: @item-disabled;
+            color: @first-launch-item-disabled;
             align-self: flex-end;
         }
 
         &.current, &.current:hover {
             svg {
-                fill: @focus-highlight;
+                fill: @first-launch-focus-highlight;
             }
             h3 {
-                color: @focus-highlight;
+                color: @first-launch-focus-highlight;
             }
         }
         &:hover {
             h3 {
-                color: @item-inactive;
+                color: @first-launch-item-inactive;
             }
             svg {
-                fill: @icon-inactive;
+                fill: @first-launch-icon-inactive;
             }
         }
     }
@@ -269,7 +284,7 @@
     }
     
     p {
-        color: @mid-bg-alt;
+        color: @first-launch-mid-bg-alt;
         font-size: @text-medium;
         height: 9rem;
     }
@@ -283,29 +298,27 @@
     width: 33.3%;
 
     h2 {
-        color: @icon-active;
+        color: @first-launch-icon-active;
     }
 
     div:hover {
 
         svg {
-            fill: @icon-hover;
+            fill: @first-launch-icon-hover;
         }
 
         h2 {
-            color: @item-hover;
+            color: @first-launch-item-hover;
         }
     }
 
     svg {
-        fill: @icon-active;
+        fill: @first-launch-icon-active;
         width: 100%;
         height: 3.6rem;
         margin-bottom: 2.4rem;
     }
 }
-
-@carousel-button-radius: 3.2rem;
 
 .carousel__slide-button__continue {
     position: absolute;
@@ -315,7 +328,7 @@
     transform: translateX(-50%);
     padding-left: 2rem;
     padding-right: 2rem;
-    border: @hairline solid @item-active;
+    border: @hairline solid @first-launch-item-active;
     border-radius: @carousel-button-radius;
     font-size: 1.5rem;
     font-weight: 900;
@@ -323,8 +336,8 @@
     cursor: pointer;
     
     &:hover {
-        color: @item-hover;
-        border: @hairline solid @item-hover;
+        color: @first-launch-item-hover;
+        border: @hairline solid @first-launch-item-hover;
     }
 }
 
@@ -333,11 +346,11 @@
 .carousel__slide-button__started {
     position: absolute;
     border-radius: @carousel-button-radius;
-    border: @hairline solid @underlines;
+    border: @hairline solid @first-launch-underlines;
     top: -49.2rem;
     cursor: pointer;
     &:hover {
-        border-color: @item-hover;
+        border-color: @first-launch-item-hover;
     }
 }
 
@@ -361,12 +374,12 @@
     svg {
         width: 1rem;
         height: 1rem;
-        fill: @icon-inactive;
+        fill: @first-launch-icon-inactive;
         stroke: none;
     }
 
     &:hover svg {
-        fill: @icon-active;
+        fill: @first-launch-icon-active;
         stroke: none;
     }
 }
@@ -390,7 +403,7 @@
     align-items: center;
     text-align:center;
     font-size: 1.6rem;
-    color: @item-active;
+    color: @first-launch-item-active;
     
     &:first-child {
         border: none;
