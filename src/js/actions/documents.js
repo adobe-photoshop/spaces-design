@@ -1134,7 +1134,10 @@ define(function (require, exports) {
                 return;
             }
 
-            this.flux.actions.layers.addLayers(currentDocument, event.layerID);
+            // Delay adding the new layer in case the new layer is not ready for read.
+            window.setTimeout(function () {
+                this.flux.actions.layers.addLayers(currentDocument, event.layerID);
+            }.bind(this), 100);
         }.bind(this);
         descriptor.addListener("drag", _dragHandler);
 
