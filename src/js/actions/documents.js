@@ -1153,10 +1153,21 @@ define(function (require, exports) {
                 return;
             }
 
-            // Delay adding the new layer in case the new layer is not ready for read.
-            window.setTimeout(function () {
-                this.flux.actions.layers.addLayers(currentDocument, event.layerID);
-            }.bind(this), 100);
+            this.flux.actions.layers.getLayerIDsForDocumentID(currentDocument.id)
+                .bind(this)
+                .then(function (result) {
+                    var layerID = event.layerID,
+                        layerIsReplaced = !result.layerIDs.includes(layerID);
+
+                    if (!layerIsReplaced) {
+                        return this.flux.actions.layers.addLayers(currentDocument, layerID);
+                    } else {
+                        // When the new layer is replaced by an existing layer (this happens when dragging 
+                        // image from browser onto empty artboard. Github Issue #3635), we simply update 
+                        // the entire document.
+                        return this.flux.actions.documents.updateDocument();
+                    }
+                });
         }.bind(this);
         descriptor.addListener("drag", _dragHandler);
 
