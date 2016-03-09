@@ -44,20 +44,32 @@ define(function (require, exports) {
      * @return {Promise}
      */
     var toggleSearchBar = function () {
-        var dialogState = this.flux.stores.dialog.getState(),
+        var stores = this.flux.stores,
+            dialogState = stores.dialog.getState(),
+            toolStore = stores.tool,
             open = dialogState.openDialogs.contains(ID);
 
         if (open) {
             return this.transfer(dialog.closeDialog, ID);
         }
 
-        return this.transfer(dialog.openDialog, ID);
+        var toolPromise;
+        if (toolStore.getVectorMode() && toolStore.getModalToolState()) {
+            // End mask mode to avoid a problem with key event policies.
+            toolPromise = this.transfer("tools.changeVectorMaskMode", false);
+        } else {
+            toolPromise = Promise.resolve();
+        }
+
+        var dialogPromise = this.transfer(dialog.openDialog, ID);
+
+        return Promise.join(toolPromise, dialogPromise);
     };
     toggleSearchBar.action = {
         reads: [locks.JS_DIALOG],
         writes: [],
         modal: true,
-        transfers: [dialog.openDialog, dialog.closeDialog]
+        transfers: [dialog.openDialog, dialog.closeDialog, "tools.changeVectorMaskMode"]
     };
 
     /**
