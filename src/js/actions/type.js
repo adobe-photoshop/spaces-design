@@ -113,9 +113,10 @@ define(function (require, exports) {
      * @param {string} postscript Post script name of the described typeface
      * @param {string} family The type face family name, e.g., "Helvetica Neue"
      * @param {string} style The type face style name, e.g., "Oblique"
+     * @param {boolean=} coalesce
      * @return {Promise}
      */
-    var updatePostScript = function (document, layers, postscript, family, style) {
+    var updatePostScript = function (document, layers, postscript, family, style, coalesce) {
         var layerIDs = collection.pluck(layers, "id"),
             historyOptions = _getTypeHistoryOptions.call(this),
             payload = {
@@ -124,7 +125,8 @@ define(function (require, exports) {
                 postscript: postscript,
                 family: family,
                 style: style,
-                history: historyOptions
+                history: historyOptions,
+                coalesce: coalesce
             };
 
         return this.dispatchAsync(events.document.history.TYPE_FACE_CHANGED, payload);
@@ -155,7 +157,7 @@ define(function (require, exports) {
         var setFacePlayObject = textLayerLib.setPostScript(layerRefs, postscript),
             typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_FACE"), modal, coalesce),
             setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
-            updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
+            updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style, coalesce);
 
         return Promise.join(updatePromise, setFacePromise)
             .bind(this)
