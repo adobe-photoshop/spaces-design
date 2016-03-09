@@ -48,7 +48,6 @@ define(function (require, exports) {
         pathUtil = require("js/util/path"),
         log = require("js/util/log"),
         headlights = require("js/util/headlights"),
-        objUtil = require("js/util/object"),
         global = require("js/util/global");
 
     var templates = require("static/templates.json");
@@ -934,17 +933,14 @@ define(function (require, exports) {
             var error = new Error("Place event received without a current document");
             return Promise.reject(error);
         }
-        
-        var newLayerID = event.ID,
-            replacedLayerID = objUtil.getPath(event, "replaceLayer.from._id");
-        
-        if (!newLayerID) {
+
+        if (!event.ID) {
             return this.transfer(updateDocument);
         }
 
-        var layer = document.layers.byID(newLayerID);
-        
-        // If the new layer is already existed (by expanding a libraries graphic that is an embedded SO),
+        var layer = document.layers.byID(event.ID);
+
+        // If the new layer is already existed (Github Issue: 3145#issuecomment-151627443),
         // we reset the layer to update its smart object type and position.
         if (layer) {
             return this.transfer(historyActions.newHistoryStateRogueSafe, document.id)
@@ -957,13 +953,36 @@ define(function (require, exports) {
                 });
         }
 
-        return this.transfer(layerActions.addLayers, document, newLayerID, true, replacedLayerID || false);
+        // We cannot use `event.ID` directly when dropping multiple files, becuase PS only emits
+        // one "placeEvent" with the layer ID of the last file. To retrieve the new layer IDs, we
+        // need to get all layer IDs of the current document and filter out those do not exist in
+        // the current document model.
+        return this.transfer(layerActions.getLayerIDsForDocumentID, document.id)
+            .bind(this)
+            .then(function (result) {
+                var newLayerIDs = result.layerIDs.reduce(function (layerIDs, layerID) {
+                        if (!document.layers.byID(layerID)) {
+                            layerIDs.push(layerID);
+                        }
+                        return layerIDs;
+                    }, []).reverse(),
+                    replacedLayer = document.layers.all.find(function (layer) {
+                        return !result.layerIDs.includes(layer.id);
+                    });
+
+                return Promise.all(newLayerIDs.map(function (layerID, index) {
+                    var replacedLayerID = index === 0 && replacedLayer ? replacedLayer.id : null;
+
+                    return this.transfer(layerActions.addLayers, document, layerID, true,
+                        replacedLayerID || false);
+                }, this));
+            });
     };
     handlePlaceEvent.action = {
         reads: [locks.JS_APP],
         writes: [],
         transfers: [updateDocument, "layers.addLayers", "layers.resetLayers", "layers.resetIndex",
-        "history.newHistoryStateRogueSafe"],
+        "history.newHistoryStateRogueSafe", "layers.getLayerIDsForDocumentID"],
         modal: true,
         hideOverlays: true
     };
