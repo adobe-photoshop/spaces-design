@@ -38,9 +38,17 @@
 @first-launch-focus-highlight: #3691ff;
 @carousel-button-radius: 3.2rem;
 
-.first-launch__dialog, .keyboard-shortcut__dialog {
+.first-launch__dialog {
     background-color: @first-launch-bg;
     color: @first-launch-item-active;
+}
+
+.keyboard-shortcut__dialog {
+    background-color: @bg-dialog;
+    color: @item-active;
+}
+    
+.first-launch__dialog, .keyboard-shortcut__dialog {
     line-height: normal;
     width: @first-launch-width;
     max-height: 66rem; //this is important for use with dialog.showModa()
@@ -62,8 +70,8 @@
         clear: both;
         line-height: 4.5rem;
         height: 4.5rem;
-        border-bottom: @hairline solid @first-launch-bg-alt;
-        color: @first-launch-mid-bg-alt;
+        border-bottom: @hairline solid @bg-alt;
+        color: @mid-bg-alt;
         
         .button-simple {
             display: inline-block;
@@ -76,7 +84,7 @@
 }
 
 .keyboard-shortcut__title {
-    border-bottom: @hairline solid @first-launch-mid-bg-alt;
+    border-bottom: @hairline solid @mid-bg-alt;
     font-size: 1.8rem;
     line-height: 4.8rem;
 }
@@ -100,7 +108,7 @@
 .keyboard-shortcut__instr {
     float: right;
     font-weight: bold;
-    color: @first-launch-item-active;
+    color: @item-active;
 }
 
 .first-launch__dialog::backdrop, .keyboard-shortcut__dialog::backdrop {
@@ -109,6 +117,12 @@
     left: 0;
     right: 0;
     bottom: 0;
+}
+.keyboard-shortcut__dialog::backdrop {
+    background-color: @backdrop-color;
+}
+
+.first-launch__dialog::backdrop {
     background-color: @first-launch-backdrop-color;
 }
 
