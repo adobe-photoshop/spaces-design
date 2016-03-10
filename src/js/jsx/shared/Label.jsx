@@ -27,11 +27,10 @@ define(function (require, exports, module) {
     var React = require("react"),
         classnames = require("classnames"),
         Fluxxor = require("fluxxor"),
-        FluxMixin = Fluxxor.FluxMixin(React),
-        ScrubbyMixin = require("js/jsx/mixin/Scrubby");
+        FluxMixin = Fluxxor.FluxMixin(React);
     
     var Label = React.createClass({
-        mixins: [FluxMixin, ScrubbyMixin],
+        mixins: [FluxMixin],
         
         propTypes: {
             size: React.PropTypes.string
