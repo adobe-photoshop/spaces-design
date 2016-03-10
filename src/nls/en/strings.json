@@ -212,6 +212,7 @@
         "SET_STROKE_ALIGNMENT": "Set Stroke Alignment",
         "TOGGLE_STROKE": "Toggle Stroke",
         "SET_FILL_COLOR": "Set Fill Color",
+        "SET_TYPE_FILL_COLOR": "Set Color",
         "SET_FILL_OPACITY": "Set Fill Opacity",
         "SET_FILL_BLENDING": "Set Fill Blending",
         "TOGGLE_FILL": "Toggle Fill",

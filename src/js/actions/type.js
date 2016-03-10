@@ -146,18 +146,18 @@ define(function (require, exports) {
      * @param {string} postscript Post script name of the described typeface
      * @param {string} family The type face family name, e.g., "Helvetica Neue"
      * @param {string} style The type face style name, e.g., "Oblique"
-     * @param {boolean=} coalesce
      * @return {Promise}
      */
-    var setPostScript = function (document, layers, postscript, family, style, coalesce) {
+    var setPostScript = function (document, layers, postscript, family, style) {
         var layerIDs = collection.pluck(layers, "id"),
             layerRefs = layerIDs.map(textLayerLib.referenceBy.id).toArray(),
             modal = this.flux.store("tool").getModalToolState();
 
         var setFacePlayObject = textLayerLib.setPostScript(layerRefs, postscript),
-            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_FACE"), modal, coalesce),
-            setFacePromise = locking.playWithLockOverride(document, layers, setFacePlayObject, typeOptions),
-            updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style, coalesce);
+            typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_FACE"), modal),
+            setFacePromise = layerActionsUtil.playSimpleLayerActions(document, layers,
+                setFacePlayObject, true, typeOptions),
+            updatePromise = this.transfer(updatePostScript, document, layers, postscript, family, style);
 
         return Promise.join(updatePromise, setFacePromise)
             .bind(this)
@@ -177,7 +177,7 @@ define(function (require, exports) {
     setPostScript.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updatePostScript, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updatePostScript", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -249,7 +249,7 @@ define(function (require, exports) {
     setFace.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateFace, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateFace", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -343,7 +343,7 @@ define(function (require, exports) {
     setColor.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateColor, layerActions.resetLayers],
+        transfers: ["type.updateColor", "layers.resetLayers"],
         modal: true
     };
 
@@ -392,7 +392,8 @@ define(function (require, exports) {
 
         var setSizePlayObject = textLayerLib.setSize(layerRefs, size, "px"),
             typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_SIZE"), modal),
-            setSizePromise = locking.playWithLockOverride(document, layers, setSizePlayObject, typeOptions),
+            setSizePromise = layerActionsUtil.playSimpleLayerActions(document, layers,
+                setSizePlayObject, true, typeOptions),
             updatePromise = this.transfer(updateSize, document, layers, size);
 
         return Promise.join(updatePromise, setSizePromise)
@@ -413,7 +414,7 @@ define(function (require, exports) {
     setSize.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateSize, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateSize", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -461,7 +462,8 @@ define(function (require, exports) {
 
         var setTrackingPlayObject = textLayerLib.setTracking(layerRefs, psTracking),
             typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_TRACKING"), modal),
-            setTrackingPromise = locking.playWithLockOverride(document, layers, setTrackingPlayObject, typeOptions),
+            setTrackingPromise = layerActionsUtil.playSimpleLayerActions(document, layers,
+                setTrackingPlayObject, typeOptions),
             updatePromise = this.transfer(updateTracking, document, layers, tracking);
 
         return Promise.join(updatePromise, setTrackingPromise)
@@ -482,7 +484,7 @@ define(function (require, exports) {
     setTracking.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateTracking, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateTracking", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -534,7 +536,8 @@ define(function (require, exports) {
 
         var setLeadingPlayObject = textLayerLib.setLeading(layerRefs, autoLeading, leading, "px"),
             typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_LEADING"), modal),
-            setLeadingPromise = locking.playWithLockOverride(document, layers, setLeadingPlayObject, typeOptions),
+            setLeadingPromise = layerActionsUtil.playSimpleLayerActions(document, layers,
+                setLeadingPlayObject, typeOptions),
             updatePromise = this.transfer(updateLeading, document, layers, leading);
 
         return Promise.join(updatePromise, setLeadingPromise).bind(this).then(function () {
@@ -553,7 +556,7 @@ define(function (require, exports) {
     setLeading.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateLeading, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateLeading", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -602,7 +605,8 @@ define(function (require, exports) {
         var setAlignmentPlayObject = textLayerLib.setAlignment(layerRefs, alignment),
             typeOptions = _getTypeOptions(document.id, nls.localize("strings.ACTIONS.SET_TYPE_ALIGNMENT"),
                 modal, false, options),
-            setAlignmentPromise = locking.playWithLockOverride(document, layers, setAlignmentPlayObject, typeOptions),
+            setAlignmentPromise = layerActionsUtil.playSimpleLayerActions(document, layers,
+                setAlignmentPlayObject, typeOptions),
             transferPromise = this.transfer(updateAlignment, document, layers, alignment);
 
         return Promise.join(transferPromise, setAlignmentPromise).bind(this).then(function () {
@@ -621,7 +625,7 @@ define(function (require, exports) {
     setAlignment.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [updateAlignment, layerActions.resetBounds, layerActions.resetLayers],
+        transfers: ["type.updateAlignment", "layers.resetBounds", "layers.resetLayers"],
         modal: true,
         post: ["verify.layers.verifySelectedBounds"]
     };
@@ -657,7 +661,7 @@ define(function (require, exports) {
     updateProperties.action = {
         reads: [],
         writes: [locks.JS_DOC],
-        transfers: [layerActions.initializeLayers],
+        transfers: ["layers.initializeLayers"],
         modal: true
     };
 
@@ -717,7 +721,7 @@ define(function (require, exports) {
     applyTextStyle.action = {
         reads: [locks.JS_DOC],
         writes: [locks.PS_DOC],
-        transfers: [historyActions.newHistoryState, layerActions.resetLayers]
+        transfers: ["history.newHistoryState", "layers.resetLayers"]
     };
 
     /**
@@ -784,7 +788,7 @@ define(function (require, exports) {
     initFontList.action = {
         reads: [locks.PS_APP],
         writes: [locks.JS_TYPE],
-        transfers: [layerActions.resetLayers],
+        transfers: ["layers.resetLayers"],
         modal: true
     };
 

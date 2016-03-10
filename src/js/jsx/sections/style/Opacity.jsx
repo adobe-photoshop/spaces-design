@@ -37,7 +37,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             var getRelevantProps = function (props) {
-                return collection.pluckAll(props.layers, ["id", "opacity"]);
+                return collection.pluckAll(props.selectedLayers, ["id", "opacity"]);
             };
 
             return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
@@ -51,12 +51,12 @@ define(function (require, exports, module) {
          */
         _handleOpacityChange: function (event, opacity) {
             this.getFlux().actions.layers
-                .setOpacityThrottled(this.props.document, this.props.layers, opacity);
+                .setOpacityThrottled(this.props.document, this.props.selectedLayers, opacity);
         },
 
         render: function () {
-            var opacities = collection.pluck(this.props.layers, "opacity"),
-                disabled = this.props.disabled || this.props.layers.every(function (layer) {
+            var opacities = collection.pluck(this.props.selectedLayers, "opacity"),
+                disabled = this.props.disabled || this.props.selectedLayers.every(function (layer) {
                     return layer.isBackground;
                 });
 

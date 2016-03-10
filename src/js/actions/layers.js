@@ -39,6 +39,8 @@ define(function (require, exports) {
         collection = require("js/util/collection"),
         documentActions = require("./documents"),
         historyActions = require("./history"),
+        typeActions = require("./type"),
+        shapeActions = require("./shapes"),
         log = require("js/util/log"),
         events = require("../events"),
         shortcuts = require("./shortcuts"),
@@ -1852,6 +1854,100 @@ define(function (require, exports) {
     };
 
     /**
+     * Combines the color change of vector fill and text layers into one 
+     * history when we want to change them in tandem.
+     *
+     * @param {Document} doc
+     * @param {Immutable.Iterable.<Layer>} vectorLayers
+     * @param {Immutable.Iterable.<Layer>} textLayers
+     * @param {Color} color
+     * @param {object} actionOpts
+     * @param {boolean=} actionOpts.coalesce Whether to coalesce this operation's history state
+     * @param {boolean=} actionOpts.enabled optional enabled flag, default=true
+     * @param {boolean=} actionOpts.ignoreAlpha Whether to ignore the alpha value of the
+     *
+     * @return {Promise}
+     */
+    var changeColors = function (doc, vectorLayers, textLayers, color, actionOpts, transactionOpts) {
+        if (vectorLayers.size === 0 && textLayers.size === 0) {
+            return Promise.resolve();
+        }
+
+        var transaction = descriptor.beginTransaction(transactionOpts);
+
+        if (!actionOpts) {
+            actionOpts = {
+                transaction: transaction
+            };
+        }
+        
+        var shapePromise = vectorLayers.size === 0 ? Promise.resolve() :
+                this.transfer(shapeActions.setFillColor, doc, vectorLayers, color, actionOpts),
+            textPromise = textLayers.size === 0 ? Promise.resolve() :
+                this.transfer(typeActions.setColor, doc, textLayers, color, actionOpts);
+
+        return Promise.join(shapePromise, textPromise)
+            .then(function () {
+                return descriptor.endTransaction(transaction);
+            });
+    };
+    changeColors.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: ["shapes.setFillColor", "type.setColor"]
+    };
+
+    /**
+     * Combines the opacity change of vector and text layers into one 
+     * history when we want to change them in tandem.
+     *
+     * @param {Document} doc
+     * @param {Immutable.Iterable.<Layer>} selectedLayers
+     * @param {Color} opacity
+     * @param {object} actionOpts
+     * @param {boolean=} actionOpts.coalesce Whether to coalesce this operation's history state
+     * @param {boolean=} actionOpts.enabled optional enabled flag, default=true
+     * @param {boolean=} actionOpts.ignoreAlpha Whether to ignore the alpha value of the
+     *
+     * @return {Promise}
+     */
+    var changeOpacity = function (doc, selectedLayers, opacity, actionOpts, transactionOpts) {
+        if (selectedLayers.isEmpty()) {
+            return Promise.resolve();
+        }
+
+        var transaction = descriptor.beginTransaction(transactionOpts);
+
+        if (!actionOpts) {
+            actionOpts = {
+                transaction: transaction
+            };
+        }
+        
+        var vectorLayers = selectedLayers.filter(function (layer) {
+                return layer.isVector;
+            }),
+            notVectorLayers = selectedLayers.filter(function (layer) {
+                return !layer.isVector;
+            });
+
+        var shapePromise = vectorLayers.size === 0 ? Promise.resolve() :
+                this.transfer(shapeActions.setFillOpacity, doc, vectorLayers, opacity, actionOpts),
+            otherLayersPromise = notVectorLayers.size === 0 ? Promise.resolve() :
+                this.transfer(setOpacity, doc, notVectorLayers, opacity, actionOpts);
+
+        return Promise.join(shapePromise, otherLayersPromise)
+            .then(function () {
+                return descriptor.endTransaction(transaction);
+            });
+    };
+    changeOpacity.action = {
+        reads: [locks.JS_DOC],
+        writes: [],
+        transfers: ["shapes.setFillOpacity", "layers.setOpacity"]
+    };
+
+    /**
      * Event handlers initialized in beforeStartup.
      *
      * @private
@@ -2161,6 +2257,8 @@ define(function (require, exports) {
     exports.revealLayers = revealLayers;
     exports.resetIndex = resetIndex;
     exports.handleCanvasShift = handleCanvasShift;
+    exports.changeColors = changeColors;
+    exports.changeOpacity = changeOpacity;
     exports.getLayerIDsForDocumentID = getLayerIDsForDocumentID;
 
     exports.beforeStartup = beforeStartup;

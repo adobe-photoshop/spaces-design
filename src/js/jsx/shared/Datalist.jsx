@@ -334,10 +334,12 @@ define(function (require, exports, module) {
 
             // Finishes the autofill within the datalist
             if (event.key === "Tab") {
-                selectedID = this.state.filter + this.refs.autocomplete.innerHTML;
-                this.setState({
-                    filter: selectedID
-                });
+                if (this.refs.autocomplete) {
+                    selectedID = this.state.filter + this.refs.autocomplete.innerHTML;
+                    this.setState({
+                        filter: selectedID
+                    });
+                }
             } else {
                 // The only time that the lastHighlightedID is undefined is when there is a partial string match 
                 // but the entire string does not match. Example: When user correctly spells the first word 

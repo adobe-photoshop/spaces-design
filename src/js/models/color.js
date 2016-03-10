@@ -96,9 +96,9 @@ define(function (require, exports, module) {
         }
 
         return new Color({
-            "r": rgb.red,
-            "g": green,
-            "b": rgb.blue,
+            "r": mathjs.round(rgb.red),
+            "g": mathjs.round(green),
+            "b": mathjs.round(rgb.blue),
             "a": mathjs.round(opacityPercentage / 100, 4)
         });
     };

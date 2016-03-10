@@ -31,15 +31,12 @@ define(function (require, exports, module) {
         Immutable = require("immutable"),
         classnames = require("classnames");
 
-    var os = require("adapter").os,
-        Layer = require("js/models/layer");
+    var os = require("adapter").os;
 
     var TitleHeader = require("js/jsx/shared/TitleHeader"),
         Button = require("js/jsx/shared/Button"),
         SVGIcon = require("js/jsx/shared/SVGIcon"),
-        VectorFill = require("./VectorFill"),
-        Type = require("./Type"),
-        VectorAppearance = require("./VectorAppearance"),
+        AppearancePanelSections = require("./AppearancePanelSections"),
         nls = require("js/util/nls"),
         synchronization = require("js/util/synchronization"),
         headlights = require("js/util/headlights"),
@@ -150,38 +147,25 @@ define(function (require, exports, module) {
         },
 
         render: function () {
-            if (this.props.document.layers.selected.isEmpty()) {
-                return null;
-            }
-
-            var containerClasses = classnames({
-                "section-container": true,
-                "section-container__collapsed": !this.props.visible
-            });
-
-            var layerKinds = collection.pluck(this.props.document.layers.selected, "kind"),
+            var textLayers = this.props.document.layers.selected.filter(function (layer) {
+                    return layer.isText;
+                }),
+                vectorLayers = this.props.document.layers.selected.filter(function (layer) {
+                    return layer.isVector;
+                }),
+                containerClasses = classnames({
+                    "section-container": true,
+                    "section-container__collapsed": !this.props.visible
+                }),
+                layerKinds = collection.pluck(this.props.document.layers.selected, "kind"),
                 uniformLayerKind = collection.uniformValue(layerKinds, false),
-                hasSomeTextLayers = Layer.KINDS.TEXT === uniformLayerKind,
-                hasSomeVectorLayers;
-
-            if (!uniformLayerKind) {
-                hasSomeTextLayers = layerKinds.some(function (layerKind) {
-                    return Layer.KINDS.TEXT === layerKind;
-                });
-                
-                hasSomeVectorLayers = layerKinds.some(function (layerKind) {
-                    return Layer.KINDS.VECTOR === layerKind;
-                });
-            }
-
-            var sectionClasses = classnames({
-                "section": true,
-                "appearance": true,
-                "section__collapsed": !this.props.visible,
-                "appearance__mixed": !uniformLayerKind && hasSomeTextLayers && hasSomeVectorLayers
-            });
-
-            var copyStyleDisabled = this.props.disabled || !(this.props.document &&
+                sectionClasses = classnames({
+                    "section": true,
+                    "appearance": true,
+                    "section__collapsed": !this.props.visible,
+                    "appearance__mixed": !uniformLayerKind
+                }),
+                copyStyleDisabled = this.props.disabled || !(this.props.document &&
                     this.props.document.layers.selected.size === 1),
                 pasteStyleDisabled = this.props.disabled || !(this.state.clipboard &&
                     this.props.document &&
@@ -193,24 +177,18 @@ define(function (require, exports, module) {
                 pasteStyleClasses = classnames({
                     "style-button": true,
                     "style-button__disabled": pasteStyleDisabled
-                });
-
-            var containerContents = this.props.document && this.props.visible && !this.props.disabled && (
-                <div>
-                    <VectorFill
+                }),
+                containerContents = this.props.document && this.props.visible && !this.props.disabled && (
+                    <AppearancePanelSections
+                        visible={this.props.visible}
+                        selectedLayers={this.props.document.layers.selected}
                         uniformLayerKind={uniformLayerKind}
-                        hasSomeTextLayers={hasSomeTextLayers}
-                        document={this.props.document} />
-                    <Type
                         document={this.props.document}
-                        uniformLayerKind={uniformLayerKind}
-                        hasSomeTextLayers={hasSomeTextLayers} />
-                    <VectorAppearance
-                        uniformLayerKind={uniformLayerKind}
-                        hasSomeTextLayers={hasSomeTextLayers}
-                        document={this.props.document} />
-                </div>
-            );
+                        disabled={this.props.disabled}
+                        textLayers={textLayers}
+                        vectorLayers={vectorLayers}>
+                    </AppearancePanelSections>
+                );
 
             return (
                 <section
