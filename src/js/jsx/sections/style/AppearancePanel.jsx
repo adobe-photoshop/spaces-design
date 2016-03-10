@@ -195,7 +195,7 @@ define(function (require, exports, module) {
                     "style-button__disabled": pasteStyleDisabled
                 });
 
-            var containerContents = this.props.document && this.props.visible && !this.props.disabled && (
+            var containerContents = this.props.document && !this.props.disabled && (
                 <div>
                     <VectorFill
                         uniformLayerKind={uniformLayerKind}
