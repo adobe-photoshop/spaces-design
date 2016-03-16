@@ -78,7 +78,7 @@
     "classnames": "^2.2.0",
     "d3": "^3.5.9",
     "fluxxor": "^1.7.3",
-    "generator-connection": "adobe-photoshop/generator-connection#v2.4.0",
+    "generator-connection": "github:adobe-photoshop/generator-connection#v2.4.0",
     "immutable": "^3.7.5",
     "lodash": "^3.10.1",
     "loglevel": "^1.4.0",
@@ -88,7 +88,7 @@
     "react-addons-pure-render-mixin": "^0.14.6",
     "react-dom": "^0.14.6",
     "scriptjs": "^2.5.8",
-    "spaces-adapter": "adobe-photoshop/spaces-adapter#v1.2.3",
+    "spaces-adapter": "github:adobe-photoshop/spaces-adapter#v1.2.4",
     "tinycolor2": "^1.1.2",
     "wolfy87-eventemitter": "^4.3.0"
   }
