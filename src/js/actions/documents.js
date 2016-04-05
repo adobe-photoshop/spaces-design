@@ -852,29 +852,14 @@ define(function (require, exports) {
         }
 
         var newVisibility = !document.guidesVisible,
-            guideInitPromise;
-
-        if (newVisibility && !document.guides) {
-            guideInitPromise = _getGuidesForDocument(document.id);
-        } else {
-            guideInitPromise = Promise.resolve();
-        }
-
-        var dispatchPromise = guideInitPromise
-            .bind(this)
-            .then(function (guides) {
-                this.dispatch(events.document.GUIDES_VISIBILITY_CHANGED, {
-                    documentID: document.id,
-                    guidesVisible: newVisibility,
-                    guides: guides
-                });
-            });
-
-        var playObject = documentLib.setGuidesVisibility(newVisibility),
+            playObject = documentLib.setGuidesVisibility(newVisibility),
             playPromise = descriptor.playObject(playObject);
 
-        return Promise.join(dispatchPromise, playPromise)
+        return playPromise
             .bind(this)
+            .then(function () {
+                return _dispatchGuidesVisibilityEvent.call(this, document);
+            })
             .then(function () {
                 return this.transfer(guideActions.resetGuidePolicies);
             });
@@ -898,17 +883,53 @@ define(function (require, exports) {
         }
 
         var newVisibility = !document.smartGuidesVisible,
-            dispatchPromise = this.dispatchAsync(events.document.GUIDES_VISIBILITY_CHANGED,
-                { documentID: document.id, smartGuidesVisible: newVisibility });
-
-        var playObject = documentLib.setSmartGuidesVisibility(newVisibility),
+            playObject = documentLib.setSmartGuidesVisibility(newVisibility),
             playPromise = descriptor.playObject(playObject);
 
-        return Promise.join(dispatchPromise, playPromise);
+        return playPromise
+            .bind(this)
+            .then(function () {
+                return _dispatchGuidesVisibilityEvent.call(this, document);
+            });
     };
     toggleSmartGuidesVisibility.action = {
         reads: [locks.JS_DOC, locks.JS_APP],
         writes: [locks.JS_DOC, locks.PS_DOC]
+    };
+    
+    /**
+     * A helper function to get the visibility state of guides and smart guides from PS and dispatch
+     * GUIDES_VISIBILITY_CHANGED event to update the related menu items.
+     * 
+     * @param  {Document} document
+     * @return {Promise}
+     */
+    var _dispatchGuidesVisibilityEvent = function (document) {
+        var guidesObj = documentLib.getGuidesVisibility(),
+            smartGuidesObj = documentLib.getSmartGuidesVisibility();
+
+        return descriptor.batchPlayObjects([guidesObj, smartGuidesObj])
+            .bind(this)
+            .then(function (results) {
+                var guidesVisible = results[0].guidesVisibility,
+                    smartGuidesVisible = results[1].smartGuidesVisibility,
+                    guideInitPromise = Promise.resolve();
+
+                if (guidesVisible && !document.guides) {
+                    guideInitPromise = _getGuidesForDocument(document.id);
+                }
+
+                return guideInitPromise
+                    .bind(this)
+                    .then(function (guides) {
+                        this.dispatch(events.document.GUIDES_VISIBILITY_CHANGED, {
+                            documentID: document.id,
+                            guidesVisible: guidesVisible,
+                            smartGuidesVisible: smartGuidesVisible,
+                            guides: guides
+                        });
+                    });
+            });
     };
 
     /**
