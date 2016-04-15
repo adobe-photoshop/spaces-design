@@ -4,7 +4,7 @@
         "ADD_FILL": "Füllung hinzufügen",
         "ADD_VECTOR_MASK": "Vektormaske hinzufügen",
         "APPLY_LIBRARY_COLOR": "Bibliotheksfarbe anwenden",
-        "CREATE_ARTBOARD": "[8555519] ü_Create Artboard",
+        "CREATE_ARTBOARD": "Zeichenfläche erstellen",
         "SET_STROKE_COLOR": "Konturfarbe festlegen",
         "SET_STROKE": "Kontur festlegen",
         "SET_STROKE_OPACITY": "Strichdeckkraft festlegen",
@@ -44,11 +44,12 @@
         "SET_TYPE_ALIGNMENT": "Schriftausrichtung festlegen",
         "GROUP_LAYERS": "Ebenen gruppieren",
         "UNGROUP_LAYERS": "Ebenengruppierung aufheben",
-        "REORDER_LAYERS": "[8555515] ü_Reorder Layers",
+        "REORDER_LAYERS": "Ebenen neu anordnen",
         "MODIFY_EXPORT_ASSETS": "Aktualisierte Export-Asset-Konfigurationen",
         "APPLY_TEXT_STYLE": "Textformat anwenden",
         "APPLY_LAYER_STYLE": "Ebenenstil anwenden",
-        "CREATE_LAYER_FROM_ELEMENT": "Ebene aus grafischem Element erstellen"
+        "CREATE_LAYER_FROM_ELEMENT": "Ebene aus grafischem Element erstellen",
+        "NEW_VECTOR_MASK_FROM_SHAPE": "[8572684] ü_Create Vector Mask From Shape Layer"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -100,7 +101,7 @@
     "KEYBOARD_SHORTCUTS": {
         "TOOLS_TITLE": "Werkzeuge",
         "MORE_TITLE": "Mehr",
-        "SELECT_TITLE": "Werkzeug auswählen",
+        "SELECT_TITLE": "Auswahlwerkzeug",
         "TOOLS": {
             "SELECT": "Auswahl",
             "RECTANGLE": "Rechteck",
@@ -110,7 +111,7 @@
             "SAMPLER": "Farbaufnahme",
             "SAMPLER_EFFECTS": "Effekte aufnehmen",
             "SAMPLER_INSTRUCTION_EFFECTS": "Umschalt+Klicken",
-            "SAMPLER_HUD": "Beispieloptionen für HUD",
+            "SAMPLER_HUD": "Aufnahmeoptionen HUD",
             "SAMPLER_INSTRUCTION_HUD": "Leertaste",
             "SEARCH": "Suche",
             "SEARCH_INSTRUCTION_MAC": "Befehlstaste + F",
@@ -133,7 +134,7 @@
             "HOLD_SEL_MAC": "Wahltaste + Esc-Taste",
             "HOLD_SEL_WIN": "Umschalt + Esc",
             "TARGET_LAYER": "Bestimmte Ebene ansteuern",
-            "TARGET_LAYER_MAC": "Befehlstaste + Klick",
+            "TARGET_LAYER_MAC": "Befehlstaste + Klicken",
             "TARGET_LAYER_WIN": "Strg + Klicken"
         }
     },
@@ -149,13 +150,17 @@
     },
     "TITLE_TRANSFORM": "Transformieren",
     "TOOLS": {
-        "superselectVector": "[8555523] ü_A - Select Vector Tool",
-        "newSelect": "V – Auswahlwerkzeug",
-        "rectangle": "R – Rechteck-Werkzeug",
-        "ellipse": "E – Ellipse-Werkzeug",
-        "pen": "P – Zeichenstift-Werkzeug",
-        "typeCreateOrEdit": "T – Textwerkzeug",
-        "sampler": "I – Farbaufnahme-Werkzeug"
+        "NAMES": {
+            "DIRECT_SELECTION_TOOL": "Direktauswahl-Werkzeug",
+            "VECTOR_MASK_MODE": "[8903920] ü_Vector Mask Mode",
+            "ELLIPSE": "Ellipse-Werkzeug",
+            "PEN": "Zeichenstift-Werkzeug",
+            "SUPER_SELECT_TYPE": "[8903921] ü_Superselect-Type",
+            "RECTANGLE": "Rechteck-Werkzeug",
+            "EYEDROPPER": "[8903922] ü_Sampler Tool",
+            "SELECT": "Auswahlwerkzeug",
+            "TYPE": "[8903925] ü_Type Tool"
+        }
     },
     "TOOLTIPS": {
         "SELECT_NEXT_DOCUMENT": "Nächstes Dokument auswählen",
@@ -207,6 +212,7 @@
         "SET_STROKE_ALIGNMENT": "Konturausrichtung festlegen",
         "TOGGLE_STROKE": "Kontur ein/aus",
         "SET_FILL_COLOR": "Füllfarbe festlegen",
+        "SET_TYPE_FILL_COLOR": "[8907484] ü_Set Color",
         "SET_FILL_OPACITY": "Fülldeckkraft festlegen",
         "SET_FILL_BLENDING": "Füllung festlegen",
         "TOGGLE_FILL": "Füllung ein/aus",
@@ -273,7 +279,16 @@
         "EXPORT_DIALOG": "Exportieren",
         "REFERENCE_POINT_TOOL": "Referenzpunkt festlegen",
         "VECTOR_MASK_MODE": "Maskierungsmodus",
-        "SEARCH": "Suchen"
+        "SEARCH": "Suchen",
+        "TOOLS": {
+            "superselectVector": "A – Vektorwerkzeug auswählen",
+            "newSelect": "V – Auswahlwerkzeug",
+            "rectangle": "R – Rechteck-Werkzeug",
+            "ellipse": "E – Ellipse-Werkzeug",
+            "pen": "P – Zeichenstift-Werkzeug",
+            "typeCreateOrEdit": "T – Textwerkzeug",
+            "sampler": "I – Farbaufnahme-Werkzeug"
+        }
     },
     "LAYER_KIND": {
         "ANY": "Beliebige Ebene",
@@ -313,7 +328,7 @@
             "GRADIENT": "Verlauf",
             "PATTERN": "Muster"
         },
-        "OPACITY": "Deckkraft"
+        "OPACITY": "A"
     },
     "TRANSFORM": {
         "X": "X",
@@ -467,7 +482,9 @@
         "PLACEHOLDER": "Suchen, öffnen und auswählen",
         "PLACEHOLDER_INITIALIZING": "Initialisierung…",
         "PLACEHOLDER_FILTER": "Suchen in:",
+        "NO_OPTIONS_STOCK": "[8845065] ü_Search Adobe Stock…",
         "NO_OPTIONS": "Keine übereinstimmenden Ergebnisse für Ihre Suche",
+        "UNTITLED": "Unbenannt",
         "HEADERS": {
             "ALL_LAYER": "Ebenen",
             "CURRENT_LAYER": "Ebenen",
@@ -476,9 +493,10 @@
             "MENU_COMMAND": "Menübefehle",
             "LIBRARY": "Alle Bibliotheken",
             "FILTER": "Suche beschränken auf…",
-            "GLOBAL_SHORTCUT": "[8555521] ü_Global Shortcuts"
+            "GLOBAL_SHORTCUT": "Globale Tastaturbefehle"
         },
         "CATEGORIES": {
+            "ADOBE_STOCK": "[8845066] ü_Adobe Stock",
             "CURRENT_DOC": "Geöffnete Dokumente",
             "RECENT_DOC": "Zuletzt verwendete Dokumente",
             "MENU_COMMAND": "Menübefehle",
@@ -495,7 +513,7 @@
             "GRAPHIC": "Grafiken",
             "LAYERSTYLE": "Ebenenstile",
             "CHARACTERSTYLE": "Zeichenformate",
-            "GLOBAL_SHORTCUT": "[8555522] ü_Global Shortcuts"
+            "GLOBAL_SHORTCUT": "Globale Tastaturbefehle"
         },
         "MODIFIERS": {
             "COMMAND": "Bfhl",

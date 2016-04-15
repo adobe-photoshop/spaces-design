@@ -32,7 +32,8 @@
         },
         "LAYER": {
             "CREATE_ARTBOARD": "b",
-            "DUPLICATE": "j"
+            "DUPLICATE": "j",
+            "NEW_VECTOR_MASK_FROM_SHAPE": "m"
         },
         "ARRANGE": {
             "FLIP_HORIZONTAL": "/",
@@ -63,7 +64,7 @@
             "NEXT_DOCUMENT": "`",
             "RETURN_TO_STANDARD": "`"
         },
-        "HELP": {
+        "DEBUG": {
             "RUN_TESTS": "?",
             "UPDATE_CURRENT_DOCUMENT": ",",
             "RESET_RECESS": "ESCAPE"

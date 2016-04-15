@@ -4,7 +4,7 @@
         "ADD_FILL": "Ajouter un fond",
         "ADD_VECTOR_MASK": "Ajouter un masque vectoriel",
         "APPLY_LIBRARY_COLOR": "Appliquer la couleur de la bibliothèque",
-        "CREATE_ARTBOARD": "[8555519] é_Create Artboard",
+        "CREATE_ARTBOARD": "Créer un plan de travail",
         "SET_STROKE_COLOR": "Définir la couleur du contour",
         "SET_STROKE": "Définir le contour",
         "SET_STROKE_OPACITY": "Définir l'opacité du contour",
@@ -44,11 +44,12 @@
         "SET_TYPE_ALIGNMENT": "Définir l'alignement du texte",
         "GROUP_LAYERS": "Associer les calques",
         "UNGROUP_LAYERS": "Dissocier les calques",
-        "REORDER_LAYERS": "[8555515] é_Reorder Layers",
+        "REORDER_LAYERS": "Réorganiser les calques",
         "MODIFY_EXPORT_ASSETS": "Configurations d'exportation de fichier mises à jour",
         "APPLY_TEXT_STYLE": "Appliquer le style de texte",
         "APPLY_LAYER_STYLE": "Appliquer le style de calque",
-        "CREATE_LAYER_FROM_ELEMENT": "Créer un calque à partir d'une image"
+        "CREATE_LAYER_FROM_ELEMENT": "Créer un calque à partir d'une image",
+        "NEW_VECTOR_MASK_FROM_SHAPE": "[8572684] é_Create Vector Mask From Shape Layer"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -121,7 +122,7 @@
             "MASKMODE": "Mode Masque"
         },
         "SELECT_TOOL": {
-            "TARGET": "Cibler groupe imbriqué/calques",
+            "TARGET": "Cibler groupe imbriqué/calq.",
             "TARGET_INSTRUCTION": "Double-cliquez dans zone de travail",
             "EDIT_PATH": "Modifier le tracé/texte",
             "EDIT_PATH_INSTRUCTION": "Double-cliquez sur l'objet vectoriel/le texte.",
@@ -149,13 +150,17 @@
     },
     "TITLE_TRANSFORM": "Transformation",
     "TOOLS": {
-        "superselectVector": "[8555523] é_A - Select Vector Tool",
-        "newSelect": "V - Outil Sélection",
-        "rectangle": "R - Outil Rectangle",
-        "ellipse": "E - Outil Ellipse",
-        "pen": "P - Outil Plume",
-        "typeCreateOrEdit": "T - Outil Texte",
-        "sampler": "I - Outil Echantillonnage"
+        "NAMES": {
+            "DIRECT_SELECTION_TOOL": "Outil Sélection directe",
+            "VECTOR_MASK_MODE": "[8903920] é_Vector Mask Mode",
+            "ELLIPSE": "Outil Ellipse",
+            "PEN": "Outil Plume",
+            "SUPER_SELECT_TYPE": "[8903921] é_Superselect-Type",
+            "RECTANGLE": "Outil Rectangle",
+            "EYEDROPPER": "[8903922] é_Sampler Tool",
+            "SELECT": "Outil Sélection",
+            "TYPE": "Outil Texte"
+        }
     },
     "TOOLTIPS": {
         "SELECT_NEXT_DOCUMENT": "Sélectionner le document suivant",
@@ -207,6 +212,7 @@
         "SET_STROKE_ALIGNMENT": "Définir l'alignement du contour",
         "TOGGLE_STROKE": "Activer/désactiver le contour",
         "SET_FILL_COLOR": "Définir la couleur de fond",
+        "SET_TYPE_FILL_COLOR": "[8907484] é_Set Color",
         "SET_FILL_OPACITY": "Définir l'opacité du fond",
         "SET_FILL_BLENDING": "Définir la fusion du fond",
         "TOGGLE_FILL": "Activer/Désactiver le fond",
@@ -273,7 +279,16 @@
         "EXPORT_DIALOG": "Exportation",
         "REFERENCE_POINT_TOOL": "Définir le point de référence",
         "VECTOR_MASK_MODE": "Mode Masque",
-        "SEARCH": "Rechercher"
+        "SEARCH": "Rechercher",
+        "TOOLS": {
+            "superselectVector": "A - Sélectionner l'outil vectoriel",
+            "newSelect": "V - Outil Sélection",
+            "rectangle": "R - Outil Rectangle",
+            "ellipse": "E - Outil Ellipse",
+            "pen": "P - Outil Plume",
+            "typeCreateOrEdit": "T - Outil Texte",
+            "sampler": "I - Outil Echantillonnage"
+        }
     },
     "LAYER_KIND": {
         "ANY": "Tout calque",
@@ -313,7 +328,7 @@
             "GRADIENT": "Dégradé",
             "PATTERN": "Motif"
         },
-        "OPACITY": "Opacité"
+        "OPACITY": "A"
     },
     "TRANSFORM": {
         "X": "X",
@@ -467,7 +482,9 @@
         "PLACEHOLDER": "Rechercher, ouvrir et sélectionner",
         "PLACEHOLDER_INITIALIZING": "Initialisation…",
         "PLACEHOLDER_FILTER": "Rechercher",
+        "NO_OPTIONS_STOCK": "[8845065] é_Search Adobe Stock…",
         "NO_OPTIONS": "Votre recherche n'a renvoyé aucun résultat",
+        "UNTITLED": "Sans titre",
         "HEADERS": {
             "ALL_LAYER": "Calques",
             "CURRENT_LAYER": "Calques",
@@ -476,9 +493,10 @@
             "MENU_COMMAND": "Commandes de menu",
             "LIBRARY": "Toutes les bibliothèques",
             "FILTER": "Limiter la recherche à…",
-            "GLOBAL_SHORTCUT": "[8555521] é_Global Shortcuts"
+            "GLOBAL_SHORTCUT": "Raccourcis globaux"
         },
         "CATEGORIES": {
+            "ADOBE_STOCK": "[8845066] é_Adobe Stock",
             "CURRENT_DOC": "Documents ouverts",
             "RECENT_DOC": "Documents récents",
             "MENU_COMMAND": "Commandes de menu",
@@ -495,7 +513,7 @@
             "GRAPHIC": "Graphiques",
             "LAYERSTYLE": "Styles de calque",
             "CHARACTERSTYLE": "Styles de caractères",
-            "GLOBAL_SHORTCUT": "[8555522] é_Global Shortcuts"
+            "GLOBAL_SHORTCUT": "Raccourcis globaux"
         },
         "MODIFIERS": {
             "COMMAND": "Cmde",

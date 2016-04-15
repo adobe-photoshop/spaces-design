@@ -30,24 +30,7 @@
         },
         "OPEN": "Öffnen…",
         "OPEN_RECENT": {
-            "$MENU": "Letzte Dateien öffnen",
-            "16": "16",
-            "15": "15",
-            "14": "14",
-            "13": "13",
-            "12": "12",
-            "11": "11",
-            "10": "10",
-            "9": "9",
-            "8": "8",
-            "7": "7",
-            "6": "6",
-            "5": "5",
-            "4": "4",
-            "3": "3",
-            "2": "2",
-            "1": "1",
-            "0": "0"
+            "$MENU": "Letzte Dateien öffnen"
         },
         "CLOSE": "Schließen",
         "SAVE": "Speichern",
@@ -125,7 +108,8 @@
             "APPLE_WATCH_42MM": "Apple Watch 42 mm",
             "WEB_1440_900": "Web (1440 x 900)",
             "WEB_1920_1080": "Web (1920 x 1080)"
-        }
+        },
+        "NEW_VECTOR_MASK_FROM_SHAPE": "[8572683] ü_Create Vector Mask from Layer"
     },
     "TYPE": {
         "$MENU": "Typ",
@@ -225,6 +209,13 @@
         "NEXT_DOCUMENT": "Nächstes Dokument",
         "TOGGLE_TOOLBAR": "Symbolleiste anheften",
         "TOGGLE_SINGLE_COLUMN_MODE": "Modus: Einzelne Spalte",
+        "COLOR_THEME": {
+            "$MENU": "Farbe für die Programmoberfläche",
+            "ORIGINAL": "Original",
+            "LIGHT": "Wenig",
+            "MEDIUM": "Mittel",
+            "DARK": "Dunkel"
+        },
         "PREVIOUS_DOCUMENT": "Vorheriges Dokument",
         "RETURN_TO_STANDARD": "Zum Standard-Photoshop zurückkehren",
         "OPEN_DOCUMENT": "Dokument öffnen",
@@ -233,16 +224,22 @@
         "OPEN_DOCUMENT_THREE": "…usw…"
     },
     "DEBUG": {
+        "$MENU": "Debuggen",
         "RUN_TESTS": "Tests ausführen...",
         "ACTION_FAILURE": "Test-Aktions-Fehler…",
         "TRANSFER_FAILURE": "Testübertragungsfehler…",
         "RESET_FAILURE": "Test-Zurücksetzen-Fehler…",
         "CORRUPT_MODEL": "Testmodell-Beschädigung…",
+        "LAYER_PANEL_PERFORMANCE_TEST": "[8800923] ü_Test Layer Panel Performance",
         "UPDATE_CURRENT_DOCUMENT": "Aktuelles Dokument aktualisieren",
         "RESET_RECESS": "Design-Bereich zurücksetzen",
+        "LOAD_DEBUGGING_HELPERS": "[8800931] ü_Load Debugging Helpers",
         "TOGGLE_POLICY_FRAMES": "Richtlinien-Rahmen anzeigen",
         "TOGGLE_POSTCONDITIONS": "Nachbedingungen überprüfen",
-        "TOGGLE_ACTION_TRANSFER_LOGGING": "Protokollaktionsübertragungen"    
+        "TOGGLE_ACTION_LOGGING": "[8850428] ü_Log Actions",
+        "TOGGLE_ACTION_TRANSFER_LOGGING": "Protokollaktionsübertragungen",
+        "TOGGLE_DESCRIPTOR_LOGGING": "[8800921] ü_Log Descriptor Events",
+        "TOGGLE_HEADLIGHTS_LOGGING": "[8800926] ü_Log Headlights Events"
     },
     "HELP": {
         "$MENU": "Hilfe",

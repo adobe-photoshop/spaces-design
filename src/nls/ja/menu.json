@@ -30,24 +30,7 @@
         },
         "OPEN": "開く…",
         "OPEN_RECENT": {
-            "$MENU": "最近使用したファイルを開く",
-            "16": "16",
-            "15": "15",
-            "14": "14",
-            "13": "13",
-            "12": "12",
-            "11": "11",
-            "10": "10",
-            "9": "9",
-            "8": "8",
-            "7": "7",
-            "6": "6",
-            "5": "5",
-            "4": "4",
-            "3": "3",
-            "2": "2",
-            "1": "1",
-            "0": "0"
+            "$MENU": "最近使用したファイルを開く"
         },
         "CLOSE": "閉じる",
         "SAVE": "保存",
@@ -125,7 +108,8 @@
             "APPLE_WATCH_42MM": "Apple Watch 42mm",
             "WEB_1440_900": "Web (1440 x 900)",
             "WEB_1920_1080": "Web (1920 x 1080)"
-        }
+        },
+        "NEW_VECTOR_MASK_FROM_SHAPE": "能_[8572683] Create Vector Mask from Layer"
     },
     "TYPE": {
         "$MENU": "書式",
@@ -225,6 +209,13 @@
         "NEXT_DOCUMENT": "次のドキュメントへ進む",
         "TOGGLE_TOOLBAR": "ツールバーを固定",
         "TOGGLE_SINGLE_COLUMN_MODE": "一列表示モード",
+        "COLOR_THEME": {
+            "$MENU": "カラーテーマ",
+            "ORIGINAL": "元画像",
+            "LIGHT": "明るさ",
+            "MEDIUM": "中",
+            "DARK": "暗"
+        },
         "PREVIOUS_DOCUMENT": "前のドキュメントへ戻る",
         "RETURN_TO_STANDARD": "標準の Photoshop に戻る",
         "OPEN_DOCUMENT": "ドキュメントを開く",
@@ -233,16 +224,22 @@
         "OPEN_DOCUMENT_THREE": "...など..."
     },
     "DEBUG": {
+        "$MENU": "デバッグ",
         "RUN_TESTS": "テストを実行...",
         "ACTION_FAILURE": "テストアクションエラー...",
         "TRANSFER_FAILURE": "テスト転送エラー…",
         "RESET_FAILURE": "テストリセットエラー...",
         "CORRUPT_MODEL": "テストモデル破損...",
+        "LAYER_PANEL_PERFORMANCE_TEST": "能_[8800923] Test Layer Panel Performance",
         "UPDATE_CURRENT_DOCUMENT": "現在のドキュメントの更新",
         "RESET_RECESS": "デザインスペースをリセット",
+        "LOAD_DEBUGGING_HELPERS": "能_[8800931] Load Debugging Helpers",
         "TOGGLE_POLICY_FRAMES": "ポリシーのフレームを表示",
         "TOGGLE_POSTCONDITIONS": "事後条件を確認",
-        "TOGGLE_ACTION_TRANSFER_LOGGING": "ログアクションの転送"
+        "TOGGLE_ACTION_LOGGING": "能_[8850428] Log Actions",
+        "TOGGLE_ACTION_TRANSFER_LOGGING": "ログアクションの転送",
+        "TOGGLE_DESCRIPTOR_LOGGING": "能_[8800921] Log Descriptor Events",
+        "TOGGLE_HEADLIGHTS_LOGGING": "能_[8800926] Log Headlights Events"
     },
     "HELP": {
         "$MENU": "ヘルプ",
