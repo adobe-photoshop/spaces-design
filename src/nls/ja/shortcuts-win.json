@@ -28,7 +28,8 @@
         },
         "LAYER": {
             "CREATE_ARTBOARD": "b",
-            "DUPLICATE": "j"
+            "DUPLICATE": "j",
+            "NEW_VECTOR_MASK_FROM_SHAPE": "m"
         },
         "ARRANGE": {
             "FLIP_HORIZONTAL": "/",
