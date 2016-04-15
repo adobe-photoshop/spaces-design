@@ -61,7 +61,9 @@
                 "HEADLINE": "Welcome to Design Space",
                 "SUBHEAD": "",
                 "BODY_FIRST": "Design Space (currently a Preview) is a companion experience to Photoshop for web and app designers.",
-                "BODY_SECOND": "We’re working in HTML and JavaScript, creating new interactions tailored to your workflows. This is a preview release to get your feedback – so let us know what you think."
+                "BODY_SECOND": "We’re working in HTML and JavaScript, creating new interactions tailored to your workflows. This is a preview release to get your feedback – so let us know what you think.",
+                "BODY_THIRD": "Like Design Space? We bet you’ll love Adobe Experience Design CC (Preview). We've been hard at work building a new end-to-end solution for UX designers, including great integration with Photoshop. Adobe Experience Design CC is now in public beta.",
+                "BODY_FOURTH": "Download a build and try it out!"
             },
             {
                 "TITLE": "Toolset",

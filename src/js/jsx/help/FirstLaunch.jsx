@@ -31,6 +31,7 @@ define(function (require, exports, module) {
 
     var Carousel = require("js/jsx/shared/Carousel"),
         nls = require("js/util/nls"),
+        system = require("js/util/system"),
         SVGIcon = require("js/jsx/shared/SVGIcon");
  
     var FirstLaunch = React.createClass({
@@ -67,14 +68,37 @@ define(function (require, exports, module) {
          * @private
          * @param {string} url
          * @param {string} name
+         * @param {SyntheticEvent} event
          */
-        _handleClick: function (url, name) {
+        _handleClick: function (url, name, event) {
             this.getFlux().actions.menu.openURL({
                 category: "user-interface",
                 subcategory: "introduction-link",
                 eventName: name,
                 url: url
             });
+
+            event.stopPropagation();
+        },
+
+        _renderOpeningBody: function () {
+            if (system.isMac) {
+                var xdURL = "http://www.adobe.com/products/experience-design.html",
+                    onClick = this._handleClick.bind(this, xdURL, "adobeXd");
+
+                return (
+                    <h3>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.BODY_THIRD")}&nbsp;
+                        <a href="#" onClick={onClick}>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.BODY_FOURTH")}</a>
+                    </h3>
+                );
+            } else {
+                return (
+                    <div>
+                        <h3>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.BODY_FIRST")}</h3>
+                        <h3>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.BODY_SECOND")}</h3>
+                    </div>
+                );
+            }
         },
 
         render: function () {
@@ -85,8 +109,8 @@ define(function (require, exports, module) {
                 (<div className="carousel__slide__full slide-0">
                     <h1>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.HEADLINE")}</h1>
                     <img src="img/first_launch/img_slide_ds.png"/>
-                    <h3>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.BODY_FIRST")}</h3>
-                    <h3>{nls.localize("strings.FIRST_LAUNCH.SLIDES.0.BODY_SECOND")}</h3>
+                    {this._renderOpeningBody()}
+                    
                 </div>),
                 (<div className="carousel__slide__full">
                     <img src="img/first_launch/img_slide_toolset.gif"/>
