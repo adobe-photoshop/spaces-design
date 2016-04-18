@@ -31,6 +31,7 @@ define(function (require, exports, module) {
 
     var Carousel = require("js/jsx/shared/Carousel"),
         nls = require("js/util/nls"),
+        system = require("js/util/system"),
         SVGIcon = require("js/jsx/shared/SVGIcon");
  
     var FirstLaunch = React.createClass({
@@ -77,6 +78,36 @@ define(function (require, exports, module) {
             });
         },
 
+        /**
+         * On Mac only, render an advertisement for Adobe Experience Design CC.
+         *
+         * @return {?ReactElement}
+         */
+        _renderAdvertisement: function () {
+            if (!system.isMac) {
+                return null;
+            }
+
+            var onClick = this._handleClick.bind(this, "http://www.adobe.com/go/experience-design", "xdAd"),
+                rawParts = nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_ADVERTISEMENT_1").split("{ADOBE_XD}"),
+                formattedParts = [
+                    rawParts[0],
+                    <em>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.ADOBE_XD")}</em>,
+                    rawParts[1] + " ",
+                    (<a href="#" onClick={onClick}>
+                        {nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_ADVERTISEMENT_2")}
+                    </a>)
+                ];
+
+            return (
+                <div className="advertisement">
+                    <h3>
+                        {formattedParts}
+                    </h3>
+                </div>
+            );
+        },
+
         render: function () {
             var psDesignTwitterURL = "https://www.adobe.com/go/designspace-twitter",
                 psForumURL = "https://www.adobe.com/go/designspace-forum",
@@ -117,36 +148,37 @@ define(function (require, exports, module) {
                 (<div className="carousel__slide">
                     <div className="carousel__slide__body">
                         <h1>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.HEADLINE")}</h1>
-                            <ul className="carousel__slide__three__list">
-                                <li>
-                                    <div
-                                        onClick={this._handleClick.bind(this, psDesignTwitterURL, "twitter")}>
-                                        <SVGIcon
-                                            CSSID="bird"/>
-                                        <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_FIRST")}</h2>
-                                    </div>
-                                </li>
-                            </ul>
-                            <ul className="carousel__slide__three__list">
-                                <li>
-                                    <div
-                                        onClick={this._handleClick.bind(this, githubURL, "github")}>
-                                        <SVGIcon
-                                            CSSID="github"/>
-                                        <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_SECOND")}</h2>
-                                    </div>
-                                </li>
-                            </ul>
-                            <ul className="carousel__slide__three__list">
-                                <li>
-                                    <div
-                                        onClick={this._handleClick.bind(this, psForumURL, "forum")}>
-                                        <SVGIcon
-                                            CSSID="workspace"/>
-                                        <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_THIRD")}</h2>
-                                    </div>
-                                </li>
-                            </ul>
+                        <ul className="carousel__slide__three__list">
+                            <li>
+                                <div
+                                    onClick={this._handleClick.bind(this, psDesignTwitterURL, "twitter")}>
+                                    <SVGIcon
+                                        CSSID="bird"/>
+                                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_FIRST")}</h2>
+                                </div>
+                            </li>
+                        </ul>
+                        <ul className="carousel__slide__three__list">
+                            <li>
+                                <div
+                                    onClick={this._handleClick.bind(this, githubURL, "github")}>
+                                    <SVGIcon
+                                        CSSID="github"/>
+                                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_SECOND")}</h2>
+                                </div>
+                            </li>
+                        </ul>
+                        <ul className="carousel__slide__three__list">
+                            <li>
+                                <div
+                                    onClick={this._handleClick.bind(this, psForumURL, "forum")}>
+                                    <SVGIcon
+                                        CSSID="workspace"/>
+                                    <h2>{nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_THIRD")}</h2>
+                                </div>
+                            </li>
+                        </ul>
+                        {this._renderAdvertisement()}
                     </div>
                 </div>)
                 ];
