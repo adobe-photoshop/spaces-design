@@ -94,7 +94,10 @@
                 "HEADLINE": "デザインスペース",
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",
-                "BODY_THIRD": "フォーラム"
+                "BODY_THIRD": "フォーラム",
+                "BODY_ADVERTISEMENT_1": "能_[9026852] You seem like the type who likes to check out betas. We've been hard at work building a new end-to-end solution for UX designers, including great integration with Photoshop. We're happy to share that {ADOBE_XD} is now in public beta.",
+                "BODY_ADVERTISEMENT_2": "能_[9026854] Go download a build and try it out!",
+                "ADOBE_XD": "能_[9026853] Adobe Experience Design CC"
             }
         ]
     },
