@@ -49,7 +49,7 @@
         "APPLY_TEXT_STYLE": "Appliquer le style de texte",
         "APPLY_LAYER_STYLE": "Appliquer le style de calque",
         "CREATE_LAYER_FROM_ELEMENT": "Créer un calque à partir d'une image",
-        "NEW_VECTOR_MASK_FROM_SHAPE": "[8572684] é_Create Vector Mask From Shape Layer"
+        "NEW_VECTOR_MASK_FROM_SHAPE": "[9026255] é_Create Vector Mask From Shape Layer"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -59,7 +59,7 @@
             {
                 "TITLE": "destination",
                 "HEADLINE": "Bienvenue dans Design Space",
-                "SUBHEAD": "",
+                "SUBHEAD": "[9026304] é_",
                 "BODY_FIRST": "Design Space (qui est pour l'instant un Aperçu) est une application qui s'utilise conjointement avec Photoshop pour les concepteurs Web et les concepteurs d'applications.",
                 "BODY_SECOND": "Nous utilisons le code HTML et Javascript afin de créer de nouvelles interactions personnalisées adaptées à vos flux de production. Il s'agit d'une version préliminaire destinée à obtenir vos commentaires. Faites-nous part de votre opinion."
             },
@@ -68,7 +68,7 @@
                 "HEADLINE": "Ensemble d'outils réduit et panneau de propriétés contextuel."
             },
             {
-                "TITLE": "Recherche",
+                "TITLE": "Rechercher",
                 "HEADLINE_FIRST": "Recherchez des calques, ouvrez des documents, importez des ressources de la bibliothèque, et plus encore.",
                 "HEADLINE_SECOND": "Utilisez Commande+F sous Mac ou Ctrl+F sous Windows."
             },
@@ -82,7 +82,7 @@
                 "HEADLINE": "Créez plusieurs plans de travail pour un flux de travaux plus visuel."
             },
             {
-                "TITLE": "Permutation",
+                "TITLE": "Permuter",
                 "HEADLINE": "Echangez le contenu et les positions des calques et des plans de travail en un seul clic."
             },
             {
@@ -103,7 +103,7 @@
         "MORE_TITLE": "Plus",
         "SELECT_TITLE": "Outil Sélection",
         "TOOLS": {
-            "SELECT": "Sélection",
+            "SELECT": "[9026335] é_Select",
             "RECTANGLE": "Rectangle",
             "ELLIPSE": "Ellipse",
             "PEN": "Plume",
@@ -129,7 +129,7 @@
             "EDIT_SMART": "Modif./Ouvrir dans l'app. définie",
             "EDIT_SMART_INSTRUCTION": "Double-cliquez sur objet dynam.",
             "BACK_OUT": "Sortir de l'arborescence",
-            "BACK_OUT_INSTRUCTION": "Echap",
+            "BACK_OUT_INSTRUCTION": "Esc",
             "HOLD_SELECTION": "Conserver la sélection supérieure dans les calques",
             "HOLD_SEL_MAC": "Option + Echap",
             "HOLD_SEL_WIN": "Maj + Echap",
@@ -152,12 +152,12 @@
     "TOOLS": {
         "NAMES": {
             "DIRECT_SELECTION_TOOL": "Outil Sélection directe",
-            "VECTOR_MASK_MODE": "[8903920] é_Vector Mask Mode",
+            "VECTOR_MASK_MODE": "[9026573] é_Vector Mask Mode",
             "ELLIPSE": "Outil Ellipse",
             "PEN": "Outil Plume",
-            "SUPER_SELECT_TYPE": "[8903921] é_Superselect-Type",
+            "SUPER_SELECT_TYPE": "[9026572] é_Superselect-Type",
             "RECTANGLE": "Outil Rectangle",
-            "EYEDROPPER": "[8903922] é_Sampler Tool",
+            "EYEDROPPER": "[9026574] é_Sampler Tool",
             "SELECT": "Outil Sélection",
             "TYPE": "Outil Texte"
         }
@@ -212,7 +212,7 @@
         "SET_STROKE_ALIGNMENT": "Définir l'alignement du contour",
         "TOGGLE_STROKE": "Activer/désactiver le contour",
         "SET_FILL_COLOR": "Définir la couleur de fond",
-        "SET_TYPE_FILL_COLOR": "[8907484] é_Set Color",
+        "SET_TYPE_FILL_COLOR": "[9026626] é_Set Color",
         "SET_FILL_OPACITY": "Définir l'opacité du fond",
         "SET_FILL_BLENDING": "Définir la fusion du fond",
         "TOGGLE_FILL": "Activer/Désactiver le fond",
@@ -482,7 +482,7 @@
         "PLACEHOLDER": "Rechercher, ouvrir et sélectionner",
         "PLACEHOLDER_INITIALIZING": "Initialisation…",
         "PLACEHOLDER_FILTER": "Rechercher",
-        "NO_OPTIONS_STOCK": "[8845065] é_Search Adobe Stock…",
+        "NO_OPTIONS_STOCK": "[9026441] é_Search Adobe Stock…",
         "NO_OPTIONS": "Votre recherche n'a renvoyé aucun résultat",
         "UNTITLED": "Sans titre",
         "HEADERS": {
@@ -496,7 +496,7 @@
             "GLOBAL_SHORTCUT": "Raccourcis globaux"
         },
         "CATEGORIES": {
-            "ADOBE_STOCK": "[8845066] é_Adobe Stock",
+            "ADOBE_STOCK": "[9026458] é_Adobe Stock",
             "CURRENT_DOC": "Documents ouverts",
             "RECENT_DOC": "Documents récents",
             "MENU_COMMAND": "Commandes de menu",
@@ -508,7 +508,7 @@
             "TEXT": "Calques de texte",
             "VECTOR": "Calques vectoriels",
             "SMARTOBJECT": "Objets dynamiques",
-            "GROUP": "Calques de groupe",
+            "GROUP": "Associer les calques",
             "LIBRARY": "Toutes les bibliothèques",
             "GRAPHIC": "Graphiques",
             "LAYERSTYLE": "Styles de calque",

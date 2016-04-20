@@ -49,17 +49,17 @@
         "APPLY_TEXT_STYLE": "Textformat anwenden",
         "APPLY_LAYER_STYLE": "Ebenenstil anwenden",
         "CREATE_LAYER_FROM_ELEMENT": "Ebene aus grafischem Element erstellen",
-        "NEW_VECTOR_MASK_FROM_SHAPE": "[8572684] ü_Create Vector Mask From Shape Layer"
+        "NEW_VECTOR_MASK_FROM_SHAPE": "[9026255] ü_Create Vector Mask From Shape Layer"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
-        "CONTINUE": "Weiter",
+        "CONTINUE": "Fortsetzen",
         "GET_STARTED": "Erste Schritte",
         "SLIDES": [
             {
                 "TITLE": "Start",
                 "HEADLINE": "Willkommen beim Design-Bereich",
-                "SUBHEAD": "",
+                "SUBHEAD": "[9026304] ü_",
                 "BODY_FIRST": "Der Design-Bereich (derzeit eine Vorschau) ist eine Companion-App zu Photoshop für Web- und App-Designer.",
                 "BODY_SECOND": "Wir arbeiten in HTML und JavaScript, um neue Interaktionen zu schaffen, die auf Ihre Arbeitsabläufe zugeschnitten sind. Dies ist eine Vorschauversion, für die wir Ihr Feedback benötigen – teilen Sie uns mit, was Sie denken."
             },
@@ -107,13 +107,13 @@
             "RECTANGLE": "Rechteck",
             "ELLIPSE": "Ellipse",
             "PEN": "Zeichenstift",
-            "TYPE": "Text",
+            "TYPE": "Typ",
             "SAMPLER": "Farbaufnahme",
             "SAMPLER_EFFECTS": "Effekte aufnehmen",
             "SAMPLER_INSTRUCTION_EFFECTS": "Umschalt+Klicken",
             "SAMPLER_HUD": "Aufnahmeoptionen HUD",
             "SAMPLER_INSTRUCTION_HUD": "Leertaste",
-            "SEARCH": "Suche",
+            "SEARCH": "Suchen",
             "SEARCH_INSTRUCTION_MAC": "Befehlstaste + F",
             "SEARCH_INSTRUCTION_WIN": "Strg + F",
             "EXPORT": "Exportieren",
@@ -152,14 +152,14 @@
     "TOOLS": {
         "NAMES": {
             "DIRECT_SELECTION_TOOL": "Direktauswahl-Werkzeug",
-            "VECTOR_MASK_MODE": "[8903920] ü_Vector Mask Mode",
+            "VECTOR_MASK_MODE": "[9026573] ü_Vector Mask Mode",
             "ELLIPSE": "Ellipse-Werkzeug",
             "PEN": "Zeichenstift-Werkzeug",
-            "SUPER_SELECT_TYPE": "[8903921] ü_Superselect-Type",
+            "SUPER_SELECT_TYPE": "[9026572] ü_Superselect-Type",
             "RECTANGLE": "Rechteck-Werkzeug",
-            "EYEDROPPER": "[8903922] ü_Sampler Tool",
+            "EYEDROPPER": "[9026574] ü_Sampler Tool",
             "SELECT": "Auswahlwerkzeug",
-            "TYPE": "[8903925] ü_Type Tool"
+            "TYPE": "[9026577] ü_Type Tool"
         }
     },
     "TOOLTIPS": {
@@ -212,7 +212,7 @@
         "SET_STROKE_ALIGNMENT": "Konturausrichtung festlegen",
         "TOGGLE_STROKE": "Kontur ein/aus",
         "SET_FILL_COLOR": "Füllfarbe festlegen",
-        "SET_TYPE_FILL_COLOR": "[8907484] ü_Set Color",
+        "SET_TYPE_FILL_COLOR": "[9026626] ü_Set Color",
         "SET_FILL_OPACITY": "Fülldeckkraft festlegen",
         "SET_FILL_BLENDING": "Füllung festlegen",
         "TOGGLE_FILL": "Füllung ein/aus",
@@ -379,11 +379,11 @@
         "STROKE": {
             "TITLE": "Kontur",
             "ALPHA": "Alpha",
-            "SIZE": "Stärke",
+            "SIZE": "[9026545] ü_Size",
             "ALIGNMENT": "Ausrichten",
             "ALIGNMENT_MODES": {
                 "INSIDE": "Innen",
-                "CENTER": "Mitte",
+                "CENTER": "[9026549] ü_Center",
                 "OUTSIDE": "Außen"
             }
         },
@@ -394,7 +394,7 @@
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "Wei.",
-            "SPREAD": "Ausbr.",
+            "SPREAD": "Überfüllen",
             "MIXED": "Gemischte Darstellung"
         },
         "INNER_SHADOW": {
@@ -404,7 +404,7 @@
             "X_POSITION": "X",
             "Y_POSITION": "Y",
             "BLUR": "Wei.",
-            "SPREAD": "Ausbr.",
+            "SPREAD": "Überfüllen",
             "MIXED": "Gemischte Darstellung"
         },
         "COLOR_OVERLAY": {
@@ -415,7 +415,7 @@
         "STROKE_EFFECT": {
             "TITLE": "Konturen",
             "TITLE_SINGLE": "Kontur",
-            "SIZE": "Stärke",
+            "SIZE": "[9026501] ü_Size",
             "MIXED": "Gemischte Darstellung"
         },
         "UNSUPPORTED_EFFECTS": {
@@ -434,7 +434,7 @@
             "TITLE": "Typ",
             "TYPEFACE": "Schriftart",
             "WEIGHT": "Stärke",
-            "SIZE": "Größe",
+            "SIZE": "[9026480] ü_Size",
             "LETTER": "US-Letter",
             "LINE": "Linie",
             "ALIGN": "Ausrichten",
@@ -482,7 +482,7 @@
         "PLACEHOLDER": "Suchen, öffnen und auswählen",
         "PLACEHOLDER_INITIALIZING": "Initialisierung…",
         "PLACEHOLDER_FILTER": "Suchen in:",
-        "NO_OPTIONS_STOCK": "[8845065] ü_Search Adobe Stock…",
+        "NO_OPTIONS_STOCK": "[9026441] ü_Search Adobe Stock…",
         "NO_OPTIONS": "Keine übereinstimmenden Ergebnisse für Ihre Suche",
         "UNTITLED": "Unbenannt",
         "HEADERS": {
@@ -496,7 +496,7 @@
             "GLOBAL_SHORTCUT": "Globale Tastaturbefehle"
         },
         "CATEGORIES": {
-            "ADOBE_STOCK": "[8845066] ü_Adobe Stock",
+            "ADOBE_STOCK": "[9026458] ü_Adobe Stock",
             "CURRENT_DOC": "Geöffnete Dokumente",
             "RECENT_DOC": "Zuletzt verwendete Dokumente",
             "MENU_COMMAND": "Menübefehle",
@@ -508,7 +508,7 @@
             "TEXT": "Textebenen",
             "VECTOR": "Vektorebenen",
             "SMARTOBJECT": "Smartobjekte",
-            "GROUP": "Gruppierte Ebenen",
+            "GROUP": "Ebenen gruppieren",
             "LIBRARY": "Alle Bibliotheken",
             "GRAPHIC": "Grafiken",
             "LAYERSTYLE": "Ebenenstile",
