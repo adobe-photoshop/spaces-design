@@ -497,9 +497,9 @@ define(function (require, exports) {
                 }
             },
             layerOneActions = _getMoveLayerActions
-                .call(this, document, layers.get(0), newPositions.get(0), "lt", payload.positions),
+                .call(this, document, layers.get(0), newPositions.get(0), "lt", payload.positions, true),
             layerTwoActions = _getMoveLayerActions
-                .call(this, document, layers.get(1), newPositions.get(1), "lt", payload.positions),
+                .call(this, document, layers.get(1), newPositions.get(1), "lt", payload.positions, true),
             translateActions = layerOneActions.concat(layerTwoActions);
                 
         var dispatchPromise = this.dispatchAsync(events.document.history.REPOSITION_LAYERS, payload);
