@@ -56,7 +56,8 @@ module.exports = function (grunt) {
                 "test/**/*.jsx",
                 "!npm-shrinkwrap.json",
                 "!manifest.json",
-                "!package.json"
+                "!package.json",
+                "!cc-libraries-api.min.js"
             ]
         },
         jscs: {
@@ -65,7 +66,8 @@ module.exports = function (grunt) {
                     "*.js",
                     "*.json",
                     "src/**/*.js",
-                    "src/**/*.jsx"
+                    "src/**/*.jsx",
+                    "!cc-libraries-api.min.js"
                 ],
                 options: {
                     config: ".jscsrc"
@@ -95,7 +97,8 @@ module.exports = function (grunt) {
             src: [
                 "*.json",
                 "src/**/*.json",
-                "test/**/*.json"
+                "test/**/*.json",
+                "!cc-libraries-api.min.js"
             ]
         },
         lintspaces: {
@@ -106,7 +109,8 @@ module.exports = function (grunt) {
                 "src/**/*.js",
                 "src/**/*.svg",
                 "src/**/*.less",
-                "!src/**/*.gif"
+                "!src/**/*.gif",
+                "!cc-libraries-api.min.js"
             ],
             options: {
                 newline: true,

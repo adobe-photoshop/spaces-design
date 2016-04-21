@@ -1311,7 +1311,7 @@ define(function (require, exports) {
      */
     var afterStartup = function () {
         // Load external CC Libraries API asynchronously. The loaded API is exposed as a global instance `ccLibraries`
-        return Promise.promisify($S)("file://shared/libs/cc-libraries-api.min.js")
+        return Promise.promisify($S)("../cc-libraries-api.min.js")
             .timeout(3000, "CC Libraries API load timeout, please don't restart and notify the chatroom!")
             .bind(this)
             .then(function () {

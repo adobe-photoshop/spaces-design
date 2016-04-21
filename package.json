@@ -83,6 +83,7 @@
     "lodash": "^3.10.1",
     "loglevel": "^1.4.0",
     "mathjs": "^2.4.2",
+    "spaces-proxy": "git+ssh://git@git.corp.adobe.com:wehrman/spaces-proxy.git#v0.0.4",
     "react": "^0.14.6",
     "react-addons-perf": "^0.14.6",
     "react-addons-pure-render-mixin": "^0.14.6",

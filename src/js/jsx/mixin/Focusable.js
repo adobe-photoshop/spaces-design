@@ -24,12 +24,9 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var ReactDOM = require("react-dom"),
+    var Promise = require("bluebird"),
+        ReactDOM = require("react-dom"),
         React = require("react");
-
-    var OS = require("adapter").os;
-
-    var log = require("js/util/log");
 
     module.exports = {
         propTypes: {
@@ -44,22 +41,11 @@ define(function (require, exports, module) {
         
         /** @ignore */
         acquireFocus: function () {
-            return OS.acquireKeyboardFocus()
-                .catch(function (err) {
-                    var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                    log.error("Failed to acquire keyboard focus:", message);
-                });
+            return Promise.resolve();
         },
         /** @ignore */
         releaseFocus: function () {
-            return OS.releaseKeyboardFocus()
-                .bind(this)
-                .catch(function (err) {
-                    var message = err instanceof Error ? (err.stack || err.message) : err;
-
-                    log.error("Failed to release keyboard focus on reset:", message);
-                });
+            return Promise.resolve();
         },
         componentDidMount: function () {
             if (this.props.acquireFocusOnMouseDown) {

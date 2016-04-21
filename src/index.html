@@ -41,7 +41,8 @@
           locale = "en";
       }
 
-      js.src = "./spaces-design-" + locale + ".js";
+      js.setAttribute("data-main", "./spaces-design-" + locale + ".js");
+      js.src = "../node_modules/spaces-proxy/build/loader/main.js";
       js.type = "text/javascript";
 
       document.head.appendChild(js);
