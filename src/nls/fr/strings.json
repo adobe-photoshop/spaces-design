@@ -49,7 +49,7 @@
         "APPLY_TEXT_STYLE": "Appliquer le style de texte",
         "APPLY_LAYER_STYLE": "Appliquer le style de calque",
         "CREATE_LAYER_FROM_ELEMENT": "Créer un calque à partir d'une image",
-        "NEW_VECTOR_MASK_FROM_SHAPE": "[9026255] é_Create Vector Mask From Shape Layer"
+        "NEW_VECTOR_MASK_FROM_SHAPE": "Créer un masque vectoriel à partir du calque de forme"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -59,7 +59,7 @@
             {
                 "TITLE": "destination",
                 "HEADLINE": "Bienvenue dans Design Space",
-                "SUBHEAD": "[9026304] é_",
+                "SUBHEAD": "",
                 "BODY_FIRST": "Design Space (qui est pour l'instant un Aperçu) est une application qui s'utilise conjointement avec Photoshop pour les concepteurs Web et les concepteurs d'applications.",
                 "BODY_SECOND": "Nous utilisons le code HTML et Javascript afin de créer de nouvelles interactions personnalisées adaptées à vos flux de production. Il s'agit d'une version préliminaire destinée à obtenir vos commentaires. Faites-nous part de votre opinion."
             },
@@ -106,7 +106,7 @@
         "MORE_TITLE": "Plus",
         "SELECT_TITLE": "Outil Sélection",
         "TOOLS": {
-            "SELECT": "[9026335] é_Select",
+            "SELECT": "Sélectionner",
             "RECTANGLE": "Rectangle",
             "ELLIPSE": "Ellipse",
             "PEN": "Plume",
@@ -155,12 +155,12 @@
     "TOOLS": {
         "NAMES": {
             "DIRECT_SELECTION_TOOL": "Outil Sélection directe",
-            "VECTOR_MASK_MODE": "[9026573] é_Vector Mask Mode",
+            "VECTOR_MASK_MODE": "Mode Masque vectoriel",
             "ELLIPSE": "Outil Ellipse",
             "PEN": "Outil Plume",
-            "SUPER_SELECT_TYPE": "[9026572] é_Superselect-Type",
+            "SUPER_SELECT_TYPE": "Supersélection-Type",
             "RECTANGLE": "Outil Rectangle",
-            "EYEDROPPER": "[9026574] é_Sampler Tool",
+            "EYEDROPPER": "Outil Echantillonnage",
             "SELECT": "Outil Sélection",
             "TYPE": "Outil Texte"
         }
@@ -215,7 +215,7 @@
         "SET_STROKE_ALIGNMENT": "Définir l'alignement du contour",
         "TOGGLE_STROKE": "Activer/désactiver le contour",
         "SET_FILL_COLOR": "Définir la couleur de fond",
-        "SET_TYPE_FILL_COLOR": "[9026626] é_Set Color",
+        "SET_TYPE_FILL_COLOR": "Définir la couleur",
         "SET_FILL_OPACITY": "Définir l'opacité du fond",
         "SET_FILL_BLENDING": "Définir la fusion du fond",
         "TOGGLE_FILL": "Activer/Désactiver le fond",
@@ -485,7 +485,7 @@
         "PLACEHOLDER": "Rechercher, ouvrir et sélectionner",
         "PLACEHOLDER_INITIALIZING": "Initialisation…",
         "PLACEHOLDER_FILTER": "Rechercher",
-        "NO_OPTIONS_STOCK": "[9026441] é_Search Adobe Stock…",
+        "NO_OPTIONS_STOCK": "Rechercher dans Adobe Stock...",
         "NO_OPTIONS": "Votre recherche n'a renvoyé aucun résultat",
         "UNTITLED": "Sans titre",
         "HEADERS": {
@@ -499,7 +499,7 @@
             "GLOBAL_SHORTCUT": "Raccourcis globaux"
         },
         "CATEGORIES": {
-            "ADOBE_STOCK": "[9026458] é_Adobe Stock",
+            "ADOBE_STOCK": "Adobe Stock",
             "CURRENT_DOC": "Documents ouverts",
             "RECENT_DOC": "Documents récents",
             "MENU_COMMAND": "Commandes de menu",
