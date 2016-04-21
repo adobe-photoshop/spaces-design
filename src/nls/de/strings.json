@@ -49,7 +49,7 @@
         "APPLY_TEXT_STYLE": "Textformat anwenden",
         "APPLY_LAYER_STYLE": "Ebenenstil anwenden",
         "CREATE_LAYER_FROM_ELEMENT": "Ebene aus grafischem Element erstellen",
-        "NEW_VECTOR_MASK_FROM_SHAPE": "[9026255] ü_Create Vector Mask From Shape Layer"
+        "NEW_VECTOR_MASK_FROM_SHAPE": "Vektormaske aus Formebene erstellen"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -59,7 +59,7 @@
             {
                 "TITLE": "Start",
                 "HEADLINE": "Willkommen beim Design-Bereich",
-                "SUBHEAD": "[9026304] ü_",
+                "SUBHEAD": "",
                 "BODY_FIRST": "Der Design-Bereich (derzeit eine Vorschau) ist eine Companion-App zu Photoshop für Web- und App-Designer.",
                 "BODY_SECOND": "Wir arbeiten in HTML und JavaScript, um neue Interaktionen zu schaffen, die auf Ihre Arbeitsabläufe zugeschnitten sind. Dies ist eine Vorschauversion, für die wir Ihr Feedback benötigen – teilen Sie uns mit, was Sie denken."
             },
@@ -94,7 +94,10 @@
                 "HEADLINE": "Design-Bereich",
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",
-                "BODY_THIRD": "Forum"
+                "BODY_THIRD": "Forum",
+                "BODY_ADVERTISEMENT_1": "[9026852] ü_You seem like the type who likes to check out betas. We've been hard at work building a new end-to-end solution for UX designers, including great integration with Photoshop. We're happy to share that {ADOBE_XD} is now in public beta.",
+                "BODY_ADVERTISEMENT_2": "[9026854] ü_Go download a build and try it out!",
+                "ADOBE_XD": "[9026853] ü_Adobe Experience Design CC"
             }
         ]
     },
@@ -152,14 +155,14 @@
     "TOOLS": {
         "NAMES": {
             "DIRECT_SELECTION_TOOL": "Direktauswahl-Werkzeug",
-            "VECTOR_MASK_MODE": "[9026573] ü_Vector Mask Mode",
+            "VECTOR_MASK_MODE": "Vektormaskenmodus",
             "ELLIPSE": "Ellipse-Werkzeug",
             "PEN": "Zeichenstift-Werkzeug",
-            "SUPER_SELECT_TYPE": "[9026572] ü_Superselect-Type",
+            "SUPER_SELECT_TYPE": "Überauswahl-Typ",
             "RECTANGLE": "Rechteck-Werkzeug",
-            "EYEDROPPER": "[9026574] ü_Sampler Tool",
+            "EYEDROPPER": "Farbaufnahme-Werkzeug",
             "SELECT": "Auswahlwerkzeug",
-            "TYPE": "[9026577] ü_Type Tool"
+            "TYPE": "Text-Werkzeug"
         }
     },
     "TOOLTIPS": {
@@ -212,7 +215,7 @@
         "SET_STROKE_ALIGNMENT": "Konturausrichtung festlegen",
         "TOGGLE_STROKE": "Kontur ein/aus",
         "SET_FILL_COLOR": "Füllfarbe festlegen",
-        "SET_TYPE_FILL_COLOR": "[9026626] ü_Set Color",
+        "SET_TYPE_FILL_COLOR": "Farbe festlegen",
         "SET_FILL_OPACITY": "Fülldeckkraft festlegen",
         "SET_FILL_BLENDING": "Füllung festlegen",
         "TOGGLE_FILL": "Füllung ein/aus",
@@ -379,11 +382,11 @@
         "STROKE": {
             "TITLE": "Kontur",
             "ALPHA": "Alpha",
-            "SIZE": "[9026545] ü_Size",
+            "SIZE": "Stärke",
             "ALIGNMENT": "Ausrichten",
             "ALIGNMENT_MODES": {
                 "INSIDE": "Innen",
-                "CENTER": "[9026549] ü_Center",
+                "CENTER": "Zentriert",
                 "OUTSIDE": "Außen"
             }
         },
@@ -415,7 +418,7 @@
         "STROKE_EFFECT": {
             "TITLE": "Konturen",
             "TITLE_SINGLE": "Kontur",
-            "SIZE": "[9026501] ü_Size",
+            "SIZE": "Stärke",
             "MIXED": "Gemischte Darstellung"
         },
         "UNSUPPORTED_EFFECTS": {
@@ -434,7 +437,7 @@
             "TITLE": "Typ",
             "TYPEFACE": "Schriftart",
             "WEIGHT": "Stärke",
-            "SIZE": "[9026480] ü_Size",
+            "SIZE": "Stärke",
             "LETTER": "US-Letter",
             "LINE": "Linie",
             "ALIGN": "Ausrichten",
@@ -482,7 +485,7 @@
         "PLACEHOLDER": "Suchen, öffnen und auswählen",
         "PLACEHOLDER_INITIALIZING": "Initialisierung…",
         "PLACEHOLDER_FILTER": "Suchen in:",
-        "NO_OPTIONS_STOCK": "[9026441] ü_Search Adobe Stock…",
+        "NO_OPTIONS_STOCK": "Adobe Stock durchsuchen…",
         "NO_OPTIONS": "Keine übereinstimmenden Ergebnisse für Ihre Suche",
         "UNTITLED": "Unbenannt",
         "HEADERS": {
@@ -496,7 +499,7 @@
             "GLOBAL_SHORTCUT": "Globale Tastaturbefehle"
         },
         "CATEGORIES": {
-            "ADOBE_STOCK": "[9026458] ü_Adobe Stock",
+            "ADOBE_STOCK": "Adobe Stock",
             "CURRENT_DOC": "Geöffnete Dokumente",
             "RECENT_DOC": "Zuletzt verwendete Dokumente",
             "MENU_COMMAND": "Menübefehle",

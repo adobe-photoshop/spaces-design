@@ -109,7 +109,7 @@
             "WEB_1440_900": "Web (1440 × 900)",
             "WEB_1920_1080": "Web (1920 × 1080)"
         },
-        "NEW_VECTOR_MASK_FROM_SHAPE": "[8572683] é_Create Vector Mask from Layer"
+        "NEW_VECTOR_MASK_FROM_SHAPE": "Créer un masque vectoriel à partir du calque"
     },
     "TYPE": {
         "$MENU": "Texte",
@@ -230,16 +230,16 @@
         "TRANSFER_FAILURE": "Echec du transfert de test…",
         "RESET_FAILURE": "Echec de la réinitialisation test...",
         "CORRUPT_MODEL": "Corruption du modèle test...",
-        "LAYER_PANEL_PERFORMANCE_TEST": "[8800923] é_Test Layer Panel Performance",
+        "LAYER_PANEL_PERFORMANCE_TEST": "Tester la performance du panneau Calque",
         "UPDATE_CURRENT_DOCUMENT": "Mise à jour du document actuel",
         "RESET_RECESS": "Réinitialiser l'espace de conception",
-        "LOAD_DEBUGGING_HELPERS": "[8800931] é_Load Debugging Helpers",
+        "LOAD_DEBUGGING_HELPERS": "Télécharger les assistants de débogage",
         "TOGGLE_POLICY_FRAMES": "Afficher les cadres de politique",
         "TOGGLE_POSTCONDITIONS": "Vérifier les postconditions",
-        "TOGGLE_ACTION_LOGGING": "[8850428] é_Log Actions",
+        "TOGGLE_ACTION_LOGGING": "Actions de journal",
         "TOGGLE_ACTION_TRANSFER_LOGGING": "Transferts d'action du journal",
-        "TOGGLE_DESCRIPTOR_LOGGING": "[8800921] é_Log Descriptor Events",
-        "TOGGLE_HEADLIGHTS_LOGGING": "[8800926] é_Log Headlights Events"
+        "TOGGLE_DESCRIPTOR_LOGGING": "Evénements de descripteur de journal",
+        "TOGGLE_HEADLIGHTS_LOGGING": "Evénements de titres de journal"
     },
     "HELP": {
         "$MENU": "Aide",

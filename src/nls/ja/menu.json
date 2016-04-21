@@ -109,7 +109,7 @@
             "WEB_1440_900": "Web (1440 x 900)",
             "WEB_1920_1080": "Web (1920 x 1080)"
         },
-        "NEW_VECTOR_MASK_FROM_SHAPE": "能_[8572683] Create Vector Mask from Layer"
+        "NEW_VECTOR_MASK_FROM_SHAPE": "レイヤーからベクトルマスクを作成"
     },
     "TYPE": {
         "$MENU": "書式",
@@ -230,16 +230,16 @@
         "TRANSFER_FAILURE": "テスト転送エラー…",
         "RESET_FAILURE": "テストリセットエラー...",
         "CORRUPT_MODEL": "テストモデル破損...",
-        "LAYER_PANEL_PERFORMANCE_TEST": "能_[8800923] Test Layer Panel Performance",
+        "LAYER_PANEL_PERFORMANCE_TEST": "レイヤーパネルのパフォーマンスをテスト",
         "UPDATE_CURRENT_DOCUMENT": "現在のドキュメントの更新",
         "RESET_RECESS": "デザインスペースをリセット",
-        "LOAD_DEBUGGING_HELPERS": "能_[8800931] Load Debugging Helpers",
+        "LOAD_DEBUGGING_HELPERS": "デバッグヘルパーを読み込む",
         "TOGGLE_POLICY_FRAMES": "ポリシーのフレームを表示",
         "TOGGLE_POSTCONDITIONS": "事後条件を確認",
-        "TOGGLE_ACTION_LOGGING": "能_[8850428] Log Actions",
+        "TOGGLE_ACTION_LOGGING": "ログアクション",
         "TOGGLE_ACTION_TRANSFER_LOGGING": "ログアクションの転送",
-        "TOGGLE_DESCRIPTOR_LOGGING": "能_[8800921] Log Descriptor Events",
-        "TOGGLE_HEADLIGHTS_LOGGING": "能_[8800926] Log Headlights Events"
+        "TOGGLE_DESCRIPTOR_LOGGING": "イベント指定子を記録",
+        "TOGGLE_HEADLIGHTS_LOGGING": "ヘッドライトイベントを記録"
     },
     "HELP": {
         "$MENU": "ヘルプ",

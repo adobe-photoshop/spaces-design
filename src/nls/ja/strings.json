@@ -5,12 +5,12 @@
         "ADD_VECTOR_MASK": "ベクトルマスクを追加",
         "APPLY_LIBRARY_COLOR": "ライブラリカラーを適用",
         "CREATE_ARTBOARD": "アートボードを作成",
-        "SET_STROKE_COLOR": "能_[9026217] Set Stroke Color",
+        "SET_STROKE_COLOR": "境界線のカラーを設定",
         "SET_STROKE": "ストロークを設定",
         "SET_STROKE_OPACITY": "ストロークの不透明度を設定",
         "SET_STROKE_WIDTH": "ストロークの幅を設定",
         "SET_STROKE_ALIGNMENT": "ストロークの整列を設定",
-        "SET_FILL_COLOR": "能_[9026236] Set Fill Color",
+        "SET_FILL_COLOR": "塗りのカラーを設定",
         "SET_FILL_OPACITY": "塗りつぶしの不透明度を設定",
         "DELETE_LAYERS": "レイヤーを削除",
         "DELETE_VECTOR_MASK": "ベクトルマスクを削除",
@@ -49,7 +49,7 @@
         "APPLY_TEXT_STYLE": "テキストスタイルを適用",
         "APPLY_LAYER_STYLE": "レイヤースタイルを適用",
         "CREATE_LAYER_FROM_ELEMENT": "グラフィックアセットからレイヤーを作成",
-        "NEW_VECTOR_MASK_FROM_SHAPE": "能_[9026255] Create Vector Mask From Shape Layer"
+        "NEW_VECTOR_MASK_FROM_SHAPE": "シェイプレイヤーからベクトルマスクを作成"
     },
     "APP_NAME": "Photoshop",
     "FIRST_LAUNCH": {
@@ -59,7 +59,7 @@
             {
                 "TITLE": "ランディング",
                 "HEADLINE": "デザインスペースへようこそ",
-                "SUBHEAD": "能_[9026304] ",
+                "SUBHEAD": "",
                 "BODY_FIRST": "デザインスペース（プレビュー）は、Webやアプリケーションデザイナー向けの Photoshop の関連機能です。",
                 "BODY_SECOND": "HTML および JavaScript を駆使して、ワークフローに合わせた新しいインタラクションを実現しました。これはフィードバックをいただくためのプレビューリリースです。ご意見をお待ちしています。"
             },
@@ -94,7 +94,10 @@
                 "HEADLINE": "デザインスペース",
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",
-                "BODY_THIRD": "フォーラム"
+                "BODY_THIRD": "フォーラム",
+                "BODY_ADVERTISEMENT_1": "能_[9026852] You seem like the type who likes to check out betas. We've been hard at work building a new end-to-end solution for UX designers, including great integration with Photoshop. We're happy to share that {ADOBE_XD} is now in public beta.",
+                "BODY_ADVERTISEMENT_2": "能_[9026854] Go download a build and try it out!",
+                "ADOBE_XD": "能_[9026853] Adobe Experience Design CC"
             }
         ]
     },
@@ -152,12 +155,12 @@
     "TOOLS": {
         "NAMES": {
             "DIRECT_SELECTION_TOOL": "パス選択ツール",
-            "VECTOR_MASK_MODE": "能_[9026573] Vector Mask Mode",
+            "VECTOR_MASK_MODE": "ベクトルマスクモード",
             "ELLIPSE": "楕円形ツール",
             "PEN": "ペンツール",
-            "SUPER_SELECT_TYPE": "能_[9026572] Superselect-Type",
+            "SUPER_SELECT_TYPE": "グループ選択タイプ",
             "RECTANGLE": "長方形ツール",
-            "EYEDROPPER": "能_[9026574] Sampler Tool",
+            "EYEDROPPER": "サンプラーツール",
             "SELECT": "選択ツール",
             "TYPE": "文字ツール"
         }
@@ -206,13 +209,13 @@
         "ALIGN_TYPE_CENTER": "テキストを中央揃え",
         "ALIGN_TYPE_RIGHT": "テキストを右揃え",
         "ALIGN_TYPE_JUSTIFIED": "テキストを均等配置",
-        "SET_STROKE_COLOR": "能_[9026673] Set Stroke Color",
+        "SET_STROKE_COLOR": "境界線のカラーを設定",
         "SET_STROKE_OPACITY": "ストロークの不透明度を設定",
-        "SET_STROKE_SIZE": "能_[9026642] Set Stroke Size",
+        "SET_STROKE_SIZE": "境界線のサイズを設定",
         "SET_STROKE_ALIGNMENT": "ストロークの整列を設定",
-        "TOGGLE_STROKE": "能_[9026697] Toggle Stroke",
-        "SET_FILL_COLOR": "能_[9026623] Set Fill Color",
-        "SET_TYPE_FILL_COLOR": "能_[9026626] Set Color",
+        "TOGGLE_STROKE": "境界線を切り替える",
+        "SET_FILL_COLOR": "塗りのカラーを設定",
+        "SET_TYPE_FILL_COLOR": "カラーを設定",
         "SET_FILL_OPACITY": "塗りつぶしの不透明度を設定",
         "SET_FILL_BLENDING": "塗りつぶしの描画を設定",
         "TOGGLE_FILL": "塗りを切り替える",
@@ -235,9 +238,9 @@
         "SET_COLOR_OVERLAY_COLOR": "カラーオーバーレイのカラーを設定",
         "TOGGLE_COLOR_OVERLAY": "カラーオーバーレイを切り替える",
         "DELETE_COLOR_OVERLAY": "カラーオーバーレイを削除",
-        "SET_STROKE_EFFECT_COLOR": "能_[9026640] Set Stroke Color",
-        "SET_STROKE_EFFECT_SIZE": "能_[9026587] Set Stroke Size",
-        "TOGGLE_STROKE_EFFECT": "能_[9026670] Toggle Stroke",
+        "SET_STROKE_EFFECT_COLOR": "境界線のカラーを設定",
+        "SET_STROKE_EFFECT_SIZE": "境界線のサイズを設定",
+        "TOGGLE_STROKE_EFFECT": "境界線を切り替える",
         "DELETE_STROKE_EFFECT": "線を削除",
         "TOGGLE_INNER_SHADOW": "シャドウ (内側) を切り替える",
         "DELETE_INNER_SHADOW": "シャドウ (内側) を削除",
@@ -482,7 +485,7 @@
         "PLACEHOLDER": "検索、開く、選択",
         "PLACEHOLDER_INITIALIZING": "初期化しています…",
         "PLACEHOLDER_FILTER": "検索 ",
-        "NO_OPTIONS_STOCK": "能_[9026441] Search Adobe Stock…",
+        "NO_OPTIONS_STOCK": "Adobe Stock を検索…",
         "NO_OPTIONS": "検索条件に一致するものがありません",
         "UNTITLED": "名称未設定",
         "HEADERS": {
@@ -490,16 +493,16 @@
             "CURRENT_LAYER": "レイヤー",
             "CURRENT_DOC": "開いているドキュメント",
             "RECENT_DOC": "最近使用したドキュメント",
-            "MENU_COMMAND": "能_[9026435] Menu Commands",
+            "MENU_COMMAND": "メニューコマンド",
             "LIBRARY": "すべてのライブラリ",
             "FILTER": "検索範囲を限定…",
             "GLOBAL_SHORTCUT": "グローバルショートカット"
         },
         "CATEGORIES": {
-            "ADOBE_STOCK": "能_[9026458] Adobe Stock",
+            "ADOBE_STOCK": "Adobe Stock",
             "CURRENT_DOC": "開いているドキュメント",
             "RECENT_DOC": "最近使用したドキュメント",
-            "MENU_COMMAND": "能_[9026460] Menu Commands",
+            "MENU_COMMAND": "メニューコマンド",
             "ALL_LAYER": "レイヤー",
             "CURRENT_LAYER": "レイヤー",
             "ARTBOARD": "アートボード",
