@@ -40,7 +40,8 @@ define(function (require, exports, module) {
                 return collection.pluckAll(props.selectedLayers, ["id", "opacity"]);
             };
 
-            return !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
+            return this.props.disabled !== nextProps.disabled ||
+                !Immutable.is(getRelevantProps(this.props), getRelevantProps(nextProps));
         },
 
         /**

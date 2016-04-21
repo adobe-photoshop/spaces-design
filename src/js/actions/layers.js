@@ -1894,6 +1894,7 @@ define(function (require, exports) {
     changeColors.action = {
         reads: [locks.JS_DOC],
         writes: [],
+        modal: true,
         transfers: ["shapes.setFillColor", "type.setColor"]
     };
 
