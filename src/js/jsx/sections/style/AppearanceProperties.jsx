@@ -50,6 +50,7 @@ define(function (require, exports, module) {
 
         shouldComponentUpdate: function (nextProps) {
             return this.props.disabled !== nextProps.disabled ||
+                this.props.opaque !== nextProps.opaque ||
                 !Immutable.is(this.props.document, nextProps.document) ||
                 !Immutable.is(this.props.fill, nextProps.fill);
         },
@@ -272,7 +273,7 @@ define(function (require, exports, module) {
                             </Label>
                             <Opacity
                                 document={this.props.document}
-                                disabled={this.props.disabled}
+                                disabled={this.props.disabled || this.props.opaque}
                                 onFocus={this.props.onFocus}
                                 selectedLayers={this.props.selectedLayers} />
                         </div>
