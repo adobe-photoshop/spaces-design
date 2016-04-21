@@ -574,7 +574,8 @@ define(function (require, exports) {
     };
     setFillColor.action = {
         reads: [locks.PS_DOC, locks.JS_DOC],
-        writes: [locks.PS_DOC, locks.JS_DOC]
+        writes: [locks.PS_DOC, locks.JS_DOC],
+        modal: true
     };
 
     /**
