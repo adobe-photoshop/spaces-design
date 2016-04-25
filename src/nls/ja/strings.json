@@ -95,9 +95,9 @@
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",
                 "BODY_THIRD": "フォーラム",
-                "BODY_ADVERTISEMENT_1": "能_[9026852] You seem like the type who likes to check out betas. We've been hard at work building a new end-to-end solution for UX designers, including great integration with Photoshop. We're happy to share that {ADOBE_XD} is now in public beta.",
-                "BODY_ADVERTISEMENT_2": "能_[9026854] Go download a build and try it out!",
-                "ADOBE_XD": "能_[9026853] Adobe Experience Design CC"
+                "BODY_ADVERTISEMENT_1": "ベータ版の使用についてご検討中でしょうか。Photoshop との大幅な連携など UX デザイナー向けの新しいエンドツーエンドのソリューションの構築に積極的に取り組んできました。ついに、パブリックベータ版の {ADOBE_ XD} を公開できることをうれしく思っています。",
+                "BODY_ADVERTISEMENT_2": "ビルドをダウンロードしてお試しください。",
+                "ADOBE_XD": "Adobe Experience Design CC"
             }
         ]
     },
