@@ -268,11 +268,9 @@ define(function (require, exports) {
         this.flux.store("menu").on("change", _menuChangeHandler);
         
         if (!__PG_DEBUG__) {
-            var debugMenuIndex = rawMenuObj.menu.findIndex(function (menu) {
+            _.remove(rawMenuObj.menu, function (menu) {
                 return menu.id === "DEBUG";
             });
-
-            rawMenuObj.menu.splice(debugMenuIndex, 1);
         }
 
         // Menu store waits for this event to parse descriptors
