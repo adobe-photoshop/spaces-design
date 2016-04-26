@@ -95,9 +95,9 @@
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",
                 "BODY_THIRD": "Forum",
-                "BODY_ADVERTISEMENT_1": "[9026852] ü_You seem like the type who likes to check out betas. We've been hard at work building a new end-to-end solution for UX designers, including great integration with Photoshop. We're happy to share that {ADOBE_XD} is now in public beta.",
-                "BODY_ADVERTISEMENT_2": "[9026854] ü_Go download a build and try it out!",
-                "ADOBE_XD": "[9026853] ü_Adobe Experience Design CC"
+                "BODY_ADVERTISEMENT_1": "Sie scheinen der Typ zu sein, der gerne Beta-Versionen ausprobiert. Wir haben es uns mit der Entwicklung einer neuen End-to-End-Lösung für UX-Designer nicht leicht gemacht und auch für eine tolle Integration mit Photoshop gesorgt. Wir freuen uns, mitteilen zu können, dass {ADOBE_XD} jetzt in einer öffentlichen Beta-Version vorliegt.",
+                "BODY_ADVERTISEMENT_2": "Laden Sie einen Build herunter und testen Sie es!",
+                "ADOBE_XD": "Adobe Experience Design CC"
             }
         ]
     },
