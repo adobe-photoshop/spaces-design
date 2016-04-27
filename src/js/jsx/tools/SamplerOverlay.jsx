@@ -110,10 +110,18 @@ define(function (require, exports, module) {
         },
 
         shouldComponentUpdate: function (nextProps, nextState) {
-            var lastLayers = this.state.document.layers.selected,
-                nextLayers = nextState.document.layers.selected,
-                lastLayerProps = collection.pluck(lastLayers, "id"),
-                nextLayerProps = collection.pluck(nextLayers, "id"),
+            var getProps = function (state) {
+                var document = state.document;
+
+                if (!document || !document.layers) {
+                    return null;
+                }
+
+                return collection.pluck(document.layers.selected, "id");
+            };
+            
+            var lastLayerProps = getProps(this.state),
+                nextLayerProps = getProps(nextState),
                 layersChanged = !Immutable.is(lastLayerProps, nextLayerProps);
 
             return layersChanged ||
