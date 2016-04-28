@@ -27,7 +27,8 @@
     <title>Photoshop Design Space</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
     <script type="text/javascript">
-      var locale = window.navigator.language,
+      var localeParts = window.navigator.language.split("-"),
+          locale = localeParts[0],
           js = document.createElement("script");
 
       js.src = "./spaces-design-" + locale + ".js";
