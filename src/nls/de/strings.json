@@ -55,41 +55,41 @@
     "FIRST_LAUNCH": {
         "CONTINUE": "Fortsetzen",
         "GET_STARTED": "Erste Schritte",
-        "SLIDES": [
-            {
+        "SLIDES": {
+            "0": {
                 "TITLE": "Start",
                 "HEADLINE": "Willkommen beim Design-Bereich",
                 "SUBHEAD": "",
                 "BODY_FIRST": "Der Design-Bereich (derzeit eine Vorschau) ist eine Companion-App zu Photoshop für Web- und App-Designer.",
                 "BODY_SECOND": "Wir arbeiten in HTML und JavaScript, um neue Interaktionen zu schaffen, die auf Ihre Arbeitsabläufe zugeschnitten sind. Dies ist eine Vorschauversion, für die wir Ihr Feedback benötigen – teilen Sie uns mit, was Sie denken."
             },
-            {
+            "1": {
                 "TITLE": "Werkzeugsatz",
                 "HEADLINE": "Ein minimierter Werkzeugsatz und kontextuelles Eigenschaftenbedienfeld."
             },
-            {
+            "2": {
                 "TITLE": "Suchen",
                 "HEADLINE_FIRST": "Suchen Sie nach Ebenen und geöffneten Dokumenten, platzieren Sie Bibliothekselemente und vieles mehr.",
                 "HEADLINE_SECOND": "Verwenden Sie Befehlstaste+F auf Mac oder Strg+F auf Windows."
             },
-            {
+            "3": {
                 "TITLE": "Farbaufnahme",
                 "HEADLINE_FIRST": "Nehmen Sie Farben und Effekte ganz einfach per Klick oder Umschalt-Klick auf.",
                 "HEADLINE_SECOND": "Nehmen Sie alles andere, sogar Grafiken, mit der Leertaste auf."
             },
-            {
+            "4": {
                 "TITLE": "Zeichenflächen",
                 "HEADLINE": "Erstellen Sie mehrere Zeichenflächen für einen visuelleren Arbeitsablauf."
             },
-            {
+            "5": {
                 "TITLE": "Vertauschen",
                 "HEADLINE": "Vertauschen Sie Inhalte und Positionen von Ebenen mit einem einzigen Klick."
             },
-            {
+            "6": {
                 "TITLE": "Wechseln",
                 "HEADLINE": "Wechseln Sie nahtlos zum Standard-Photoshop, um erweiterte Fotografiefunktionen in Anspruch zu nehmen."
             },
-            {
+            "7": {
                 "TITLE": "Kontakt",
                 "HEADLINE": "Design-Bereich",
                 "BODY_FIRST": "Twitter",
@@ -99,7 +99,7 @@
                 "BODY_ADVERTISEMENT_2": "Laden Sie einen Build herunter und testen Sie es!",
                 "ADOBE_XD": "Adobe Experience Design CC"
             }
-        ]
+        }
     },
     "KEYBOARD_SHORTCUTS": {
         "TOOLS_TITLE": "Werkzeuge",
