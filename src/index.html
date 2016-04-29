@@ -31,6 +31,16 @@
           locale = localeParts[0],
           js = document.createElement("script");
 
+      switch (locale) {
+      case "en":
+      case "de":
+      case "fr":
+      case "ja":
+          break;
+      default:
+          locale = "en";
+      }
+
       js.src = "./spaces-design-" + locale + ".js";
       js.type = "text/javascript";
 
