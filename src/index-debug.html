@@ -28,8 +28,19 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
     <script type ="text/javascript" src="./externalDeps.js"></script>
     <script type="text/javascript">
-      var locale = window.navigator.language,
+      var localeParts = window.navigator.language.split("-"),
+          locale = localeParts[0],
           js = document.createElement("script");
+
+      switch (locale) {
+      case "en":
+      case "de":
+      case "fr":
+      case "ja":
+          break;
+      default:
+          locale = "en";
+      }
 
       js.src = "./spaces-design-" + locale + ".js";
       js.type = "text/javascript";

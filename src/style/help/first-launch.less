@@ -442,7 +442,7 @@
 }
 
 .carousel__slide .advertisement {
-    margin-top: 12em;
+    margin-top: 0;
 
     h3 {
         font-size: 1.8rem;
@@ -458,6 +458,16 @@
     a {
         color: @first-launch-focus-highlight;
     }
+}
+
+:lang(ja) .advertisement,
+:lang(de) .advertisement {
+    text-align: left;
+}
+
+:lang(fr) .carousel__slide__body {
+    padding-right: 2em;
+    padding-left: 2em;
 }
 
 // LANGUAGE SPECIFIC STYLES //

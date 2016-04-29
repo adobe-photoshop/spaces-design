@@ -55,41 +55,41 @@
     "FIRST_LAUNCH": {
         "CONTINUE": "Continue",
         "GET_STARTED": "Get Started",
-        "SLIDES": [
-            {
+        "SLIDES": {
+            "0": {
                 "TITLE": "landing",
                 "HEADLINE": "Welcome to Design Space",
                 "SUBHEAD": "",
                 "BODY_FIRST": "Design Space (currently a Preview) is a companion experience to Photoshop for web and app designers.",
                 "BODY_SECOND": "We’re working in HTML and JavaScript, creating new interactions tailored to your workflows. This is a preview release to get your feedback – so let us know what you think."
             },
-            {
+            "1": {
                 "TITLE": "Toolset",
                 "HEADLINE": "A minimized toolset & contextual properties panel."
             },
-            {
+            "2": {
                 "TITLE": "Search",
                 "HEADLINE_FIRST": "Search for layers, open documents, place library assets, and more.",
                 "HEADLINE_SECOND": "Use Command+F on Mac or Control+F on Windows."
             },
-            {
+            "3": {
                 "TITLE": "Sampler",
                 "HEADLINE_FIRST": "Sample colors and effects with just a click or a shift+click.",
                 "HEADLINE_SECOND": "Sample everything else, even graphics, with the spacebar."
             },
-            {
+            "4": {
                 "TITLE": "Artboards",
                 "HEADLINE": "Create multiple artboards for a more visual workflow."
             },
-            {
+            "5": {
                 "TITLE": "Swap",
                 "HEADLINE": "Swap the contents and positions of layers and artboards with a single click."
             },
-            {
+            "6": {
                 "TITLE": "Switching",
                 "HEADLINE": "Switch to standard Photoshop seamlessly for advanced photography features."
             },
-            {
+            "7": {
                 "TITLE": "Contact",
                 "HEADLINE": "Design Space",
                 "BODY_FIRST": "Twitter",
@@ -99,7 +99,7 @@
                 "BODY_ADVERTISEMENT_2": "Go download a build and try it out!",
                 "ADOBE_XD": "Adobe Experience Design CC"
             }
-        ]
+        }
     },
     "KEYBOARD_SHORTCUTS": {
         "TOOLS_TITLE": "Tools",

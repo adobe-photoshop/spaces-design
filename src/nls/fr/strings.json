@@ -55,41 +55,41 @@
     "FIRST_LAUNCH": {
         "CONTINUE": "Continuer",
         "GET_STARTED": "Prise en main",
-        "SLIDES": [
-            {
+        "SLIDES": {
+            "0": {
                 "TITLE": "destination",
                 "HEADLINE": "Bienvenue dans Design Space",
                 "SUBHEAD": "",
                 "BODY_FIRST": "Design Space (qui est pour l'instant un Aperçu) est une application qui s'utilise conjointement avec Photoshop pour les concepteurs Web et les concepteurs d'applications.",
                 "BODY_SECOND": "Nous utilisons le code HTML et Javascript afin de créer de nouvelles interactions personnalisées adaptées à vos flux de production. Il s'agit d'une version préliminaire destinée à obtenir vos commentaires. Faites-nous part de votre opinion."
             },
-            {
+            "1": {
                 "TITLE": "Ensemble d'outils",
                 "HEADLINE": "Ensemble d'outils réduit et panneau de propriétés contextuel."
             },
-            {
+            "2": {
                 "TITLE": "Rechercher",
                 "HEADLINE_FIRST": "Recherchez des calques, ouvrez des documents, importez des ressources de la bibliothèque, et plus encore.",
                 "HEADLINE_SECOND": "Utilisez Commande+F sous Mac ou Ctrl+F sous Windows."
             },
-            {
+            "3": {
                 "TITLE": "Echantillonnage",
                 "HEADLINE_FIRST": "Echantillonnez les couleurs et les effets d'un simple clic ou en utilisant Maj+clic.",
                 "HEADLINE_SECOND": "Echantillonnez tout le reste, même les graphiques, avec la barre d'espace."
             },
-            {
+            "4": {
                 "TITLE": "Plans de travail",
                 "HEADLINE": "Créez plusieurs plans de travail pour un flux de travaux plus visuel."
             },
-            {
+            "5": {
                 "TITLE": "Permuter",
                 "HEADLINE": "Echangez le contenu et les positions des calques et des plans de travail en un seul clic."
             },
-            {
+            "6": {
                 "TITLE": "Changement",
                 "HEADLINE": "Passez aisément à la version standard de Photoshop pour accéder aux fonctionnalités avancées des photos."
             },
-            {
+            "7": {
                 "TITLE": "Contact",
                 "HEADLINE": "Espace de conception",
                 "BODY_FIRST": "Twitter",
@@ -99,7 +99,7 @@
                 "BODY_ADVERTISEMENT_2": "Téléchargez la version bêta et essayez-la !",
                 "ADOBE_XD": "Adobe Experience Design CC"
             }
-        ]
+        }
     },
     "KEYBOARD_SHORTCUTS": {
         "TOOLS_TITLE": "Outils",
