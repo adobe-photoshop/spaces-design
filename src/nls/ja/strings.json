@@ -55,51 +55,51 @@
     "FIRST_LAUNCH": {
         "CONTINUE": "続行",
         "GET_STARTED": "開始",
-        "SLIDES": {
-            "0": {
+        "SLIDES": [
+            {
                 "TITLE": "ランディング",
                 "HEADLINE": "デザインスペースへようこそ",
                 "SUBHEAD": "",
                 "BODY_FIRST": "デザインスペース（プレビュー）は、Webやアプリケーションデザイナー向けの Photoshop の関連機能です。",
                 "BODY_SECOND": "HTML および JavaScript を駆使して、ワークフローに合わせた新しいインタラクションを実現しました。これはフィードバックをいただくためのプレビューリリースです。ご意見をお待ちしています。"
             },
-            "1": {
+            {
                 "TITLE": "ツールセット",
                 "HEADLINE": "最小化されたツールセットと状況に即した属性パネル。"
             },
-            "2": {
+            {
                 "TITLE": "検索",
                 "HEADLINE_FIRST": "レイヤーを検索する、ドキュメントを開く、ライブラリアセットを配置するなどのことができます。",
                 "HEADLINE_SECOND": "Mac の場合は Command+F、Windows の場合は Control+F を使用します。"
             },
-            "3": {
+            {
                 "TITLE": "サンプラー",
                 "HEADLINE_FIRST": "クリックまたは Shift キーを押しながらクリックするだけで、カラーと効果をサンプリングできます。",
                 "HEADLINE_SECOND": "スペースパーで、他のすべて、グラフィックさえもサンプリングできます。"
             },
-            "4": {
+            {
                 "TITLE": "アートボード",
                 "HEADLINE": "複数のアートボードを作成して、ワークフローをより見やすくします。"
             },
-            "5": {
+            {
                 "TITLE": "入れ替え",
                 "HEADLINE": "１回のクリックで、レイヤーとアートボードの内容および位置を入れ替える。"
             },
-            "6": {
+            {
                 "TITLE": "切り替え",
                 "HEADLINE": "高度な写真機能を使用する場合は、標準の Photoshop にシームレスな切り替えが可能です。"
             },
-            "7": {
+            {
                 "TITLE": "連絡先",
                 "HEADLINE": "デザインスペース",
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",
                 "BODY_THIRD": "フォーラム",
-                "BODY_ADVERTISEMENT_1": "ベータ版の使用についてご検討中でしょうか。Photoshop との大幅な連携など UX デザイナー向けの新しいエンドツーエンドのソリューションの構築に積極的に取り組んできました。ついに、パブリックベータ版の {ADOBE_XD} を公開できることをうれしく思っています。",
+                "BODY_ADVERTISEMENT_1": "ベータ版の使用についてご検討中でしょうか。Photoshop との大幅な連携など UX デザイナー向けの新しいエンドツーエンドのソリューションの構築に積極的に取り組んできました。ついに、パブリックベータ版の {ADOBE_ XD} を公開できることをうれしく思っています。",
                 "BODY_ADVERTISEMENT_2": "ビルドをダウンロードしてお試しください。",
                 "ADOBE_XD": "Adobe Experience Design CC"
             }
-        }
+        ]
     },
     "KEYBOARD_SHORTCUTS": {
         "TOOLS_TITLE": "ツール",
