@@ -36,6 +36,7 @@ define(function (require, exports) {
         locks = require("js/locks"),
         system = require("js/util/system"),
         objUtil = require("js/util/object"),
+        nls = require("js/util/nls"),
         log = require("js/util/log"),
         headlights = require("js/util/headlights"),
         policyActions = require("./policy");
@@ -152,7 +153,12 @@ define(function (require, exports) {
             headlights.logEvent(payload.category, payload.subcategory, payload.eventName);
         }
 
-        return adapter.openURLInDefaultBrowser(payload.url);
+        var url = payload.url;
+        if (payload.localize) {
+            url = nls.localize(url);
+        }
+
+        return adapter.openURLInDefaultBrowser(url);
     };
     openURL.action = {
         reads: [],
