@@ -555,7 +555,8 @@
         "HELPX": {
             "$action": "menu.openURL",
             "$payload": {
-                "url": "https://www.adobe.com/go/designspace-help",
+                "url": "strings.GO_URL.DESIGNSPACE_HELP",
+                "localize": true,
                 "category": "help",
                 "subcategory": "external-link",
                 "eventName": "helpX"

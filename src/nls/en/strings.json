@@ -52,6 +52,10 @@
         "NEW_VECTOR_MASK_FROM_SHAPE": "Create Vector Mask From Shape Layer"
     },
     "APP_NAME": "Photoshop",
+    "GO_URL": {
+        "EXPERIENCE_DESIGN": "http://www.adobe.com/go/experience-design",
+        "DESIGNSPACE_HELP": "http://www.adobe.com/go/designspace-help"
+    },
     "FIRST_LAUNCH": {
         "CONTINUE": "Continue",
         "GET_STARTED": "Get Started",
