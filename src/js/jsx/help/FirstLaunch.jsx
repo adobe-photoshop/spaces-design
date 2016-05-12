@@ -88,7 +88,7 @@ define(function (require, exports, module) {
                 return null;
             }
 
-            var onClick = this._handleClick.bind(this, "http://www.adobe.com/go/experience-design", "xdAd"),
+            var onClick = this._handleClick.bind(this, nls.localize("strings.GO_URL.EXPERIENCE_DESIGN"), "xdAd"),
                 rawParts = nls.localize("strings.FIRST_LAUNCH.SLIDES.7.BODY_ADVERTISEMENT_1").split("{ADOBE_XD}"),
                 formattedParts = [
                     rawParts[0],
