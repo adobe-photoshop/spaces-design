@@ -45,14 +45,6 @@
     flex-grow: 0;
 }
 
-.panel-effects-section{
-    min-height: 24rem;
-}
-
-.panel-export-section{
-    min-height: 18rem;
-}
-
 .panel-appearance-section .section-container .stroke {
     margin-top: .4rem;
 }
@@ -279,6 +271,14 @@
     margin-left: .2rem;
 }
 
+.radius_input {
+    padding-bottom: 2rem;
+}
+
+.last-line__type {
+    padding-bottom: 2rem;
+}
+
 .transform.section {
     flex-grow: 0;
     flex-shrink: 0;
@@ -424,7 +424,7 @@
         border-right: @hairline solid @bg-border;
     }
     
-    .export {
+    .export, .layers {
         border-bottom: @panel-border-width solid @bg-border;
     }
 
@@ -463,9 +463,12 @@
             flex-basis: 0;
         }
     }
-    
-    .libraries, .layers {
-        min-height: 10rem;
+
+    .panel-layers-section,
+    .panel-export-section, .panel-effects-section, 
+    .panel-appearance-section {
+        min-height: 4.6rem;
+        overflow: hidden;
     }
 
     .appearance, .type {

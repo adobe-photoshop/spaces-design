@@ -134,6 +134,55 @@ input {
     html { font-size: @base-11; }
 }
 
+@media (min-height: 200px) {
+  .main__both-panel .panel-export-section, .main__both-panel .panel-effects-section {
+    min-height: 0rem;
+    overflow: hidden;
+  }
+
+  .main__both-panel .panel-appearance-section {
+    height: 6rem;
+    overflow: hidden;
+  }
+}
+
+@media (min-height: 300px) {
+  .main__both-panel .panel-export-section, .main__both-panel .panel-effects-section {
+    min-height: 0rem;
+    overflow: hidden;
+  }
+
+  .main__both-panel .panel-appearance-section {
+    height: 8rem;
+    overflow: hidden;
+  }
+}
+
+@media (min-height: 460px) {
+  .main__both-panel .panel-export-section, .main__both-panel .panel-effects-section {
+    min-height: 4.6rem;
+    overflow: hidden;
+  }
+
+  .main__both-panel .panel-appearance-section {
+    height: 12rem;
+    overflow: hidden;
+  }
+
+}
+
+@media (min-height: 580px) {
+  .main__both-panel .panel-export-section, .main__both-panel .panel-effects-section {
+    height: 8rem;
+    overflow: hidden;
+  }
+
+  .main__both-panel .panel-appearance-section {
+    min-height: 22rem;
+    overflow: hidden;
+  }
+}
+
 /* -- MASTER CONTAINER -- */
 
 .fade-in-mixin {
