@@ -53,8 +53,8 @@
     },
     "APP_NAME": "Photoshop",
     "GO_URL": {
-        "EXPERIENCE_DESIGN": "[9047748] ü_http://www.adobe.com/go/experience-design",
-        "DESIGNSPACE_HELP": "[9047747] ü_http://www.adobe.com/go/designspace-help"
+        "EXPERIENCE_DESIGN": "http://www.adobe.com/go/experience-design_de",
+        "DESIGNSPACE_HELP": "http://www.adobe.com/go/designspace-help_de"
     },
     "FIRST_LAUNCH": {
         "CONTINUE": "Fortsetzen",

@@ -53,8 +53,8 @@
     },
     "APP_NAME": "Photoshop",
     "GO_URL": {
-        "EXPERIENCE_DESIGN": "能_[9047748] http://www.adobe.com/go/experience-design",
-        "DESIGNSPACE_HELP": "能_[9047747] http://www.adobe.com/go/designspace-help"
+        "EXPERIENCE_DESIGN": "http://www.adobe.com/go/experience-design_jp",
+        "DESIGNSPACE_HELP": "http://www.adobe.com/go/designspace-help_jp"
     },
     "FIRST_LAUNCH": {
         "CONTINUE": "続行",
@@ -99,7 +99,7 @@
                 "BODY_FIRST": "Twitter",
                 "BODY_SECOND": "GitHub",
                 "BODY_THIRD": "フォーラム",
-                "BODY_ADVERTISEMENT_1": "ベータ版の使用についてご検討中でしょうか。Photoshop との大幅な連携など UX デザイナー向けの新しいエンドツーエンドのソリューションの構築に積極的に取り組んできました。ついに、パブリックベータ版の {ADOBE_ XD} を公開できることをうれしく思っています。",
+                "BODY_ADVERTISEMENT_1": "ベータ版の使用についてご検討中でしょうか。Photoshop との大幅な連携など UX デザイナー向けの新しいエンドツーエンドのソリューションの構築に積極的に取り組んできました。ついに、パブリックベータ版の {ADOBE_XD} を公開できることをうれしく思っています。",
                 "BODY_ADVERTISEMENT_2": "ビルドをダウンロードしてお試しください。",
                 "ADOBE_XD": "Adobe Experience Design CC"
             }
