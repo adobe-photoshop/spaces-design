@@ -52,6 +52,10 @@
         "NEW_VECTOR_MASK_FROM_SHAPE": "Vektormaske aus Formebene erstellen"
     },
     "APP_NAME": "Photoshop",
+    "GO_URL": {
+        "EXPERIENCE_DESIGN": "http://www.adobe.com/go/experience-design_de",
+        "DESIGNSPACE_HELP": "http://www.adobe.com/go/designspace-help_de"
+    },
     "FIRST_LAUNCH": {
         "CONTINUE": "Fortsetzen",
         "GET_STARTED": "Erste Schritte",

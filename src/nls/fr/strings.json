@@ -52,6 +52,10 @@
         "NEW_VECTOR_MASK_FROM_SHAPE": "Créer un masque vectoriel à partir du calque de forme"
     },
     "APP_NAME": "Photoshop",
+    "GO_URL": {
+        "EXPERIENCE_DESIGN": "http://www.adobe.com/go/experience-design_fr",
+        "DESIGNSPACE_HELP": "http://www.adobe.com/go/designspace-help_fr"
+    },
     "FIRST_LAUNCH": {
         "CONTINUE": "Continuer",
         "GET_STARTED": "Prise en main",
