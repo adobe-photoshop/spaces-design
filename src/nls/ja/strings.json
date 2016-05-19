@@ -52,6 +52,10 @@
         "NEW_VECTOR_MASK_FROM_SHAPE": "シェイプレイヤーからベクトルマスクを作成"
     },
     "APP_NAME": "Photoshop",
+    "GO_URL": {
+        "EXPERIENCE_DESIGN": "http://www.adobe.com/go/experience-design_jp",
+        "DESIGNSPACE_HELP": "http://www.adobe.com/go/designspace-help_jp"
+    },
     "FIRST_LAUNCH": {
         "CONTINUE": "続行",
         "GET_STARTED": "開始",
