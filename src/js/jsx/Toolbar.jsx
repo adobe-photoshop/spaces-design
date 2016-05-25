@@ -137,7 +137,8 @@ define(function (require, exports, module) {
             var toolStore = this.getFlux().store("tool"),
                 selectedTool = toolStore.getCurrentTool(),
                 selectedToolID = selectedTool ? selectedTool.id : "",
-                tools = this._layout.map(function (toolID) {
+                selectedToolIndex = 0,
+                tools = this._layout.map(function (toolID, index) {
                     var tool = toolStore.getToolByID(toolID),
                         selected = toolID === selectedToolID;
 
@@ -151,6 +152,10 @@ define(function (require, exports, module) {
                         selected = true;
                     }
 
+                    if (selected) {
+                        selectedToolIndex = index;
+                    }
+
                     return (
                         <ToolbarIcon
                             key={toolID}
@@ -162,14 +167,31 @@ define(function (require, exports, module) {
                     );
                 }, this);
         
-            var toolbarClassName = classnames({
-                "expanded": this.state.pinned || this.state.expanded,
-                "toolbar": true
-            });
-        
+            var ulStyle,
+                toolbarClassName = classnames({
+                    "expanded": this.state.pinned || this.state.expanded,
+                    "toolbar": true
+                });
+
+            if (this.state.expanded || this.state.pinned) {
+                ulStyle = {
+                    transform: "translateY(0)"
+                };
+            } else {
+                var translateValue = (-1 * selectedToolIndex * 5);
+
+                if (selectedToolIndex !== 0) {
+                    translateValue += 0.4;
+                }
+
+                ulStyle = {
+                    transform: "translateY(" + translateValue + "rem)"
+                };
+            }
+
             return (
                 <div className={toolbarClassName}>
-                    <ul>
+                    <ul style={ulStyle}>
                         {tools}
                     </ul>
                     <Zoom />
