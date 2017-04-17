@@ -620,7 +620,7 @@ define(function (require, exports) {
         }
 
         var currentLayers = currentDocument.layers.selected,
-            currentLayer = currentLayers.first();
+            currentLayer = currentLayers.last();
 
         if (currentLayers.size > 2) {
             return Promise.resolve();
