@@ -249,9 +249,10 @@ define(function (require, exports) {
     /**
      * Initialize document and layer state, emitting DOCUMENT_UPDATED.
      *
+     * @param {boolean=} noCurrentHistory
      * @return {Promise.<{activeDocumentID: number, openDocumentIDs: Array.<number>}=>}
      */
-    var initActiveDocument = function () {
+    var initActiveDocument = function (noCurrentHistory) {
         var appRef = appLib.referenceBy.current,
             rangeOpts = {
                 range: "document",
@@ -273,14 +274,17 @@ define(function (require, exports) {
 
                 var currentRef = documentLib.referenceBy.current,
                     documentPromise = _getDocumentByRef(currentRef),
-                    deselectPromise = descriptor.playObject(selectionLib.deselectAll());
+                    deselectPromise = noCurrentHistory ?
+                        Promise.resolve() :
+                        descriptor.playObject(selectionLib.deselectAll());
 
                 return documentPromise
                     .bind(this)
                     .then(function (currentDoc) {
                         var currentDocLayersPromise = _getLayersForDocument(currentDoc),
-                            historyPromise = this.transfer(historyActions.queryCurrentHistory,
-                                currentDoc.documentID, true),
+                            historyPromise = noCurrentHistory ?
+                                this.transfer("history.initNewHistory", currentDoc.documentID, true) :
+                                this.transfer("history.queryCurrentHistory", currentDoc.documentID, true),
                             // Load guides lazily if they're not currently visible
                             guidesVisible = currentDoc.guidesVisibility,
                             guidesPromise = guidesVisible ? _getGuidesForDocument(currentDoc) : Promise.resolve(),
@@ -322,7 +326,8 @@ define(function (require, exports) {
         reads: [locks.PS_DOC],
         writes: [locks.JS_DOC, locks.JS_APP],
         modal: true,
-        transfers: [historyActions.queryCurrentHistory, "layers.deselectAll", "application.updateRecentFiles"],
+        transfers: ["history.queryCurrentHistory", "history.initNewHistory",
+            "layers.deselectAll", "application.updateRecentFiles"],
         hideOverlays: true
     };
 
@@ -503,7 +508,7 @@ define(function (require, exports) {
                     this.dispatch(events.document.SELECT_DOCUMENT, payload);
 
                     return Promise.join(
-                        this.transfer(historyActions.queryCurrentHistory, documentID, false),
+                        this.transfer(historyActions.initNewHistory, documentID, false),
                         this.transfer(ui.updateTransform));
                 }
             });
@@ -512,7 +517,7 @@ define(function (require, exports) {
         reads: [locks.PS_APP],
         writes: [locks.JS_APP],
         modal: true,
-        transfers: [updateDocument, historyActions.queryCurrentHistory, ui.updateTransform],
+        transfers: [updateDocument, historyActions.initNewHistory, ui.updateTransform],
         lockUI: true,
         hideOverlays: true
     };
@@ -612,7 +617,7 @@ define(function (require, exports) {
      */
     var open = function (filePath, settings) {
         settings = settings || {};
-        
+
         return this.transfer("panel.setOverlayOffsetsForFirstDocument")
             .bind(this)
             .then(function () {
@@ -632,14 +637,14 @@ define(function (require, exports) {
                 return descriptor.playObject(documentLib.open(documentRef, settings))
                     .bind(this)
                     .then(function () {
-                        var initPromise = this.transfer(initActiveDocument),
+                        var initPromise = this.transfer(initActiveDocument, true),
                             uiPromise = this.transfer(ui.updateTransform);
 
                         return Promise.join(initPromise, uiPromise);
                     }, function () {
                         // If file doesn't exist anymore, user will get an Open dialog
                         // If user cancels out of open dialog, PS will throw, so catch it here
-                        this.transfer(menu.native, { commandID: _OPEN_DOCUMENT, waitForCompletion: true });
+                        return this.transfer(menu.native, { commandID: _OPEN_DOCUMENT, waitForCompletion: true });
                     })
                     .then(function () {
                         return this.transfer(toolActions.changeVectorMaskMode, false);

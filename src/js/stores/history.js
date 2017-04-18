@@ -125,8 +125,8 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         hasNextState: function (documentID) {
-            var history = this._history.get(documentID) || [],
-                current = this._current.get(documentID) || -1;
+            var history = this._history.get(documentID, Immutable.List()),
+                current = this._current.get(documentID, -1);
             return (history.size > current + 1);
         },
 
@@ -162,7 +162,7 @@ define(function (require, exports, module) {
          * @return {boolean}
          */
         hasPreviousState: function (documentID) {
-            var current = this._current.get(documentID) || -1;
+            var current = this._current.get(documentID, -1);
             return current > 1;
         },
 
@@ -656,8 +656,8 @@ define(function (require, exports, module) {
                     throw new Error("Could not amend history state, document not found: " + documentID);
                 }
 
-                var history = this._history.get(documentID) || Immutable.List(),
-                    current = this._current.get(documentID) || -1,
+                var history = this._history.get(documentID, Immutable.List()),
+                    current = this._current.get(documentID, -1),
                     currentState = history.get(current),
                     nextState;
 
@@ -707,8 +707,8 @@ define(function (require, exports, module) {
         _pushHistoryState: function (state, coalesce, allowRogue) {
             var document = state.document,
                 documentID = document.id,
-                history = this._history.get(documentID) || Immutable.List(),
-                current = this._current.get(documentID) || -1;
+                history = this._history.get(documentID, Immutable.List()),
+                current = this._current.get(documentID, -1);
 
             // trim the stale future state
             if (current > -1 && history.size > current + 1) {
